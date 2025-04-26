@@ -1,5 +1,6 @@
 import { AppProviders } from '@/providers';
 import type { Metadata } from 'next';
+import { pretendard, suite } from '@/lib/font';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <AppProviders>
-        <body className={'antialiased'}>{children}</body>
+        <body className={`${pretendard.variable} ${suite.variable} font-pretendard`}>
+          {children}
+        </body>
       </AppProviders>
     </html>
   );
