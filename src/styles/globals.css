@@ -2,6 +2,7 @@
 @import 'tw-animate-css';
 @import './colors.css';
 @import './typography.css';
+@import './shape.css';
 
 @custom-variant dark (&:is(.dark *));
 
