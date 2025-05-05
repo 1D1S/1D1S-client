@@ -11,7 +11,7 @@ const odosLabelVariants = cva('', {
       caption1: 'text-base',
       caption2: 'text-sm',
       caption3: 'text-xs',
-      pageTitle: 'font-suite text-3xl',
+      pageTitle: 'text-3xl',
     },
     weight: {
       bold: 'font-bold',
