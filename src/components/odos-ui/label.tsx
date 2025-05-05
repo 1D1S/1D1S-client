@@ -30,7 +30,9 @@ export function OdosLabel({
   className,
   size,
   weight,
+  as: Tag = 'span',
   ...props
-}: React.ComponentProps<'p'> & VariantProps<typeof odosLabelVariants>): React.ReactElement {
-  return <p className={cn(odosLabelVariants({ size, weight, className }))} {...props} />;
+}: { as?: React.ElementType } & React.ComponentPropsWithoutRef<'span'> &
+  VariantProps<typeof odosLabelVariants>): React.ReactElement {
+  return <Tag className={cn(odosLabelVariants({ size, weight, className }))} {...props} />;
 }
