@@ -16,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <AppProviders>
-        <body className={`${pretendard.variable} ${suite.variable} font-pretendard`}>
+        <body
+          className={`${pretendard.variable} ${suite.variable} font-pretendard bg-gray-50 text-gray-900`}
+        >
           {children}
         </body>
       </AppProviders>
