@@ -15,6 +15,31 @@ interface ChallengeProps {
   className?: string;
 }
 
+/**
+ * OdosChallengeCard
+ * 챌린지 카드 컴포넌트 - 제목, 유형, 참여자 수, 기간, 상태(진행중/모집중) 표시
+ *
+ * @param challengeTitle 챌린지 이름
+ * @param challengeType 챌린지 유형
+ * @param currentUserCount 현재 참여자 수
+ * @param maxUserCount 최대 참여자 수
+ * @param startDate 시작일 (YYYY-MM-DD)
+ * @param endDate 종료일 (YYYY-MM-DD)
+ * @param isOngoing 챌린지 진행 상태 (true: 진행중, false: 모집중)
+ *
+ * @example 기본 사용 예
+ * ```tsx
+ * <OdosChallengeCard
+ *   challengeTitle="챌린지 제목"
+ *   challengeType="고정목표형"
+ *   currentUserCount={12}
+ *   maxUserCount={20}
+ *   startDate="2023-10-01"
+ *   endDate="2023-10-31"
+ *   isOngoing={true}
+ * />
+ * ```
+ */
 export function OdosChallengeCard({
   challengeTitle,
   challengeType,

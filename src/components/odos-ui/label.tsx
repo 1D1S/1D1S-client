@@ -26,6 +26,25 @@ const odosLabelVariants = cva('', {
   },
 });
 
+/**
+ * OdosLabel
+ * 텍스트에 사이즈 및 굵기를 적용하는 커스텀 라벨 컴포넌트
+ *
+ * @param size 텍스트 크기 : heading1, heading2, body1, body2, caption1, caption2, caption3, pageTitle
+ * @default size body2
+ * @param weight 텍스트 굵기 : bold, medium, regular, light
+ * @param as HTML 태그 또는 커스텀 컴포넌트로 렌더링 (기본값: span)
+ *
+ * @example 기본 사용
+ * ```tsx
+ * <OdosLabel size="body1" weight="bold">텍스트</OdosLabel>
+ * ```
+ *
+ * @example HTML 태그 변경
+ * ```tsx
+ * <OdosLabel as="p" size="caption1" weight="regular">단락 텍스트</OdosLabel>
+ * ```
+ */
 export function OdosLabel({
   className,
   size,

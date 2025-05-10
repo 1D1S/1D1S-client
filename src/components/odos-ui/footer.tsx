@@ -1,6 +1,13 @@
 import Image from 'next/image';
 import { OdosLabel } from './label';
 
+/**
+ * OdosFooter
+ * 공통 하단 정보 영역 컴포넌트
+ * - 로고 및 서비스명 표시
+ * - 고객문의 이메일 제공
+ * - 이용약관 / 개인정보처리방침 / 운영정책 링크 항목 포함
+ */
 export function OdosFooter(): React.ReactElement {
   return (
     <footer className="flex w-screen items-center justify-center bg-gray-900 pt-14 pb-21.5">

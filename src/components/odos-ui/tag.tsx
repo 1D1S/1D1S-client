@@ -24,6 +24,18 @@ type TagProps = {
   weight?: 'bold' | 'medium' | 'regular' | 'light';
 } & VariantProps<typeof tagVariants>;
 
+/**
+ * OdosTag
+ * 간단한 태그 스타일을 위한 컴포넌트 (텍스트 + 아이콘 구성)
+ *
+ * @param icon 선택적 아이콘 이모지 텍스트
+ * @param weight 텍스트 굵기 (기본값: bold) : bold, medium, regular, light
+ *
+ * @example 기본 사용
+ * ```tsx
+ * <OdosTag icon="🔥">인기</OdosTag>
+ * ```
+ */
 export function OdosTag({
   icon,
   children,

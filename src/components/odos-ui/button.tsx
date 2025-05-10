@@ -78,6 +78,16 @@ const odosButtonVariants = cva('', {
   },
 });
 
+/**
+ * OdosButton
+ * 커스텀 버튼 컴포넌트
+ * @param variant 버튼스타일 :default, disabled, warning, loading, outline, defaultSmall, disabledSmall, warningSmall, loadingSmall, outlineSmall
+ *
+ * @example 기본 버튼
+ * ```tsx
+ * <OdosButton variant="default">Default OdosButton</OdosButton>
+ * ```
+ */
 export function OdosButton({
   className,
   variant,
