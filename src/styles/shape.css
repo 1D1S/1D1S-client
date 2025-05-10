@@ -1,0 +1,21 @@
+@theme inline {
+  /* border radius */
+  --radius-odos-0: var(--radius-odos-0);
+  --radius-odos-0\.5: var(--radius-odos-0\.5);
+  --radius-odos-1: var(--radius-odos-1);
+  --radius-odos-1\.5: var(--radius-odos-1\.5);
+  --radius-odos-2: var(--radius-odos-2);
+  --radius-odos-3: var(--radius-odos-3);
+  --radius-odos-4: var(--radius-odos-4);
+}
+
+:root {
+  /* border radius */
+  --radius-odos-0: 0rem; /* 0px */
+  --radius-odos-0\.5: 0.125rem; /* 2px */
+  --radius-odos-1: 0.25rem; /* 4px */
+  --radius-odos-1\.5: 0.375rem; /* 6px */
+  --radius-odos-2: 0.5rem; /* 8px */
+  --radius-odos-3: 0.75rem; /* 12px */
+  --radius-odos-4: 1rem; /* 16px */
+}
