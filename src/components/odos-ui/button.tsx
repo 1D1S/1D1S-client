@@ -17,7 +17,7 @@ const odosButtonVariants = cva('', {
         largeButtonVariants,
         'bg-main-900 text-white hover:bg-main-800'
       ),
-      disalbed: cn(
+      disabled: cn(
         buttonVariants({ variant: 'default', size: 'default' }),
         allButtonVariants,
         largeButtonVariants,
@@ -47,7 +47,7 @@ const odosButtonVariants = cva('', {
         smallButtonVariants,
         'bg-main-900 text-white hover:bg-main-800'
       ),
-      disalbedSmall: cn(
+      disabledSmall: cn(
         buttonVariants({ variant: 'default', size: 'sm' }),
         allButtonVariants,
         smallButtonVariants,
