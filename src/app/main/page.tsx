@@ -1,11 +1,11 @@
-import { OdosPageTitle } from '@/components/odos-ui/page-title';
-import { OdosChallengeCard } from '@/components/odos-ui/challenge-card';
-import { OdosFooter } from '@/components/odos-ui/footer';
-import { OdosLabel } from '@/components/odos-ui/label';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { OdosSpacing } from '@/components/odos-ui/spacing';
-import { OdosPageWatermark } from '@/components/odos-ui/page-watermark';
-import { OdosPageBackground } from '@/components/odos-ui/page-background';
+import { OdosPageTitle } from '@/presentation/components/odos-ui/page-title';
+import { OdosChallengeCard } from '@/presentation/components/odos-ui/challenge-card';
+import { OdosFooter } from '@/presentation/components/odos-ui/footer';
+import { OdosLabel } from '@/presentation/components/odos-ui/label';
+import { ScrollArea, ScrollBar } from '@/presentation/components/ui/scroll-area';
+import { OdosSpacing } from '@/presentation/components/odos-ui/spacing';
+import { OdosPageWatermark } from '@/presentation/components/odos-ui/page-watermark';
+import { OdosPageBackground } from '@/presentation/components/odos-ui/page-background';
 
 function SectionHeader({
   title,
