@@ -1,7 +1,7 @@
-import { AppProviders } from '@/presentation/providers';
+import { AppProviders } from '@/shared/providers';
 import type { Metadata } from 'next';
-import { pretendard, suite } from '@/presentation/lib/font';
-import '@/presentation/styles/globals.css';
+import { pretendard, suite } from '@/shared/lib/font';
+import '@/shared/styles/globals.css';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
