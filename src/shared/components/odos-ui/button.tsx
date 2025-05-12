@@ -1,5 +1,5 @@
 import { cn } from '@/shared/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/shared/components/ui/button';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { OdosLabel } from './label';

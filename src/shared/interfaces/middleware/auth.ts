@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * 인증 및 권한 검사 미들웨어
- * - JWT 토큰을 사용하여 인증 및 권한을 검사
- * - 인증되지 않은 사용자는 로그인 페이지로 리디렉션
+ * 인증 미들웨어
+ * - JWT 토큰을 사용하여 인증 및 권한 검사
+ * - 로그인 페이지로 리디렉션
+ *
+ * @param req NextRequest
+ * @returns NextResponse | null
  */
-
-// TODO: protectedRoutes를 설정
 const protectedRoutes = ['/test'];
 
 export function authMiddleware(req: NextRequest): NextResponse | null {
