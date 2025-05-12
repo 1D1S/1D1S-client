@@ -1,8 +1,8 @@
 // import { OdosButton } from '@/components/odos-ui/button';
-import { OdosLabel } from '@/components/odos-ui/label';
-import { OdosPageTitle } from '@/components/odos-ui/page-title';
+import { OdosLabel } from '@/shared/components/odos-ui/label';
+import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
 // import { OdosTag } from '@/components/odos-ui/tag';
-import { OdosChallengeCard } from '@/components/odos-ui/challenge-card';
+import { OdosChallengeCard } from '@/shared/components/odos-ui/challenge-card';
 
 export default function DevTest(): React.ReactElement {
   return (
