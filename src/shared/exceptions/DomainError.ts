@@ -22,7 +22,12 @@ export class DomainError extends Error {
     }
   }
 
-  toJSON() {
+  toJSON(): {
+    name: string;
+    code: ErrorCode;
+    message: string;
+    stack?: string | undefined;
+  } {
     return {
       name: this.name,
       code: this.code,
