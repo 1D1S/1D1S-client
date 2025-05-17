@@ -2,10 +2,10 @@
 
 import { IUserRepository } from '@/features/user/domain/repositories/IUserRepository';
 import { UserModel } from '@/features/user/domain/entities/UserModel';
+import { BaseApolloRepository } from '@/shared/base/BaseApolloRepository';
+import { ApolloClient, NormalizedCacheObject } from '@apollo/client';
 //import { ApolloClient, FetchResult } from '@apollo/client';
 //import { UserDTO } from '../../domain/entities/UserDto';
-
-
 
 /**
  * 예시 레포지토리입니다.
@@ -45,7 +45,11 @@ import { UserModel } from '@/features/user/domain/entities/UserModel';
  * 예시 레포지토리입니다.
  * - IUserRepository를 구현합니다.
  */
-export class UserRepositoryImpl implements IUserRepository {
+export class UserRepositoryImpl extends BaseApolloRepository implements IUserRepository {
+  constructor(readonly client: ApolloClient<NormalizedCacheObject>) {
+    super(client);
+  }
+
   /**
    * #1 id로 사용자 검색
    * @param id 사용자 ID
@@ -55,7 +59,7 @@ export class UserRepositoryImpl implements IUserRepository {
     return UserModel.create({
       id: id,
       email: '',
-      name: ''
+      name: '',
     });
   }
 
@@ -68,7 +72,7 @@ export class UserRepositoryImpl implements IUserRepository {
     return UserModel.create({
       id: '',
       email: email,
-      name: ''
+      name: '',
     });
   }
 
