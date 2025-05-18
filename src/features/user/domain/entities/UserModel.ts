@@ -1,30 +1,18 @@
-import { DomainError } from '@/shared/exceptions/DomainError';
-import { ErrorCode } from '@/shared/exceptions/ErrorCode';
-
-/** 예시 도메인 모델입니다.*/ 
+/** 예시 도메인 모델입니다.*/
 export class UserModel {
   private constructor(
     private readonly _id: string,
     private _email: string,
     private _name: string,
-    private readonly _createdAt: Date,
+    private readonly _createdAt: Date
   ) {}
 
   // Factory: 새 사용자 생성
-  static create(params: {
-    id: string;
-    email: string;
-    name: string;
-    createdAt?: Date;
-  }): UserModel {
+  static create(params: { id: string; email: string; name: string; createdAt?: Date }): UserModel {
     const { id, email, name, createdAt } = params;
-    if (!id) {
-      throw new DomainError(ErrorCode.USER_ID_REQUIRED, 'User ID는 필수 항목입니다.');
-    }
+
     const emailVo = email;
-    if (!name || name.trim().length === 0) {
-      throw new DomainError(ErrorCode.USER_NAME_REQUIRED, '사용자 이름은 비어 있을 수 없습니다.');
-    }
+
     return new UserModel(id, emailVo, name.trim(), createdAt ?? new Date());
   }
 
@@ -36,9 +24,8 @@ export class UserModel {
     createdAt: string | Date;
   }): UserModel {
     const emailVo = record.email;
-    const created = record.createdAt instanceof Date
-      ? record.createdAt
-      : new Date(record.createdAt);
+    const created =
+      record.createdAt instanceof Date ? record.createdAt : new Date(record.createdAt);
     return new UserModel(record.id, emailVo, record.name, created);
   }
 
@@ -71,7 +58,7 @@ export class UserModel {
   // 이름 변경 도메인 행위
   changeName(newName: string): void {
     if (!newName || newName.trim().length === 0) {
-      throw new DomainError(ErrorCode.USER_NAME_REQUIRED, '사용자 이름은 비어 있을 수 없습니다.');
+      return;
     }
     this._name = newName.trim();
   }

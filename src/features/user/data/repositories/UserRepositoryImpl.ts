@@ -2,44 +2,14 @@
 
 import { IUserRepository } from '@/features/user/domain/repositories/IUserRepository';
 import { UserModel } from '@/features/user/domain/entities/UserModel';
+
 import { BaseApolloRepository } from '@/shared/base/BaseApolloRepository';
 import { ApolloClient, NormalizedCacheObject } from '@apollo/client';
-//import { ApolloClient, FetchResult } from '@apollo/client';
-//import { UserDTO } from '../../domain/entities/UserDto';
-
-/**
- * 예시 레포지토리입니다.
- * - GraphQl Codegen을 사용하여 생성된 GraphQL 쿼리와 뮤테이션을 사용하여
- *   구현화합니다.
- */
-// export class UserRepositoryImpl implements IUserRepository {
-//   constructor(private readonly client: ApolloClient<any>) {}
-
-//   async findById(id: string): Promise<UserDTO | null> {
-//     const response: FetchResult<GetUserByIdQuery> =
-//       await this.client.query<GetUserByIdQuery, GetUserByIdQueryVariables>({
-//         query: GetUserByIdDocument,
-//         variables: { id },
-//       });
-
-//     const payload = response.data.user;
-//     if (payload.code !== 'OK200000') {
-//       throw new Error(payload.message || 'Error fetching user');
-//     }
-//     if (!payload.data) return null;
-
-//     return {
-//       id: payload.data.id,
-//       email: payload.data.email,
-//       name: payload.data.name,
-//     };
-//   }
-
-//   async findByEmail(email: string): Promise<UserDTO | null> {
-//     // 유사하게 구현
-//     throw new Error('Not implemented');
-//   }
-// }
+import {
+  GetMemberDocument,
+  GetMemberQuery,
+  GetMemberQueryVariables,
+} from '@/graphql/generated/graphql';
 
 /**
  * 예시 레포지토리입니다.
@@ -56,11 +26,20 @@ export class UserRepositoryImpl extends BaseApolloRepository implements IUserRep
    * @returns 사용자 ID 또는 null
    */
   async findById(id: string): Promise<UserModel | null> {
-    return UserModel.create({
-      id: id,
-      email: '',
-      name: '',
-    });
+    return this.parseData<UserModel>(
+      GetMemberDocument,
+      { id } as GetMemberQueryVariables,
+      (json) => {
+        // GraphQL 쿼리 결과의 'member' 페이로드를 UserModel로 변환
+        const member = (json as GetMemberQuery['member'])!;
+        return UserModel.create({
+          id: member.id,
+          email: '',
+          name: '',
+        });
+      },
+      { fetchPolicy: 'network-only' }
+    ) as Promise<UserModel | null>;
   }
 
   /**
