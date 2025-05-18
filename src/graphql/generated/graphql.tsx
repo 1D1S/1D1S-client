@@ -1,10 +1,5 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-/* eslint-disable no-use-before-define */
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
-/** 임시로 생성한 graphql 코드입니다.
- * 정확한 graphql 스키마가 나오면 이 코드를 대체합니다.
- * codegen을 사용하여 생성한 graphql.tsx 파일을 대체합니다.
- */
+/* eslint-disable */
+
 import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
 export type Maybe<T> = T | null;
