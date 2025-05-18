@@ -1,0 +1,15 @@
+type DiaryStatus {
+  deleted: Boolean!
+}
+
+enum ChallengeStatus {
+  FIXED
+  FLEXIBLE
+}
+
+enum MyStatus {
+  NONE
+  REQUESTED
+  PARTICIPANT
+  HOST
+}

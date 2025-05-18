@@ -1,0 +1,6 @@
+# Graphql codegen 테스트용 쿼리입니다.
+query getMember($id: ID!) {
+  member(id: $id) {
+    id
+  }
+}

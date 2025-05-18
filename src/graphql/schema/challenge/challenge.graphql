@@ -1,0 +1,20 @@
+type Applicant {
+  id: ID!
+  member: Member!
+  relation: Relation!
+  goals: [String]!
+}
+
+type Challenge {
+  id: ID!
+  host: Member!
+  applicants: [Applicant]!
+  title: String!
+  info: ChallengeInfo!
+  like: Likes!
+}
+
+type Goal {
+  id: ID!
+  content: String!
+}
