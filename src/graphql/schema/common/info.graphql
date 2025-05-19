@@ -1,0 +1,29 @@
+type MemberInfo {
+  name: String
+  email: String
+  job: String
+  category: Category
+  birthday: Date
+  gender: String
+}
+
+type ChallengeInfo {
+  name: String
+  email: String
+  job: String
+  category: Category
+  birthday: Date
+  gender: String
+}
+
+type DiaryInfo {
+  createdAt: Date!
+  date: Date!
+  feeling: Feeling!
+  public: Boolean!
+  goals: [DiaryGoal]!
+}
+type DiaryGoal {
+  content: String!
+  achieve: Boolean!
+}

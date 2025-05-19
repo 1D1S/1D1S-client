@@ -1,54 +1,119 @@
-// src/data/repositories/UserRepositoryImpl.ts
-
+import { ApolloClient, InMemoryCache, gql, NormalizedCacheObject } from '@apollo/client';
+import { MockLink, MockedResponse } from '@apollo/client/testing';
 import { IUserRepository } from '@/features/user/domain/repositories/IUserRepository';
 import { UserModel } from '@/features/user/domain/entities/UserModel';
 
-/**
- * 예시 레포지토리입니다.
- * - IUserRepository를 구현합니다.
- * - 실제 데이터베이스나 API와의 상호작용 없이
- *   Mock 데이터를 사용하여 테스트할 수 있습니다.
- */
+const GET_USER_BY_ID = gql`
+  query GetUserById($id: ID!) {
+    user(id: $id) {
+      id
+      email
+      name
+    }
+  }
+`;
+const GET_USER_BY_EMAIL = gql`
+  query GetUserByEmail($email: String!) {
+    userByEmail(email: $email) {
+      id
+      email
+      name
+    }
+  }
+`;
+const SAVE_USER = gql`
+  mutation SaveUser($id: ID!) {
+    saveUser(id: $id)
+  }
+`;
+const DELETE_USER = gql`
+  mutation DeleteUser($id: ID!) {
+    deleteUser(id: $id)
+  }
+`;
+
+const mocks: MockedResponse[] = [
+  {
+    request: {
+      query: GET_USER_BY_ID,
+      variables: { id: '1' },
+    },
+    result: {
+      data: { user: { id: '1', email: 'mock1@example.com', name: 'Mock User 1' } },
+    },
+  },
+  {
+    request: {
+      query: GET_USER_BY_EMAIL,
+      variables: { email: 'mock@example.com' },
+    },
+    result: {
+      data: { userByEmail: { id: '2', email: 'mock@example.com', name: 'Mock User 2' } },
+    },
+  },
+  {
+    request: {
+      query: SAVE_USER,
+      variables: { id: '3' },
+    },
+    result: {
+      data: { saveUser: true },
+    },
+  },
+  {
+    request: {
+      query: DELETE_USER,
+      variables: { id: '4' },
+    },
+    result: {
+      data: { deleteUser: true },
+    },
+  },
+];
+
+// 3) MockLink 기반 ApolloClient 생성
+const mockClient: ApolloClient<NormalizedCacheObject> = new ApolloClient({
+  link: new MockLink(mocks),
+  cache: new InMemoryCache(),
+});
+
+// 4) UserRepositoryMock 구현
 export class UserRepositoryMock implements IUserRepository {
-  /**
-   * #1 id로 사용자 검색
-   * @param id 사용자 ID
-   * @returns 사용자 ID 또는 null
-   */
+  private client = mockClient;
+
   async findById(id: string): Promise<UserModel | null> {
-    return UserModel.create({
-      id: id,
-      email: '',
-      name: ''
-    });
+    const { data } = await this.client.query<{ user: { id: string; email: string; name: string } }>(
+      {
+        query: GET_USER_BY_ID,
+        variables: { id },
+      }
+    );
+    return data.user ? UserModel.create(data.user) : null;
   }
 
-  /**
-   * #2 email로 사용자 검색
-   * @param email 사용자 Email
-   * @returns 사용자 ID 또는 null
-   */
   async findByEmail(email: string): Promise<UserModel | null> {
-    return UserModel.create({
-      id: '',
-      email: email,
-      name: ''
+    const { data } = await this.client.query<{
+      userByEmail: { id: string; email: string; name: string };
+    }>({
+      query: GET_USER_BY_EMAIL,
+      variables: { email },
+    });
+    return data.userByEmail ? UserModel.create(data.userByEmail) : null;
+  }
+
+  async save(id: string): Promise<void> {
+    await this.client.mutate<{ saveUser: boolean }>({
+      mutation: SAVE_USER,
+      variables: { id },
     });
   }
 
-  /**
-   * #3 사용자 저장
-   * @param id 사용자 ID
-   */
-  async save(id: string): Promise<void> {
-    console.log(id);
-  }
-
-  /**
-   * #4 사용자 삭제
-   * @param id 사용자 ID
-   */
   async delete(id: string): Promise<void> {
-    console.log(id);
+    await this.client.mutate<{ deleteUser: boolean }>({
+      mutation: DELETE_USER,
+      variables: { id },
+    });
   }
 }
+
+export { mocks };

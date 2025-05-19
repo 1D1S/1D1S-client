@@ -1,0 +1,23 @@
+overwrite: true
+schema:
+  - ./src/graphql/schema/**/*.graphql
+
+documents:
+  - ./src/graphql/queries/**/*.query.graphql
+  - ./src/graphql/mutations/**/*.mutation.graphql
+
+generates:
+  src/graphql/generated/graphql.tsx:
+    plugins:
+      - add:
+          content: |
+            /* eslint-disable */
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      withHOC: false
+      withComponent: false
+      declarationKind:
+        type: interface
+        input: interface

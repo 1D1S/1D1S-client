@@ -1,0 +1,5 @@
+type Date {
+  year: Int
+  month: Int
+  day: Int
+}

@@ -14,6 +14,14 @@ pnpm dev
 bun dev
 ```
 
+## CodeGen
+
+Run Graphql codegen with:
+
+```bash
+pnpm run codegen
+```
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
@@ -35,7 +43,6 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-
 ## 프로젝트 구조
 
 ```
@@ -44,29 +51,39 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 │  ├─ fonts
 │  └─ images
 └─ src
-   ├─ app
+   ├─ app                          # Next.js 라우트 (앱 디렉토리)
+   │  ├─ layout.tsx                # 전역 레이아웃
+   │  ├─ page.tsx                  # 홈 페이지
    │  ├─ page1
-   │  ├─ page2
-   │  └─ page.tsx
-   ├─ data
-   │  ├─ clients
-   │  ├─ repositories
-   │  └─ services
-   ├─ domain
-   │  ├─ entities
-   │  ├─ exceptions
-   │  ├─ repositories
-   │  ├─ usecases
-   │  └─ value-objects
-   └─ presentation
-      ├─ components
-      │  ├─ odos-ui
-      │  └─ ui
-      ├─ interfaces
-      │  ├─ dto
-      │  ├─ mappers
-      │  └─ middleware
-      ├─ lib
-      ├─ providers
-      └─ styles
+   │  │  └─ page.tsx
+   │  └─ page2
+   │     └─ page.tsx
+   │
+   ├─ features
+   │  ├─ featureA
+   │  │  ├─ domain                 # Usecase, repository 인터페이스
+   │  │  │  ├─ entities
+   │  │  │  ├─ repositories(interface)
+   │  │  │  └─ usecases
+   │  │  ├─ data                   # 데이터 접근 구현체
+   │  │  │  ├─ clients             # 필요시 (선택)
+   │  │  │  ├─ repositories(implement) # repository 구현체
+   │  │  │  └─ services            # 외부 API들을 사용할 경우 (선택)
+   │  │  └─ presentation           # UI 컴포넌트 & 훅
+   │  │     ├─ components
+   │  │     └─ hooks
+   │  │
+   │  └─ featureB
+   │     ├─ domain
+   │     ├─ data
+   │     └─ presentation
+   │
+   └─ shared                       # 앱 전역에서 재사용되는 모듈
+      ├─ components                # 디자인 시스템(ODOS-UI와 공통 UI)
+      ├─ hooks                     # 공통 훅
+      ├─ utils                     # 헬퍼 함수
+      ├─ types                     # 전역 타입 정의
+      ├─ interfaces                # DTO, Mapper, Middleware
+      ├─ providers                 # Context / Provider 래핑
+      └─ styles                    # 전역 스타일 / Tailwind 설정
 ```

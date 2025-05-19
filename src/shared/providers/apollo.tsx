@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { ApolloClient, InMemoryCache, ApolloProvider, from, HttpLink } from '@apollo/client';
 import { apolloLoggingLink } from '@/shared/lib/apollo_logging_link';
 
@@ -15,7 +16,6 @@ const client = new ApolloClient({
   devtools: { enabled: process.env.NODE_ENV !== 'production' },
 });
 
-// Provider 컴포넌트
 export function ApolloClientProvider({
   children,
 }: {
@@ -23,4 +23,3 @@ export function ApolloClientProvider({
 }): React.ReactElement {
   return <ApolloProvider client={client}>{children}</ApolloProvider>;
 }
-
