@@ -5,7 +5,7 @@ import { UserRepositoryMock } from '@/features/user/data/repositories/UserReposi
 import { DI_TOKENS } from '@/shared/dependency_injectors/di_token';
 import { ApolloClient, NormalizedCacheObject } from '@apollo/client';
 
-const USE_MOCK = process.env.REACT_APP_USE_MOCK === 'true';
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
 
 container.registerInstance<IUserRepository>(
   DI_TOKENS.UserRepository,

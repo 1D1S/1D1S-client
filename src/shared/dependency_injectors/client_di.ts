@@ -4,7 +4,7 @@ import { container } from 'tsyringe';
 import { apolloLoggingLink } from '@/shared/lib/apollo_logging_link';
 import { DI_TOKENS } from './di_token';
 
-const BASE_URL = process.env.REACT_APP_BASE_URL || 'https://api.example.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://api.example.com';
 
 const apolloClient = new ApolloClient({
   link: from([
