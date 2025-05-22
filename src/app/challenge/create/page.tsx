@@ -1,70 +1,83 @@
-// import { OdosButton } from '@/components/odos-ui/button';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
-import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
-// import { OdosTag } from '@/components/odos-ui/tag';
-import { OdosChallengeCard } from '@/shared/components/odos-ui/challenge-card';
+'use client';
+
+import { useState } from 'react';
+import { Step1 } from './components/steps/step1';
+import { Step2 } from './components/steps/step2';
+import { OdosButton } from '@/shared/components/odos-ui/button';
+import { Step3 } from './components/steps/step3';
+import { Step4 } from './components/steps/step4';
+
+interface TmpFormData {
+  title: string;
+  type: string;
+  // … 나머지 필드
+}
 
 export default function ChallengeCreate(): React.ReactElement {
+  const [step, setStep] = useState(1);
+  const [data, setData] = useState<TmpFormData>({
+    title: '',
+    type: '',
+  });
+
+  const totalSteps = 4; // 실제 뷰 개수에 맞춰 변경
+
+  const next = (): void => setStep((step) => Math.min(step + 1, totalSteps));
+  const prev = (): void => setStep((step) => Math.max(step - 1, 1));
+
+  // 뷰 컴포넌트를 step에 따라 선택
+  const renderStep = (): React.ReactElement => {
+    switch (step) {
+      case 1:
+        return (
+          <Step1
+            data={{ title: data.title }}
+            onChange={(datas) => setData({ ...data, ...datas })}
+          />
+        );
+      case 2:
+        return (
+          <Step2
+            data={{ title: data.title }}
+            onChange={(datas) => setData({ ...data, ...datas })}
+          />
+        );
+      case 3:
+        return (
+          <Step3
+            data={{ title: data.title }}
+            onChange={(datas) => setData({ ...data, ...datas })}
+          />
+        );
+      case 4:
+        return (
+          <Step4
+            data={{ title: data.title }}
+            onChange={(datas) => setData({ ...data, ...datas })}
+          />
+        );
+      default:
+        return (
+          <Step1
+            data={{ title: data.title }}
+            onChange={(datas) => setData({ ...data, ...datas })}
+          />
+        );
+    }
+  };
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-2 p-24">
-      <h1 className="font-suite text-2xl font-bold">Dev Test 수트</h1>
-      <p className="text-main-700 font-pretendard">This is a test page for development purposes.</p>
-      <p className="text-main-700">This is a test page for development purposes.</p>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-24">
+      {renderStep()}
 
-      {/* Labels */}
-      <OdosLabel size="heading1" weight={'bold'}>
-        This is a test page for development purposes.
-      </OdosLabel>
-      <OdosLabel size="body2" weight="regular">
-        This is a test page for development purposes.
-      </OdosLabel>
-      <OdosLabel size="pageTitle" weight="regular">
-        This is a test page for development purposes.
-      </OdosLabel>
-
-      {/* Page Title */}
-      <OdosPageTitle title="페이지 타이틀" variant="noSubtitle" />
-      <OdosPageTitle title="페이지 타이틀" variant="withSubtitle" subtitle="페이지 타이틀" />
-
-      {/* Buttons */}
-      {/*
-      <OdosButton variant={'default'}>Default OdosButton</OdosButton>
-      <OdosButton variant={'disalbed'}>Disabled OdosButton</OdosButton>
-      <OdosButton variant={'warning'}>Wanring OdosButton</OdosButton>
-      <OdosButton variant={'loading'}>Loading OdosButton</OdosButton>
-      <OdosButton variant={'outline'}>Outline OdosButton</OdosButton>
-      <OdosButton variant={'defaultSmall'}>Default OdosButton</OdosButton>
-      <OdosButton variant={'disalbedSmall'}>Disabled OdosButton</OdosButton>
-      <OdosButton variant={'warningSmall'}>Wanring OdosButton</OdosButton>
-      <OdosButton variant={'loadingSmall'}>Loading OdosButton</OdosButton>
-      <OdosButton variant={'outlineSmall'}>Outline OdosButton</OdosButton>*/}
-
-      {/* Tags */}
-      {/* 
-      <OdosTag icon="⭐" weight="medium">
-        This is a tag
-      </OdosTag>
-      <OdosTag weight="bold">This is a tag</OdosTag>*/}
-
-      {/*Challenge Card */}
-      <OdosChallengeCard
-        challengeTitle="챌린지 제목"
-        challengeType="고정목표형"
-        currentUserCount={12}
-        maxUserCount={20}
-        startDate="2023-10-01"
-        endDate="2023-10-31"
-        isOngoing={true}
-      />
-      <OdosChallengeCard
-        challengeTitle="챌린지 제목"
-        challengeType="고정목표형"
-        currentUserCount={12}
-        maxUserCount={20}
-        startDate="2023-10-01"
-        endDate="2023-10-31"
-        isOngoing={false}
-      />
+      <div className="mt-8 flex gap-4">
+        <OdosButton variant="outline" onClick={prev} disabled={step === 1}>
+          이전
+        </OdosButton>
+        <OdosButton variant="default" onClick={next}>
+          {step === totalSteps ? '완료' : '다음'}
+        </OdosButton>
+      </div>
     </div>
   );
 }
