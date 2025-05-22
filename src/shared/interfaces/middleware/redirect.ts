@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // 정적 리디렉션을 위한 매핑
 const redirectMapping: Record<string, string> = {
   '/old-path': '/new-path',
+  '/challenge': '/challenge/create', // 임시로 작성
 };
 
 /**
@@ -23,10 +24,10 @@ export function redirectMiddleware(req: NextRequest): NextResponse | null {
 
   // 동적 리라이트
   // 현재로서는 크게 필요하지 않지만, 나중을 위해 예시로 작성
-  if (pathname.startsWith('/challenge')) {
-    const url = req.nextUrl.clone();
-    url.pathname = `/api/challenge-v2${pathname.slice('/challenge'.length)}`;
-    return NextResponse.rewrite(url);
-  }
+  // if (pathname.startsWith('/challenge')) {
+  //   const url = req.nextUrl.clone();
+  //   url.pathname = `/api/challenge-v2${pathname.slice('/challenge'.length)}`;
+  //   return NextResponse.rewrite(url);
+  // }
   return null;
 }
