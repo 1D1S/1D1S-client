@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Step1 } from './components/steps/step1';
-import { Step2 } from './components/steps/step2';
+import { Step1 } from './components/step-pages/step1';
+import { Step2 } from './components/step-pages/step2';
 import { OdosButton } from '@/shared/components/odos-ui/button';
-import { Step3 } from './components/steps/step3';
-import { Step4 } from './components/steps/step4';
+import { Step3 } from './components/step-pages/step3';
+import { Step4 } from './components/step-pages/step4';
 import { StepProgress } from './components/step-progress';
 
 interface TmpFormData {
