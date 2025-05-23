@@ -22,8 +22,8 @@
       "/public/*": ["./public/*"],
       "@/*": ["./src/*"]
     },
-    "experimentalDecorators": true,    // 데코레이터 문법 허용
-    "emitDecoratorMetadata": true      // 런타임에 타입 메타데이터를 생성 (tsyringe가 필요)
+    "experimentalDecorators": true, // 데코레이터 문법 허용
+    "emitDecoratorMetadata": true // 런타임에 타입 메타데이터를 생성 (tsyringe가 필요)
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
