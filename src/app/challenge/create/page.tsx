@@ -6,6 +6,7 @@ import { Step2 } from './components/steps/step2';
 import { OdosButton } from '@/shared/components/odos-ui/button';
 import { Step3 } from './components/steps/step3';
 import { Step4 } from './components/steps/step4';
+import { StepProgress } from './components/step-progress';
 
 interface TmpFormData {
   title: string;
@@ -68,6 +69,10 @@ export default function ChallengeCreate(): React.ReactElement {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-24">
+      <StepProgress
+        steps={['챌린지 제목 입력', '챌린지 유형 선택', '챌린지 기간 설정', '챌린지 세부정보 입력']}
+        currentStep={step}
+      ></StepProgress>
       {renderStep()}
 
       <div className="mt-8 flex gap-4">
