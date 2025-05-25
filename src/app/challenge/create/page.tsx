@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Step1 } from './components/step-pages/step1';
-import { Step2 } from './components/step-pages/step2';
+import { Step1 } from './step-pages/step1';
+import { Step2 } from './step-pages/step2';
 import { OdosButton } from '@/shared/components/odos-ui/button';
-import { Step3 } from './components/step-pages/step3';
-import { Step4 } from './components/step-pages/step4';
+import { Step3 } from './step-pages/step3';
+import { Step4 } from './step-pages/step4';
 import { StepProgress } from './components/step-progress';
 
 interface TmpFormData {
@@ -68,9 +68,9 @@ export default function ChallengeCreate(): React.ReactElement {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-24">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-white p-24">
       <StepProgress
-        steps={['챌린지 제목 입력', '챌린지 유형 선택', '챌린지 기간 설정', '챌린지 세부정보 입력']}
+        steps={['챌린지 정보', '챌린지 기간', '챌린지 인원', '목표']}
         currentStep={step}
       ></StepProgress>
       {renderStep()}
