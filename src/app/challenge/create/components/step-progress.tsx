@@ -59,7 +59,7 @@ const ProgressBar = memo<ProgressBarProps>(({ total, current }) => (
         <div
           key={idx}
           className={cn(
-            'mx-1 h-2 flex-1 rounded transition-colors duration-300 ease-in-out',
+            'mx-1 h-2.5 flex-1 rounded transition-colors duration-300 ease-in-out',
             step < current
               ? 'bg-main-900'
               : step === current
