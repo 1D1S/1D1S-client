@@ -1,4 +1,3 @@
-// app/challenge/create/components/Step1.tsx
 import { OdosLabel } from '@/shared/components/odos-ui/label';
 import ToggleButton from '../components/toggle-buttons';
 import { useState } from 'react';
@@ -24,14 +23,20 @@ export function Step1({ data, onChange }: Props): React.ReactElement {
           title={'무한기간'}
           subtitle="종료일 없이 진행할 수 있는 챌린지입니다.루틴 형성이나 장기적인 습관 구축에 적합합니다"
           isActive={isActive}
-          icon={<div className="flex h-4 w-4"></div>}
+          activeImageSrc={'/images/endless-white.png'}
+          inactiveImageSrc={'/images/endless-gray.png'}
+          imageWidth={100}
+          imageHeight={100}
           onClick={toggleIsActive}
         />
         <ToggleButton
           title="무한기간"
           subtitle="종료일 없이 진행할 수 있는 챌린지입니다.루틴 형성이나 장기적인 습관 구축에 적합합니다"
           isActive={false}
-          icon={undefined}
+          activeImageSrc={'/images/endless.png'}
+          inactiveImageSrc={'/images/endless.png'}
+          imageWidth={100}
+          imageHeight={100}
         />
       </div>
       <input
