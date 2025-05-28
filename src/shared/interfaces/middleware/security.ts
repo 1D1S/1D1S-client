@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const blockedBots = [/Googlebot/, /Bingbot/, /Slurp/];
 const RATE_LIMIT_WINDOW_MS = 60_000;
-const MAX_REQUESTS_PER_WINDOW = 100;
+const MAX_REQUESTS_PER_WINDOW = 1000000;
 const ipLog = new Map<string, { count: number; windowStart: number }>();
 
 /**
@@ -15,7 +15,7 @@ const ipLog = new Map<string, { count: number; windowStart: number }>();
  */
 export function securityMiddleware(req: NextRequest): NextResponse | null {
   const userAgent = req.headers.get('user-agent') ?? '';
-  if (blockedBots.some(re => re.test(userAgent))) {
+  if (blockedBots.some((re) => re.test(userAgent))) {
     return new NextResponse('봇으로 감지되어 차단되었습니다.', { status: 403 });
   }
 
