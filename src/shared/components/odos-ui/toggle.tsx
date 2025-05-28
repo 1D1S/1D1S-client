@@ -1,10 +1,11 @@
 'use client';
 
 import { Toggle } from '@/shared/components/ui/toggle';
+import * as TogglePrimitive from '@radix-ui/react-toggle';
 import { OdosLabel } from './label';
 import { cn } from '@/shared/lib/utils';
 
-interface ToggleProps {
+interface ToggleProps extends React.ComponentProps<typeof TogglePrimitive.Root> {
   icon?: string;
   children: React.ReactNode;
   className?: string;
@@ -21,7 +22,12 @@ interface ToggleProps {
  * <OdosToggle icon="🔥">인기</OdosToggle>
  * ```
  */
-export function OdosToggle({ icon, children, className }: ToggleProps): React.ReactElement {
+export function OdosToggle({
+  icon,
+  children,
+  className,
+  ...props
+}: ToggleProps): React.ReactElement {
   const hasIcon = Boolean(icon);
   return (
     <Toggle
@@ -30,6 +36,7 @@ export function OdosToggle({ icon, children, className }: ToggleProps): React.Re
         hasIcon && 'gap-2.5',
         className
       )}
+      {...props}
     >
       {icon && (
         <OdosLabel size="body2" weight="regular">
