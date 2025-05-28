@@ -2,7 +2,18 @@
 import { OdosLabel } from '@/shared/components/odos-ui/label';
 import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
 // import { OdosTag } from '@/components/odos-ui/tag';
-import { OdosChallengeCard } from '@/shared/components/odos-ui/challenge-card';
+// import { OdosChallengeCard } from '@/shared/components/odos-ui/challenge-card';
+import {
+  OdosSelectSeparator,
+  OdosSelect,
+  OdosSelectItem,
+  OdosSelectGroup,
+  OdosSelectTrigger,
+  OdosSelectContent,
+  OdosSelectValue,
+} from '@/shared/components/odos-ui/dropdown';
+import { OdosToggle } from '@/shared/components/odos-ui/toggle';
+import { OdosTextField } from '@/shared/components/odos-ui/text-field';
 
 export default function DevTest(): React.ReactElement {
   return (
@@ -47,7 +58,7 @@ export default function DevTest(): React.ReactElement {
       <OdosTag weight="bold">This is a tag</OdosTag>*/}
 
       {/*Challenge Card */}
-      <OdosChallengeCard
+      {/*<OdosChallengeCard
         challengeTitle="챌린지 제목"
         challengeType="고정목표형"
         currentUserCount={12}
@@ -64,6 +75,34 @@ export default function DevTest(): React.ReactElement {
         startDate="2023-10-01"
         endDate="2023-10-31"
         isOngoing={false}
+      />*/}
+      <OdosSelect>
+        <OdosSelectTrigger className="w-[180px]">
+          <OdosSelectValue placeholder="값을 선택해주세요" />
+        </OdosSelectTrigger>
+        <OdosSelectContent>
+          <OdosSelectGroup>
+            <OdosSelectItem value="option1">Option 1</OdosSelectItem>
+            <OdosSelectItem value="option2">Option 2</OdosSelectItem>
+            <OdosSelectSeparator />
+            <OdosSelectItem value="option3">Option 3</OdosSelectItem>
+            <OdosSelectItem value="option4">Option 4</OdosSelectItem>
+            <OdosSelectItem value="option5">Option 5</OdosSelectItem>
+            <OdosSelectItem value="option6">Option 6</OdosSelectItem>
+
+            <OdosSelectItem value="option7">직접 입력 (최대 50명)</OdosSelectItem>
+          </OdosSelectGroup>
+        </OdosSelectContent>
+      </OdosSelect>
+
+      <OdosToggle>토글 태그</OdosToggle>
+      <OdosToggle icon="💻">개발 태그</OdosToggle>
+      <OdosTextField placeholder="텍스트 필드" />
+      <OdosTextField label="라벨" placeholder="텍스트 필드" />
+      <OdosTextField
+        label="에러 메시지가 있는 텍스트 필드"
+        placeholder="텍스트 필드"
+        error="이 필드는 필수입니다."
       />
     </div>
   );
