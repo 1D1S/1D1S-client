@@ -13,6 +13,17 @@ import {
 import { cn } from '@/shared/lib/utils';
 import { OdosLabel } from './label';
 
+/**
+ * OdosSelectTrigger
+ * Select 기본 트리거 컴포넌트
+ *
+ * @example
+ * ```tsx
+ * <OdosSelectTrigger className="w-[180px]">
+ *   <OdosSelectValue placeholder="값을 선택해주세요" />
+ * </OdosSelectTrigger>
+ * ```
+ */
 function OdosSelectTrigger({
   className,
   size = 'default',
@@ -42,6 +53,15 @@ function OdosSelectTrigger({
   );
 }
 
+/**
+ * OdosSelectItem
+ * Select 기본 아이템 컴포넌트
+ *
+ * @example
+ * ```tsx
+ * <OdosSelectItem value="option1">value1</OdosSelectItem>
+ * ```
+ */
 function OdosSelectItem({
   className,
   children,
@@ -71,6 +91,10 @@ function OdosSelectItem({
   );
 }
 
+/**
+ * OdosSelectSeparator
+ * Select 구분선 컴포넌트
+ */
 function OdosSelectSeparator({
   className,
   ...props
@@ -118,6 +142,20 @@ function OdosSelectScrollDownButton({
   );
 }
 
+/**
+ * OdosSelectContent
+ * Select 기본 컨텐츠 컴포넌트
+ *
+ * @example
+ * ```tsx
+ * <OdosSelectContent>
+ *   <OdosSelectGroup>
+ *     <OdosSelectItem value="option1">Option 1</OdosSelectItem>
+ *     <OdosSelectItem value="option2">Option 2</OdosSelectItem>
+ *   </OdosSelectGroup>
+ * </OdosSelectContent>
+ * ```
+ */
 function OdosSelectContent({
   className,
   children,

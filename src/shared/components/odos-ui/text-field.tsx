@@ -9,6 +9,22 @@ interface TextFieldProps extends React.ComponentProps<typeof Input> {
   error?: string;
 }
 
+/**
+ * OdosTextField
+ * 입력 필드 컴포넌트
+ *
+ * @param label 입력 필드 레이블 (선택적)
+ * @param error 입력 필드 오류 메시지 (선택적)
+ *
+ * @example 기본 사용
+ * ```tsx
+ * <OdosTextField
+ *   label="에러 메시지가 있는 텍스트 필드"
+ *   placeholder="텍스트 필드"
+ *   error="이 필드는 필수입니다."
+ * />
+ * ```
+ */
 export function OdosTextField({
   className,
   label,

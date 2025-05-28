@@ -10,6 +10,17 @@ interface ToggleProps {
   className?: string;
 }
 
+/**
+ * OdosToggle
+ * 간단한 토글 스타일을 위한 컴포넌트 (텍스트 + 아이콘 구성)
+ *
+ * @param icon 선택적 아이콘 이모지 텍스트
+ *
+ * @example 기본 사용
+ * ```tsx
+ * <OdosToggle icon="🔥">인기</OdosToggle>
+ * ```
+ */
 export function OdosToggle({ icon, children, className }: ToggleProps): React.ReactElement {
   const hasIcon = Boolean(icon);
   return (
