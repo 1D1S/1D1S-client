@@ -17,6 +17,10 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/shared/co
 
 export function SignUpForm(): React.ReactElement {
   const form = useSignUpForm();
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 100 }, (_, i) => currentYear - i);
+  const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1);
+  const dayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
 
   const onSubmit = (values: SignupFormValues): void => {
     console.log('Form submitted with values:', values);
@@ -71,7 +75,11 @@ export function SignUpForm(): React.ReactElement {
                       </OdosSelectTrigger>
                     </FormControl>
                     <OdosSelectContent>
-                      <OdosSelectItem value="1999">1999</OdosSelectItem>
+                      {yearOptions.map((year) => (
+                        <OdosSelectItem key={year} value={String(year)}>
+                          {year}
+                        </OdosSelectItem>
+                      ))}
                     </OdosSelectContent>
                   </OdosSelect>
                   <FormMessage />
@@ -90,7 +98,11 @@ export function SignUpForm(): React.ReactElement {
                       </OdosSelectTrigger>
                     </FormControl>
                     <OdosSelectContent>
-                      <OdosSelectItem value="1">1</OdosSelectItem>
+                      {monthOptions.map((month) => (
+                        <OdosSelectItem key={month} value={String(month)}>
+                          {month}
+                        </OdosSelectItem>
+                      ))}
                     </OdosSelectContent>
                   </OdosSelect>
                   <FormMessage />
@@ -109,7 +121,11 @@ export function SignUpForm(): React.ReactElement {
                       </OdosSelectTrigger>
                     </FormControl>
                     <OdosSelectContent>
-                      <OdosSelectItem value="1">1</OdosSelectItem>
+                      {dayOptions.map((day) => (
+                        <OdosSelectItem key={day} value={String(day)}>
+                          {day}
+                        </OdosSelectItem>
+                      ))}
                     </OdosSelectContent>
                   </OdosSelect>
                   <FormMessage />
