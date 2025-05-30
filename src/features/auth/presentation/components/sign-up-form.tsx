@@ -59,30 +59,63 @@ export function SignUpForm(): React.ReactElement {
             생년월일
           </OdosLabel>
           <div className="flex w-full flex-row justify-between">
-            <OdosSelect>
-              <OdosSelectTrigger>
-                <OdosSelectValue placeholder="연도" />
-              </OdosSelectTrigger>
-              <OdosSelectContent>
-                <OdosSelectItem value="1999">1999</OdosSelectItem>
-              </OdosSelectContent>
-            </OdosSelect>
-            <OdosSelect>
-              <OdosSelectTrigger>
-                <OdosSelectValue placeholder="월" />
-              </OdosSelectTrigger>
-              <OdosSelectContent>
-                <OdosSelectItem value="1">1</OdosSelectItem>
-              </OdosSelectContent>
-            </OdosSelect>
-            <OdosSelect>
-              <OdosSelectTrigger>
-                <OdosSelectValue placeholder="일" />
-              </OdosSelectTrigger>
-              <OdosSelectContent>
-                <OdosSelectItem value="1">1</OdosSelectItem>
-              </OdosSelectContent>
-            </OdosSelect>
+            <FormField
+              control={form.control}
+              name="year"
+              render={({ field }) => (
+                <FormItem>
+                  <OdosSelect onValueChange={field.onChange}>
+                    <FormControl>
+                      <OdosSelectTrigger>
+                        <OdosSelectValue placeholder="연도" />
+                      </OdosSelectTrigger>
+                    </FormControl>
+                    <OdosSelectContent>
+                      <OdosSelectItem value="1999">1999</OdosSelectItem>
+                    </OdosSelectContent>
+                  </OdosSelect>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="month"
+              render={({ field }) => (
+                <FormItem>
+                  <OdosSelect onValueChange={field.onChange}>
+                    <FormControl>
+                      <OdosSelectTrigger>
+                        <OdosSelectValue placeholder="월" />
+                      </OdosSelectTrigger>
+                    </FormControl>
+                    <OdosSelectContent>
+                      <OdosSelectItem value="1">1</OdosSelectItem>
+                    </OdosSelectContent>
+                  </OdosSelect>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="day"
+              render={({ field }) => (
+                <FormItem>
+                  <OdosSelect onValueChange={field.onChange}>
+                    <FormControl>
+                      <OdosSelectTrigger>
+                        <OdosSelectValue placeholder="일" />
+                      </OdosSelectTrigger>
+                    </FormControl>
+                    <OdosSelectContent>
+                      <OdosSelectItem value="1">1</OdosSelectItem>
+                    </OdosSelectContent>
+                  </OdosSelect>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         </div>
 
