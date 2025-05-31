@@ -167,14 +167,26 @@ export function SignUpForm(): React.ReactElement {
           <OdosLabel size="body2" weight="bold">
             직업
           </OdosLabel>
-          <OdosSelect>
-            <OdosSelectTrigger>
-              <OdosSelectValue placeholder="직업" />
-            </OdosSelectTrigger>
-            <OdosSelectContent>
-              <OdosSelectItem value="개발자">개발자</OdosSelectItem>
-            </OdosSelectContent>
-          </OdosSelect>
+          <FormField
+            control={form.control}
+            name="job"
+            render={({ field }) => (
+              <FormItem>
+                <OdosSelect onValueChange={field.onChange}>
+                  <FormControl>
+                    <OdosSelectTrigger>
+                      <OdosSelectValue placeholder="직업" />
+                    </OdosSelectTrigger>
+                  </FormControl>
+                  <OdosSelectContent>
+                    <OdosSelectItem value="STUDENT">학생</OdosSelectItem>
+                    <OdosSelectItem value="WORKER">직장인</OdosSelectItem>
+                  </OdosSelectContent>
+                </OdosSelect>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <OdosSpacing className="h-10" />
