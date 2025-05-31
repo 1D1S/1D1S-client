@@ -2,6 +2,17 @@
 import Image from 'next/image';
 import { useRef, useState } from 'react';
 
+/**
+ * OdosImagePicker
+ * 이미지 업로드 및 미리보기를 위한 컴포넌트
+ *
+ * @param onChange 파일 선택 시 호출되는 콜백 함수(optional)
+ *
+ * @example 기본 사용
+ * ```tsx
+ * <OdosImagePicker onChange={(e) => console.log(e.target.files)} />
+ * ```
+ */
 export function OdosImagePicker({
   onChange,
   ...props
