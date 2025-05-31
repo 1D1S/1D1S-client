@@ -22,6 +22,7 @@ export const signupFormSchema = z.object({
     .regex(/^([1-9]|[12][0-9]|3[01])$/, '올바른 일을 선택해주세요.'),
   gender: z.enum(['MALE', 'FEMALE']).optional(),
   job: z.enum(['STUDENT', 'WORKER']).optional(),
+  category: z.enum(['DEV', 'EXERCISE', 'BOOK', 'MUSIC', 'STUDY', 'LEISURE', 'ECONOMY']).optional(),
 });
 
 export type SignupFormValues = z.infer<typeof signupFormSchema>;

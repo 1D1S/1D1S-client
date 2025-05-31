@@ -195,13 +195,27 @@ export function SignUpForm(): React.ReactElement {
           <OdosLabel size="body2" weight="bold">
             관심 카테고리
           </OdosLabel>
-          <OdosToggleGroup type="single" className="max-w-150">
-            {CATEGORY_OPTIONS.map((option) => (
-              <OdosToggleGroupItem key={option.value} value={option.value} icon={option.icon}>
-                {option.label}
-              </OdosToggleGroupItem>
-            ))}
-          </OdosToggleGroup>
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <OdosToggleGroup
+                  type="single"
+                  className="max-w-150"
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  {CATEGORY_OPTIONS.map((option) => (
+                    <OdosToggleGroupItem key={option.value} value={option.value} icon={option.icon}>
+                      {option.label}
+                    </OdosToggleGroupItem>
+                  ))}
+                </OdosToggleGroup>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <OdosSpacing className="h-17.5" />
