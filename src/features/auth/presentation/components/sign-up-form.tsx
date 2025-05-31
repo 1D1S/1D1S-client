@@ -140,15 +140,26 @@ export function SignUpForm(): React.ReactElement {
           <OdosLabel size="body2" weight="bold">
             성별
           </OdosLabel>
-          <OdosSelect>
-            <OdosSelectTrigger>
-              <OdosSelectValue placeholder="성별" />
-            </OdosSelectTrigger>
-            <OdosSelectContent>
-              <OdosSelectItem value="남성">남성</OdosSelectItem>
-              <OdosSelectItem value="여성">여성</OdosSelectItem>
-            </OdosSelectContent>
-          </OdosSelect>
+          <FormField
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem>
+                <OdosSelect onValueChange={field.onChange}>
+                  <FormControl>
+                    <OdosSelectTrigger>
+                      <OdosSelectValue placeholder="성별" />
+                    </OdosSelectTrigger>
+                  </FormControl>
+                  <OdosSelectContent>
+                    <OdosSelectItem value="MALE">남성</OdosSelectItem>
+                    <OdosSelectItem value="FEMALE">여성</OdosSelectItem>
+                  </OdosSelectContent>
+                </OdosSelect>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <OdosSpacing className="h-10" />

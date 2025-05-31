@@ -20,6 +20,7 @@ export const signupFormSchema = z.object({
     .string()
     .nonempty('일을 선택해 주세요.')
     .regex(/^([1-9]|[12][0-9]|3[01])$/, '올바른 일을 선택해주세요.'),
+  gender: z.enum(['MALE', 'FEMALE']).optional(),
 });
 
 export type SignupFormValues = z.infer<typeof signupFormSchema>;
