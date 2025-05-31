@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { useRef, useState } from 'react';
 
 export function OdosImagePicker({
+  onChange,
   ...props
 }: React.ComponentPropsWithoutRef<'input'>): React.ReactElement {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -13,10 +14,8 @@ export function OdosImagePicker({
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    console.log('handleChange', event);
     const file = event.target.files?.[0];
     if (file) {
-      console.log('Selected file:', file);
       const url = URL.createObjectURL(file);
       setPreview(url);
     }
@@ -29,7 +28,12 @@ export function OdosImagePicker({
         accept="image/*"
         ref={inputRef}
         className="hidden"
-        onChange={handleChange}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          if (onChange !== undefined) {
+            onChange(event);
+          }
+          handleChange(event);
+        }}
         {...props}
       />
       <div className="bg-main-300 flex h-full w-full items-center justify-center rounded-full">

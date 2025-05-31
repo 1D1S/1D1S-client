@@ -23,6 +23,7 @@ export const signupFormSchema = z.object({
   gender: z.enum(['MALE', 'FEMALE']).optional(),
   job: z.enum(['STUDENT', 'WORKER']).optional(),
   category: z.enum(['DEV', 'EXERCISE', 'BOOK', 'MUSIC', 'STUDY', 'LEISURE', 'ECONOMY']).optional(),
+  img: z.instanceof(File).optional(),
 });
 
 export type SignupFormValues = z.infer<typeof signupFormSchema>;

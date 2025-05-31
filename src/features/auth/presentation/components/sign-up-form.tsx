@@ -34,7 +34,21 @@ export function SignUpForm(): React.ReactElement {
         <OdosPageTitle title="1D1S" subtitle="추가 정보 입력" variant="withSubtitle" />
 
         <OdosSpacing className="h-20" />
-        <OdosImagePicker />
+        <FormField
+          control={form.control}
+          name="img"
+          render={({ field }) => (
+            <FormItem>
+              <OdosImagePicker
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  const file = event.target.files?.[0] || undefined;
+                  field.onChange(file);
+                }}
+              />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <OdosSpacing className="h-10" />
 
