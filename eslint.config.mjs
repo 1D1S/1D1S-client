@@ -27,23 +27,15 @@ const eslintConfig = [
       ],
       'no-object-constructor': 'error',
       'guard-for-in': 'error',
-      'lines-between-class-members': [
-        'error',
-        'always',
-        { exceptAfterSingleLine: true },
-      ],
+      'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
       '@typescript-eslint/method-signature-style': ['error', 'method'],
       'new-parens': 'error',
-      '@typescript-eslint/explicit-member-accessibility': [
-        'error',
-        { accessibility: 'no-public' },
-      ],
+      '@typescript-eslint/explicit-member-accessibility': ['error', { accessibility: 'no-public' }],
       'no-restricted-syntax': [
         'error',
         {
           selector: 'PropertyDefinition[key.type="PrivateIdentifier"]',
-          message:
-            'Avoid using #private fields. Use TypeScript visibility modifiers instead.',
+          message: 'Avoid using #private fields. Use TypeScript visibility modifiers instead.',
         },
       ],
       'func-style': ['error', 'declaration', { allowArrowFunctions: true }],
@@ -95,7 +87,7 @@ const eslintConfig = [
       'no-extend-native': 'error',
       'no-global-assign': 'error',
 
-      'id-length': ['warn', { min: 2, exceptions: ['i', 'j', 'k', 'x', 'y'] }],
+      'id-length': ['warn', { min: 2, exceptions: ['i', 'j', 'k', 'x', 'y', '_'] }],
       '@typescript-eslint/explicit-function-return-type': [
         'warn',
         {
