@@ -1,7 +1,7 @@
 import { cn } from '@/shared/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-const odosLabelVariants = cva('', {
+export const odosLabelVariants = cva('', {
   variants: {
     size: {
       heading1: 'text-3xl',
