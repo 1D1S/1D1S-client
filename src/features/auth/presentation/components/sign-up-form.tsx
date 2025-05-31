@@ -11,9 +11,10 @@ import { OdosLabel } from '@/shared/components/odos-ui/label';
 import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
 import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
 import { OdosTextField } from '@/shared/components/odos-ui/text-field';
-import { OdosToggle } from '@/shared/components/odos-ui/toggle';
 import { SignupFormValues, useSignUpForm } from '../hooks/use-sign-up-form';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/shared/components/ui/form';
+import { OdosToggleGroup, OdosToggleGroupItem } from '@/shared/components/odos-ui/toggle-group';
+import { CATEGORY_OPTIONS } from '@/shared/constants/categories';
 
 export function SignUpForm(): React.ReactElement {
   const form = useSignUpForm();
@@ -194,10 +195,13 @@ export function SignUpForm(): React.ReactElement {
           <OdosLabel size="body2" weight="bold">
             관심 카테고리
           </OdosLabel>
-          <div className="flex flex-wrap gap-x-2.5 gap-y-2.5">
-            <OdosToggle>개발</OdosToggle>
-            <OdosToggle>디자인</OdosToggle>
-          </div>
+          <OdosToggleGroup type="single" className="max-w-150">
+            {CATEGORY_OPTIONS.map((option) => (
+              <OdosToggleGroupItem key={option.value} value={option.value} icon={option.icon}>
+                {option.label}
+              </OdosToggleGroupItem>
+            ))}
+          </OdosToggleGroup>
         </div>
 
         <OdosSpacing className="h-17.5" />
