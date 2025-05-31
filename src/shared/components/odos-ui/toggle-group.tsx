@@ -31,7 +31,7 @@ export function OdosToggleGroup({
   return (
     <ToggleGroupPrimitive.Root
       data-slot="toggle-group"
-      className={cn('flex-warp flex gap-x-2.5 gap-y-2.5 rounded-none', className)}
+      className={cn('flex flex-wrap gap-x-2.5 gap-y-2.5 rounded-none', className)}
       {...props}
     >
       {children}
