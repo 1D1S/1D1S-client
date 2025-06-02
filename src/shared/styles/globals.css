@@ -1,9 +1,11 @@
 @import 'tailwindcss';
+@tailwind utilities;
 @import 'tw-animate-css';
 @import './colors.css';
 @import './typography.css';
 @import './shape.css';
 @import './shadow.css';
+@import './animation.css';
 
 @custom-variant dark (&:is(.dark *));
 
