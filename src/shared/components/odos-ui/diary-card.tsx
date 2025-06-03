@@ -166,7 +166,7 @@ export function DiaryCard({
   };
 
   return (
-    <div className="w-[216px]">
+    <div className="block w-[216px]">
       <div className="rounded-odos-2 transform p-2 transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
         <ImageSection
           imageUrl={imageUrl}
