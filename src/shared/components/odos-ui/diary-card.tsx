@@ -6,6 +6,8 @@ import { OdosLabel } from '@/shared/components/odos-ui/label';
 import { OdosButton } from './button';
 import { CircularProgress } from './circular-progress';
 import { cn } from '@/shared/lib/utils';
+import { OdosCircleAvatar } from './circle-avatar';
+import Link from 'next/link';
 
 type Emotion = 'happy' | 'soso' | 'sad';
 
@@ -19,7 +21,7 @@ interface ImageSectionProps {
   onToggleLike(): void;
 }
 
-export function ImageSection({
+function ImageSection({
   imageUrl,
   alt,
   percent,
@@ -35,13 +37,12 @@ export function ImageSection({
   };
 
   return (
-    <div className="relative mb-4 h-[250px] w-[200px] overflow-hidden rounded-xl">
+    <div className="rounded-odos-2 relative h-[250px] w-[200px] overflow-hidden">
       {/* 배경 이미지 */}
       <Image
         src={imageUrl ?? '/images/default-card.png'}
         alt={alt}
-        width={200}
-        height={250}
+        fill
         className="object-cover"
         onError={(error) => {
           error.currentTarget.src = '/images/default-card.png';
@@ -88,14 +89,56 @@ export function ImageSection({
   );
 }
 
+interface TextSectionProps {
+  title: string;
+  user: string;
+  userImage?: string;
+  challengeLabel: string;
+  challengeUrl: string;
+  date: string;
+}
+
+function TextSection({
+  title,
+  user,
+  userImage,
+  challengeLabel,
+  challengeUrl,
+  date,
+}: TextSectionProps): React.ReactElement {
+  return (
+    <div className="mt-2 flex w-full flex-col">
+      <OdosLabel size="body1" weight="bold" className="truncate">
+        {title}
+      </OdosLabel>
+
+      <div className="mt-1 flex items-center">
+        <OdosCircleAvatar imageUrl={userImage} size="sm" />
+        <div className="ml-2 flex h-10 flex-col justify-between">
+          <OdosLabel size="caption3" weight="medium">
+            {user}
+          </OdosLabel>
+          <Link href={challengeUrl} className="m-0 p-0 no-underline">
+            <OdosLabel size="caption3" weight="medium" className="text-mint-900">
+              {challengeLabel}
+            </OdosLabel>
+          </Link>
+        </div>
+      </div>
+      <OdosLabel size="caption3" weight="medium" className="mt-2 text-gray-900">
+        {date}
+      </OdosLabel>
+    </div>
+  );
+}
+
 export interface DiaryCardProps {
   imageUrl?: string;
   percent: number;
-  status: string;
-  emoji: string;
   likes: number;
   title: string;
   user: string;
+  userImage?: string;
   challengeLabel: string;
   challengeUrl: string;
   date: string;
@@ -108,6 +151,7 @@ export function DiaryCard({
   likes,
   title,
   user,
+  userImage,
   challengeLabel,
   challengeUrl,
   date,
@@ -122,29 +166,27 @@ export function DiaryCard({
   };
 
   return (
-    <div>
-      <ImageSection
-        imageUrl={imageUrl}
-        alt={title}
-        percent={percent}
-        emotion={emotion}
-        isLiked={isLiked}
-        likeCount={likeCount}
-        onToggleLike={handleToggleLike}
-      />
+    <div className="w-[216px]">
+      <div className="rounded-odos-2 transform p-2 transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
+        <ImageSection
+          imageUrl={imageUrl}
+          alt={title}
+          percent={percent}
+          emotion={emotion}
+          isLiked={isLiked}
+          likeCount={likeCount}
+          onToggleLike={handleToggleLike}
+        />
 
-      <OdosLabel size="body1" weight="bold" className="block">
-        {title}
-      </OdosLabel>
-
-      <div className="mb-1 flex items-center text-sm text-gray-500">
-        <span>{user}</span>
-        <a href={challengeUrl} className="ml-2 text-green-600 hover:underline">
-          {challengeLabel}
-        </a>
+        <TextSection
+          title={title}
+          user={user}
+          userImage={userImage}
+          challengeLabel={challengeLabel}
+          challengeUrl={challengeUrl}
+          date={date}
+        />
       </div>
-
-      <p className="text-sm text-gray-400">{date}</p>
     </div>
   );
 }
