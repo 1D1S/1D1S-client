@@ -7,6 +7,8 @@ import { OdosButton } from '@/shared/components/odos-ui/button';
 import { Step3 } from './step-pages/step3';
 import { Step4 } from './step-pages/step4';
 import { StepProgress } from './components/step-progress';
+import { useChallengeCreateForm } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
+import { Form } from '@/shared/components/ui/form';
 
 interface TmpFormData {
   title: string;
@@ -15,6 +17,7 @@ interface TmpFormData {
 }
 
 export default function ChallengeCreate(): React.ReactElement {
+  const form = useChallengeCreateForm();
   const [step, setStep] = useState(1);
   const [data, setData] = useState<TmpFormData>({
     title: '',
@@ -73,16 +76,23 @@ export default function ChallengeCreate(): React.ReactElement {
         steps={['챌린지 정보', '챌린지 기간', '챌린지 인원', '목표']}
         currentStep={step}
       ></StepProgress>
-      {renderStep()}
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(() => {})}
+          className="flex w-full flex-col items-center gap-6"
+        >
+          {renderStep()}
 
-      <div className="mt-8 flex gap-4">
-        <OdosButton variant="outline" onClick={prev} disabled={step === 1}>
-          이전
-        </OdosButton>
-        <OdosButton variant="default" onClick={next}>
-          {step === totalSteps ? '완료' : '다음'}
-        </OdosButton>
-      </div>
+          <div className="mt-8 flex gap-4">
+            <OdosButton variant="outline" onClick={prev} disabled={step === 1}>
+              이전
+            </OdosButton>
+            <OdosButton variant="default" onClick={next}>
+              {step === totalSteps ? '완료' : '다음'}
+            </OdosButton>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 }
