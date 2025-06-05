@@ -4,6 +4,8 @@ import { cva, type VariantProps } from 'class-variance-authority';
 export const odosLabelVariants = cva('', {
   variants: {
     size: {
+      display1: 'text-5xl',
+      display2: 'text-4xl',
       heading1: 'text-3xl',
       heading2: 'text-2xl',
       body1: 'text-xl',
