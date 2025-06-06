@@ -1,50 +1,89 @@
 import { OdosLabel } from '@/shared/components/odos-ui/label';
-import ToggleButton from '../components/toggle-buttons';
-import { useState } from 'react';
+import { useFormContext } from 'react-hook-form';
+import { ChallengeCreateFormValues } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
+import { FormControl, FormField, FormItem, FormMessage } from '@/shared/components/ui/form';
+import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
+import { OdosTextField } from '@/shared/components/odos-ui/text-field';
+import { OdosToggleGroup, OdosToggleGroupItem } from '@/shared/components/odos-ui/toggle-group';
+import { CATEGORY_OPTIONS } from '@/shared/constants/categories';
+import { OdosTextArea } from '@/shared/components/odos-ui/text-area';
 
-interface Props {
-  data: { title: string };
-  onChange(newData: { title: string }): void;
-}
-
-export function Step1({ data, onChange }: Props): React.ReactElement {
-  const [isActive, setIsActive] = useState(true);
-
-  const toggleIsActive = (): void => {
-    setIsActive((prev) => !prev);
-  };
-
+export function Step1(): React.ReactElement {
+  const { control } = useFormContext<ChallengeCreateFormValues>();
   return (
-    <div>
-      <h2 className="text-xl font-bold">1단계: 챌린지 제목 입력</h2>
-      <OdosLabel>챌린지 제목</OdosLabel>
-      <div className="flex gap-2">
-        <ToggleButton
-          title={'무한기간'}
-          subtitle="종료일 없이 진행할 수 있는 챌린지입니다.루틴 형성이나 장기적인 습관 구축에 적합합니다"
-          isActive={isActive}
-          activeImageSrc={'/images/endless-white.png'}
-          inactiveImageSrc={'/images/endless-gray.png'}
-          imageWidth={100}
-          imageHeight={100}
-          onClick={toggleIsActive}
+    <div className="w-full">
+      <OdosSpacing className="h-20" />
+      <OdosLabel size="display2" weight="bold">
+        챌린지 정보를 입력해주세요.
+      </OdosLabel>
+      <OdosSpacing className="h-10" />
+
+      <FormField
+        control={control}
+        name="title"
+        render={({ field }) => (
+          <FormItem>
+            <FormControl>
+              <OdosTextField
+                label="제목"
+                placeholder="챌린지 제목"
+                id="title"
+                className="w-235"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <OdosSpacing className="h-7.5" />
+      <div className="flex w-235 flex-col gap-2">
+        <OdosLabel size="body2" weight="bold">
+          카테고리
+        </OdosLabel>
+        <FormField
+          control={control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <OdosToggleGroup
+                type="single"
+                className="max-w-235"
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                {CATEGORY_OPTIONS.map((option) => (
+                  <OdosToggleGroupItem key={option.value} value={option.value} icon={option.icon}>
+                    {option.label}
+                  </OdosToggleGroupItem>
+                ))}
+              </OdosToggleGroup>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        <ToggleButton
-          title="무한기간"
-          subtitle="종료일 없이 진행할 수 있는 챌린지입니다.루틴 형성이나 장기적인 습관 구축에 적합합니다"
-          isActive={false}
-          activeImageSrc={'/images/endless.png'}
-          inactiveImageSrc={'/images/endless.png'}
-          imageWidth={100}
-          imageHeight={100}
+
+        <OdosSpacing className="h-7.5" />
+        <FormField
+          control={control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <OdosTextArea
+                  label="설명"
+                  placeholder="챌린지 설명(선택)"
+                  id="description"
+                  className="h-25 w-235"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
       </div>
-      <input
-        type="text"
-        value={data.title}
-        onChange={(error) => onChange({ title: error.target.value })}
-        className="rounded border p-2"
-      />
     </div>
   );
 }
