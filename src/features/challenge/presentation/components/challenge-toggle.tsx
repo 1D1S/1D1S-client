@@ -28,27 +28,25 @@ export function ChallengeToggle({
       className={cn(
         'data-[state=on]:bg-main-900 bg-gray-300',
         'text-gray-500 data-[state=on]:text-white',
-        'flex flex-col',
-        'rounded-odos-2 h-52 p-5',
+        'flex flex-col items-start justify-between text-left',
+        'rounded-odos-2 h-52 w-115 p-5',
         'transition-colors',
         'cursor-pointer'
       )}
       {...props}
     >
-      <OdosLabel
-        size="heading2"
-        weight="bold"
-        className={cn('mb-2 gap-2', 'flex items-center', 'transition-colors')}
-      >
-        {title}
-      </OdosLabel>
-      <OdosLabel
-        size="body2"
-        weight="medium"
-        className={cn('mb-2 gap-2', 'flex items-start', 'transition-colors')}
-      >
-        {subtitle}
-      </OdosLabel>
+      <div className="flex flex-col items-start">
+        <OdosLabel size="heading2" weight="bold" className="mb-2 block transition-colors">
+          {title}
+        </OdosLabel>
+        <OdosLabel
+          size="body2"
+          weight="medium"
+          className={cn('block text-left', 'transition-colors', 'whitespace-pre-line')}
+        >
+          {subtitle}
+        </OdosLabel>
+      </div>
       <Image
         className={cn('mt-auto ml-auto', 'flex items-end justify-end')}
         width={imageWidth}
