@@ -3,10 +3,14 @@ import { OdosTag } from '@/shared/components/odos-ui/tag';
 import { useState, useEffect } from 'react';
 
 interface ChallengePickerProps {
+  onSelect?(): void; // 선택된 챌린지를 부모 컴포넌트로 전달할 콜백 함수
   className?: string; // 외부에서 추가할 Tailwind 클래스(예: 마진) 등을 받도록 선언
 }
 
-export function ChallengePicker({ className = '' }: ChallengePickerProps): React.ReactElement {
+export function ChallengePicker({
+  onSelect,
+  className = '',
+}: ChallengePickerProps): React.ReactElement {
   // 모달 열림 상태 관리
   const [isOpen, setIsOpen] = useState(false);
 
@@ -96,6 +100,10 @@ export function ChallengePicker({ className = '' }: ChallengePickerProps): React
               {challenges.map((challenge) => (
                 <div
                   key={challenge.id}
+                  onClick={() => {
+                    onSelect?.();
+                    setIsOpen(false);
+                  }}
                   className="flex cursor-pointer items-center rounded-lg p-3 hover:bg-gray-50"
                 >
                   <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100">
