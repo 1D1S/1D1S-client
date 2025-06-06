@@ -1,6 +1,7 @@
+// pages/DiaryCreate.tsx (혹은 DiaryCreate 컴포넌트 부분)
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
 import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
 import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
@@ -8,8 +9,14 @@ import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
 import { OdosLabel } from '@/shared/components/odos-ui/label';
 import { OdosTextField } from '@/shared/components/odos-ui/text-field';
 import { ChallengePicker } from '@/features/diary/presentation/components/challenge-picker';
+import { ChallengeGoalToggle } from '@/features/diary/presentation/components/challenge-goal-toggle';
 
 export default function DiaryCreate(): React.ReactElement {
+  const [challengeSelected, setChallengeSelected] = useState<boolean>(false);
+
+  // ✅ isChecked 상태를 useState로 선언
+  const [isChecked, setIsChecked] = useState(false);
+
   return (
     <div className="flex flex-col">
       <div className="flex justify-center">
@@ -22,14 +29,47 @@ export default function DiaryCreate(): React.ReactElement {
               일지 제목
             </OdosLabel>
             <OdosTextField className="text-10xl mt-3 flex" placeholder="일지 제목" />
+
             <OdosLabel size="heading2" weight="bold" className="mt-12">
               챌린지
             </OdosLabel>
-            <ChallengePicker className="mt-3" />
+            {challengeSelected ? (
+              <ChallengePicker
+                className="mt-3"
+                onSelect={() => {
+                  setChallengeSelected(true);
+                }}
+              />
+            ) : (
+              <ChallengePicker
+                className="mt-3"
+                onSelect={() => {
+                  setChallengeSelected(true);
+                }}
+              />
+            )}
+
             <OdosLabel size="heading2" weight="bold" className="mt-12">
               챌린지 목표
             </OdosLabel>
-            <ChallengePicker className="mt-3" />
+            {challengeSelected ? (
+              <ChallengeGoalToggle
+                className="mt-3"
+                label={'고라니 밥주기'}
+                checked={isChecked} // ✅ 여기
+                onCheckedChange={(newChecked: boolean) => {
+                  setIsChecked(newChecked);
+                }}
+              />
+            ) : (
+              <ChallengePicker
+                className="mt-3"
+                onSelect={() => {
+                  setChallengeSelected(true);
+                }}
+              />
+            )}
+
             <OdosLabel size="heading2" weight="bold" className="mt-12">
               일지 내용
             </OdosLabel>
