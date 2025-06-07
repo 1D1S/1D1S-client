@@ -1,20 +1,21 @@
+// components/ChallengePicker.tsx
+
 import { OdosLabel } from '@/shared/components/odos-ui/label';
 import { OdosTag } from '@/shared/components/odos-ui/tag';
 import { useState, useEffect } from 'react';
+import { cn } from '@/shared/lib/utils';
 
 interface ChallengePickerProps {
-  onSelect?(): void; // 선택된 챌린지를 부모 컴포넌트로 전달할 콜백 함수
-  className?: string; // 외부에서 추가할 Tailwind 클래스(예: 마진) 등을 받도록 선언
+  onSelect?(): void;
+  className?: string;
 }
 
 export function ChallengePicker({
   onSelect,
   className = '',
 }: ChallengePickerProps): React.ReactElement {
-  // 모달 열림 상태 관리
   const [isOpen, setIsOpen] = useState(false);
 
-  // 데모용 챌린지 데이터
   const challenges = [
     {
       id: 1,
@@ -50,7 +51,6 @@ export function ChallengePicker({
     },
   ];
 
-  // ESC 키 입력 시 모달 닫기
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
@@ -58,19 +58,14 @@ export function ChallengePicker({
       }
     };
     document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // 모달 오버레이 클릭 시 닫기
-  const handleOverlayClick = (): void => {
-    setIsOpen(false);
-  };
+  const handleOverlayClick = (): void => setIsOpen(false);
 
   return (
-    // 최상위 div에 전달된 className을 합쳐 줍니다.
-    <div className={`${className}`}>
+    <div className={className}>
+      {/* 토글 버튼 */}
       <div
         className="flex h-20 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 transition hover:border-gray-400"
         onClick={() => setIsOpen(true)}
@@ -78,73 +73,71 @@ export function ChallengePicker({
         <OdosLabel className="text-gray-500">챌린지를 선택해주세요.</OdosLabel>
       </div>
 
-      {isOpen && (
+      {/* 모달: 항상 렌더링되지만 opacity & pointer-events로 제어 */}
+      <div
+        className={cn(
+          'fixed inset-0 z-50 flex items-center justify-center',
+          'transition-opacity duration-300 ease-in-out',
+          isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+        )}
+        aria-modal="true"
+        role="dialog"
+        onClick={handleOverlayClick}
+      >
+        {/* 반투명 오버레이 */}
+        <div className="absolute inset-0 bg-black/50" />
+
+        {/* 다이얼로그 박스 */}
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          aria-modal="true"
-          role="dialog"
-          onClick={handleOverlayClick}
+          className="relative mx-auto w-11/12 max-w-md rounded-xl bg-white p-6 text-center shadow-lg"
+          onClick={(event) => event.stopPropagation()}
         >
-          <div className="bg-opacity-40 absolute inset-0 bg-black/50" />
-
-          <div
-            className="relative mx-auto w-11/12 max-w-md justify-center rounded-xl bg-white p-6 text-center shadow-lg"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <OdosLabel size={'heading1'} weight={'bold'} className="mb-4 block w-full text-center">
-              챌린지 선택
-            </OdosLabel>
-
-            {/* 챌린지 리스트 */}
-            <div className="flex max-h-[60vh] flex-col space-y-2 overflow-y-auto pr-2">
-              {challenges.map((challenge) => (
-                <div
-                  key={challenge.id}
-                  onClick={() => {
-                    onSelect?.();
-                    setIsOpen(false);
-                  }}
-                  className="flex cursor-pointer items-center rounded-lg p-3 hover:bg-gray-50"
-                >
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 6h16M4 12h16M4 18h16"
-                      />
-                    </svg>
-                  </div>
-
-                  <div className="ml-4 flex flex-col">
-                    <OdosLabel>{challenge.title}</OdosLabel>
-
-                    <div className="mt-1 flex space-x-2">
-                      {challenge.labels.map((label, idx) => (
-                        <OdosTag key={idx}>{label}</OdosTag>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="ml-auto flex flex-col items-end">
-                    <span className="text-sm text-gray-500">{challenge.dateRange}</span>
-                    <span className="mt-1 text-sm font-medium text-gray-700">
-                      {`${challenge.participants} / ${challenge.capacity}`}
-                    </span>
+          <OdosLabel size="heading1" weight="bold" className="mb-4 block">
+            챌린지 선택
+          </OdosLabel>
+          <div className="flex max-h-[60vh] flex-col space-y-2 overflow-y-auto pr-2">
+            {challenges.map((challenge) => (
+              <div
+                key={challenge.id}
+                onClick={() => {
+                  onSelect?.();
+                  setIsOpen(false);
+                }}
+                className="flex cursor-pointer items-center rounded-lg p-3 hover:bg-gray-50"
+              >
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-4 flex flex-col">
+                  <OdosLabel>{challenge.title}</OdosLabel>
+                  <div className="mt-1 flex space-x-2">
+                    {challenge.labels.map((label, idx) => (
+                      <OdosTag key={idx}>{label}</OdosTag>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="ml-auto flex flex-col items-end">
+                  <span className="text-sm text-gray-500">{challenge.dateRange}</span>
+                  <span className="mt-1 text-sm font-medium text-gray-700">{`${challenge.participants} / ${challenge.capacity}`}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
