@@ -27,7 +27,7 @@ export const ChallengeGoalToggle = React.forwardRef(
     }: ChallengeGoalToggleProps,
     ref
   ) => (
-    <div className={cn('inline-flex cursor-pointer items-center select-none', className)}>
+    <label className={cn('inline-flex cursor-pointer items-center select-none', className)}>
       <SwitchPrimitive.Root
         className={cn(
           'relative inline-flex h-4 w-4 items-center justify-center',
@@ -41,9 +41,10 @@ export const ChallengeGoalToggle = React.forwardRef(
         {...props}
       >
         <SwitchPrimitive.Thumb
-          className={
-            'flex h-full w-full items-center justify-center text-white opacity-0 data-[state=checked]:opacity-100'
-          }
+          className={cn(
+            'flex items-center justify-center text-white opacity-0 data-[state=checked]:opacity-100',
+            'h-full w-full'
+          )}
           asChild
         >
           <Check className="h-4 w-4" />
@@ -52,7 +53,7 @@ export const ChallengeGoalToggle = React.forwardRef(
       <OdosLabel size={'body2'} weight={'regular'} className="ml-2">
         {label}
       </OdosLabel>
-    </div>
+    </label>
   )
 );
 
