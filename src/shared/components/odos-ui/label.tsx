@@ -18,7 +18,7 @@ export const odosLabelVariants = cva('', {
     weight: {
       bold: 'font-bold',
       medium: 'font-medium',
-      regular: 'font-regular',
+      regular: 'font-normal',
       light: 'font-light',
     },
   },
