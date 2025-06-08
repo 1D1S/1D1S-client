@@ -104,18 +104,28 @@ export function Step2(): React.ReactElement {
             />
 
             {period === 'etc' && (
-              <FormField
-                control={control}
-                name="periodNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <OdosTextField id="periodNumber" className="w-50" type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="flex items-center gap-2">
+                <FormField
+                  control={control}
+                  name="periodNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <OdosTextField
+                          id="periodNumber"
+                          className="w-50"
+                          type="number"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <OdosLabel size="body2" weight="bold">
+                  일
+                </OdosLabel>
+              </div>
             )}
           </div>
           <OdosSpacing className="h-10" />
