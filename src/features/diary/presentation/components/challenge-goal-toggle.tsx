@@ -10,7 +10,7 @@ import React from 'react';
 export interface ChallengeGoalToggleProps
   extends React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root> {
   checked: boolean;
-  onCheckedChange(newChecked: boolean): void;
+  onCheckedChange?(newChecked: boolean): void;
   label: string;
   disabled?: boolean;
 }
@@ -27,12 +27,18 @@ export const ChallengeGoalToggle = React.forwardRef(
     }: ChallengeGoalToggleProps,
     ref
   ) => (
-    <label className={cn('inline-flex cursor-pointer items-center select-none', className)}>
+    <label
+      className={cn(
+        'inline-flex cursor-pointer items-center',
+        disabled && 'pointer-events-none',
+        className
+      )}
+    >
       <SwitchPrimitive.Root
         className={cn(
           'relative inline-flex h-4 w-4 items-center justify-center',
           'rounded focus:outline-none',
-          disabled ? 'bg-gray-200' : 'data-[state=checked]:bg-main-900 bg-gray-200'
+          'data-[state=checked]:bg-main-900 bg-gray-200'
         )}
         checked={checked}
         disabled={disabled}
