@@ -12,6 +12,7 @@ import {
   useChallengeCreateForm,
 } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
 import { Form } from '@/shared/components/ui/form';
+import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
 
 interface TmpFormData {
   title: string;
@@ -36,19 +37,9 @@ export default function ChallengeCreate(): React.ReactElement {
   const renderStep = (): React.ReactElement => {
     switch (step) {
       case 1:
-        return (
-          <Step1
-            data={{ title: data.title }}
-            onChange={(datas) => setData({ ...data, ...datas })}
-          />
-        );
+        return <Step1 />;
       case 2:
-        return (
-          <Step2
-            data={{ title: data.title }}
-            onChange={(datas) => setData({ ...data, ...datas })}
-          />
-        );
+        return <Step2 />;
       case 3:
         return (
           <Step3
@@ -64,12 +55,7 @@ export default function ChallengeCreate(): React.ReactElement {
           />
         );
       default:
-        return (
-          <Step1
-            data={{ title: data.title }}
-            onChange={(datas) => setData({ ...data, ...datas })}
-          />
-        );
+        return <Step1 />;
     }
   };
 
@@ -78,31 +64,40 @@ export default function ChallengeCreate(): React.ReactElement {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-white p-24">
-      <StepProgress
-        steps={['챌린지 정보', '챌린지 기간', '챌린지 인원', '목표']}
-        currentStep={step}
-      ></StepProgress>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex w-full flex-col items-center gap-6"
-        >
-          {renderStep()}
+    <div className="flex flex-col">
+      <div className="flex justify-center">
+        <OdosPageBackground className="flex min-h-screen min-w-250 flex-col items-center justify-center bg-white px-6">
+          <StepProgress
+            steps={['챌린지 정보', '챌린지 기간', '챌린지 인원', '목표']}
+            currentStep={step}
+          />
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="flex w-full flex-col items-center gap-6"
+            >
+              {renderStep()}
 
-          <div className="mt-8 flex gap-4">
-            <OdosButton variant="outline" onClick={prev} disabled={step === 1}>
-              이전
-            </OdosButton>
-            <OdosButton variant="default" onClick={next} hidden={step === totalSteps}>
-              다음
-            </OdosButton>
-            <OdosButton variant="default" type="submit" hidden={step !== totalSteps}>
-              완료
-            </OdosButton>
-          </div>
-        </form>
-      </Form>
+              <div className="mt-8 flex gap-4">
+                <OdosButton variant="outline" type="button" onClick={prev} disabled={step === 1}>
+                  이전
+                </OdosButton>
+                <OdosButton
+                  variant="default"
+                  type="button"
+                  onClick={next}
+                  hidden={step === totalSteps}
+                >
+                  다음
+                </OdosButton>
+                <OdosButton variant="default" type="submit" hidden={step !== totalSteps}>
+                  완료
+                </OdosButton>
+              </div>
+            </form>
+          </Form>
+        </OdosPageBackground>
+      </div>
     </div>
   );
 }
