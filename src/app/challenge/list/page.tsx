@@ -7,6 +7,7 @@ import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
 import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
 import { ChallengeListItem } from '@/shared/components/odos-ui/challenge-list-item';
 import { OdosFooter } from '@/shared/components/odos-ui/footer';
+import { SearchTextField } from '@/shared/components/odos-ui/search-text-field';
 
 export default function ChallengeList(): React.ReactElement {
   return (
@@ -17,6 +18,9 @@ export default function ChallengeList(): React.ReactElement {
           <OdosPageTitle title="일지 목록" />
           <OdosSpacing className="h-20" />
 
+          <div className="flex w-full justify-end">
+            <SearchTextField className="w-75" placeholder="검색어를 입력해주세요." />
+          </div>
           <div className="w-full">
             {Array.from({ length: 10 }).map((_, idx) => (
               <ChallengeListItem
