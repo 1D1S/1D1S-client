@@ -25,6 +25,20 @@ export const challengeCreateFormSchema = z.object({
     )
     .optional(),
   startDate: z.date().optional(),
+  participationType: z.enum(['INDIVIDUAL', 'GROUP']),
+  memberCount: z.enum(['2', '5', '10', 'etc']).optional(),
+  memberCountNumber: z
+    .string()
+    .refine(
+      (val) => {
+        const numberValue = Number(val);
+        return !isNaN(numberValue) && numberValue >= 1 && numberValue <= 50;
+      },
+      {
+        message: '1명부터 50명 사이의 숫자를 입력해주세요.',
+      }
+    )
+    .optional(),
 });
 
 export type ChallengeCreateFormValues = z.infer<typeof challengeCreateFormSchema>;
@@ -37,6 +51,8 @@ export function useChallengeCreateForm(): ReturnType<typeof useForm<ChallengeCre
       title: '',
       description: '',
       periodNumber: '7',
+      participationType: 'INDIVIDUAL',
+      memberCountNumber: '2',
     },
   });
 
