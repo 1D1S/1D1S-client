@@ -15,7 +15,7 @@ export default function ChallengeList(): React.ReactElement {
       <div className="flex justify-center">
         <OdosPageBackground className="min-h-screen min-w-250 px-5">
           <OdosSpacing className="h-20" />
-          <OdosPageTitle title="일지 목록" />
+          <OdosPageTitle title="챌린지 목록" />
           <OdosSpacing className="h-20" />
 
           <div className="flex w-full justify-end">
