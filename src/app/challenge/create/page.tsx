@@ -41,12 +41,7 @@ export default function ChallengeCreate(): React.ReactElement {
       case 2:
         return <Step2 />;
       case 3:
-        return (
-          <Step3
-            data={{ title: data.title }}
-            onChange={(datas) => setData({ ...data, ...datas })}
-          />
-        );
+        return <Step3 />;
       case 4:
         return (
           <Step4
