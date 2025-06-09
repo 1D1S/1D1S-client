@@ -72,7 +72,7 @@ export function Step2(): React.ReactElement {
       />
       {periodType === 'LIMITED' && (
         <>
-          <OdosSpacing className="h-20" />
+          <OdosSpacing className="h-12" />
           <OdosLabel size="heading1" weight="bold">
             기간 선택
           </OdosLabel>
@@ -128,8 +128,12 @@ export function Step2(): React.ReactElement {
               </div>
             )}
           </div>
-          <OdosSpacing className="h-10" />
+          <OdosSpacing className="h-6" />
 
+          <OdosLabel size="heading1" weight="bold">
+            챌린지 시작 날짜
+          </OdosLabel>
+          <OdosSpacing className="h-5" />
           <FormItem>
             <FormField
               control={control}
