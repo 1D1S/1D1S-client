@@ -14,20 +14,9 @@ import {
 import { Form } from '@/shared/components/ui/form';
 import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
 
-interface TmpFormData {
-  title: string;
-  type: string;
-  // … 나머지 필드
-}
-
 export default function ChallengeCreate(): React.ReactElement {
   const form = useChallengeCreateForm();
   const [step, setStep] = useState(1);
-  const [data, setData] = useState<TmpFormData>({
-    title: '',
-    type: '',
-  });
-
   const totalSteps = 4; // 실제 뷰 개수에 맞춰 변경
 
   const next = (): void => setStep((step) => Math.min(step + 1, totalSteps));
@@ -43,12 +32,7 @@ export default function ChallengeCreate(): React.ReactElement {
       case 3:
         return <Step3 />;
       case 4:
-        return (
-          <Step4
-            data={{ title: data.title }}
-            onChange={(datas) => setData({ ...data, ...datas })}
-          />
-        );
+        return <Step4 />;
       default:
         return <Step1 />;
     }
