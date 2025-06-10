@@ -37,7 +37,7 @@ export function Step3(): React.ReactElement {
           <FormItem>
             <ChallengeToggleGroup
               type="single"
-              defaultValue=""
+              defaultValue="INDIVIDUAL"
               value={field.value}
               onValueChange={field.onChange}
             >
@@ -46,19 +46,19 @@ export function Step3(): React.ReactElement {
                 title="개인 챌린지"
                 subtitle={'혼자서 진행하는 챌린지입니다.\n(챌린지 목록에서 조회되지 않습니다.)'}
                 isActive={field.value === 'INDIVIDUAL'}
-                activeImageSrc={'/images/endless-white.png'}
-                inactiveImageSrc={'/images/endless-gray.png'}
-                imageWidth={80}
-                imageHeight={40}
+                activeImageSrc={'/images/single-user-white.png'}
+                inactiveImageSrc={'/images/single-user-gray.png'}
+                imageWidth={60}
+                imageHeight={60}
               />
               <ChallengeToggle
                 value="GROUP"
                 title="단체 챌린지"
                 subtitle={'친구들과, 혹은 같은 목표를 가진 다른 사람들과\n진행하는 챌린지입니다.'}
                 isActive={field.value === 'GROUP'}
-                activeImageSrc={'/images/calendar-white.png'}
-                inactiveImageSrc={'/images/calendar-gray.png'}
-                imageWidth={70}
+                activeImageSrc={'/images/group-white.png'}
+                inactiveImageSrc={'/images/group-gray.png'}
+                imageWidth={83}
                 imageHeight={60}
               />
             </ChallengeToggleGroup>
