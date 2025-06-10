@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // 정적 리디렉션을 위한 매핑
 const redirectMapping: Record<string, string> = {
   '/old-path': '/new-path',
+  '/challenge': '/challenge/create', // 임시로 작성
 };
 
 /**
