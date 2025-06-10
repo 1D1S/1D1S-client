@@ -45,6 +45,7 @@ export function OdosTextArea({
           odosLabelVariants({ size: 'body2', weight: 'regular' }),
           'rounded-odos-2 h-auto w-auto border-none bg-gray-50 px-3 py-3 text-gray-900 shadow-none placeholder:text-gray-500',
           'focus-visible:inset-ring-main-700 focus-visible:bg-main-100 focus-visible:border-0 focus-visible:ring-0 focus-visible:inset-ring-[1.5px] focus-visible:outline-none',
+          'sm:text-lg md:text-lg lg:text-lg',
           className
         )}
         {...props}
