@@ -39,6 +39,15 @@ export const challengeCreateFormSchema = z.object({
       }
     )
     .optional(),
+  goalType: z.enum(['FIXED', 'FLEXIBLE']),
+  goals: z.array(
+    z.object({
+      value: z
+        .string()
+        .min(1, '목표를 입력해주세요.')
+        .max(100, '목표는 100자 이하로 입력해주세요.'),
+    })
+  ),
 });
 
 export type ChallengeCreateFormValues = z.infer<typeof challengeCreateFormSchema>;
@@ -53,6 +62,8 @@ export function useChallengeCreateForm(): ReturnType<typeof useForm<ChallengeCre
       periodNumber: '7',
       participationType: 'INDIVIDUAL',
       memberCountNumber: '2',
+      goalType: 'FIXED',
+      goals: [{ value: '' }],
     },
   });
 
