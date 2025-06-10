@@ -6,7 +6,7 @@ import { Step2 } from './step-pages/step2';
 import { OdosButton } from '@/shared/components/odos-ui/button';
 import { Step3 } from './step-pages/step3';
 import { Step4 } from './step-pages/step4';
-import { StepProgress } from './components/step-progress';
+import { StepProgress } from '@/features/challenge/presentation/components/step-progress';
 import {
   ChallengeCreateFormValues,
   useChallengeCreateForm,
