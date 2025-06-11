@@ -15,11 +15,11 @@ import { ChallengeCreateDialogContent } from './challenge-create-dialog-content'
  * ChallengeCreateDialog
  * 챌린지 생성 다이얼로그 컴포넌트
  */
-export function ChallengeCreateDialog(): React.ReactElement {
+export function ChallengeCreateDialog({ onConfirm }: { onConfirm?(): void }): React.ReactElement {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <OdosButton variant="default" type="submit">
+        <OdosButton variant="default" type="button">
           완료
         </OdosButton>
       </DialogTrigger>
@@ -54,9 +54,11 @@ export function ChallengeCreateDialog(): React.ReactElement {
               취소
             </OdosButton>
           </DialogClose>
-          <OdosButton variant="default" type="submit" className="w-37.5">
-            생성
-          </OdosButton>
+          <DialogClose asChild>
+            <OdosButton variant="default" type="submit" className="w-37.5" onClick={onConfirm}>
+              생성
+            </OdosButton>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -16,11 +16,13 @@ import { OdosPageBackground } from '@/shared/components/odos-ui/page-background'
 import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
 import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
 import { ChallengeCreateDialog } from '@/features/challenge/presentation/components/challenge-create-dialog';
+import { ChallengeCreateSuccessDialog } from '@/features/challenge/presentation/components/challenge-create-success-dialog';
 
 export default function ChallengeCreate(): React.ReactElement {
   const form = useChallengeCreateForm();
   const [step, setStep] = useState(1);
   const totalSteps = 4; // 실제 뷰 개수에 맞춰 변경
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
 
   const next = (): void => setStep((step) => Math.min(step + 1, totalSteps));
   const prev = (): void => setStep((step) => Math.max(step - 1, 1));
@@ -43,6 +45,7 @@ export default function ChallengeCreate(): React.ReactElement {
 
   const onSubmit = (values: ChallengeCreateFormValues): void => {
     console.log('Form submitted with values:', values);
+    setIsSuccessOpen(true);
   };
 
   return (
@@ -75,7 +78,13 @@ export default function ChallengeCreate(): React.ReactElement {
                 >
                   다음
                 </OdosButton>
-                {step === totalSteps && <ChallengeCreateDialog />}
+                {step === totalSteps && (
+                  <ChallengeCreateDialog onConfirm={() => form.handleSubmit(onSubmit)()} />
+                )}
+                <ChallengeCreateSuccessDialog
+                  open={isSuccessOpen}
+                  onOpenChange={setIsSuccessOpen}
+                />
               </div>
             </form>
           </Form>
