@@ -62,9 +62,11 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
             {values.participationType === 'INDIVIDUAL' ? '개인 챌린지' : '단체 챌린지'}
           </OdosTag>
         </div>
-        <OdosLabel size="body2" weight="medium" className="text-black">
-          {values.memberCount !== 'etc' ? values.memberCount! : values.memberCountNumber!}명
-        </OdosLabel>
+        {values.participationType === 'GROUP' && (
+          <OdosLabel size="body2" weight="medium" className="text-black">
+            {values.memberCount !== 'etc' ? values.memberCount! : values.memberCountNumber!}명
+          </OdosLabel>
+        )}
       </div>
 
       {/* 챌린지 목표 */}
