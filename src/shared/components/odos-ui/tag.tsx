@@ -21,6 +21,7 @@ type TagProps = {
   icon?: string;
   children: React.ReactNode;
   className?: string;
+  size?: 'caption3' | 'body1';
   weight?: 'bold' | 'medium' | 'regular' | 'light';
 } & VariantProps<typeof tagVariants>;
 
@@ -39,17 +40,18 @@ type TagProps = {
 export function OdosTag({
   icon,
   children,
+  size = 'caption3',
   weight = 'bold',
   className,
 }: TagProps): React.ReactElement {
   return (
     <span className={cn(tagVariants({ hasIcon: Boolean(icon) }), className)}>
       {icon && (
-        <OdosLabel size="caption3" weight="medium">
+        <OdosLabel size={size} weight="medium">
           {icon}
         </OdosLabel>
       )}
-      <OdosLabel size="caption3" weight={weight}>
+      <OdosLabel size={size} weight={weight}>
         {children}
       </OdosLabel>
     </span>

@@ -103,14 +103,14 @@ export function CircularProgress({
   const colorMap: Record<string, string> = {
     red: 'stroke-main-500',
     blue: 'stroke-blue-200',
-    green: 'stroke-green-200',
+    green: 'stroke-mint-200',
   };
   const colorClass = colorMap[color] ?? 'stroke-gray-200';
 
   const progressColorMap: Record<string, string> = {
     red: 'stroke-main-900',
     blue: 'stroke-blue-500',
-    green: 'stroke-green-500',
+    green: 'stroke-mint-900',
   };
   const progressColorClass = progressColorMap[color] ?? 'stroke-blue-500';
   const trackClasses = cn(colorClass, `[stroke-width:${strokeWidth}]`);
