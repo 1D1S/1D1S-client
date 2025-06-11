@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -31,7 +32,6 @@ export function ChallengeCreateDialog({ onConfirm }: { onConfirm?(): void }): Re
             </OdosLabel>
           </DialogTitle>
         </DialogHeader>
-
         {/* 챌린지 정보 요약 */}
         <div className="h-[1px] w-full bg-gray-300" />
         <OdosLabel size="heading2" weight="medium" className="text-gray-500">
@@ -44,9 +44,16 @@ export function ChallengeCreateDialog({ onConfirm }: { onConfirm?(): void }): Re
 
         {/* 챌린지 생성 확인 메시지 Footer */}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <OdosLabel size="heading1" weight="bold" className="text-black">
-            위와 같이 챌린지를 생성하시겠습니까?
-          </OdosLabel>
+          <DialogDescription>
+            <OdosLabel
+              size="heading1"
+              weight="bold"
+              className="text-black"
+              id="challenge-create-dialog"
+            >
+              위와 같이 챌린지를 생성하시겠습니까?
+            </OdosLabel>
+          </DialogDescription>
         </div>
         <DialogFooter className="gap-4">
           <DialogClose asChild>

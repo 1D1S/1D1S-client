@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -22,9 +23,11 @@ export function ChallengeCreateSuccessDialog({
       <DialogContent className="min-w-150 items-center gap-25 px-8 py-12">
         <DialogHeader className="items-center">
           <DialogTitle>
-            <OdosLabel size="display1" weight="bold" className="text-black">
-              챌린지 생성이 완료되었습니다!
-            </OdosLabel>
+            <DialogDescription>
+              <OdosLabel size="display1" weight="bold" className="text-black">
+                챌린지 생성이 완료되었습니다!
+              </OdosLabel>
+            </DialogDescription>
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center">
