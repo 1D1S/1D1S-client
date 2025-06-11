@@ -15,6 +15,7 @@ import { Form } from '@/shared/components/ui/form';
 import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
 import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
 import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
+import { ChallengeCreateDialog } from '@/features/challenge/presentation/components/challenge-create-dialog';
 
 export default function ChallengeCreate(): React.ReactElement {
   const form = useChallengeCreateForm();
@@ -74,9 +75,7 @@ export default function ChallengeCreate(): React.ReactElement {
                 >
                   다음
                 </OdosButton>
-                <OdosButton variant="default" type="submit" hidden={step !== totalSteps}>
-                  완료
-                </OdosButton>
+                {step === totalSteps && <ChallengeCreateDialog />}
               </div>
             </form>
           </Form>
