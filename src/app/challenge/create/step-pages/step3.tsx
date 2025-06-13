@@ -79,7 +79,7 @@ export function Step3(): React.ReactElement {
               name="memberCount"
               render={({ field }) => (
                 <FormItem className="w-50">
-                  <OdosSelect onValueChange={field.onChange}>
+                  <OdosSelect onValueChange={field.onChange} value={field.value}>
                     <FormControl className="w-50">
                       <OdosSelectTrigger className="w-50">
                         <OdosSelectValue placeholder="기간을 선택해주세요." />
