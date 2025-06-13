@@ -134,16 +134,17 @@ export function Step2(): React.ReactElement {
             챌린지 시작 날짜
           </OdosLabel>
           <OdosSpacing className="h-5" />
-          <FormItem>
-            <FormField
-              control={control}
-              name="startDate"
-              render={({ field }) => (
+
+          <FormField
+            control={control}
+            name="startDate"
+            render={({ field }) => (
+              <FormItem>
                 <OdosDatePicker value={field.value} onChange={field.onChange} />
-              )}
-            />
-            <FormMessage />
-          </FormItem>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </>
       )}
     </div>
