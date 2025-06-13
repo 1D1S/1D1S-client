@@ -8,6 +8,7 @@ import { Step3 } from './step3';
 import { Step4 } from './step4';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { useStepValidation } from '@/features/challenge/presentation/hooks/use-step-validation';
 
 export function ChallengeCreateForm({
   step,
@@ -37,12 +38,14 @@ export function ChallengeCreateForm({
     }
   };
 
+  const form = useFormContext<ChallengeCreateFormValues>();
+
+  const isStepValid = useStepValidation(step);
+
   const onSubmit = (values: ChallengeCreateFormValues): void => {
     console.log('Form submitted with values:', values);
     setIsSuccessOpen(true);
   };
-
-  const form = useFormContext<ChallengeCreateFormValues>();
 
   return (
     <form
@@ -55,11 +58,20 @@ export function ChallengeCreateForm({
         <OdosButton variant="outline" type="button" onClick={previousStep} disabled={step === 1}>
           이전
         </OdosButton>
-        <OdosButton variant="default" type="button" onClick={nextStep} hidden={step === totalSteps}>
+        <OdosButton
+          variant="default"
+          type="button"
+          onClick={nextStep}
+          hidden={step === totalSteps}
+          disabled={!isStepValid}
+        >
           다음
         </OdosButton>
         {step === totalSteps && (
-          <ChallengeCreateDialog onConfirm={() => form.handleSubmit(onSubmit)()} />
+          <ChallengeCreateDialog
+            onConfirm={() => form.handleSubmit(onSubmit)()}
+            disabled={!isStepValid}
+          />
         )}
         <ChallengeCreateSuccessDialog open={isSuccessOpen} onOpenChange={setIsSuccessOpen} />
       </div>

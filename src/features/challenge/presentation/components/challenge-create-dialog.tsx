@@ -16,11 +16,17 @@ import { ChallengeCreateDialogContent } from './challenge-create-dialog-content'
  * ChallengeCreateDialog
  * 챌린지 생성 다이얼로그 컴포넌트
  */
-export function ChallengeCreateDialog({ onConfirm }: { onConfirm?(): void }): React.ReactElement {
+export function ChallengeCreateDialog({
+  onConfirm,
+  disabled,
+}: {
+  onConfirm?(): void;
+  disabled?: boolean;
+}): React.ReactElement {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <OdosButton variant="default" type="button">
+        <OdosButton variant="default" type="button" disabled={disabled}>
           완료
         </OdosButton>
       </DialogTrigger>
