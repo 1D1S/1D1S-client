@@ -1,3 +1,15 @@
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes glow {
   0% {
     box-shadow: 0 0 2px rgba(255, 0, 0, 0.7);
@@ -7,8 +19,17 @@
   }
 }
 
-@layer utilities {
-  .animate-glow {
-    animation: glow 1.5s infinite alternate;
-  }
+/* Tailwind 없이 직접 작성한 버전 */
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.fade-out {
+  opacity: 1;
+  animation: fadeOut 0.2s ease-in forwards;
+}
+
+.animate-glow {
+  animation: glow 1.5s infinite alternate;
 }
