@@ -6,7 +6,7 @@ import { OdosPageBackground } from '@/shared/components/odos-ui/page-background'
 import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
 import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
 
-export default function SignUpPage(): React.ReactElement {
+export default function LoginPage(): React.ReactElement {
   return (
     <div className="flex flex-col">
       <div className="flex justify-center">
