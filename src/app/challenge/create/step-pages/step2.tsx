@@ -83,7 +83,7 @@ export function Step2(): React.ReactElement {
               name="period"
               render={({ field }) => (
                 <FormItem className="w-50">
-                  <OdosSelect onValueChange={field.onChange}>
+                  <OdosSelect onValueChange={field.onChange} value={field.value}>
                     <FormControl className="w-50">
                       <OdosSelectTrigger className="w-50">
                         <OdosSelectValue placeholder="기간을 선택해주세요." />
@@ -134,16 +134,17 @@ export function Step2(): React.ReactElement {
             챌린지 시작 날짜
           </OdosLabel>
           <OdosSpacing className="h-5" />
-          <FormItem>
-            <FormField
-              control={control}
-              name="startDate"
-              render={({ field }) => (
+
+          <FormField
+            control={control}
+            name="startDate"
+            render={({ field }) => (
+              <FormItem>
                 <OdosDatePicker value={field.value} onChange={field.onChange} />
-              )}
-            />
-            <FormMessage />
-          </FormItem>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </>
       )}
     </div>
