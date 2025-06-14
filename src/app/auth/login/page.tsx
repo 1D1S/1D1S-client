@@ -27,6 +27,7 @@ export default function LoginPage(): React.ReactElement {
             <div className="flex items-center gap-2">
               <RollingText />
               <HeroText className="text-black">챌린지 참여하자!</HeroText>
+              <OdosSpacing className="w-10" />
             </div>
           </div>
 
