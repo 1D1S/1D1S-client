@@ -6,6 +6,8 @@ import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
 import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
 import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
 import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
+import { OdosMenu } from '@/shared/components/odos-ui/menu';
+import { OdosProfileCard } from '@/shared/components/odos-ui/profile-card';
 
 function SectionHeader({
   title,
@@ -33,10 +35,18 @@ function SectionHeader({
 
 export default function MainPage(): React.ReactElement {
   return (
-    <div className="flex flex-col">
-      <div className="flex justify-center">
-        <div className="w-full">menu</div>
-        <OdosPageBackground className="min-w-250">
+    <div className="flex w-full flex-col">
+      {/* 왼쪽 고정 메뉴 */}
+      <div className="fixed top-4 left-4 z-50 h-full w-60">
+        <OdosMenu />
+      </div>
+      <div className="fixed top-4 right-4 z-50 h-full">
+        <OdosProfileCard />
+      </div>
+
+      {/* 콘텐츠 영역 */}
+      <div className="flex w-full flex-col justify-center">
+        <OdosPageBackground className="mx-auto w-250">
           <OdosSpacing className="h-20" />
           <OdosPageTitle title="1D1S" variant="noSubtitle" />
 
@@ -46,93 +56,34 @@ export default function MainPage(): React.ReactElement {
           <OdosSpacing className="h-2" />
           <ScrollArea className="h-68 w-full">
             <div className="flex h-65 flex-row items-center gap-6">
-              <OdosChallengeCard
-                challengeTitle="챌린지 제목"
-                challengeType="고정목표형"
-                currentUserCount={12}
-                maxUserCount={20}
-                startDate="2023-10-01"
-                endDate="2023-10-31"
-                isOngoing={true}
-              />
-              <OdosChallengeCard
-                challengeTitle="챌린지 제목"
-                challengeType="고정목표형"
-                currentUserCount={12}
-                maxUserCount={20}
-                startDate="2023-10-01"
-                endDate="2023-10-31"
-                isOngoing={false}
-              />
-              <OdosChallengeCard
-                challengeTitle="챌린지 제목"
-                challengeType="고정목표형"
-                currentUserCount={12}
-                maxUserCount={20}
-                startDate="2023-10-01"
-                endDate="2023-10-31"
-                isOngoing={false}
-              />
-              <OdosChallengeCard
-                challengeTitle="챌린지 제목"
-                challengeType="고정목표형"
-                currentUserCount={12}
-                maxUserCount={20}
-                startDate="2023-10-01"
-                endDate="2023-10-31"
-                isOngoing={false}
-              />
-              <OdosChallengeCard
-                challengeTitle="챌린지 제목"
-                challengeType="고정목표형"
-                currentUserCount={12}
-                maxUserCount={20}
-                startDate="2023-10-01"
-                endDate="2023-10-31"
-                isOngoing={false}
-              />
-              <OdosChallengeCard
-                challengeTitle="챌린지 제목"
-                challengeType="고정목표형"
-                currentUserCount={12}
-                maxUserCount={20}
-                startDate="2023-10-01"
-                endDate="2023-10-31"
-                isOngoing={false}
-              />
-              <OdosChallengeCard
-                challengeTitle="챌린지 제목"
-                challengeType="고정목표형"
-                currentUserCount={12}
-                maxUserCount={20}
-                startDate="2023-10-01"
-                endDate="2023-10-31"
-                isOngoing={false}
-              />
-              <OdosChallengeCard
-                challengeTitle="챌린지 제목"
-                challengeType="고정목표형"
-                currentUserCount={12}
-                maxUserCount={20}
-                startDate="2023-10-01"
-                endDate="2023-10-31"
-                isOngoing={false}
-              />
+              {/* 카드 여러 개 */}
+              {[...Array(8)].map((_, i) => (
+                <OdosChallengeCard
+                  key={i}
+                  challengeTitle="챌린지 제목"
+                  challengeType="고정목표형"
+                  currentUserCount={12}
+                  maxUserCount={20}
+                  startDate="2023-10-01"
+                  endDate="2023-10-31"
+                  isOngoing={i === 0}
+                />
+              ))}
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
 
           <OdosSpacing className="h-21" />
           <SectionHeader title="랜덤 일지" subtitle="챌린저들의 일지를 보며 의욕을 충전해봐요." />
-
           <OdosSpacing className="h-20" />
           <OdosPageWatermark />
-
           <OdosSpacing className="h-20" />
         </OdosPageBackground>
-        <div className="w-full">menu</div>
+        <div className="w-full">
+          <OdosFooter />
+        </div>
       </div>
-      <OdosFooter />
+      {/* 푸터는 메뉴 외부에서 고정 */}
     </div>
   );
 }
