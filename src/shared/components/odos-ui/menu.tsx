@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { OdosLabel } from './label';
 
 const menuItems = [
+  { label: '메인', path: '/main' },
   { label: '챌린지', path: '/challenge/list' },
   { label: '일지', path: '/diary/list' },
   { label: '마이페이지', path: '/mypage' },
@@ -58,7 +59,7 @@ export function OdosMenu(): React.ReactElement {
                 <Link
                   href={path}
                   onClick={() => setIsOpen(false)}
-                  className="mb-5 block text-lg text-gray-700 transition-colors duration-200 hover:text-black"
+                  className="mb-8 block text-lg text-gray-700 transition-colors duration-200 hover:text-black"
                 >
                   <OdosLabel size={'display2'} weight={'bold'}>
                     {label}
