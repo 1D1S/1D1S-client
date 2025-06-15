@@ -1,7 +1,9 @@
+// app/layout.tsx
 import { AppProviders } from '@/shared/providers';
-import type { Metadata } from 'next';
 import { pretendard, suite } from '@/shared/lib/font';
 import '@/shared/styles/globals.css';
+import type { Metadata } from 'next';
+import GlobalChrome from '@/shared/components/odos-ui/global-chrome';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -10,18 +12,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>): React.ReactElement {
+}): React.ReactElement {
   return (
     <html lang="en">
-      <AppProviders>
-        <body
-          className={`${pretendard.variable} ${suite.variable} font-pretendard bg-gray-50 text-gray-900`}
-        >
+      <body
+        className={`${pretendard.variable} ${suite.variable} font-pretendard bg-gray-50 text-gray-900`}
+      >
+        <AppProviders>
+          <GlobalChrome />
           {children}
-        </body>
-      </AppProviders>
+        </AppProviders>
+      </body>
     </html>
   );
 }
