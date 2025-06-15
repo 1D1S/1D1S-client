@@ -5,10 +5,13 @@ import React from 'react';
 import { OdosLabel } from './label';
 import { OdosButton } from './button';
 import { cn } from '@/shared/lib/utils';
+import { useRouter } from 'next/navigation';
 
 type Mode = 'collapsed' | 'expanding' | 'expanded' | 'collapsing';
 
 export function OdosProfileCard(): React.ReactElement {
+  const router = useRouter();
+  const isLoggedIn = false;
   const [mode, setMode] = React.useState<Mode>('collapsed');
 
   const isExpanded = mode === 'expanded' || mode === 'expanding';
@@ -24,15 +27,24 @@ export function OdosProfileCard(): React.ReactElement {
     }
   };
 
+  const handleGoLogin = (): void => {
+    router.push('/login');
+  };
+
+  const handleGoDiary = (): void => {
+    router.push('/login');
+  };
+
   return (
     <div
       className={cn(
         'rounded-odos-2 shadow-odos-default relative flex flex-col bg-white transition-all duration-300 ease-in-out',
         mode === 'collapsed' ? 'h-20 w-20 justify-center p-4' : 'w-100 p-6'
       )}
+      onClick={isExpanded !== true ? handleToggle : undefined}
     >
       {/* 항상 보이는 프로필 이미지 */}
-      <div className="flex w-full items-center">
+      <div className="flex w-full">
         <Image
           src="/images/default-profile.png"
           alt="profile-image"
@@ -85,7 +97,9 @@ export function OdosProfileCard(): React.ReactElement {
             mode === 'collapsing' && 'fade-out'
           )}
         >
-          <OdosButton className="w-full">로그인 하러 가기 →</OdosButton>
+          <OdosButton className="w-full" onClick={isLoggedIn ? handleGoDiary : handleGoLogin}>
+            {isLoggedIn ? '일지 쓰러 가기 →' : '로그인 하러 가기 →'}
+          </OdosButton>
         </div>
       )}
 
