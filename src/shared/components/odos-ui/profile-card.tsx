@@ -32,7 +32,7 @@ export function OdosProfileCard(): React.ReactElement {
   };
 
   const handleGoDiary = (): void => {
-    router.push('/login');
+    router.push('/diary/create');
   };
 
   return (
