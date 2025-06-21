@@ -12,6 +12,7 @@ import { ChallengePicker } from '@/features/diary/presentation/components/challe
 import { ChallengeGoalToggle } from '@/features/diary/presentation/components/challenge-goal-toggle';
 import { DiaryContentField } from '@/features/diary/presentation/components/diary-content-field';
 import BottomExpandablePanel from '@/features/diary/presentation/components/bottom-expandable-panel';
+import { ChallengeListItem } from '@/shared/components/odos-ui/challenge-list-item';
 
 export default function DiaryCreate(): React.ReactElement {
   const [challengeSelected, setChallengeSelected] = useState<boolean>(false);
@@ -47,11 +48,14 @@ export default function DiaryCreate(): React.ReactElement {
               챌린지
             </OdosLabel>
             {challengeSelected ? (
-              <ChallengePicker
-                className="mt-3"
-                onSelect={() => {
-                  setChallengeSelected(true);
-                }}
+              <ChallengeListItem
+                className="mt-3 transition-colors duration-200 hover:bg-gray-100"
+                onClick={() => setChallengeSelected(false)}
+                challengeName={''}
+                startDate={''}
+                endDate={''}
+                maxParticipants={0}
+                currentParticipants={0}
               />
             ) : (
               <ChallengePicker
