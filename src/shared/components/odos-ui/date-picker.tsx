@@ -31,9 +31,11 @@ import { OdosLabel } from './label';
 export function OdosDatePicker({
   value,
   onChange,
+  disableClickPropagation = false,
 }: {
   value: Date | undefined;
   onChange(date: Date | undefined): void;
+  disableClickPropagation?: boolean;
 }): React.ReactElement {
   return (
     <Popover>
@@ -59,7 +61,13 @@ export function OdosDatePicker({
           <CalendarIcon size="16" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent
+        className="w-auto p-0"
+        align="start"
+        {...(disableClickPropagation
+          ? { onMouseDownCapture: (event: React.MouseEvent) => event.stopPropagation() }
+          : {})}
+      >
         <Calendar mode="single" selected={value} onSelect={onChange} initialFocus />
       </PopoverContent>
     </Popover>
