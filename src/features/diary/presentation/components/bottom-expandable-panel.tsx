@@ -5,12 +5,14 @@ import { OdosLabel } from '@/shared/components/odos-ui/label';
 import { cn } from '@/shared/lib/utils';
 import { Mood, MoodToggle } from './mood-toggle';
 import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
+import { OdosDatePicker } from '@/shared/components/odos-ui/date-picker';
 
 export default function BottomExpandablePanel(): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const togglePanel = (): void => setIsOpen((prev) => !prev);
   const [mood, setMood] = useState<Mood | undefined>(undefined);
+  const [date, setDate] = useState<Date | undefined>(undefined);
 
   // 외부 클릭 시 패널 닫기
   useEffect(() => {
@@ -44,27 +46,38 @@ export default function BottomExpandablePanel(): React.ReactElement {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.2 }}
-              className="p-4"
+              className="p-6"
             >
               {/* 컨텐츠 */}
-              <div className="flex flex-col space-y-4">
+              <div
+                className={cn(
+                  'flex flex-col space-y-4',
+                  isOpen ? 'mx-auto w-250 justify-center self-center' : 'w-full'
+                )}
+              >
                 <div className="flex items-center justify-between border-b border-gray-900 pb-2">
                   <OdosPageWatermark />
                   <OdosLabel size="heading2" weight="bold">
                     제출
                   </OdosLabel>
                 </div>
-                <div className="flex items-center justify-between">
-                  <OdosLabel size="heading2" weight="bold">
+                <div className="flex items-center justify-start">
+                  <OdosLabel size="heading2" weight="bold" className="mr-2">
                     작성일
                   </OdosLabel>
+                  <OdosDatePicker
+                    value={date}
+                    onChange={function (date: Date | undefined): void {
+                      setDate(date);
+                    }}
+                    disableClickPropagation={true}
+                  />
                 </div>
-                <div className="flex flex-col">
-                  <OdosLabel size="heading2" weight="bold">
-                    오늘의 기분
-                  </OdosLabel>
-                </div>
+                <OdosLabel size="heading2" weight="bold" className="mt-8">
+                  오늘의 기분
+                </OdosLabel>
                 <MoodToggle selected={mood} onSelect={setMood} />
+
                 <OdosSpacing className="h-24" />
               </div>
             </motion.div>
