@@ -1,5 +1,7 @@
+'use client';
+
+import React, { useRef, useEffect, useState } from 'react';
 import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
-import { OdosChallengeCard } from '@/shared/components/odos-ui/challenge-card';
 import { OdosFooter } from '@/shared/components/odos-ui/footer';
 import { OdosLabel } from '@/shared/components/odos-ui/label';
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
@@ -8,6 +10,8 @@ import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
 import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
 import { OdosMenu } from '@/shared/components/odos-ui/menu';
 import { OdosProfileCard } from '@/shared/components/odos-ui/profile-card';
+import { DiaryCard } from '@/shared/components/odos-ui/diary-card';
+import { OdosChallengeCard } from '@/shared/components/odos-ui/challenge-card';
 
 function SectionHeader({
   title,
@@ -34,30 +38,60 @@ function SectionHeader({
 }
 
 export default function MainPage(): React.ReactElement {
+  const CARD_COUNT = 8;
+  // 트랙 전체(복제된 카드 2세트)를 감싸는 ref
+  const trackRef = useRef<HTMLDivElement>(null);
+  // 단일 카드 세트의 픽셀 너비
+  const [singleWidth, setSingleWidth] = useState(0);
+
+  useEffect(() => {
+    if (trackRef.current) {
+      // 전체 너비의 절반이 단일 세트 너비
+      const total = trackRef.current.getBoundingClientRect().width;
+      setSingleWidth(total / 2);
+    }
+  }, []);
+
+  // 속도: 100px 당 1초
+  const speed = 50;
+  // 애니메이션 시간(초)
+  const duration = singleWidth / speed;
+
+  // 카드 JSX 한 세트
+  const cards = Array.from({ length: CARD_COUNT }).map((_, i) => (
+    <div key={i} className="inline-block px-3">
+      <DiaryCard
+        percent={0}
+        likes={0}
+        title="테스트"
+        user="고라니"
+        challengeLabel="테스트"
+        challengeUrl=""
+        date="2025.06.10"
+        emotion="happy"
+      />
+    </div>
+  ));
+
   return (
     <div className="flex w-full flex-col">
-      {/* 왼쪽 고정 메뉴 */}
       <div className="fixed top-4 left-4 z-50 h-full w-60">
         <OdosMenu />
       </div>
       <div className="fixed top-4 right-4 z-50 h-full">
         <OdosProfileCard />
       </div>
-
-      {/* 콘텐츠 영역 */}
       <div className="flex w-full flex-col justify-center">
         <OdosPageBackground className="mx-auto w-250">
           <OdosSpacing className="h-20" />
           <OdosPageTitle title="1D1S" variant="noSubtitle" />
-
           <OdosSpacing className="h-25" />
 
           <SectionHeader title="랜덤 챌린지" subtitle="챌린지에 참여하고 목표를 달성해봐요." />
           <OdosSpacing className="h-2" />
           <ScrollArea className="h-68 w-full">
-            <div className="flex h-65 flex-row items-center gap-6">
-              {/* 카드 여러 개 */}
-              {[...Array(8)].map((_, i) => (
+            <div className="flex h-65 flex-row items-center gap-4 pl-4">
+              {Array.from({ length: CARD_COUNT }).map((_, i) => (
                 <OdosChallengeCard
                   key={i}
                   challengeTitle="챌린지 제목"
@@ -75,6 +109,37 @@ export default function MainPage(): React.ReactElement {
 
           <OdosSpacing className="h-21" />
           <SectionHeader title="랜덤 일지" subtitle="챌린저들의 일지를 보며 의욕을 충전해봐요." />
+
+          <div className="space-y-4">
+            {/* 순방향 */}
+            <div className="relative mx-auto w-250 overflow-hidden py-4 whitespace-nowrap">
+              <div
+                ref={trackRef}
+                className="inline-flex"
+                style={{
+                  animation: singleWidth ? `scroll ${duration}s linear infinite` : undefined,
+                }}
+              >
+                {cards}
+                {cards}
+              </div>
+            </div>
+            {/* 역방향 */}
+            <div className="relative mx-auto w-250 overflow-hidden py-4 whitespace-nowrap">
+              <div
+                className="inline-flex"
+                style={{
+                  animation: singleWidth
+                    ? `scroll ${duration + 2}s linear infinite reverse`
+                    : undefined,
+                }}
+              >
+                {cards}
+                {cards}
+              </div>
+            </div>
+          </div>
+
           <OdosSpacing className="h-20" />
           <OdosPageWatermark />
           <OdosSpacing className="h-20" />
@@ -83,7 +148,20 @@ export default function MainPage(): React.ReactElement {
           <OdosFooter />
         </div>
       </div>
-      {/* 푸터는 메뉴 외부에서 고정 */}
+
+      {/* styled-jsx 로 keyframes 정의 */}
+      {singleWidth > 0 && (
+        <style jsx>{`
+          @keyframes scroll {
+            from {
+              transform: translateX(0);
+            }
+            to {
+              transform: translateX(-${singleWidth}px);
+            }
+          }
+        `}</style>
+      )}
     </div>
   );
 }
