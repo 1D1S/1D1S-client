@@ -111,6 +111,7 @@ export function OdosProfileCard({
       <button
         onClick={handleToggle}
         disabled={initialMode === 'expanded'}
+        hidden={initialMode === 'expanded'}
         className="absolute bottom-2 left-2 text-gray-400 transition-transform duration-300 hover:text-black"
       >
         <Image
