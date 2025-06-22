@@ -9,10 +9,14 @@ import { useRouter } from 'next/navigation';
 
 type Mode = 'collapsed' | 'expanding' | 'expanded' | 'collapsing';
 
-export function OdosProfileCard(): React.ReactElement {
+export function OdosProfileCard({
+  initialMode = 'collapsed',
+}: {
+  initialMode?: Mode;
+}): React.ReactElement {
   const router = useRouter();
   const isLoggedIn = false;
-  const [mode, setMode] = React.useState<Mode>('collapsed');
+  const [mode, setMode] = React.useState<Mode>(initialMode);
 
   const isExpanded = mode === 'expanded' || mode === 'expanding';
   const shouldRenderContent = mode === 'expanded' || mode === 'collapsing'; // ❗️expanding 상태 제외
@@ -106,6 +110,8 @@ export function OdosProfileCard(): React.ReactElement {
       {/* 왼쪽 하단 꺽쇠 버튼 */}
       <button
         onClick={handleToggle}
+        disabled={initialMode === 'expanded'}
+        hidden={initialMode === 'expanded'}
         className="absolute bottom-2 left-2 text-gray-400 transition-transform duration-300 hover:text-black"
       >
         <Image
