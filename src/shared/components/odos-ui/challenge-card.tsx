@@ -51,12 +51,18 @@ export function OdosChallengeCard({
   className,
 }: ChallengeProps): React.ReactElement {
   return (
-    <div className="hover:rounded-odos-2 hover:shadow-odos-default w-min hover:bg-white hover:px-2 hover:py-4">
+    <div
+      className={cn(
+        'w-min px-2 py-4',
+        'hover:rounded-odos-2 hover:shadow-odos-default hover:-translate-y-1 hover:bg-white',
+        'transition-all duration-200 ease-in-out'
+      )}
+    >
       <div className={cn('flex w-50 flex-wrap items-start justify-between gap-y-2', className)}>
         <OdosLabel size="body1" weight="bold" className="text-black">
           {challengeTitle}
         </OdosLabel>
-        <div className="rounded-odos-1 bg-main-200 relative h-37.5 w-50">
+        <div className="rounded-odos-2 bg-main-200 relative h-37.5 w-50">
           <div className="absolute flex flex-row gap-1.5 pt-1 pl-1">
             <OdosTag icon="💻">개발</OdosTag>
             {isOngoing && <OdosTag className="bg-mint-700">진행중</OdosTag>}
