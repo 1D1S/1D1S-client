@@ -12,6 +12,7 @@ import { OdosMenu } from '@/shared/components/odos-ui/menu';
 import { OdosProfileCard } from '@/shared/components/odos-ui/profile-card';
 import { DiaryCard } from '@/shared/components/odos-ui/diary-card';
 import { OdosChallengeCard } from '@/shared/components/odos-ui/challenge-card';
+import { InfoButton } from '@/shared/components/odos-ui/info-button';
 
 function SectionHeader({
   title,
@@ -21,7 +22,7 @@ function SectionHeader({
   subtitle: string;
 }): React.ReactElement {
   return (
-    <div className="ml-6 flex w-full flex-col gap-4">
+    <div className="ml-8 flex w-full flex-col gap-4">
       <div className="flex flex-row gap-2.5">
         <OdosLabel size="heading1" weight="bold" className="text-black">
           {title}
@@ -87,10 +88,27 @@ export default function MainPage(): React.ReactElement {
           <OdosPageTitle title="1D1S" variant="noSubtitle" />
           <OdosSpacing className="h-25" />
 
+          <div className="flex items-start gap-2 self-start px-5">
+            <InfoButton
+              mainText={'1D1S가 처음이신가요?'}
+              subText={'온보딩'}
+              imageSrc={'/images/logo-white.png'}
+              gradientFrom={'#1D9C6D'}
+              gradientTo={'#5EC69D'}
+            />
+            <InfoButton
+              mainText={'불편한 점이 있으신가요?'}
+              subText={'문의'}
+              imageSrc={'/images/message.png'}
+              gradientFrom={'#1666BA'}
+              gradientTo={'#7AB3EF'}
+            />
+          </div>
+          <OdosSpacing className="h-20" />
           <SectionHeader title="랜덤 챌린지" subtitle="챌린지에 참여하고 목표를 달성해봐요." />
           <OdosSpacing className="h-2" />
           <ScrollArea className="h-68 w-full">
-            <div className="flex h-65 flex-row items-center gap-4 pl-4">
+            <div className="flex h-65 flex-row items-center gap-4 pl-5">
               {Array.from({ length: CARD_COUNT }).map((_, i) => (
                 <OdosChallengeCard
                   key={i}
@@ -107,7 +125,7 @@ export default function MainPage(): React.ReactElement {
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
 
-          <OdosSpacing className="h-21" />
+          <OdosSpacing className="h-20" />
           <SectionHeader title="랜덤 일지" subtitle="챌린저들의 일지를 보며 의욕을 충전해봐요." />
 
           <div className="space-y-4">
