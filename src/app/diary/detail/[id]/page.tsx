@@ -9,10 +9,13 @@ import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
 import { OdosTag } from '@/shared/components/odos-ui/tag';
 
 interface DiaryDetailProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function DiaryDetail({ params: { id } }: DiaryDetailProps & {}): React.ReactElement {
+export default async function DiaryDetail({
+  params,
+}: DiaryDetailProps & {}): Promise<React.ReactElement> {
+  const { id } = await params;
   return (
     <div className="flex flex-col">
       <div className="flex justify-center">

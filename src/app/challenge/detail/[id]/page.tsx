@@ -14,12 +14,13 @@ import { CircularProgress } from '@/shared/components/odos-ui/circular-progress'
 import { DiaryCard } from '@/shared/components/odos-ui/diary-card';
 
 interface ChallengeDetailProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function ChallengeDetail({
-  params: { id },
-}: ChallengeDetailProps & {}): React.ReactElement {
+export default async function ChallengeDetail({
+  params,
+}: ChallengeDetailProps & {}): Promise<React.ReactElement> {
+  const { id } = await params;
   const isAuthor = false; // 임시로 사용중인 작성자 여부 변수입니다.
 
   return (
