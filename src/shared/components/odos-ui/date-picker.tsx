@@ -4,9 +4,9 @@ import { CalendarIcon } from 'lucide-react';
 
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
-import { Calendar } from '@/shared/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { OdosLabel } from './label';
+import { OdosCalendar } from './calendar';
 
 /**
  * OdosDatePicker
@@ -68,7 +68,7 @@ export function OdosDatePicker({
           ? { onMouseDownCapture: (event: React.MouseEvent) => event.stopPropagation() }
           : {})}
       >
-        <Calendar mode="single" selected={value} onSelect={onChange} initialFocus />
+        <OdosCalendar mode="single" selected={value} onSelect={onChange} initialFocus />
       </PopoverContent>
     </Popover>
   );
