@@ -90,8 +90,9 @@ const odosButtonVariants = cva('', {
  */
 export function OdosButton({
   className,
-  variant,
+  variant = 'default',
   asChild = false,
+  disabled = false,
   ...props
 }: React.ComponentProps<'button'> &
   VariantProps<typeof odosButtonVariants> & {
@@ -99,10 +100,17 @@ export function OdosButton({
   }): React.ReactElement {
   const Comp = asChild ? Slot : 'button';
   const isSmall = variant?.includes('Small');
-  const isDisabled = variant?.includes('disalbed');
+
+  const effectiveVariant = disabled ? (isSmall ? 'disabledSmall' : 'disabled') : variant;
+
   return (
-    <Comp data-slot="button" className={cn(odosButtonVariants({ variant, className }))} {...props}>
-      <OdosLabel size={isSmall ? 'caption3' : 'body1'} weight={isDisabled ? 'regular' : 'bold'}>
+    <Comp
+      data-slot="button"
+      className={cn(odosButtonVariants({ variant: effectiveVariant, className }))}
+      disabled={disabled}
+      {...props}
+    >
+      <OdosLabel size={isSmall ? 'caption3' : 'body1'} weight={disabled ? 'regular' : 'bold'}>
         {props.children}
       </OdosLabel>
     </Comp>
