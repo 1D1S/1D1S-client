@@ -9,9 +9,10 @@ export const challengeCreateFormSchema = z
       .string()
       .min(1, '챌린지 제목을 입력해주세요.')
       .max(50, '챌린지 제목은 50자 이하로 입력해주세요.'),
-    category: z
-      .enum(['DEV', 'EXERCISE', 'BOOK', 'MUSIC', 'STUDY', 'LEISURE', 'ECONOMY'])
-      .optional(),
+    // 카테고리를 필수로 하고, 선택하지 않았을 때 에러 메시지 지정
+    category: z.enum(['DEV', 'EXERCISE', 'BOOK', 'MUSIC', 'STUDY', 'LEISURE', 'ECONOMY'], {
+      message: '카테고리를 선택해주세요.',
+    }),
     description: z.string().max(500, '챌린지 설명은 500자 이하로 입력해주세요.').optional(),
     periodType: z.enum(['ENDLESS', 'LIMITED']),
     period: z.enum(['7', '14', '30', '60', '365', 'etc']).optional(),
@@ -20,9 +21,7 @@ export const challengeCreateFormSchema = z
         const numberValue = Number(val);
         return !isNaN(numberValue) && numberValue >= 1 && numberValue <= 730;
       },
-      {
-        message: '1일부터 730일 사이의 숫자를 입력해주세요.',
-      }
+      { message: '1일부터 730일 사이의 숫자를 입력해주세요.' }
     ),
     startDate: z.date().optional(),
     participationType: z.enum(['INDIVIDUAL', 'GROUP']),
@@ -32,9 +31,7 @@ export const challengeCreateFormSchema = z
         const numberValue = Number(val);
         return !isNaN(numberValue) && numberValue >= 1 && numberValue <= 50;
       },
-      {
-        message: '1명부터 50명 사이의 숫자를 입력해주세요.',
-      }
+      { message: '1명부터 50명 사이의 숫자를 입력해주세요.' }
     ),
     goalType: z.enum(['FIXED', 'FLEXIBLE']),
     goals: z.array(
@@ -91,6 +88,7 @@ export function useChallengeCreateForm(): ReturnType<typeof useForm<ChallengeCre
     defaultValues: {
       periodType: 'ENDLESS',
       title: '',
+      category: undefined,
       description: '',
       periodNumber: '7',
       participationType: 'INDIVIDUAL',
