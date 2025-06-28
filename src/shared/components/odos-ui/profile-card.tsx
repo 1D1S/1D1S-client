@@ -32,7 +32,7 @@ export function OdosProfileCard({
   };
 
   const handleGoLogin = (): void => {
-    router.push('/login');
+    router.push('/auth/login');
   };
 
   const handleGoDiary = (): void => {
