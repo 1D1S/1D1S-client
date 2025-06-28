@@ -10,13 +10,15 @@ export default function GlobalChrome(): React.ReactElement | null {
   const pathname = usePathname();
 
   const noChromeRoutes = ['/diary/create', '/challenge/create'];
-  const backOnlyRoutes = ['/login'];
+  const backOnlyRoutes = ['/auth/login'];
+  const noProfileRoutes = ['/mypage']; // 프로필 카드가 숨겨질 경로들
 
   const isBackOnly = backOnlyRoutes.some((prefix) => pathname.startsWith(prefix));
   const isNoChrome = noChromeRoutes.some((prefix) => pathname.startsWith(prefix));
+  const isNoProfile = noProfileRoutes.some((prefix) => pathname.startsWith(prefix));
 
   if (isNoChrome) {
-    return null; // No global chrome for these routes
+    return null;
   }
 
   if (isBackOnly) {
@@ -32,9 +34,11 @@ export default function GlobalChrome(): React.ReactElement | null {
       <div className="fixed top-4 left-4 z-50 h-full w-60">
         <OdosMenu />
       </div>
-      <div className="fixed top-4 right-4 z-50 h-full">
-        <OdosProfileCard />
-      </div>
+      {!isNoProfile && (
+        <div className="fixed top-4 right-4 z-50 h-full">
+          <OdosProfileCard />
+        </div>
+      )}
     </>
   );
 }
