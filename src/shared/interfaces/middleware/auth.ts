@@ -12,13 +12,13 @@ const protectedRoutes = ['/test'];
 
 export function authMiddleware(req: NextRequest): NextResponse | null {
   const { pathname } = req.nextUrl;
-  if (!protectedRoutes.some(route => pathname.startsWith(route))) {
+  if (!protectedRoutes.some((route) => pathname.startsWith(route))) {
     return null;
   }
 
   const token = req.cookies.get('access_token')?.value;
   if (!token) {
-    const loginUrl = new URL('/login', req.url);
+    const loginUrl = new URL('/auth/login', req.url);
     // 접근했던 페이지를 기억했다가 로그인 후에 리디렉션 하기 위해 추가.
     // pathname을 쿼리 파라미터로 추가
     loginUrl.searchParams.set('from', pathname);

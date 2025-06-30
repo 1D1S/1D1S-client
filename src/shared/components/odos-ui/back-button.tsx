@@ -18,7 +18,7 @@ export function BackButton(): React.ReactElement {
         'duration-200 hover:bg-gray-300'
       )}
     >
-      <Image src={'/images/left-chevron'} width={24} height={24} alt="back-icon"></Image>
+      <Image src={'/images/left-chevron.png'} width={24} height={24} alt="back-icon"></Image>
     </button>
   );
 }

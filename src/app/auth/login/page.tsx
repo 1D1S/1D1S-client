@@ -10,7 +10,6 @@ export default function LoginPage(): React.ReactElement {
   return (
     <div className="flex flex-col">
       <div className="flex justify-center">
-        <div className="w-full">menu</div>
         <OdosPageBackground className="min-h-screen min-w-150 px-6">
           <OdosSpacing className="h-20" />
           <OdosPageTitle title="로그인" />
@@ -34,7 +33,6 @@ export default function LoginPage(): React.ReactElement {
           <OdosSpacing className="h-28" />
           <LoginButtons />
         </OdosPageBackground>
-        <div className="w-full" />
       </div>
     </div>
   );
