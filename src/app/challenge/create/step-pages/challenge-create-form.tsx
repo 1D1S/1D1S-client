@@ -54,7 +54,7 @@ export function ChallengeCreateForm({
     >
       {renderStep()}
 
-      <div className="mt-8 flex gap-4">
+      <div className="my-8 flex gap-4">
         <OdosButton variant="outline" type="button" onClick={previousStep} disabled={step === 1}>
           이전
         </OdosButton>
