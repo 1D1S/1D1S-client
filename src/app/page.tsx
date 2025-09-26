@@ -1,85 +1,188 @@
-import 'reflect-metadata';
-import Image from 'next/image';
-import { ReactElement } from 'react';
+'use client';
 
-export default function Home(): ReactElement {
+import React, { useRef, useEffect, useState } from 'react';
+import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
+import { OdosFooter } from '@/shared/components/odos-ui/footer';
+import { OdosLabel } from '@/shared/components/odos-ui/label';
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
+import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
+import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
+import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
+import { OdosMenu } from '@/shared/components/odos-ui/menu';
+import { OdosProfileCard } from '@/shared/components/odos-ui/profile-card';
+import { DiaryCard } from '@/shared/components/odos-ui/diary-card';
+import { OdosChallengeCard } from '@/shared/components/odos-ui/challenge-card';
+import { InfoButton } from '@/shared/components/odos-ui/info-button';
+import { SsgoiTransition } from '@ssgoi/react';
+
+function SectionHeader({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle: string;
+}): React.ReactElement {
   return (
-    <div className="grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20">
-      <main className="row-start-2 flex flex-col items-center gap-[32px] sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-center font-[family-name:var(--font-geist-mono)] text-sm/6 sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{' '}
-            <code className="rounded bg-black/[.05] px-1 py-0.5 font-[family-name:var(--font-geist-mono)] font-semibold dark:bg-white/[.06]">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex flex-col items-center gap-4 sm:flex-row">
-          <a
-            className="bg-foreground text-background flex h-10 items-center justify-center gap-2 rounded-full border border-solid border-transparent px-4 text-sm font-medium transition-colors hover:bg-[#383838] sm:h-12 sm:w-auto sm:px-5 sm:text-base dark:hover:bg-[#ccc]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="flex h-10 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-4 text-sm font-medium transition-colors hover:border-transparent hover:bg-[#f2f2f2] sm:h-12 sm:w-auto sm:px-5 sm:text-base md:w-[158px] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex flex-wrap items-center justify-center gap-[24px]">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="ml-8 flex w-full flex-col gap-4">
+      <div className="flex flex-row gap-2.5">
+        <OdosLabel size="heading1" weight="bold" className="text-black">
+          {title}
+        </OdosLabel>
+        <OdosLabel size="body2" weight="medium" className="text-gray-500">
+          더보기 +
+        </OdosLabel>
+      </div>
+      <OdosLabel size="caption3" weight="medium" className="text-gray-600">
+        {subtitle}
+      </OdosLabel>
     </div>
+  );
+}
+
+export default function MainPage(): React.ReactElement {
+  const CARD_COUNT = 8;
+  // 트랙 전체(복제된 카드 2세트)를 감싸는 ref
+  const trackRef = useRef<HTMLDivElement>(null);
+  // 단일 카드 세트의 픽셀 너비
+  const [singleWidth, setSingleWidth] = useState(0);
+
+  useEffect(() => {
+    if (trackRef.current) {
+      // 전체 너비의 절반이 단일 세트 너비
+      const total = trackRef.current.getBoundingClientRect().width;
+      setSingleWidth(total / 2);
+    }
+  }, []);
+
+  // 속도: 100px 당 1초
+  const speed = 50;
+  // 애니메이션 시간(초)
+  const duration = singleWidth / speed;
+
+  // 카드 JSX 한 세트
+  const cards = Array.from({ length: CARD_COUNT }).map((_, i) => (
+    <div key={i} className="inline-block px-3">
+      <DiaryCard
+        percent={0}
+        likes={0}
+        title="테스트"
+        user="고라니"
+        challengeLabel="테스트"
+        challengeUrl=""
+        date="2025.06.10"
+        emotion="happy"
+      />
+    </div>
+  ));
+
+  return (
+    <SsgoiTransition id="/main">
+      <div className="flex w-full flex-col">
+        <div className="fixed top-4 left-4 z-50 h-full w-60">
+          <OdosMenu />
+        </div>
+        <div className="fixed top-4 right-4 z-50 h-full">
+          <OdosProfileCard />
+        </div>
+        <div className="flex w-full flex-col justify-center">
+          <OdosPageBackground className="mx-auto w-250">
+            <OdosSpacing className="h-20" />
+            <OdosPageTitle title="1D1S" variant="noSubtitle" />
+            <OdosSpacing className="h-25" />
+
+            <div className="flex items-start gap-2 self-start px-5">
+              <InfoButton
+                mainText={'1D1S가 처음이신가요?'}
+                subText={'온보딩'}
+                imageSrc={'/images/logo-white.png'}
+                gradientFrom={'#1D9C6D'}
+                gradientTo={'#5EC69D'}
+              />
+              <InfoButton
+                mainText={'불편한 점이 있으신가요?'}
+                subText={'문의'}
+                imageSrc={'/images/message.png'}
+                gradientFrom={'#1666BA'}
+                gradientTo={'#7AB3EF'}
+              />
+            </div>
+            <OdosSpacing className="h-20" />
+            <SectionHeader title="랜덤 챌린지" subtitle="챌린지에 참여하고 목표를 달성해봐요." />
+            <OdosSpacing className="h-2" />
+            <ScrollArea className="h-68 w-full">
+              <div className="flex h-65 flex-row items-center gap-4 pl-5">
+                {Array.from({ length: CARD_COUNT }).map((_, i) => (
+                  <OdosChallengeCard
+                    key={i}
+                    challengeTitle="챌린지 제목"
+                    challengeType="고정목표형"
+                    currentUserCount={12}
+                    maxUserCount={20}
+                    startDate="2023-10-01"
+                    endDate="2023-10-31"
+                    isOngoing={i === 0}
+                  />
+                ))}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+
+            <OdosSpacing className="h-20" />
+            <SectionHeader title="랜덤 일지" subtitle="챌린저들의 일지를 보며 의욕을 충전해봐요." />
+
+            <div className="space-y-4">
+              {/* 순방향 */}
+              <div className="relative mx-auto w-250 overflow-hidden py-4 whitespace-nowrap">
+                <div
+                  ref={trackRef}
+                  className="inline-flex"
+                  style={{
+                    animation: singleWidth ? `scroll ${duration}s linear infinite` : undefined,
+                  }}
+                >
+                  {cards}
+                  {cards}
+                </div>
+              </div>
+              {/* 역방향 */}
+              <div className="relative mx-auto w-250 overflow-hidden py-4 whitespace-nowrap">
+                <div
+                  className="inline-flex"
+                  style={{
+                    animation: singleWidth
+                      ? `scroll ${duration + 2}s linear infinite reverse`
+                      : undefined,
+                  }}
+                >
+                  {cards}
+                  {cards}
+                </div>
+              </div>
+            </div>
+
+            <OdosSpacing className="h-20" />
+            <OdosPageWatermark />
+            <OdosSpacing className="h-20" />
+          </OdosPageBackground>
+          <div className="w-full">
+            <OdosFooter />
+          </div>
+        </div>
+
+        {/* styled-jsx 로 keyframes 정의 */}
+        {singleWidth > 0 && (
+          <style jsx>{`
+            @keyframes scroll {
+              from {
+                transform: translateX(0);
+              }
+              to {
+                transform: translateX(-${singleWidth}px);
+              }
+            }
+          `}</style>
+        )}
+      </div>
+    </SsgoiTransition>
   );
 }
