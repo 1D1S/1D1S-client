@@ -59,21 +59,19 @@ function DiaryHeader({
   createdAt: string;
 }): React.ReactElement {
   return (
-    <SsgoiTransition id="/diary/create">
-      <div className="flex w-full justify-between">
-        <OdosLabel size="display2" weight="bold">
-          {title}
+    <div className="flex w-full justify-between">
+      <OdosLabel size="display2" weight="bold">
+        {title}
+      </OdosLabel>
+      <div className="flex flex-col items-end gap-1">
+        <OdosLabel size="caption2" weight="bold">
+          {author}
         </OdosLabel>
-        <div className="flex flex-col items-end gap-1">
-          <OdosLabel size="caption2" weight="bold">
-            {author}
-          </OdosLabel>
-          <OdosLabel size="caption2" weight="bold">
-            {createdAt}
-          </OdosLabel>
-        </div>
+        <OdosLabel size="caption2" weight="bold">
+          {createdAt}
+        </OdosLabel>
       </div>
-    </SsgoiTransition>
+    </div>
   );
 }
 
