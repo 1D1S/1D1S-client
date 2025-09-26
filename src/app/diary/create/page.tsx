@@ -13,6 +13,7 @@ import { ChallengeGoalToggle } from '@/features/diary/presentation/components/ch
 import { DiaryContentField } from '@/features/diary/presentation/components/diary-content-field';
 import BottomExpandablePanel from '@/features/diary/presentation/components/bottom-expandable-panel';
 import { ChallengeListItem } from '@/shared/components/odos-ui/challenge-list-item';
+import { SsgoiTransition } from '@ssgoi/react';
 
 export default function DiaryCreate(): React.ReactElement {
   const [challengeSelected, setChallengeSelected] = useState<boolean>(false);
@@ -32,78 +33,80 @@ export default function DiaryCreate(): React.ReactElement {
   };
 
   return (
-    <div className="flex flex-col">
-      <div className="flex justify-center">
-        <OdosPageBackground className="min-h-screen min-w-250 px-7.5">
-          <OdosSpacing className="h-20" />
-          <OdosPageTitle title="일지 작성" />
+    <SsgoiTransition id="/diary/create">
+      <div className="flex flex-col">
+        <div className="flex justify-center">
+          <OdosPageBackground className="min-h-screen min-w-250 px-7.5">
+            <OdosSpacing className="h-20" />
+            <OdosPageTitle title="일지 작성" />
 
-          <div className="flex w-full flex-col self-start">
-            <OdosLabel size="heading2" weight="bold" className="mt-12">
-              일지 제목
-            </OdosLabel>
-            <OdosTextField className="text-10xl mt-3 flex" placeholder="일지 제목" />
+            <div className="flex w-full flex-col self-start">
+              <OdosLabel size="heading2" weight="bold" className="mt-12">
+                일지 제목
+              </OdosLabel>
+              <OdosTextField className="text-10xl mt-3 flex" placeholder="일지 제목" />
 
-            <OdosLabel size="heading2" weight="bold" className="mt-12">
-              챌린지
-            </OdosLabel>
-            {challengeSelected ? (
-              <ChallengeListItem
-                className="mt-3 transition-colors duration-200 hover:bg-gray-100"
-                onClick={() => setChallengeSelected(false)}
-                challengeName={''}
-                startDate={''}
-                endDate={''}
-                maxParticipants={0}
-                currentParticipants={0}
-              />
-            ) : (
-              <ChallengePicker
+              <OdosLabel size="heading2" weight="bold" className="mt-12">
+                챌린지
+              </OdosLabel>
+              {challengeSelected ? (
+                <ChallengeListItem
+                  className="mt-3 transition-colors duration-200 hover:bg-gray-100"
+                  onClick={() => setChallengeSelected(false)}
+                  challengeName={''}
+                  startDate={''}
+                  endDate={''}
+                  maxParticipants={0}
+                  currentParticipants={0}
+                />
+              ) : (
+                <ChallengePicker
+                  className="mt-3"
+                  onSelect={() => {
+                    setChallengeSelected(true);
+                  }}
+                />
+              )}
+
+              <OdosLabel size="heading2" weight="bold" className="mt-12">
+                챌린지 목표
+              </OdosLabel>
+              {challengeSelected ? (
+                <ChallengeGoalToggle
+                  className="mt-3"
+                  label={'고라니 밥주기'}
+                  checked={isChecked} // ✅ 여기
+                  onCheckedChange={(newChecked: boolean) => {
+                    setIsChecked(newChecked);
+                  }}
+                />
+              ) : (
+                <ChallengePicker
+                  className="mt-3"
+                  onSelect={() => {
+                    setChallengeSelected(true);
+                  }}
+                />
+              )}
+
+              <OdosLabel size="heading2" weight="bold" className="mt-12">
+                일지 내용
+              </OdosLabel>
+              <DiaryContentField
                 className="mt-3"
-                onSelect={() => {
-                  setChallengeSelected(true);
-                }}
+                value={content}
+                imageSrc={preview}
+                onChange={setContent}
+                onImageSelect={handleImageSelect}
               />
-            )}
-
-            <OdosLabel size="heading2" weight="bold" className="mt-12">
-              챌린지 목표
-            </OdosLabel>
-            {challengeSelected ? (
-              <ChallengeGoalToggle
-                className="mt-3"
-                label={'고라니 밥주기'}
-                checked={isChecked} // ✅ 여기
-                onCheckedChange={(newChecked: boolean) => {
-                  setIsChecked(newChecked);
-                }}
-              />
-            ) : (
-              <ChallengePicker
-                className="mt-3"
-                onSelect={() => {
-                  setChallengeSelected(true);
-                }}
-              />
-            )}
-
-            <OdosLabel size="heading2" weight="bold" className="mt-12">
-              일지 내용
-            </OdosLabel>
-            <DiaryContentField
-              className="mt-3"
-              value={content}
-              imageSrc={preview}
-              onChange={setContent}
-              onImageSelect={handleImageSelect}
-            />
-          </div>
-          <OdosSpacing className="h-20" />
-          <OdosPageWatermark />
-          <OdosSpacing className="h-20" />
-        </OdosPageBackground>
+            </div>
+            <OdosSpacing className="h-20" />
+            <OdosPageWatermark />
+            <OdosSpacing className="h-20" />
+          </OdosPageBackground>
+        </div>
+        <BottomExpandablePanel></BottomExpandablePanel>
       </div>
-      <BottomExpandablePanel></BottomExpandablePanel>
-    </div>
+    </SsgoiTransition>
   );
 }
