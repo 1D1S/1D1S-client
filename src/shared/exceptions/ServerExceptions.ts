@@ -79,24 +79,13 @@ export class ServiceUnavailableException extends BaseException {
   }
 }
 
-/**
- * GraphQL 처리 오류
- */
-export class GraphqlException extends BaseException {
-  constructor(
-    msgForDev: string = 'GraphQL error.',
-    msgForUser: string = '데이터 처리 중 오류가 발생했습니다.'
-  ) {
-    super(msgForDev, msgForUser);
-  }
-}
 
 /**
  * Rest 처리 오류
  */
 export class RestException extends BaseException {
   constructor(
-    msgForDev: string = 'GraphQL error.',
+    msgForDev: string = 'REST API error.',
     msgForUser: string = '데이터 처리 중 오류가 발생했습니다.'
   ) {
     super(msgForDev, msgForUser);

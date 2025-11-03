@@ -1,7 +1,0 @@
-type MemberOption {
-  public: Boolean!
-}
-
-type DiaryOption {
-  public: Boolean!
-}

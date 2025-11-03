@@ -1,3 +1,0 @@
-type Img {
-  path: String
-}
