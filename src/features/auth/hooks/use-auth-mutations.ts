@@ -8,18 +8,18 @@ import {
   LogoutResponse,
 } from '../data/types';
 import { AUTH_QUERY_KEYS } from './use-auth-queries';
+import { authStorage } from '@/shared/utils/auth';
 
 // 토큰 갱신
 export function useRefreshToken(): UseMutationResult<RefreshTokenResponse, Error, string> {
   return useMutation({
     mutationFn: (refreshToken: string) => authApi.refreshToken(refreshToken),
     onSuccess: (data) => {
-      localStorage.setItem('accessToken', data.data.accessToken);
-      localStorage.setItem('refreshToken', data.data.responseToken);
+      authStorage.setAccessToken(data.data.accessToken);
+      authStorage.setRefreshToken(data.data.responseToken);
     },
     onError: () => {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      authStorage.clearTokens();
     },
   });
 }
@@ -69,13 +69,11 @@ export function useLogout(): UseMutationResult<LogoutResponse, Error, string> {
   return useMutation({
     mutationFn: (accessToken: string) => authApi.logout(accessToken),
     onSuccess: () => {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      authStorage.clearTokens();
       queryClient.clear();
     },
     onError: () => {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      authStorage.clearTokens();
       queryClient.clear();
     },
   });
