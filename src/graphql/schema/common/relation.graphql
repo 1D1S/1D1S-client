@@ -1,9 +1,0 @@
-type Relation {
-  member: Member!
-  status: RelationStatus!
-}
-enum RelationStatus {
-  PENDING
-  REJECTED
-  ACCEPTED
-}

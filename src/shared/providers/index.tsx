@@ -1,5 +1,5 @@
-import { ApolloClientProvider } from './apollo';
+import { TanStackQueryProvider } from './query-client-provider';
 
 export function AppProviders({ children }: { children: React.ReactNode }): React.ReactElement {
-  return <ApolloClientProvider>{children}</ApolloClientProvider>;
+  return <TanStackQueryProvider>{children}</TanStackQueryProvider>;
 }

@@ -1,4 +1,0 @@
-type Likes {
-  members: [Member]!
-  count: Int!
-}
