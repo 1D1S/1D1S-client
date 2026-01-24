@@ -9,16 +9,14 @@ import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
 import { OdosLabel } from '@/shared/components/odos-ui/label';
 import { useDiaryItems } from '@/features/diary/presentation/hooks/diary-items';
 import { DiaryCard } from '@/shared/components/odos-ui/diary-card';
-import { SsgoiTransition } from '@ssgoi/react';
 
 export default function DiaryList(): React.ReactElement {
   const { items, loading } = useDiaryItems(12, 12);
 
   return (
-    <SsgoiTransition id="/diary">
-      <div className="flex flex-col">
-        <div className="flex justify-center">
-          <OdosPageBackground className="min-h-screen min-w-250 px-5">
+    <div className="flex flex-col">
+      <div className="flex justify-center">
+        <OdosPageBackground className="min-h-screen min-w-250 px-5">
             <OdosSpacing className="h-20" />
             <OdosPageTitle title="일지 목록" />
             <OdosSpacing className="h-20" />
@@ -56,6 +54,5 @@ export default function DiaryList(): React.ReactElement {
           </OdosPageBackground>
         </div>
       </div>
-    </SsgoiTransition>
   );
 }

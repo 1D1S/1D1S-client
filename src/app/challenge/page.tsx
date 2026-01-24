@@ -8,14 +8,12 @@ import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
 import { ChallengeListItem } from '@/shared/components/odos-ui/challenge-list-item';
 import { OdosFooter } from '@/shared/components/odos-ui/footer';
 import { SearchTextField } from '@/shared/components/odos-ui/search-text-field';
-import { SsgoiTransition } from '@ssgoi/react';
 
 export default function ChallengeList(): React.ReactElement {
   return (
-    <SsgoiTransition id="/challenge">
-      <div className="flex flex-col">
-        <div className="flex justify-center">
-          <OdosPageBackground className="min-h-screen min-w-250 px-5">
+    <div className="flex flex-col">
+      <div className="flex justify-center">
+        <OdosPageBackground className="min-h-screen min-w-250 px-5">
             <OdosSpacing className="h-20" />
             <OdosPageTitle title="챌린지 목록" />
             <OdosSpacing className="h-20" />
@@ -44,6 +42,5 @@ export default function ChallengeList(): React.ReactElement {
         </div>
         <OdosFooter />
       </div>
-    </SsgoiTransition>
   );
 }

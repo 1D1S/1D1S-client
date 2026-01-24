@@ -4,7 +4,6 @@ import { pretendard, suite } from '@/shared/lib/font';
 import '@/shared/styles/globals.css';
 import type { Metadata } from 'next';
 import GlobalChrome from '@/shared/components/odos-ui/global-chrome';
-import SsgoiWrapper from '@/components/ssgoi-wrapper';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -21,12 +20,10 @@ export default function RootLayout({
       <body
         className={`${pretendard.variable} ${suite.variable} font-pretendard bg-gray-50 text-gray-900`}
       >
-        <SsgoiWrapper>
-          <AppProviders>
-            <GlobalChrome />
-            <div style={{ position: 'relative', minHeight: '100vh' }}>{children}</div>
-          </AppProviders>
-        </SsgoiWrapper>
+        <AppProviders>
+          <GlobalChrome />
+          <div style={{ position: 'relative', minHeight: '100vh' }}>{children}</div>
+        </AppProviders>
       </body>
     </html>
   );

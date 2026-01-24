@@ -13,7 +13,6 @@ import { OdosProfileCard } from '@/shared/components/odos-ui/profile-card';
 import { DiaryCard } from '@/shared/components/odos-ui/diary-card';
 import { OdosChallengeCard } from '@/shared/components/odos-ui/challenge-card';
 import { InfoButton } from '@/shared/components/odos-ui/info-button';
-import { SsgoiTransition } from '@ssgoi/react';
 
 function SectionHeader({
   title,
@@ -76,11 +75,10 @@ export default function MainPage(): React.ReactElement {
   ));
 
   return (
-    <SsgoiTransition id="/main">
-      <div className="flex w-full flex-col">
-        <div className="fixed top-4 left-4 z-50 h-full w-60">
-          <OdosMenu />
-        </div>
+    <div className="flex w-full flex-col">
+      <div className="fixed top-4 left-4 z-50 h-full w-60">
+        <OdosMenu />
+      </div>
         <div className="fixed top-4 right-4 z-50 h-full">
           <OdosProfileCard />
         </div>
@@ -183,6 +181,5 @@ export default function MainPage(): React.ReactElement {
           `}</style>
         )}
       </div>
-    </SsgoiTransition>
   );
 }

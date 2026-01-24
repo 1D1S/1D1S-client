@@ -12,7 +12,6 @@ import { UserListItem } from '@/shared/components/odos-ui/user-list-item';
 import { OdosButton } from '@/shared/components/odos-ui/button';
 import { CircularProgress } from '@/shared/components/odos-ui/circular-progress';
 import { DiaryCard } from '@/shared/components/odos-ui/diary-card';
-import { SsgoiTransition } from '@ssgoi/react';
 
 interface ChallengeDetailProps {
   params: Promise<{ id: string }>;
@@ -25,10 +24,9 @@ export default async function ChallengeDetail({
   const isAuthor = false; // 임시로 사용중인 작성자 여부 변수입니다.
 
   return (
-    <SsgoiTransition id={`/challenge/${id}`}>
-      <div className="flex flex-col">
-        <div className="flex justify-center">
-          <OdosPageBackground className="min-h-screen w-250 px-7.5">
+    <div className="flex flex-col">
+      <div className="flex justify-center">
+        <OdosPageBackground className="min-h-screen w-250 px-7.5">
             <OdosSpacing className="h-20" />
             <OdosPageTitle title="챌린지 상세" />
             <OdosSpacing className="h-20" />
@@ -188,6 +186,5 @@ export default async function ChallengeDetail({
         </div>
         <OdosFooter />
       </div>
-    </SsgoiTransition>
   );
 }

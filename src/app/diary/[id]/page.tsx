@@ -8,7 +8,6 @@ import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
 import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
 import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
 import { OdosTag } from '@/shared/components/odos-ui/tag';
-import { SsgoiTransition } from '@ssgoi/react';
 
 export const revalidate = 60;
 
@@ -124,10 +123,9 @@ export default async function DiaryDetail({
   const diaryData = await getDiaryData(id);
 
   return (
-    <SsgoiTransition id={`/diary/${id}`}>
-      <div className="flex flex-col">
-        <div className="flex justify-center">
-          <OdosPageBackground className="min-h-screen max-w-250 px-7.5">
+    <div className="flex flex-col">
+      <div className="flex justify-center">
+        <OdosPageBackground className="min-h-screen max-w-250 px-7.5">
             <OdosSpacing className="h-20" />
             <OdosPageTitle title="일지 상세" />
 
@@ -160,6 +158,5 @@ export default async function DiaryDetail({
         </div>
         <OdosFooter />
       </div>
-    </SsgoiTransition>
   );
 }

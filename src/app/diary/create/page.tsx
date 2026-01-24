@@ -13,7 +13,6 @@ import { ChallengeGoalToggle } from '@/features/diary/presentation/components/ch
 import { DiaryContentField } from '@/features/diary/presentation/components/diary-content-field';
 import BottomExpandablePanel from '@/features/diary/presentation/components/bottom-expandable-panel';
 import { ChallengeListItem } from '@/shared/components/odos-ui/challenge-list-item';
-import { SsgoiTransition } from '@ssgoi/react';
 
 export default function DiaryCreate(): React.ReactElement {
   const [challengeSelected, setChallengeSelected] = useState<boolean>(false);
@@ -33,10 +32,9 @@ export default function DiaryCreate(): React.ReactElement {
   };
 
   return (
-    <SsgoiTransition id="/diary/create">
-      <div className="flex flex-col">
-        <div className="flex justify-center">
-          <OdosPageBackground className="min-h-screen min-w-250 px-7.5">
+    <div className="flex flex-col">
+      <div className="flex justify-center">
+        <OdosPageBackground className="min-h-screen min-w-250 px-7.5">
             <OdosSpacing className="h-20" />
             <OdosPageTitle title="일지 작성" />
 
@@ -107,6 +105,5 @@ export default function DiaryCreate(): React.ReactElement {
         </div>
         <BottomExpandablePanel></BottomExpandablePanel>
       </div>
-    </SsgoiTransition>
   );
 }

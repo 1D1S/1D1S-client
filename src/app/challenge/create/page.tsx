@@ -8,7 +8,6 @@ import { OdosPageBackground } from '@/shared/components/odos-ui/page-background'
 import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
 import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
 import { ChallengeCreateForm } from './step-pages/challenge-create-form';
-import { SsgoiTransition } from '@ssgoi/react';
 
 export default function ChallengeCreate(): React.ReactElement {
   const form = useChallengeCreateForm();
@@ -19,10 +18,9 @@ export default function ChallengeCreate(): React.ReactElement {
   const prev = (): void => setStep((step) => Math.max(step - 1, 1));
 
   return (
-    <SsgoiTransition id="/challenge/create">
-      <div className="flex flex-col">
-        <div className="flex justify-center">
-          <OdosPageBackground className="flex min-h-screen min-w-250 flex-col items-center bg-white px-6">
+    <div className="flex flex-col">
+      <div className="flex justify-center">
+        <OdosPageBackground className="flex min-h-screen min-w-250 flex-col items-center bg-white px-6">
             <OdosSpacing className="h-15" />
             <OdosPageTitle title="챌린지 생성" />
             <OdosSpacing className="h-20" />
@@ -41,6 +39,5 @@ export default function ChallengeCreate(): React.ReactElement {
           </OdosPageBackground>
         </div>
       </div>
-    </SsgoiTransition>
   );
 }
