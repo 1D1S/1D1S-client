@@ -3,12 +3,12 @@
 
 import React, { useState } from 'react';
 import {
-  PageBackground as OdosPageBackground,
-  PageTitle as OdosPageTitle,
-  Spacing as OdosSpacing,
-  PageWatermark as OdosPageWatermark,
-  Text as OdosLabel,
-  TextField as OdosTextField,
+  PageBackground,
+  PageTitle,
+  Spacing,
+  PageWatermark,
+  Text,
+  TextField,
   ChallengeListItem,
 } from '@1d1s/design-system';
 import { ChallengePicker } from '@/features/diary/presentation/components/challenge-picker';
@@ -36,19 +36,19 @@ export default function DiaryCreate(): React.ReactElement {
   return (
     <div className="flex flex-col">
       <div className="flex justify-center">
-        <OdosPageBackground className="min-h-screen min-w-250 px-7.5">
-            <OdosSpacing className="h-20" />
-            <OdosPageTitle title="일지 작성" />
+        <PageBackground className="min-h-screen min-w-250 px-7.5">
+            <Spacing className="h-20" />
+            <PageTitle title="일지 작성" />
 
             <div className="flex w-full flex-col self-start">
-              <OdosLabel size="heading2" weight="bold" className="mt-12">
+              <Text size="heading2" weight="bold" className="mt-12">
                 일지 제목
-              </OdosLabel>
-              <OdosTextField className="text-10xl mt-3 flex" placeholder="일지 제목" />
+              </Text>
+              <TextField className="text-10xl mt-3 flex" placeholder="일지 제목" />
 
-              <OdosLabel size="heading2" weight="bold" className="mt-12">
+              <Text size="heading2" weight="bold" className="mt-12">
                 챌린지
-              </OdosLabel>
+              </Text>
               {challengeSelected ? (
                 <ChallengeListItem
                   className="mt-3 transition-colors duration-200 hover:bg-gray-100"
@@ -68,9 +68,9 @@ export default function DiaryCreate(): React.ReactElement {
                 />
               )}
 
-              <OdosLabel size="heading2" weight="bold" className="mt-12">
+              <Text size="heading2" weight="bold" className="mt-12">
                 챌린지 목표
-              </OdosLabel>
+              </Text>
               {challengeSelected ? (
                 <ChallengeGoalToggle
                   className="mt-3"
@@ -89,9 +89,9 @@ export default function DiaryCreate(): React.ReactElement {
                 />
               )}
 
-              <OdosLabel size="heading2" weight="bold" className="mt-12">
+              <Text size="heading2" weight="bold" className="mt-12">
                 일지 내용
-              </OdosLabel>
+              </Text>
               <DiaryContentField
                 className="mt-3"
                 value={content}
@@ -100,10 +100,10 @@ export default function DiaryCreate(): React.ReactElement {
                 onImageSelect={handleImageSelect}
               />
             </div>
-            <OdosSpacing className="h-20" />
-            <OdosPageWatermark />
-            <OdosSpacing className="h-20" />
-          </OdosPageBackground>
+            <Spacing className="h-20" />
+            <PageWatermark />
+            <Spacing className="h-20" />
+          </PageBackground>
         </div>
         <BottomExpandablePanel></BottomExpandablePanel>
       </div>

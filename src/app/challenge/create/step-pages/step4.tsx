@@ -8,7 +8,7 @@ import {
   ChallengeToggle,
 } from '@/features/challenge/presentation/components/challenge-toggle';
 import { ChallengeCreateFormValues } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
-import { Text as OdosLabel, Spacing as OdosSpacing, TextField as OdosTextField } from '@1d1s/design-system';
+import { Text, Spacing, TextField } from '@1d1s/design-system';
 import { FormControl, FormField, FormItem, FormMessage } from '@/shared/components/ui/form';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 
@@ -21,11 +21,11 @@ export function Step4(): React.ReactElement {
 
   return (
     <div>
-      <OdosSpacing className="h-25" />
-      <OdosLabel size="display2" weight="bold">
+      <Spacing className="h-25" />
+      <Text size="display2" weight="bold">
         목표를 설정해주세요.
-      </OdosLabel>
-      <OdosSpacing className="h-5" />
+      </Text>
+      <Spacing className="h-5" />
 
       <FormField
         control={control}
@@ -63,11 +63,11 @@ export function Step4(): React.ReactElement {
         )}
       />
 
-      <OdosSpacing className="h-12" />
-      <OdosLabel size="heading1" weight="bold">
+      <Spacing className="h-12" />
+      <Text size="heading1" weight="bold">
         목표를 설정해주세요.
-      </OdosLabel>
-      <OdosSpacing className="h-5" />
+      </Text>
+      <Spacing className="h-5" />
       {fields.map((field, index) => (
         <FormField
           key={field.id}
@@ -78,13 +78,13 @@ export function Step4(): React.ReactElement {
               <div className="flex w-235 items-center gap-2">
                 <div className="flex-1">
                   <FormControl>
-                    <OdosTextField type="text" placeholder="목표를 입력하세요" {...field} />
+                    <TextField type="text" placeholder="목표를 입력하세요" {...field} />
                   </FormControl>
                 </div>
                 <ChallengeGoalDeleteButton type="button" onClick={() => remove(index)} />
               </div>
               <FormMessage />
-              <OdosSpacing className="h-2" />
+              <Spacing className="h-2" />
             </FormItem>
           )}
         />

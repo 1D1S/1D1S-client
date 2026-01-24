@@ -3,16 +3,16 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
 import {
-  PageTitle as OdosPageTitle,
-  Footer as OdosFooter,
-  Text as OdosLabel,
-  Spacing as OdosSpacing,
-  PageWatermark as OdosPageWatermark,
-  PageBackground as OdosPageBackground,
-  Menu as OdosMenu,
-  ProfileCard as OdosProfileCard,
+  PageTitle,
+  Footer,
+  Text,
+  Spacing,
+  PageWatermark,
+  PageBackground,
+  Menu,
+  ProfileCard,
   DiaryCard,
-  ChallengeCard as OdosChallengeCard,
+  ChallengeCard,
   InfoButton,
 } from '@1d1s/design-system';
 
@@ -26,16 +26,16 @@ function SectionHeader({
   return (
     <div className="ml-8 flex w-full flex-col gap-4">
       <div className="flex flex-row gap-2.5">
-        <OdosLabel size="heading1" weight="bold" className="text-black">
+        <Text size="heading1" weight="bold" className="text-black">
           {title}
-        </OdosLabel>
-        <OdosLabel size="body2" weight="medium" className="text-gray-500">
+        </Text>
+        <Text size="body2" weight="medium" className="text-gray-500">
           더보기 +
-        </OdosLabel>
+        </Text>
       </div>
-      <OdosLabel size="caption3" weight="medium" className="text-gray-600">
+      <Text size="caption3" weight="medium" className="text-gray-600">
         {subtitle}
-      </OdosLabel>
+      </Text>
     </div>
   );
 }
@@ -79,16 +79,16 @@ export default function MainPage(): React.ReactElement {
   return (
     <div className="flex w-full flex-col">
       <div className="fixed top-4 left-4 z-50 h-full w-60">
-        <OdosMenu />
+        <Menu />
       </div>
         <div className="fixed top-4 right-4 z-50 h-full">
-          <OdosProfileCard />
+          <ProfileCard />
         </div>
         <div className="flex w-full flex-col justify-center">
-          <OdosPageBackground className="mx-auto w-250">
-            <OdosSpacing className="h-20" />
-            <OdosPageTitle title="1D1S" variant="noSubtitle" />
-            <OdosSpacing className="h-25" />
+          <PageBackground className="mx-auto w-250">
+            <Spacing className="h-20" />
+            <PageTitle title="1D1S" variant="noSubtitle" />
+            <Spacing className="h-25" />
 
             <div className="flex items-start gap-2 self-start px-5">
               <InfoButton
@@ -106,13 +106,13 @@ export default function MainPage(): React.ReactElement {
                 gradientTo={'#7AB3EF'}
               />
             </div>
-            <OdosSpacing className="h-20" />
+            <Spacing className="h-20" />
             <SectionHeader title="랜덤 챌린지" subtitle="챌린지에 참여하고 목표를 달성해봐요." />
-            <OdosSpacing className="h-2" />
+            <Spacing className="h-2" />
             <ScrollArea className="h-68 w-full">
               <div className="flex h-65 flex-row items-center gap-4 pl-5">
                 {Array.from({ length: CARD_COUNT }).map((_, i) => (
-                  <OdosChallengeCard
+                  <ChallengeCard
                     key={i}
                     challengeTitle="챌린지 제목"
                     challengeType="고정목표형"
@@ -127,7 +127,7 @@ export default function MainPage(): React.ReactElement {
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
 
-            <OdosSpacing className="h-20" />
+            <Spacing className="h-20" />
             <SectionHeader title="랜덤 일지" subtitle="챌린저들의 일지를 보며 의욕을 충전해봐요." />
 
             <div className="space-y-4">
@@ -160,12 +160,12 @@ export default function MainPage(): React.ReactElement {
               </div>
             </div>
 
-            <OdosSpacing className="h-20" />
-            <OdosPageWatermark />
-            <OdosSpacing className="h-20" />
-          </OdosPageBackground>
+            <Spacing className="h-20" />
+            <PageWatermark />
+            <Spacing className="h-20" />
+          </PageBackground>
           <div className="w-full">
-            <OdosFooter />
+            <Footer />
           </div>
         </div>
 

@@ -1,17 +1,17 @@
 import {
-  Button as OdosButton,
-  Select as OdosSelect,
-  SelectTrigger as OdosSelectTrigger,
-  SelectValue as OdosSelectValue,
-  SelectContent as OdosSelectContent,
-  SelectItem as OdosSelectItem,
-  ImagePicker as OdosImagePicker,
-  Text as OdosLabel,
-  PageTitle as OdosPageTitle,
-  Spacing as OdosSpacing,
-  TextField as OdosTextField,
-  ToggleGroup as OdosToggleGroup,
-  ToggleGroupItem as OdosToggleGroupItem,
+  Button,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  ImagePicker,
+  Text,
+  PageTitle,
+  Spacing,
+  TextField,
+  ToggleGroup,
+  ToggleGroupItem,
 } from '@1d1s/design-system';
 import { SignupFormValues, useSignUpForm } from '../hooks/use-sign-up-form';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/shared/components/ui/form';
@@ -31,16 +31,16 @@ export function SignUpForm(): React.ReactElement {
   return (
     <Form {...form}>
       <form className="flex w-full flex-col items-center" onSubmit={form.handleSubmit(onSubmit)}>
-        <OdosSpacing className="h-20" />
-        <OdosPageTitle title="1D1S" subtitle="추가 정보 입력" variant="withSubtitle" />
+        <Spacing className="h-20" />
+        <PageTitle title="1D1S" subtitle="추가 정보 입력" variant="withSubtitle" />
 
-        <OdosSpacing className="h-20" />
+        <Spacing className="h-20" />
         <FormField
           control={form.control}
           name="img"
           render={({ field }) => (
             <FormItem>
-              <OdosImagePicker
+              <ImagePicker
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                   const file = event.target.files?.[0] || undefined;
                   field.onChange(file);
@@ -51,7 +51,7 @@ export function SignUpForm(): React.ReactElement {
           )}
         />
 
-        <OdosSpacing className="h-10" />
+        <Spacing className="h-10" />
 
         <FormField
           control={form.control}
@@ -59,7 +59,7 @@ export function SignUpForm(): React.ReactElement {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <OdosTextField
+                <TextField
                   label="닉네임"
                   placeholder="닉네임을 입력해주세요."
                   id="nickname"
@@ -72,32 +72,32 @@ export function SignUpForm(): React.ReactElement {
           )}
         />
 
-        <OdosSpacing className="h-8.5" />
+        <Spacing className="h-8.5" />
 
         <div className="flex w-135 flex-col gap-0.5">
-          <OdosLabel size="body2" weight="bold">
+          <Text size="body2" weight="bold">
             생년월일
-          </OdosLabel>
+          </Text>
           <div className="flex w-full flex-row justify-between">
             <FormField
               control={form.control}
               name="year"
               render={({ field }) => (
                 <FormItem>
-                  <OdosSelect onValueChange={field.onChange}>
+                  <Select onValueChange={field.onChange}>
                     <FormControl>
-                      <OdosSelectTrigger>
-                        <OdosSelectValue placeholder="연도" />
-                      </OdosSelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue placeholder="연도" />
+                      </SelectTrigger>
                     </FormControl>
-                    <OdosSelectContent>
+                    <SelectContent>
                       {yearOptions.map((year) => (
-                        <OdosSelectItem key={year} value={String(year)}>
+                        <SelectItem key={year} value={String(year)}>
                           {year}
-                        </OdosSelectItem>
+                        </SelectItem>
                       ))}
-                    </OdosSelectContent>
-                  </OdosSelect>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -107,20 +107,20 @@ export function SignUpForm(): React.ReactElement {
               name="month"
               render={({ field }) => (
                 <FormItem>
-                  <OdosSelect onValueChange={field.onChange}>
+                  <Select onValueChange={field.onChange}>
                     <FormControl>
-                      <OdosSelectTrigger>
-                        <OdosSelectValue placeholder="월" />
-                      </OdosSelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue placeholder="월" />
+                      </SelectTrigger>
                     </FormControl>
-                    <OdosSelectContent>
+                    <SelectContent>
                       {monthOptions.map((month) => (
-                        <OdosSelectItem key={month} value={String(month)}>
+                        <SelectItem key={month} value={String(month)}>
                           {month}
-                        </OdosSelectItem>
+                        </SelectItem>
                       ))}
-                    </OdosSelectContent>
-                  </OdosSelect>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -130,20 +130,20 @@ export function SignUpForm(): React.ReactElement {
               name="day"
               render={({ field }) => (
                 <FormItem>
-                  <OdosSelect onValueChange={field.onChange}>
+                  <Select onValueChange={field.onChange}>
                     <FormControl>
-                      <OdosSelectTrigger>
-                        <OdosSelectValue placeholder="일" />
-                      </OdosSelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue placeholder="일" />
+                      </SelectTrigger>
                     </FormControl>
-                    <OdosSelectContent>
+                    <SelectContent>
                       {dayOptions.map((day) => (
-                        <OdosSelectItem key={day} value={String(day)}>
+                        <SelectItem key={day} value={String(day)}>
                           {day}
-                        </OdosSelectItem>
+                        </SelectItem>
                       ))}
-                    </OdosSelectContent>
-                  </OdosSelect>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -151,92 +151,92 @@ export function SignUpForm(): React.ReactElement {
           </div>
         </div>
 
-        <OdosSpacing className="h-10" />
+        <Spacing className="h-10" />
         <div className="flex w-135 flex-col gap-0.5">
-          <OdosLabel size="body2" weight="bold">
+          <Text size="body2" weight="bold">
             성별
-          </OdosLabel>
+          </Text>
           <FormField
             control={form.control}
             name="gender"
             render={({ field }) => (
               <FormItem>
-                <OdosSelect onValueChange={field.onChange}>
+                <Select onValueChange={field.onChange}>
                   <FormControl>
-                    <OdosSelectTrigger>
-                      <OdosSelectValue placeholder="성별" />
-                    </OdosSelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="성별" />
+                    </SelectTrigger>
                   </FormControl>
-                  <OdosSelectContent>
-                    <OdosSelectItem value="MALE">남성</OdosSelectItem>
-                    <OdosSelectItem value="FEMALE">여성</OdosSelectItem>
-                  </OdosSelectContent>
-                </OdosSelect>
+                  <SelectContent>
+                    <SelectItem value="MALE">남성</SelectItem>
+                    <SelectItem value="FEMALE">여성</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
 
-        <OdosSpacing className="h-10" />
+        <Spacing className="h-10" />
         <div className="flex w-135 flex-col gap-0.5">
-          <OdosLabel size="body2" weight="bold">
+          <Text size="body2" weight="bold">
             직업
-          </OdosLabel>
+          </Text>
           <FormField
             control={form.control}
             name="job"
             render={({ field }) => (
               <FormItem>
-                <OdosSelect onValueChange={field.onChange}>
+                <Select onValueChange={field.onChange}>
                   <FormControl>
-                    <OdosSelectTrigger>
-                      <OdosSelectValue placeholder="직업" />
-                    </OdosSelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="직업" />
+                    </SelectTrigger>
                   </FormControl>
-                  <OdosSelectContent>
-                    <OdosSelectItem value="STUDENT">학생</OdosSelectItem>
-                    <OdosSelectItem value="WORKER">직장인</OdosSelectItem>
-                  </OdosSelectContent>
-                </OdosSelect>
+                  <SelectContent>
+                    <SelectItem value="STUDENT">학생</SelectItem>
+                    <SelectItem value="WORKER">직장인</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
 
-        <OdosSpacing className="h-10" />
+        <Spacing className="h-10" />
         <div className="flex w-135 flex-col gap-0.5">
-          <OdosLabel size="body2" weight="bold">
+          <Text size="body2" weight="bold">
             관심 카테고리
-          </OdosLabel>
+          </Text>
           <FormField
             control={form.control}
             name="category"
             render={({ field }) => (
               <FormItem>
-                <OdosToggleGroup
+                <ToggleGroup
                   type="single"
                   className="max-w-150"
                   value={field.value}
                   onValueChange={field.onChange}
                 >
                   {CATEGORY_OPTIONS.map((option) => (
-                    <OdosToggleGroupItem key={option.value} value={option.value} icon={option.icon}>
+                    <ToggleGroupItem key={option.value} value={option.value} icon={option.icon}>
                       {option.label}
-                    </OdosToggleGroupItem>
+                    </ToggleGroupItem>
                   ))}
-                </OdosToggleGroup>
+                </ToggleGroup>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
 
-        <OdosSpacing className="h-17.5" />
-        <OdosButton type="submit" className="w-full min-w-140">
+        <Spacing className="h-17.5" />
+        <Button type="submit" className="w-full min-w-140">
           가입하기
-        </OdosButton>
+        </Button>
       </form>
     </Form>
   );

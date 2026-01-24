@@ -1,4 +1,4 @@
-import { Text as OdosLabel } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { cn } from '@/shared/lib/utils';
 import { Slot } from '@radix-ui/react-slot';
 import { X } from 'lucide-react';
@@ -26,9 +26,9 @@ export function ChallengeGoalCreateButton({
       className={cn('rounded-odos-2 bg-gray-200 px-2 py-1', className)}
       {...props}
     >
-      <OdosLabel size="caption1" weight="medium" className="text-gray-600">
+      <Text size="caption1" weight="medium" className="text-gray-600">
         {props.children}
-      </OdosLabel>
+      </Text>
     </Comp>
   );
 }

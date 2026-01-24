@@ -2,13 +2,13 @@ import { ChallengeGoalToggle } from '@/features/diary/presentation/components/ch
 import { DiaryContentField } from '@/features/diary/presentation/components/diary-content-field';
 import {
   ChallengeListItem,
-  Footer as OdosFooter,
-  Text as OdosLabel,
-  PageBackground as OdosPageBackground,
-  PageTitle as OdosPageTitle,
-  PageWatermark as OdosPageWatermark,
-  Spacing as OdosSpacing,
-  Tag as OdosTag,
+  Footer,
+  Text,
+  PageBackground,
+  PageTitle,
+  PageWatermark,
+  Spacing,
+  Tag,
 } from '@1d1s/design-system';
 
 export const revalidate = 60;
@@ -61,16 +61,16 @@ function DiaryHeader({
 }): React.ReactElement {
   return (
     <div className="flex w-full justify-between">
-      <OdosLabel size="display2" weight="bold">
+      <Text size="display2" weight="bold">
         {title}
-      </OdosLabel>
+      </Text>
       <div className="flex flex-col items-end gap-1">
-        <OdosLabel size="caption2" weight="bold">
+        <Text size="caption2" weight="bold">
           {author}
-        </OdosLabel>
-        <OdosLabel size="caption2" weight="bold">
+        </Text>
+        <Text size="caption2" weight="bold">
           {createdAt}
-        </OdosLabel>
+        </Text>
       </div>
     </div>
   );
@@ -84,9 +84,9 @@ function ChallengeGoalsSection({
 }): React.ReactElement {
   return (
     <>
-      <OdosLabel size="heading2" weight="bold">
+      <Text size="heading2" weight="bold">
         챌린지
-      </OdosLabel>
+      </Text>
       <ChallengeListItem
         challengeName={'챌린지'}
         startDate={'2025-06-28'}
@@ -94,12 +94,12 @@ function ChallengeGoalsSection({
         maxParticipants={10}
         currentParticipants={5}
       />
-      <OdosSpacing className="h-10" />
+      <Spacing className="h-10" />
       <div className="flex gap-2">
-        <OdosLabel size="heading2" weight="bold">
+        <Text size="heading2" weight="bold">
           챌린지 목표
-        </OdosLabel>
-        <OdosTag>고정목표</OdosTag>
+        </Text>
+        <Tag>고정목표</Tag>
       </div>
 
       <div className="mt-6 flex flex-col space-y-3">
@@ -127,12 +127,12 @@ export default async function DiaryDetail({
   return (
     <div className="flex flex-col">
       <div className="flex justify-center">
-        <OdosPageBackground className="min-h-screen max-w-250 px-7.5">
-            <OdosSpacing className="h-20" />
-            <OdosPageTitle title="일지 상세" />
+        <PageBackground className="min-h-screen max-w-250 px-7.5">
+            <Spacing className="h-20" />
+            <PageTitle title="일지 상세" />
 
             <div className="flex w-full flex-col self-start">
-              <OdosSpacing className="h-17.5" />
+              <Spacing className="h-17.5" />
 
               <DiaryHeader
                 title={diaryData.title}
@@ -140,11 +140,11 @@ export default async function DiaryDetail({
                 createdAt={diaryData.createdAt}
               />
 
-              <OdosSpacing className="h-10" />
+              <Spacing className="h-10" />
 
               <ChallengeGoalsSection goals={diaryData.challengeGoals} />
 
-              <OdosSpacing className="h-10" />
+              <Spacing className="h-10" />
 
               <DiaryContentField
                 value={diaryData.content}
@@ -153,12 +153,12 @@ export default async function DiaryDetail({
               />
             </div>
 
-            <OdosSpacing className="h-10" />
-            <OdosPageWatermark />
-            <OdosSpacing className="h-10" />
-          </OdosPageBackground>
+            <Spacing className="h-10" />
+            <PageWatermark />
+            <Spacing className="h-10" />
+          </PageBackground>
         </div>
-        <OdosFooter />
+        <Footer />
       </div>
   );
 }

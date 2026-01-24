@@ -1,6 +1,6 @@
 // components/ChallengeGoalToggle.tsx
 
-import { Text as OdosLabel } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { cn } from '@/shared/lib/utils';
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { Check } from 'lucide-react';
@@ -56,9 +56,9 @@ export const ChallengeGoalToggle = React.forwardRef(
           <Check className="h-4 w-4" />
         </SwitchPrimitive.Thumb>
       </SwitchPrimitive.Root>
-      <OdosLabel size={'body2'} weight={'regular'} className="ml-2">
+      <Text size={'body2'} weight={'regular'} className="ml-2">
         {label}
-      </OdosLabel>
+      </Text>
     </label>
   )
 );

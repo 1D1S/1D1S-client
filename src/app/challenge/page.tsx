@@ -2,12 +2,12 @@
 
 import React from 'react';
 import {
-  PageBackground as OdosPageBackground,
-  PageTitle as OdosPageTitle,
-  Spacing as OdosSpacing,
-  PageWatermark as OdosPageWatermark,
+  PageBackground,
+  PageTitle,
+  Spacing,
+  PageWatermark,
   ChallengeListItem,
-  Footer as OdosFooter,
+  Footer,
 } from '@1d1s/design-system';
 import { SearchTextField } from '@/shared/components/odos-ui/search-text-field';
 
@@ -15,10 +15,10 @@ export default function ChallengeList(): React.ReactElement {
   return (
     <div className="flex flex-col">
       <div className="flex justify-center">
-        <OdosPageBackground className="min-h-screen min-w-250 px-5">
-            <OdosSpacing className="h-20" />
-            <OdosPageTitle title="챌린지 목록" />
-            <OdosSpacing className="h-20" />
+        <PageBackground className="min-h-screen min-w-250 px-5">
+            <Spacing className="h-20" />
+            <PageTitle title="챌린지 목록" />
+            <Spacing className="h-20" />
 
             <div className="flex w-full justify-end">
               <SearchTextField className="w-75" placeholder="검색어를 입력해주세요." />
@@ -37,12 +37,12 @@ export default function ChallengeList(): React.ReactElement {
               ))}
             </div>
 
-            <OdosSpacing className="h-20" />
-            <OdosPageWatermark />
-            <OdosSpacing className="h-20" />
-          </OdosPageBackground>
+            <Spacing className="h-20" />
+            <PageWatermark />
+            <Spacing className="h-20" />
+          </PageBackground>
         </div>
-        <OdosFooter />
+        <Footer />
       </div>
   );
 }

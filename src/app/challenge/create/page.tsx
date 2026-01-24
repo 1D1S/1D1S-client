@@ -5,9 +5,9 @@ import { StepProgress } from '@/features/challenge/presentation/components/step-
 import { useChallengeCreateForm } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
 import { Form } from '@/shared/components/ui/form';
 import {
-  PageBackground as OdosPageBackground,
-  PageTitle as OdosPageTitle,
-  Spacing as OdosSpacing,
+  PageBackground,
+  PageTitle,
+  Spacing,
 } from '@1d1s/design-system';
 import { ChallengeCreateForm } from './step-pages/challenge-create-form';
 
@@ -22,10 +22,10 @@ export default function ChallengeCreate(): React.ReactElement {
   return (
     <div className="flex flex-col">
       <div className="flex justify-center">
-        <OdosPageBackground className="flex min-h-screen min-w-250 flex-col items-center bg-white px-6">
-            <OdosSpacing className="h-15" />
-            <OdosPageTitle title="챌린지 생성" />
-            <OdosSpacing className="h-20" />
+        <PageBackground className="flex min-h-screen min-w-250 flex-col items-center bg-white px-6">
+            <Spacing className="h-15" />
+            <PageTitle title="챌린지 생성" />
+            <Spacing className="h-20" />
             <StepProgress
               steps={['챌린지 정보', '챌린지 기간', '챌린지 인원', '목표']}
               currentStep={step}
@@ -38,7 +38,7 @@ export default function ChallengeCreate(): React.ReactElement {
                 previousStep={prev}
               />
             </Form>
-          </OdosPageBackground>
+          </PageBackground>
         </div>
       </div>
   );

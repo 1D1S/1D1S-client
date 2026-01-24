@@ -1,6 +1,6 @@
 // components/ChallengePicker.tsx
 
-import { Text as OdosLabel, ChallengeListItem } from '@1d1s/design-system';
+import { Text, ChallengeListItem } from '@1d1s/design-system';
 import { useState, useEffect } from 'react';
 import { cn } from '@/shared/lib/utils';
 
@@ -73,7 +73,7 @@ export function ChallengePicker({
         className="flex h-20 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 transition hover:border-gray-400"
         onClick={() => setIsOpen(true)}
       >
-        <OdosLabel className="text-gray-500">챌린지를 선택해주세요.</OdosLabel>
+        <Text className="text-gray-500">챌린지를 선택해주세요.</Text>
       </div>
 
       {/* 모달: 항상 렌더링되지만 opacity & pointer-events로 제어 */}
@@ -95,9 +95,9 @@ export function ChallengePicker({
           className="relative mx-auto max-w-md rounded-xl bg-white p-6 text-center shadow-lg"
           onClick={(event) => event.stopPropagation()}
         >
-          <OdosLabel size="heading1" weight="bold" className="mb-4 block">
+          <Text size="heading1" weight="bold" className="mb-4 block">
             챌린지 선택
-          </OdosLabel>
+          </Text>
           <div className="flex max-h-[60vh] flex-col space-y-2 overflow-y-auto pr-2">
             {challenges.map((challenge) => (
               <ChallengeListItem

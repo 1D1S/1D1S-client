@@ -5,15 +5,15 @@ import {
 } from '@/features/challenge/presentation/components/challenge-toggle';
 import { ChallengeCreateFormValues } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
 import {
-  DatePicker as OdosDatePicker,
-  Select as OdosSelect,
-  SelectContent as OdosSelectContent,
-  SelectItem as OdosSelectItem,
-  SelectTrigger as OdosSelectTrigger,
-  SelectValue as OdosSelectValue,
-  Text as OdosLabel,
-  Spacing as OdosSpacing,
-  TextField as OdosTextField,
+  DatePicker,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Text,
+  Spacing,
+  TextField,
 } from '@1d1s/design-system';
 import { FormControl, FormField, FormItem, FormMessage } from '@/shared/components/ui/form';
 import { useFormContext } from 'react-hook-form';
@@ -25,11 +25,11 @@ export function Step2(): React.ReactElement {
 
   return (
     <div className="flex w-full flex-col items-start">
-      <OdosSpacing className="h-25" />
-      <OdosLabel size="display2" weight="bold">
+      <Spacing className="h-25" />
+      <Text size="display2" weight="bold">
         챌린지 기간을 입력해주세요.
-      </OdosLabel>
-      <OdosSpacing className="h-5" />
+      </Text>
+      <Spacing className="h-5" />
 
       <FormField
         control={control}
@@ -72,32 +72,32 @@ export function Step2(): React.ReactElement {
       />
       {periodType === 'LIMITED' && (
         <>
-          <OdosSpacing className="h-12" />
-          <OdosLabel size="heading1" weight="bold">
+          <Spacing className="h-12" />
+          <Text size="heading1" weight="bold">
             기간 선택
-          </OdosLabel>
-          <OdosSpacing className="h-5" />
+          </Text>
+          <Spacing className="h-5" />
           <div className="flex gap-5">
             <FormField
               control={control}
               name="period"
               render={({ field }) => (
                 <FormItem className="w-50">
-                  <OdosSelect onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl className="w-50">
-                      <OdosSelectTrigger className="w-50">
-                        <OdosSelectValue placeholder="기간을 선택해주세요." />
-                      </OdosSelectTrigger>
+                      <SelectTrigger className="w-50">
+                        <SelectValue placeholder="기간을 선택해주세요." />
+                      </SelectTrigger>
                     </FormControl>
-                    <OdosSelectContent className="w-50">
-                      <OdosSelectItem value="7">7일</OdosSelectItem>
-                      <OdosSelectItem value="14">14일</OdosSelectItem>
-                      <OdosSelectItem value="30">30일</OdosSelectItem>
-                      <OdosSelectItem value="60">60일</OdosSelectItem>
-                      <OdosSelectItem value="365">1년</OdosSelectItem>
-                      <OdosSelectItem value="etc">직접 입력 (최대 2년)</OdosSelectItem>
-                    </OdosSelectContent>
-                  </OdosSelect>
+                    <SelectContent className="w-50">
+                      <SelectItem value="7">7일</SelectItem>
+                      <SelectItem value="14">14일</SelectItem>
+                      <SelectItem value="30">30일</SelectItem>
+                      <SelectItem value="60">60일</SelectItem>
+                      <SelectItem value="365">1년</SelectItem>
+                      <SelectItem value="etc">직접 입력 (최대 2년)</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -111,7 +111,7 @@ export function Step2(): React.ReactElement {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <OdosTextField
+                        <TextField
                           id="periodNumber"
                           className="w-50"
                           type="number"
@@ -122,25 +122,25 @@ export function Step2(): React.ReactElement {
                     </FormItem>
                   )}
                 />
-                <OdosLabel size="body2" weight="bold">
+                <Text size="body2" weight="bold">
                   일
-                </OdosLabel>
+                </Text>
               </div>
             )}
           </div>
-          <OdosSpacing className="h-6" />
+          <Spacing className="h-6" />
 
-          <OdosLabel size="heading1" weight="bold">
+          <Text size="heading1" weight="bold">
             챌린지 시작 날짜
-          </OdosLabel>
-          <OdosSpacing className="h-5" />
+          </Text>
+          <Spacing className="h-5" />
 
           <FormField
             control={control}
             name="startDate"
             render={({ field }) => (
               <FormItem>
-                <OdosDatePicker value={field.value} onChange={field.onChange} />
+                <DatePicker value={field.value} onChange={field.onChange} />
                 <FormMessage />
               </FormItem>
             )}

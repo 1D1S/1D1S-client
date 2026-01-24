@@ -1,9 +1,9 @@
 import {
-  Text as OdosLabel,
-  Spacing as OdosSpacing,
-  TextField as OdosTextField,
-  ToggleGroup as OdosToggleGroup,
-  ToggleGroupItem as OdosToggleGroupItem,
+  Text,
+  Spacing,
+  TextField,
+  ToggleGroup,
+  ToggleGroupItem,
 } from '@1d1s/design-system';
 import { OdosTextArea } from '@/shared/components/odos-ui/text-area';
 import { useFormContext } from 'react-hook-form';
@@ -15,11 +15,11 @@ export function Step1(): React.ReactElement {
   const { control } = useFormContext<ChallengeCreateFormValues>();
   return (
     <div className="w-full">
-      <OdosSpacing className="h-20" />
-      <OdosLabel size="display2" weight="bold">
+      <Spacing className="h-20" />
+      <Text size="display2" weight="bold">
         챌린지 정보를 입력해주세요.
-      </OdosLabel>
-      <OdosSpacing className="h-10" />
+      </Text>
+      <Spacing className="h-10" />
 
       <FormField
         control={control}
@@ -27,7 +27,7 @@ export function Step1(): React.ReactElement {
         render={({ field }) => (
           <FormItem>
             <FormControl>
-              <OdosTextField
+              <TextField
                 label="제목"
                 placeholder="챌린지 제목"
                 id="title"
@@ -40,34 +40,34 @@ export function Step1(): React.ReactElement {
         )}
       />
 
-      <OdosSpacing className="h-7.5" />
+      <Spacing className="h-7.5" />
       <div className="flex w-235 flex-col gap-2">
-        <OdosLabel size="body2" weight="bold">
+        <Text size="body2" weight="bold">
           카테고리
-        </OdosLabel>
+        </Text>
         <FormField
           control={control}
           name="category"
           render={({ field }) => (
             <FormItem>
-              <OdosToggleGroup
+              <ToggleGroup
                 type="single"
                 className="max-w-235"
                 value={field.value}
                 onValueChange={field.onChange}
               >
                 {CATEGORY_OPTIONS.map((option) => (
-                  <OdosToggleGroupItem key={option.value} value={option.value} icon={option.icon}>
+                  <ToggleGroupItem key={option.value} value={option.value} icon={option.icon}>
                     {option.label}
-                  </OdosToggleGroupItem>
+                  </ToggleGroupItem>
                 ))}
-              </OdosToggleGroup>
+              </ToggleGroup>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <OdosSpacing className="h-7.5" />
+        <Spacing className="h-7.5" />
         <FormField
           control={control}
           name="description"

@@ -1,4 +1,4 @@
-import { Text as OdosLabel } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { cn } from '@/shared/lib/utils';
 import Image from 'next/image';
 
@@ -24,9 +24,9 @@ export function LoginButton({
       {...props}
     >
       <Image src={img} alt="Login Icon" width={24} height={24} />
-      <OdosLabel size="heading2" weight="bold">
+      <Text size="heading2" weight="bold">
         {text}
-      </OdosLabel>
+      </Text>
       <div className="h-6 w-6" />
     </button>
   );
@@ -37,9 +37,9 @@ export function LoginButtons(): React.ReactElement {
     <div className="flex flex-col gap-10">
       <div className="flex items-center justify-between">
         <div className="h-0.5 w-45 bg-gray-300" />
-        <OdosLabel size="heading1" weight="bold" className="text-gray-500">
+        <Text size="heading1" weight="bold" className="text-gray-500">
           소셜 로그인
-        </OdosLabel>
+        </Text>
         <div className="h-0.5 w-45 bg-gray-300" />
       </div>
       <LoginButton

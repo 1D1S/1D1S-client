@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo } from 'react';
-import { Text as OdosLabel } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { cn } from '@/shared/lib/utils';
 
 interface StepIndicatorProps {
@@ -28,13 +28,13 @@ const StepIndicator = memo<StepIndicatorProps>(({ step, label, isActive }) => (
     >
       {step}
     </div>
-    <OdosLabel
+    <Text
       className={cn(isActive ? 'text-gray-900' : 'text-gray-500')}
       size="caption1"
       weight={isActive ? 'bold' : 'medium'}
     >
       {label}
-    </OdosLabel>
+    </Text>
   </div>
 ));
 StepIndicator.displayName = 'StepIndicator';
