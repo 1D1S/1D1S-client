@@ -1,12 +1,14 @@
 'use client';
 
 import React from 'react';
-import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
-import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
-import { ChallengeListItem } from '@/shared/components/odos-ui/challenge-list-item';
-import { OdosFooter } from '@/shared/components/odos-ui/footer';
+import {
+  PageBackground as OdosPageBackground,
+  PageTitle as OdosPageTitle,
+  Spacing as OdosSpacing,
+  PageWatermark as OdosPageWatermark,
+  ChallengeListItem,
+  Footer as OdosFooter,
+} from '@1d1s/design-system';
 import { SearchTextField } from '@/shared/components/odos-ui/search-text-field';
 
 export default function ChallengeList(): React.ReactElement {

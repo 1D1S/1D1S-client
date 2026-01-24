@@ -1,19 +1,19 @@
 // import { OdosButton } from '@/components/odos-ui/button';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
-import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
+import {
+  Text as OdosLabel,
+  PageTitle as OdosPageTitle,
+  SelectSeparator as OdosSelectSeparator,
+  Select as OdosSelect,
+  SelectItem as OdosSelectItem,
+  SelectGroup as OdosSelectGroup,
+  SelectTrigger as OdosSelectTrigger,
+  SelectContent as OdosSelectContent,
+  SelectValue as OdosSelectValue,
+  Toggle as OdosToggle,
+  TextField as OdosTextField,
+} from '@1d1s/design-system';
 // import { OdosTag } from '@/components/odos-ui/tag';
 // import { OdosChallengeCard } from '@/shared/components/odos-ui/challenge-card';
-import {
-  OdosSelectSeparator,
-  OdosSelect,
-  OdosSelectItem,
-  OdosSelectGroup,
-  OdosSelectTrigger,
-  OdosSelectContent,
-  OdosSelectValue,
-} from '@/shared/components/odos-ui/dropdown';
-import { OdosToggle } from '@/shared/components/odos-ui/toggle';
-import { OdosTextField } from '@/shared/components/odos-ui/text-field';
 
 export default function DevTest(): React.ReactElement {
   return (

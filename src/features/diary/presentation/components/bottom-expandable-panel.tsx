@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
+import {
+  PageWatermark as OdosPageWatermark,
+  Text as OdosLabel,
+  Spacing as OdosSpacing,
+  DatePicker as OdosDatePicker,
+} from '@1d1s/design-system';
 import { cn } from '@/shared/lib/utils';
 import { Mood, MoodToggle } from './mood-toggle';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosDatePicker } from '@/shared/components/odos-ui/date-picker';
 
 export default function BottomExpandablePanel(): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);

@@ -1,3 +1,4 @@
+@source "../../../node_modules/@1d1s/design-system";
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import './colors.css';

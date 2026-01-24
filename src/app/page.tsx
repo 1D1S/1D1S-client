@@ -1,18 +1,20 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
-import { OdosFooter } from '@/shared/components/odos-ui/footer';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
-import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
-import { OdosMenu } from '@/shared/components/odos-ui/menu';
-import { OdosProfileCard } from '@/shared/components/odos-ui/profile-card';
-import { DiaryCard } from '@/shared/components/odos-ui/diary-card';
-import { OdosChallengeCard } from '@/shared/components/odos-ui/challenge-card';
-import { InfoButton } from '@/shared/components/odos-ui/info-button';
+import {
+  PageTitle as OdosPageTitle,
+  Footer as OdosFooter,
+  Text as OdosLabel,
+  Spacing as OdosSpacing,
+  PageWatermark as OdosPageWatermark,
+  PageBackground as OdosPageBackground,
+  Menu as OdosMenu,
+  ProfileCard as OdosProfileCard,
+  DiaryCard,
+  ChallengeCard as OdosChallengeCard,
+  InfoButton,
+} from '@1d1s/design-system';
 
 function SectionHeader({
   title,

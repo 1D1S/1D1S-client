@@ -1,6 +1,6 @@
 'use client';
 import { SignUpForm } from '@/features/auth/presentation/components/sign-up-form';
-import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
+import { PageBackground as OdosPageBackground } from '@1d1s/design-system';
 
 export default function SignUpPage(): React.ReactElement {
   return (

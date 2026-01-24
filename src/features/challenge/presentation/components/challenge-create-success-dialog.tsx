@@ -1,6 +1,5 @@
 import Image from 'next/image';
-import { OdosButton } from '@/shared/components/odos-ui/button';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
+import { Button as OdosButton, Text as OdosLabel } from '@1d1s/design-system';
 import {
   Dialog,
   DialogClose,

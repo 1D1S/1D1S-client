@@ -4,7 +4,7 @@ import React from 'react';
 import { Plus } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import Image from 'next/image';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
+import { Text as OdosLabel } from '@1d1s/design-system';
 
 interface DiaryContentFieldProps {
   value: string;

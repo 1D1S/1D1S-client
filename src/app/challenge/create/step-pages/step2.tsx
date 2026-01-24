@@ -4,17 +4,17 @@ import {
   ChallengeToggle,
 } from '@/features/challenge/presentation/components/challenge-toggle';
 import { ChallengeCreateFormValues } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
-import { OdosDatePicker } from '@/shared/components/odos-ui/date-picker';
 import {
-  OdosSelect,
-  OdosSelectContent,
-  OdosSelectItem,
-  OdosSelectTrigger,
-  OdosSelectValue,
-} from '@/shared/components/odos-ui/dropdown';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosTextField } from '@/shared/components/odos-ui/text-field';
+  DatePicker as OdosDatePicker,
+  Select as OdosSelect,
+  SelectContent as OdosSelectContent,
+  SelectItem as OdosSelectItem,
+  SelectTrigger as OdosSelectTrigger,
+  SelectValue as OdosSelectValue,
+  Text as OdosLabel,
+  Spacing as OdosSpacing,
+  TextField as OdosTextField,
+} from '@1d1s/design-system';
 import { FormControl, FormField, FormItem, FormMessage } from '@/shared/components/ui/form';
 import { useFormContext } from 'react-hook-form';
 

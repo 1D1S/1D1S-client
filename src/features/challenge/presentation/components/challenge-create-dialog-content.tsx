@@ -1,5 +1,4 @@
-import { OdosLabel } from '@/shared/components/odos-ui/label';
-import { OdosTag } from '@/shared/components/odos-ui/tag';
+import { Text as OdosLabel, Tag as OdosTag } from '@1d1s/design-system';
 import { ChallengeGoalToggle } from './challenge-goal-toggle';
 import { useFormContext } from 'react-hook-form';
 import { ChallengeCreateFormValues } from '../hooks/use-challenge-create-form';

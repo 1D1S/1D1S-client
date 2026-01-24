@@ -1,12 +1,15 @@
-import { OdosLabel } from '@/shared/components/odos-ui/label';
+import {
+  Text as OdosLabel,
+  Spacing as OdosSpacing,
+  TextField as OdosTextField,
+  ToggleGroup as OdosToggleGroup,
+  ToggleGroupItem as OdosToggleGroupItem,
+} from '@1d1s/design-system';
+import { OdosTextArea } from '@/shared/components/odos-ui/text-area';
 import { useFormContext } from 'react-hook-form';
 import { ChallengeCreateFormValues } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
 import { FormControl, FormField, FormItem, FormMessage } from '@/shared/components/ui/form';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosTextField } from '@/shared/components/odos-ui/text-field';
-import { OdosToggleGroup, OdosToggleGroupItem } from '@/shared/components/odos-ui/toggle-group';
 import { CATEGORY_OPTIONS } from '@/shared/constants/categories';
-import { OdosTextArea } from '@/shared/components/odos-ui/text-area';
 
 export function Step1(): React.ReactElement {
   const { control } = useFormContext<ChallengeCreateFormValues>();

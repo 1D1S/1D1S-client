@@ -2,17 +2,19 @@
 'use client';
 
 import React, { useState } from 'react';
-import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
-import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
-import { OdosTextField } from '@/shared/components/odos-ui/text-field';
+import {
+  PageBackground as OdosPageBackground,
+  PageTitle as OdosPageTitle,
+  Spacing as OdosSpacing,
+  PageWatermark as OdosPageWatermark,
+  Text as OdosLabel,
+  TextField as OdosTextField,
+  ChallengeListItem,
+} from '@1d1s/design-system';
 import { ChallengePicker } from '@/features/diary/presentation/components/challenge-picker';
 import { ChallengeGoalToggle } from '@/features/diary/presentation/components/challenge-goal-toggle';
 import { DiaryContentField } from '@/features/diary/presentation/components/diary-content-field';
 import BottomExpandablePanel from '@/features/diary/presentation/components/bottom-expandable-panel';
-import { ChallengeListItem } from '@/shared/components/odos-ui/challenge-list-item';
 
 export default function DiaryCreate(): React.ReactElement {
   const [challengeSelected, setChallengeSelected] = useState<boolean>(false);

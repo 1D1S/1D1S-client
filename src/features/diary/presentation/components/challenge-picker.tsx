@@ -1,9 +1,8 @@
 // components/ChallengePicker.tsx
 
-import { OdosLabel } from '@/shared/components/odos-ui/label';
+import { Text as OdosLabel, ChallengeListItem } from '@1d1s/design-system';
 import { useState, useEffect } from 'react';
 import { cn } from '@/shared/lib/utils';
-import { ChallengeListItem } from '@/shared/components/odos-ui/challenge-list-item';
 
 interface ChallengePickerProps {
   onSelect?(): void;

@@ -2,13 +2,15 @@
 
 import React from 'react';
 
-import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
-import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
+import {
+  PageBackground as OdosPageBackground,
+  PageTitle as OdosPageTitle,
+  Spacing as OdosSpacing,
+  PageWatermark as OdosPageWatermark,
+  Text as OdosLabel,
+  DiaryCard,
+} from '@1d1s/design-system';
 import { useDiaryItems } from '@/features/diary/presentation/hooks/diary-items';
-import { DiaryCard } from '@/shared/components/odos-ui/diary-card';
 
 export default function DiaryList(): React.ReactElement {
   const { items, loading } = useDiaryItems(12, 12);

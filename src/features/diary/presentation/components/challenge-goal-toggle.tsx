@@ -1,6 +1,6 @@
 // components/ChallengeGoalToggle.tsx
 
-import { OdosLabel } from '@/shared/components/odos-ui/label';
+import { Text as OdosLabel } from '@1d1s/design-system';
 import { cn } from '@/shared/lib/utils';
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { Check } from 'lucide-react';

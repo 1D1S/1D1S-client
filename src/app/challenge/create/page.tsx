@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { StepProgress } from '@/features/challenge/presentation/components/step-progress';
 import { useChallengeCreateForm } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
 import { Form } from '@/shared/components/ui/form';
-import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
-import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
+import {
+  PageBackground as OdosPageBackground,
+  PageTitle as OdosPageTitle,
+  Spacing as OdosSpacing,
+} from '@1d1s/design-system';
 import { ChallengeCreateForm } from './step-pages/challenge-create-form';
 
 export default function ChallengeCreate(): React.ReactElement {

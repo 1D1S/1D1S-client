@@ -1,7 +1,7 @@
 import { ChallengeCreateDialog } from '@/features/challenge/presentation/components/challenge-create-dialog';
 import { ChallengeCreateSuccessDialog } from '@/features/challenge/presentation/components/challenge-create-success-dialog';
 import { ChallengeCreateFormValues } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
-import { OdosButton } from '@/shared/components/odos-ui/button';
+import { Button as OdosButton } from '@1d1s/design-system';
 import { Step1 } from './step1';
 import { Step2 } from './step2';
 import { Step3 } from './step3';

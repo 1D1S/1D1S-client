@@ -1,13 +1,15 @@
 import { ChallengeGoalToggle } from '@/features/diary/presentation/components/challenge-goal-toggle';
 import { DiaryContentField } from '@/features/diary/presentation/components/diary-content-field';
-import { ChallengeListItem } from '@/shared/components/odos-ui/challenge-list-item';
-import { OdosFooter } from '@/shared/components/odos-ui/footer';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
-import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
-import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
-import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosTag } from '@/shared/components/odos-ui/tag';
+import {
+  ChallengeListItem,
+  Footer as OdosFooter,
+  Text as OdosLabel,
+  PageBackground as OdosPageBackground,
+  PageTitle as OdosPageTitle,
+  PageWatermark as OdosPageWatermark,
+  Spacing as OdosSpacing,
+  Tag as OdosTag,
+} from '@1d1s/design-system';
 
 export const revalidate = 60;
 

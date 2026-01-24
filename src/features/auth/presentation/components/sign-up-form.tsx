@@ -1,19 +1,20 @@
-import { OdosButton } from '@/shared/components/odos-ui/button';
 import {
-  OdosSelect,
-  OdosSelectTrigger,
-  OdosSelectValue,
-  OdosSelectContent,
-  OdosSelectItem,
-} from '@/shared/components/odos-ui/dropdown';
-import { OdosImagePicker } from '@/shared/components/odos-ui/impage-picker';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
-import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosTextField } from '@/shared/components/odos-ui/text-field';
+  Button as OdosButton,
+  Select as OdosSelect,
+  SelectTrigger as OdosSelectTrigger,
+  SelectValue as OdosSelectValue,
+  SelectContent as OdosSelectContent,
+  SelectItem as OdosSelectItem,
+  ImagePicker as OdosImagePicker,
+  Text as OdosLabel,
+  PageTitle as OdosPageTitle,
+  Spacing as OdosSpacing,
+  TextField as OdosTextField,
+  ToggleGroup as OdosToggleGroup,
+  ToggleGroupItem as OdosToggleGroupItem,
+} from '@1d1s/design-system';
 import { SignupFormValues, useSignUpForm } from '../hooks/use-sign-up-form';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/shared/components/ui/form';
-import { OdosToggleGroup, OdosToggleGroupItem } from '@/shared/components/odos-ui/toggle-group';
 import { CATEGORY_OPTIONS } from '@/shared/constants/categories';
 
 export function SignUpForm(): React.ReactElement {

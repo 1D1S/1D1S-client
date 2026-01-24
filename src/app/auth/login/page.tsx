@@ -2,9 +2,11 @@
 import { HeroText } from '@/features/auth/presentation/components/hero-text';
 import { LoginButtons } from '@/features/auth/presentation/components/login-buttons';
 import RollingText from '@/features/auth/presentation/components/rolling-text';
-import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
-import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
+import {
+  PageBackground as OdosPageBackground,
+  PageTitle as OdosPageTitle,
+  Spacing as OdosSpacing,
+} from '@1d1s/design-system';
 
 export default function LoginPage(): React.ReactElement {
   return (

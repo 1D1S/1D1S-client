@@ -1,17 +1,19 @@
 import React from 'react';
 import Image from 'next/image';
-import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
-import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
-import { OdosFooter } from '@/shared/components/odos-ui/footer';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
-import { OdosTag } from '@/shared/components/odos-ui/tag';
+import {
+  PageBackground as OdosPageBackground,
+  PageTitle as OdosPageTitle,
+  Spacing as OdosSpacing,
+  PageWatermark as OdosPageWatermark,
+  Footer as OdosFooter,
+  Text as OdosLabel,
+  Tag as OdosTag,
+  UserListItem,
+  Button as OdosButton,
+  CircularProgress,
+  DiaryCard,
+} from '@1d1s/design-system';
 import { ChallengeGoalToggle } from '@/features/diary/presentation/components/challenge-goal-toggle';
-import { UserListItem } from '@/shared/components/odos-ui/user-list-item';
-import { OdosButton } from '@/shared/components/odos-ui/button';
-import { CircularProgress } from '@/shared/components/odos-ui/circular-progress';
-import { DiaryCard } from '@/shared/components/odos-ui/diary-card';
 
 interface ChallengeDetailProps {
   params: Promise<{ id: string }>;
@@ -35,7 +37,7 @@ export default async function ChallengeDetail({
                 <OdosLabel size={'heading1'} weight={'bold'}>
                   [챌린지 제목]{id}
                 </OdosLabel>
-                {isAuthor && <OdosButton variant={'warningSmall'}>챌린지 주최 취소</OdosButton>}
+                {isAuthor && <OdosButton variant={'warning'}>챌린지 주최 취소</OdosButton>}
               </div>
               <OdosSpacing className="h-7" />
               <div className="bg-main-300 rounded-odos-2 flex min-h-16 w-full items-center p-4">
