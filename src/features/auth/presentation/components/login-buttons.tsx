@@ -17,7 +17,7 @@ export function LoginButton({
     <button
       className={cn(
         'flex flex-row items-center justify-between',
-        'w-135 px-6 py-3',
+        'w-full max-w-[320px] px-6 py-3',
         'rounded-odos-2',
         className
       )}
@@ -34,24 +34,26 @@ export function LoginButton({
 
 export function LoginButtons(): React.ReactElement {
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex items-center justify-between">
-        <div className="h-0.5 w-45 bg-gray-300" />
-        <Text size="heading1" weight="bold" className="text-gray-500">
+    <div className="flex w-full flex-col items-center gap-6">
+      <div className="flex w-full max-w-[320px] items-center justify-between gap-4">
+        <div className="h-0.5 flex-1 bg-gray-300" />
+        <Text size="heading1" weight="bold" className="shrink-0 text-gray-500">
           소셜 로그인
         </Text>
-        <div className="h-0.5 w-45 bg-gray-300" />
+        <div className="h-0.5 flex-1 bg-gray-300" />
       </div>
-      <LoginButton
-        img="/images/kakao-logo.png"
-        text="카카오 로그인"
-        className="bg-[#FEE500] text-black"
-      />
-      <LoginButton
-        img="/images/naver-logo.png"
-        text="네이버 로그인"
-        className="bg-[#03C75A] text-white"
-      />
+      <div className="flex w-full flex-col items-center gap-3">
+        <LoginButton
+          img="/images/kakao-logo.png"
+          text="카카오 로그인"
+          className="bg-[#FEE500] text-black"
+        />
+        <LoginButton
+          img="/images/naver-logo.png"
+          text="네이버 로그인"
+          className="bg-[#03C75A] text-white"
+        />
+      </div>
     </div>
   );
 }

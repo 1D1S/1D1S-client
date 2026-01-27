@@ -5,7 +5,6 @@ import { ChallengeGoalToggle } from '@/features/diary/presentation/components/ch
 import { DiaryContentField } from '@/features/diary/presentation/components/diary-content-field';
 import {
   ChallengeListItem,
-  Footer,
   Text,
   PageTitle,
   PageWatermark,
@@ -130,8 +129,6 @@ export function DiaryDetailClient({ diaryData }: { diaryData: DiaryData }): Reac
         </div>
         <Spacing className="h-8" />
       </div>
-
-      <Footer />
     </div>
   );
 }

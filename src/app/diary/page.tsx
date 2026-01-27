@@ -7,7 +7,6 @@ import {
   PageWatermark,
   Text,
   DiaryCard,
-  Footer,
 } from '@1d1s/design-system';
 import { useDiaryItems } from '@/features/diary/presentation/hooks/diary-items';
 
@@ -56,9 +55,6 @@ export default function DiaryList(): React.ReactElement {
         </div>
         <Spacing className="h-8" />
       </div>
-
-      {/* 푸터 */}
-      <Footer />
     </div>
   );
 }

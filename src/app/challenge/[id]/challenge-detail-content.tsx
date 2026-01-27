@@ -7,7 +7,6 @@ import {
   PageTitle,
   Spacing,
   PageWatermark,
-  Footer,
   Text,
   Tag,
   UserListItem,
@@ -205,8 +204,6 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps) {
           <Spacing className="h-8" />
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 }

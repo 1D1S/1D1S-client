@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
 import {
   PageTitle,
-  Footer,
   Text,
   Spacing,
   PageWatermark,
@@ -38,6 +38,7 @@ function SectionHeader({
 }
 
 export default function MainPage(): React.ReactElement {
+  const router = useRouter();
   const CARD_COUNT = 8;
 
   return (
@@ -58,7 +59,8 @@ export default function MainPage(): React.ReactElement {
             imageSrc={'/images/logo-white.png'}
             gradientFrom={'#1D9C6D'}
             gradientTo={'#5EC69D'}
-            className="flex-1 h-32"
+            className="flex-1 h-32 cursor-pointer"
+            onClick={() => router.push('/onboarding')}
           />
           <InfoButton
             mainText={'불편한 점이 있으신가요?'}
@@ -66,7 +68,8 @@ export default function MainPage(): React.ReactElement {
             imageSrc={'/images/message.png'}
             gradientFrom={'#1666BA'}
             gradientTo={'#7AB3EF'}
-            className="flex-1 h-32"
+            className="flex-1 h-32 cursor-pointer"
+            onClick={() => router.push('/inquiry')}
           />
         </div>
 
@@ -125,9 +128,6 @@ export default function MainPage(): React.ReactElement {
         </div>
         <Spacing className="h-8" />
       </div>
-
-      {/* 푸터 */}
-      <Footer />
     </div>
   );
 }

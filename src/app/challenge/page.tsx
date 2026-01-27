@@ -6,7 +6,6 @@ import {
   Spacing,
   PageWatermark,
   ChallengeListItem,
-  Footer,
   TextField,
   Pagination,
 } from '@1d1s/design-system';
@@ -57,9 +56,6 @@ export default function ChallengeList(): React.ReactElement {
         </div>
         <Spacing className="h-8" />
       </div>
-
-      {/* 푸터 */}
-      <Footer />
     </div>
   );
 }
