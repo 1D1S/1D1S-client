@@ -1,5 +1,13 @@
 @theme inline {
   /* border radius */
+  --radius-0: var(--radius-odos-0);
+  --radius-0\.5: var(--radius-odos-0\.5);
+  --radius-1: var(--radius-odos-1);
+  --radius-1\.5: var(--radius-odos-1\.5);
+  --radius-2: var(--radius-odos-2);
+  --radius-3: var(--radius-odos-3);
+  --radius-4: var(--radius-odos-4);
+
   --radius-odos-0: var(--radius-odos-0);
   --radius-odos-0\.5: var(--radius-odos-0\.5);
   --radius-odos-1: var(--radius-odos-1);

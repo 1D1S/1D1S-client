@@ -5,15 +5,15 @@ import {
 } from '@/features/challenge/presentation/components/challenge-toggle';
 import { ChallengeCreateFormValues } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
 import {
-  OdosSelect,
-  OdosSelectContent,
-  OdosSelectItem,
-  OdosSelectTrigger,
-  OdosSelectValue,
-} from '@/shared/components/odos-ui/dropdown';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosTextField } from '@/shared/components/odos-ui/text-field';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Text,
+  Spacing,
+  TextField,
+} from '@1d1s/design-system';
 import { FormControl, FormField, FormItem, FormMessage } from '@/shared/components/ui/form';
 import { useFormContext } from 'react-hook-form';
 
@@ -24,11 +24,11 @@ export function Step3(): React.ReactElement {
 
   return (
     <div>
-      <OdosSpacing className="h-25" />
-      <OdosLabel size="display2" weight="bold">
+      <Spacing className="h-25" />
+      <Text size="display2" weight="bold">
         챌린지 인원을 입력을주세요.
-      </OdosLabel>
-      <OdosSpacing className="h-5" />
+      </Text>
+      <Spacing className="h-5" />
 
       <FormField
         control={control}
@@ -68,30 +68,30 @@ export function Step3(): React.ReactElement {
 
       {participationType === 'GROUP' && (
         <>
-          <OdosSpacing className="h-12" />
-          <OdosLabel size="heading1" weight="bold">
+          <Spacing className="h-12" />
+          <Text size="heading1" weight="bold">
             인원 선택
-          </OdosLabel>
-          <OdosSpacing className="h-5" />
+          </Text>
+          <Spacing className="h-5" />
           <div className="flex gap-5">
             <FormField
               control={control}
               name="memberCount"
               render={({ field }) => (
                 <FormItem className="w-50">
-                  <OdosSelect onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl className="w-50">
-                      <OdosSelectTrigger className="w-50">
-                        <OdosSelectValue placeholder="기간을 선택해주세요." />
-                      </OdosSelectTrigger>
+                      <SelectTrigger className="w-50">
+                        <SelectValue placeholder="기간을 선택해주세요." />
+                      </SelectTrigger>
                     </FormControl>
-                    <OdosSelectContent className="w-50">
-                      <OdosSelectItem value="2">2명</OdosSelectItem>
-                      <OdosSelectItem value="5">5명</OdosSelectItem>
-                      <OdosSelectItem value="10">10명</OdosSelectItem>
-                      <OdosSelectItem value="etc">직접 입력 (최대 50명)</OdosSelectItem>
-                    </OdosSelectContent>
-                  </OdosSelect>
+                    <SelectContent className="w-50">
+                      <SelectItem value="2">2명</SelectItem>
+                      <SelectItem value="5">5명</SelectItem>
+                      <SelectItem value="10">10명</SelectItem>
+                      <SelectItem value="etc">직접 입력 (최대 50명)</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -105,7 +105,7 @@ export function Step3(): React.ReactElement {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <OdosTextField
+                        <TextField
                           id="memberCountNumber"
                           className="w-50"
                           type="number"
@@ -116,9 +116,9 @@ export function Step3(): React.ReactElement {
                     </FormItem>
                   )}
                 />
-                <OdosLabel size="body2" weight="bold">
+                <Text size="body2" weight="bold">
                   명
-                </OdosLabel>
+                </Text>
               </div>
             )}
           </div>

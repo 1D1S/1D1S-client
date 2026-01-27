@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
+import { Text } from '@1d1s/design-system';
 import { cn } from '@/shared/lib/utils';
 import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group';
 
@@ -60,16 +60,16 @@ export function ChallengeToggle({
       {...props}
     >
       <div className="flex flex-col items-start">
-        <OdosLabel size="heading2" weight="bold" className="mb-2 block transition-colors">
+        <Text size="heading2" weight="bold" className="mb-2 block transition-colors">
           {title}
-        </OdosLabel>
-        <OdosLabel
+        </Text>
+        <Text
           size="body2"
           weight="medium"
           className={cn('block text-left', 'transition-colors', 'whitespace-pre-line')}
         >
           {subtitle}
-        </OdosLabel>
+        </Text>
       </div>
       <Image
         className={cn('mt-auto ml-auto', 'flex items-end justify-end')}

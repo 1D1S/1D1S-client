@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
+import {
+  PageWatermark,
+  Text,
+  Spacing,
+  DatePicker,
+} from '@1d1s/design-system';
 import { cn } from '@/shared/lib/utils';
 import { Mood, MoodToggle } from './mood-toggle';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosDatePicker } from '@/shared/components/odos-ui/date-picker';
 
 export default function BottomExpandablePanel(): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,16 +58,16 @@ export default function BottomExpandablePanel(): React.ReactElement {
                 )}
               >
                 <div className="flex items-center justify-between border-b border-gray-900 pb-2">
-                  <OdosPageWatermark />
-                  <OdosLabel size="heading2" weight="bold">
+                  <PageWatermark />
+                  <Text size="heading2" weight="bold">
                     제출
-                  </OdosLabel>
+                  </Text>
                 </div>
                 <div className="flex items-center justify-start">
-                  <OdosLabel size="heading2" weight="bold" className="mr-2">
+                  <Text size="heading2" weight="bold" className="mr-2">
                     작성일
-                  </OdosLabel>
-                  <OdosDatePicker
+                  </Text>
+                  <DatePicker
                     value={date}
                     onChange={function (date: Date | undefined): void {
                       setDate(date);
@@ -73,12 +75,12 @@ export default function BottomExpandablePanel(): React.ReactElement {
                     disableClickPropagation={true}
                   />
                 </div>
-                <OdosLabel size="heading2" weight="bold" className="mt-8">
+                <Text size="heading2" weight="bold" className="mt-8">
                   오늘의 기분
-                </OdosLabel>
+                </Text>
                 <MoodToggle selected={mood} onSelect={setMood} />
 
-                <OdosSpacing className="h-24" />
+                <Spacing className="h-24" />
               </div>
             </motion.div>
           )}
@@ -94,7 +96,7 @@ export default function BottomExpandablePanel(): React.ReactElement {
           'pointer-events-auto fixed bottom-0 left-0 z-10 flex h-16 w-full items-center bg-white px-5 shadow-lg'
         )}
       >
-        {!isOpen && <OdosPageWatermark />}
+        {!isOpen && <PageWatermark />}
         <motion.button
           layout
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}

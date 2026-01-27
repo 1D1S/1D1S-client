@@ -1,7 +1,7 @@
 import { ChallengeCreateDialog } from '@/features/challenge/presentation/components/challenge-create-dialog';
 import { ChallengeCreateSuccessDialog } from '@/features/challenge/presentation/components/challenge-create-success-dialog';
 import { ChallengeCreateFormValues } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
-import { OdosButton } from '@/shared/components/odos-ui/button';
+import { Button } from '@1d1s/design-system';
 import { Step1 } from './step1';
 import { Step2 } from './step2';
 import { Step3 } from './step3';
@@ -55,10 +55,10 @@ export function ChallengeCreateForm({
       {renderStep()}
 
       <div className="my-8 flex gap-4">
-        <OdosButton variant="outline" type="button" onClick={previousStep} disabled={step === 1}>
+        <Button variant="outline" type="button" onClick={previousStep} disabled={step === 1}>
           이전
-        </OdosButton>
-        <OdosButton
+        </Button>
+        <Button
           variant="default"
           type="button"
           onClick={nextStep}
@@ -66,7 +66,7 @@ export function ChallengeCreateForm({
           disabled={!isStepValid}
         >
           다음
-        </OdosButton>
+        </Button>
         {step === totalSteps && (
           <ChallengeCreateDialog
             onConfirm={() => form.handleSubmit(onSubmit)()}

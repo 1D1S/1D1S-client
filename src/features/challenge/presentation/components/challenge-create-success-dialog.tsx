@@ -1,7 +1,7 @@
 import Image from 'next/image';
-import { OdosButton } from '@/shared/components/odos-ui/button';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
 import {
+  Button,
+  Text,
   Dialog,
   DialogClose,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog';
+} from '@1d1s/design-system';
 
 /**
  * ChallengeCreateSuccessDialog
@@ -24,9 +24,9 @@ export function ChallengeCreateSuccessDialog({
         <DialogHeader className="items-center">
           <DialogTitle>
             <DialogDescription>
-              <OdosLabel size="display1" weight="bold" className="text-black">
+              <Text size="display1" weight="bold" className="text-black">
                 챌린지 생성이 완료되었습니다!
-              </OdosLabel>
+              </Text>
             </DialogDescription>
           </DialogTitle>
         </DialogHeader>
@@ -37,9 +37,9 @@ export function ChallengeCreateSuccessDialog({
         </div>
         <DialogFooter className="justify-center sm:justify-center">
           <DialogClose asChild>
-            <OdosButton variant="default" type="button" className="w-37.5">
+            <Button variant="default" type="button" className="w-37.5">
               확인
-            </OdosButton>
+            </Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

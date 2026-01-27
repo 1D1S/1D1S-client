@@ -1,5 +1,4 @@
-import { OdosLabel } from '@/shared/components/odos-ui/label';
-import { OdosTag } from '@/shared/components/odos-ui/tag';
+import { Text, Tag } from '@1d1s/design-system';
 import { ChallengeGoalToggle } from './challenge-goal-toggle';
 import { useFormContext } from 'react-hook-form';
 import { ChallengeCreateFormValues } from '../hooks/use-challenge-create-form';
@@ -20,34 +19,34 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
       {/* 챌린지 제목과 설명 */}
       <div className="flex flex-col gap-2">
         <div className="flex gap-2">
-          <OdosLabel size="heading1" weight="bold" className="text-black">
+          <Text size="heading1" weight="bold" className="text-black">
             {values.title}
-          </OdosLabel>
-          {category && <OdosTag icon={category.icon}>{category.label}</OdosTag>}
+          </Text>
+          {category && <Tag icon={category.icon}>{category.label}</Tag>}
         </div>
         <div className="bg-main-300 rounded-odos-2 p-6">
-          <OdosLabel size="body2" weight="regular" className="text-black">
+          <Text size="body2" weight="regular" className="text-black">
             {values.description}
-          </OdosLabel>
+          </Text>
         </div>
       </div>
 
       {/* 챌린지 기간 */}
       <div className="flex flex-col gap-2">
         <div className="flex gap-2">
-          <OdosLabel size="heading2" weight="bold" className="text-black">
+          <Text size="heading2" weight="bold" className="text-black">
             챌린지 기간
-          </OdosLabel>
-          <OdosTag>{values.periodType === 'ENDLESS' ? '무한 기간' : '유한 기간'}</OdosTag>
+          </Text>
+          <Tag>{values.periodType === 'ENDLESS' ? '무한 기간' : '유한 기간'}</Tag>
         </div>
         {values.periodType === 'LIMITED' && (
           <>
-            <OdosLabel size="body2" weight="medium" className="text-black">
+            <Text size="body2" weight="medium" className="text-black">
               {values.period !== 'etc' ? values.period! : values.periodNumber!}일
-            </OdosLabel>
-            <OdosLabel size="body2" weight="medium" className="text-black">
+            </Text>
+            <Text size="body2" weight="medium" className="text-black">
               {format(values.startDate!, 'yyyy-MM-dd')} 시작
-            </OdosLabel>
+            </Text>
           </>
         )}
       </div>
@@ -55,27 +54,27 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
       {/* 챌린지 인원 */}
       <div className="flex flex-col gap-2">
         <div className="flex gap-2">
-          <OdosLabel size="heading2" weight="bold" className="text-black">
+          <Text size="heading2" weight="bold" className="text-black">
             챌린지 인원
-          </OdosLabel>
-          <OdosTag>
+          </Text>
+          <Tag>
             {values.participationType === 'INDIVIDUAL' ? '개인 챌린지' : '단체 챌린지'}
-          </OdosTag>
+          </Tag>
         </div>
         {values.participationType === 'GROUP' && (
-          <OdosLabel size="body2" weight="medium" className="text-black">
+          <Text size="body2" weight="medium" className="text-black">
             {values.memberCount !== 'etc' ? values.memberCount! : values.memberCountNumber!}명
-          </OdosLabel>
+          </Text>
         )}
       </div>
 
       {/* 챌린지 목표 */}
       <div className="flex flex-col gap-2">
         <div className="flex gap-2">
-          <OdosLabel size="heading2" weight="bold" className="text-black">
+          <Text size="heading2" weight="bold" className="text-black">
             챌린지 목표
-          </OdosLabel>
-          <OdosTag>{values.goalType === 'FIXED' ? '고정 목표' : '자유 목표'}</OdosTag>
+          </Text>
+          <Tag>{values.goalType === 'FIXED' ? '고정 목표' : '자유 목표'}</Tag>
         </div>
         <div className="flex flex-col gap-0.5">
           {values.goals.map((goal, index) => (

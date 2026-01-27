@@ -4,7 +4,7 @@ import React from 'react';
 import { Plus } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import Image from 'next/image';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
+import { Text } from '@1d1s/design-system';
 
 interface DiaryContentFieldProps {
   value: string;
@@ -88,9 +88,9 @@ export function DiaryContentField({
               editable && (
                 <div className="flex items-center text-gray-400">
                   <Plus className="mb-1 h-6 w-6" />
-                  <OdosLabel size={'body1'} weight={'bold'} className="ml-2 text-gray-400">
+                  <Text size={'body1'} weight={'bold'} className="ml-2 text-gray-400">
                     사진 추가
-                  </OdosLabel>
+                  </Text>
                 </div>
               )
             )}

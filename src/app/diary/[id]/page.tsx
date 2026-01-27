@@ -1,14 +1,14 @@
 import { ChallengeGoalToggle } from '@/features/diary/presentation/components/challenge-goal-toggle';
 import { DiaryContentField } from '@/features/diary/presentation/components/diary-content-field';
-import { ChallengeListItem } from '@/shared/components/odos-ui/challenge-list-item';
-import { OdosFooter } from '@/shared/components/odos-ui/footer';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
-import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
-import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
-import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
-import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
-import { OdosTag } from '@/shared/components/odos-ui/tag';
-import { SsgoiTransition } from '@ssgoi/react';
+import {
+  ChallengeListItem,
+  Footer,
+  Text,
+  PageTitle,
+  PageWatermark,
+  Spacing,
+  Tag,
+} from '@1d1s/design-system';
 
 export const revalidate = 60;
 
@@ -16,7 +16,6 @@ interface DiaryDetailProps {
   params: Promise<{ id: string }>;
 }
 
-// 더미 데이터 - 실제로는 API나 데이터베이스에서 가져와야 함
 interface DiaryData {
   id: string;
   title: string;
@@ -31,9 +30,7 @@ interface DiaryData {
   }>;
 }
 
-// 실제 구현에서는 데이터베이스나 API에서 데이터를 가져오는 함수
 async function getDiaryData(id: string): Promise<DiaryData> {
-  // TODO: 실제 데이터 fetching 로직 구현
   return {
     id,
     title: `일지 제목 ${id}`,
@@ -48,7 +45,6 @@ async function getDiaryData(id: string): Promise<DiaryData> {
   };
 }
 
-// 헤더 섹션 컴포넌트
 function DiaryHeader({
   title,
   author,
@@ -59,23 +55,22 @@ function DiaryHeader({
   createdAt: string;
 }): React.ReactElement {
   return (
-    <div className="flex w-full justify-between">
-      <OdosLabel size="display2" weight="bold">
+    <div className="flex w-full flex-col gap-2">
+      <Text size="display2" weight="bold">
         {title}
-      </OdosLabel>
-      <div className="flex flex-col items-end gap-1">
-        <OdosLabel size="caption2" weight="bold">
+      </Text>
+      <div className="flex gap-2">
+        <Text size="caption2" weight="bold">
           {author}
-        </OdosLabel>
-        <OdosLabel size="caption2" weight="bold">
+        </Text>
+        <Text size="caption2" weight="bold" className="text-gray-500">
           {createdAt}
-        </OdosLabel>
+        </Text>
       </div>
     </div>
   );
 }
 
-// 챌린지 목표 섹션 컴포넌트
 function ChallengeGoalsSection({
   goals,
 }: {
@@ -83,9 +78,9 @@ function ChallengeGoalsSection({
 }): React.ReactElement {
   return (
     <>
-      <OdosLabel size="heading2" weight="bold">
+      <Text size="heading2" weight="bold">
         챌린지
-      </OdosLabel>
+      </Text>
       <ChallengeListItem
         challengeName={'챌린지'}
         startDate={'2025-06-28'}
@@ -93,15 +88,15 @@ function ChallengeGoalsSection({
         maxParticipants={10}
         currentParticipants={5}
       />
-      <OdosSpacing className="h-10" />
+      <Spacing className="h-6" />
       <div className="flex gap-2">
-        <OdosLabel size="heading2" weight="bold">
+        <Text size="heading2" weight="bold">
           챌린지 목표
-        </OdosLabel>
-        <OdosTag>고정목표</OdosTag>
+        </Text>
+        <Tag>고정목표</Tag>
       </div>
 
-      <div className="mt-6 flex flex-col space-y-3">
+      <div className="mt-4 flex flex-col space-y-3">
         {goals.map((goal, index) => (
           <ChallengeGoalToggle
             key={goal.id}
@@ -116,7 +111,6 @@ function ChallengeGoalsSection({
   );
 }
 
-// 메인 컴포넌트
 export default async function DiaryDetail({
   params,
 }: DiaryDetailProps): Promise<React.ReactElement> {
@@ -124,42 +118,43 @@ export default async function DiaryDetail({
   const diaryData = await getDiaryData(id);
 
   return (
-    <SsgoiTransition id={`/diary/${id}`}>
-      <div className="flex flex-col">
-        <div className="flex justify-center">
-          <OdosPageBackground className="min-h-screen max-w-250 px-7.5">
-            <OdosSpacing className="h-20" />
-            <OdosPageTitle title="일지 상세" />
-
-            <div className="flex w-full flex-col self-start">
-              <OdosSpacing className="h-17.5" />
-
-              <DiaryHeader
-                title={diaryData.title}
-                author={diaryData.author}
-                createdAt={diaryData.createdAt}
-              />
-
-              <OdosSpacing className="h-10" />
-
-              <ChallengeGoalsSection goals={diaryData.challengeGoals} />
-
-              <OdosSpacing className="h-10" />
-
-              <DiaryContentField
-                value={diaryData.content}
-                editable={false}
-                imageSrc={diaryData.imageSrc}
-              />
-            </div>
-
-            <OdosSpacing className="h-10" />
-            <OdosPageWatermark />
-            <OdosSpacing className="h-10" />
-          </OdosPageBackground>
+    <div className="flex min-h-screen w-full flex-col bg-white">
+      <div className="flex w-full flex-col px-4">
+        <Spacing className="h-8" />
+        <div className="flex w-full justify-center">
+          <PageTitle title="일지 상세" />
         </div>
-        <OdosFooter />
+
+        <div className="flex w-full flex-col">
+          <Spacing className="h-8" />
+
+          <DiaryHeader
+            title={diaryData.title}
+            author={diaryData.author}
+            createdAt={diaryData.createdAt}
+          />
+
+          <Spacing className="h-6" />
+
+          <ChallengeGoalsSection goals={diaryData.challengeGoals} />
+
+          <Spacing className="h-6" />
+
+          <DiaryContentField
+            value={diaryData.content}
+            editable={false}
+            imageSrc={diaryData.imageSrc}
+          />
+        </div>
+
+        <Spacing className="h-8" />
+        <div className="flex w-full justify-center">
+          <PageWatermark />
+        </div>
+        <Spacing className="h-8" />
       </div>
-    </SsgoiTransition>
+
+      <Footer />
+    </div>
   );
 }

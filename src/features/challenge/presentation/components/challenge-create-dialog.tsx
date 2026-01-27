@@ -1,6 +1,6 @@
-import { OdosButton } from '@/shared/components/odos-ui/button';
-import { OdosLabel } from '@/shared/components/odos-ui/label';
 import {
+  Button,
+  Text,
   Dialog,
   DialogClose,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/shared/components/ui/dialog';
+} from '@1d1s/design-system';
 import { ChallengeCreateDialogContent } from './challenge-create-dialog-content';
 
 /**
@@ -26,23 +26,23 @@ export function ChallengeCreateDialog({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <OdosButton variant="default" type="button" disabled={disabled}>
+        <Button variant="default" type="button" disabled={disabled}>
           완료
-        </OdosButton>
+        </Button>
       </DialogTrigger>
       <DialogContent className="min-w-150 gap-6 p-6">
         <DialogHeader className="items-center">
           <DialogTitle>
-            <OdosLabel size="heading1" weight="bold" className="text-black">
+            <Text size="heading1" weight="bold" className="text-black">
               챌린지 생성
-            </OdosLabel>
+            </Text>
           </DialogTitle>
         </DialogHeader>
         {/* 챌린지 정보 요약 */}
         <div className="h-[1px] w-full bg-gray-300" />
-        <OdosLabel size="heading2" weight="medium" className="text-gray-500">
+        <Text size="heading2" weight="medium" className="text-gray-500">
           미리 보기
-        </OdosLabel>
+        </Text>
 
         <ChallengeCreateDialogContent />
 
@@ -51,26 +51,26 @@ export function ChallengeCreateDialog({
         {/* 챌린지 생성 확인 메시지 Footer */}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <DialogDescription>
-            <OdosLabel
+            <Text
               size="heading1"
               weight="bold"
               className="text-black"
               id="challenge-create-dialog"
             >
               위와 같이 챌린지를 생성하시겠습니까?
-            </OdosLabel>
+            </Text>
           </DialogDescription>
         </div>
         <DialogFooter className="gap-4">
           <DialogClose asChild>
-            <OdosButton variant="outline" type="button" className="w-37.5">
+            <Button variant="outline" type="button" className="w-37.5">
               취소
-            </OdosButton>
+            </Button>
           </DialogClose>
           <DialogClose asChild>
-            <OdosButton variant="default" type="submit" className="w-37.5" onClick={onConfirm}>
+            <Button variant="default" type="submit" className="w-37.5" onClick={onConfirm}>
               생성
-            </OdosButton>
+            </Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>
