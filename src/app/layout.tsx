@@ -3,7 +3,7 @@ import { AppProviders } from '@/shared/providers';
 import { pretendard, suite } from '@/shared/lib/font';
 import '@/shared/styles/globals.css';
 import type { Metadata, Viewport } from 'next';
-import GlobalChromeWrapper from '@/components/global-chrome-wrapper';
+import GlobalChromeWrapper from '@/shared/components/layout/global-chrome-wrapper';
 
 export const metadata: Metadata = {
   title: 'Create Next App',

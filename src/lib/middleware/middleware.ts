@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { loggingMiddleware } from '@/shared/interfaces/middleware/logging';
-import { authMiddleware } from '@/shared/interfaces/middleware/auth';
-import { securityMiddleware } from '@/shared/interfaces/middleware/security';
-import { redirectMiddleware } from '@/shared/interfaces/middleware/redirect';
-import { headersMiddleware } from '@/shared/interfaces/middleware/headers';
+import { loggingMiddleware } from './logging';
+import { authMiddleware } from './auth';
+import { securityMiddleware } from './security';
+import { redirectMiddleware } from './redirect';
+import { headersMiddleware } from './headers';
 
 export function middleware(req: NextRequest): NextResponse {
   // 1. 로깅 시작
