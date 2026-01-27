@@ -120,4 +120,18 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Override library Footer width on mobile */
+  @media (max-width: 768px) {
+    footer {
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+    footer > div {
+      width: 100% !important;
+      min-width: 0 !important;
+      padding-left: 1.25rem !important; /* px-5 */
+      padding-right: 1.25rem !important;
+    }
+  }
 }

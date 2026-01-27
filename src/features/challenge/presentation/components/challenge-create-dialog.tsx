@@ -1,5 +1,6 @@
-import { Button, Text } from '@1d1s/design-system';
 import {
+  Button,
+  Text,
   Dialog,
   DialogClose,
   DialogContent,
@@ -8,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/shared/components/ui/dialog';
+} from '@1d1s/design-system';
 import { ChallengeCreateDialogContent } from './challenge-create-dialog-content';
 
 /**

@@ -1,6 +1,7 @@
 import Image from 'next/image';
-import { Button, Text } from '@1d1s/design-system';
 import {
+  Button,
+  Text,
   Dialog,
   DialogClose,
   DialogContent,
@@ -8,7 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog';
+} from '@1d1s/design-system';
 
 /**
  * ChallengeCreateSuccessDialog

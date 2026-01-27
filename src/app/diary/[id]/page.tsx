@@ -4,7 +4,6 @@ import {
   ChallengeListItem,
   Footer,
   Text,
-  PageBackground,
   PageTitle,
   PageWatermark,
   Spacing,
@@ -17,7 +16,6 @@ interface DiaryDetailProps {
   params: Promise<{ id: string }>;
 }
 
-// 더미 데이터 - 실제로는 API나 데이터베이스에서 가져와야 함
 interface DiaryData {
   id: string;
   title: string;
@@ -32,9 +30,7 @@ interface DiaryData {
   }>;
 }
 
-// 실제 구현에서는 데이터베이스나 API에서 데이터를 가져오는 함수
 async function getDiaryData(id: string): Promise<DiaryData> {
-  // TODO: 실제 데이터 fetching 로직 구현
   return {
     id,
     title: `일지 제목 ${id}`,
@@ -49,7 +45,6 @@ async function getDiaryData(id: string): Promise<DiaryData> {
   };
 }
 
-// 헤더 섹션 컴포넌트
 function DiaryHeader({
   title,
   author,
@@ -60,15 +55,15 @@ function DiaryHeader({
   createdAt: string;
 }): React.ReactElement {
   return (
-    <div className="flex w-full justify-between">
+    <div className="flex w-full flex-col gap-2">
       <Text size="display2" weight="bold">
         {title}
       </Text>
-      <div className="flex flex-col items-end gap-1">
+      <div className="flex gap-2">
         <Text size="caption2" weight="bold">
           {author}
         </Text>
-        <Text size="caption2" weight="bold">
+        <Text size="caption2" weight="bold" className="text-gray-500">
           {createdAt}
         </Text>
       </div>
@@ -76,7 +71,6 @@ function DiaryHeader({
   );
 }
 
-// 챌린지 목표 섹션 컴포넌트
 function ChallengeGoalsSection({
   goals,
 }: {
@@ -94,7 +88,7 @@ function ChallengeGoalsSection({
         maxParticipants={10}
         currentParticipants={5}
       />
-      <Spacing className="h-10" />
+      <Spacing className="h-6" />
       <div className="flex gap-2">
         <Text size="heading2" weight="bold">
           챌린지 목표
@@ -102,7 +96,7 @@ function ChallengeGoalsSection({
         <Tag>고정목표</Tag>
       </div>
 
-      <div className="mt-6 flex flex-col space-y-3">
+      <div className="mt-4 flex flex-col space-y-3">
         {goals.map((goal, index) => (
           <ChallengeGoalToggle
             key={goal.id}
@@ -117,7 +111,6 @@ function ChallengeGoalsSection({
   );
 }
 
-// 메인 컴포넌트
 export default async function DiaryDetail({
   params,
 }: DiaryDetailProps): Promise<React.ReactElement> {
@@ -125,40 +118,43 @@ export default async function DiaryDetail({
   const diaryData = await getDiaryData(id);
 
   return (
-    <div className="flex flex-col">
-      <div className="flex justify-center">
-        <PageBackground className="min-h-screen max-w-250 px-7.5">
-            <Spacing className="h-20" />
-            <PageTitle title="일지 상세" />
-
-            <div className="flex w-full flex-col self-start">
-              <Spacing className="h-17.5" />
-
-              <DiaryHeader
-                title={diaryData.title}
-                author={diaryData.author}
-                createdAt={diaryData.createdAt}
-              />
-
-              <Spacing className="h-10" />
-
-              <ChallengeGoalsSection goals={diaryData.challengeGoals} />
-
-              <Spacing className="h-10" />
-
-              <DiaryContentField
-                value={diaryData.content}
-                editable={false}
-                imageSrc={diaryData.imageSrc}
-              />
-            </div>
-
-            <Spacing className="h-10" />
-            <PageWatermark />
-            <Spacing className="h-10" />
-          </PageBackground>
+    <div className="flex min-h-screen w-full flex-col bg-white">
+      <div className="flex w-full flex-col px-4">
+        <Spacing className="h-8" />
+        <div className="flex w-full justify-center">
+          <PageTitle title="일지 상세" />
         </div>
-        <Footer />
+
+        <div className="flex w-full flex-col">
+          <Spacing className="h-8" />
+
+          <DiaryHeader
+            title={diaryData.title}
+            author={diaryData.author}
+            createdAt={diaryData.createdAt}
+          />
+
+          <Spacing className="h-6" />
+
+          <ChallengeGoalsSection goals={diaryData.challengeGoals} />
+
+          <Spacing className="h-6" />
+
+          <DiaryContentField
+            value={diaryData.content}
+            editable={false}
+            imageSrc={diaryData.imageSrc}
+          />
+        </div>
+
+        <Spacing className="h-8" />
+        <div className="flex w-full justify-center">
+          <PageWatermark />
+        </div>
+        <Spacing className="h-8" />
       </div>
+
+      <Footer />
+    </div>
   );
 }

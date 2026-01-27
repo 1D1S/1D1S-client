@@ -5,7 +5,6 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@1d1s/design-system';
-import { OdosTextArea } from '@/shared/components/odos-ui/text-area';
 import { useFormContext } from 'react-hook-form';
 import { ChallengeCreateFormValues } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
 import { FormControl, FormField, FormItem, FormMessage } from '@/shared/components/ui/form';
@@ -74,11 +73,13 @@ export function Step1(): React.ReactElement {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <OdosTextArea
+                <TextField
+                  multiline
+                  rows={4}
                   label="설명"
                   placeholder="챌린지 설명(선택)"
                   id="description"
-                  className="h-25 w-235"
+                  className="w-235"
                   {...field}
                 />
               </FormControl>
