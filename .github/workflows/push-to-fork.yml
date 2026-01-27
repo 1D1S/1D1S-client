@@ -12,6 +12,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+          token: ${{ secrets.AUTO_PUSH_TOKEN }}
 
       - name: Push to another repository
         uses: cpina/github-action-push-to-another-repository@main
