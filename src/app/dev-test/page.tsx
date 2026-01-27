@@ -1,3 +1,5 @@
+'use client';
+
 // import { Button } from '@/components/odos-ui/button';
 import {
   Text,

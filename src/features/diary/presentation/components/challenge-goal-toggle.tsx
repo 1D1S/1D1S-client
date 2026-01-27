@@ -1,21 +1,18 @@
-// components/ChallengeGoalToggle.tsx
+'use client';
 
 import { Text } from '@1d1s/design-system';
 import { cn } from '@/shared/lib/utils';
-import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { Check } from 'lucide-react';
 import React from 'react';
 
-// props는 기존과 동일하게 선언
-export interface ChallengeGoalToggleProps
-  extends React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root> {
+export interface ChallengeGoalToggleProps extends React.ComponentPropsWithoutRef<'button'> {
   checked: boolean;
   onCheckedChange?(newChecked: boolean): void;
   label: string;
   disabled?: boolean;
 }
 
-export const ChallengeGoalToggle = React.forwardRef(
+export const ChallengeGoalToggle = React.forwardRef<HTMLButtonElement, ChallengeGoalToggleProps>(
   (
     {
       checked,
@@ -24,43 +21,53 @@ export const ChallengeGoalToggle = React.forwardRef(
       disabled = false,
       className,
       ...props
-    }: ChallengeGoalToggleProps,
+    },
     ref
-  ) => (
-    <label
-      className={cn(
-        'inline-flex cursor-pointer items-center',
-        disabled && 'pointer-events-none',
-        className
-      )}
-    >
-      <SwitchPrimitive.Root
+  ) => {
+    const toggle = () => {
+      if (!disabled && onCheckedChange) {
+        onCheckedChange(!checked);
+      }
+    };
+
+    return (
+      <div
         className={cn(
-          'relative inline-flex h-4 w-4 items-center justify-center',
-          'rounded focus:outline-none',
-          'data-[state=checked]:bg-main-900 bg-gray-200'
+          'inline-flex cursor-pointer items-center',
+          disabled && 'pointer-events-none opacity-50',
+          className
         )}
-        checked={checked}
-        disabled={disabled}
-        onCheckedChange={onCheckedChange}
-        ref={ref as React.Ref<React.ElementRef<typeof SwitchPrimitive.Root>>}
-        {...props}
+        onClick={toggle}
       >
-        <SwitchPrimitive.Thumb
+        <button
+          type="button"
+          role="switch"
+          aria-checked={checked}
+          disabled={disabled}
+          ref={ref}
           className={cn(
-            'flex items-center justify-center text-white opacity-0 data-[state=checked]:opacity-100',
-            'h-full w-full'
+            'relative inline-flex h-4 w-4 items-center justify-center',
+            'rounded focus:outline-none transition-colors duration-200',
+            checked ? 'bg-main-900' : 'bg-gray-200'
           )}
-          asChild
+          {...props}
         >
-          <Check className="h-4 w-4" />
-        </SwitchPrimitive.Thumb>
-      </SwitchPrimitive.Root>
-      <Text size={'body2'} weight={'regular'} className="ml-2">
-        {label}
-      </Text>
-    </label>
-  )
+           <span
+            className={cn(
+              'flex items-center justify-center text-white transition-opacity duration-200',
+              checked ? 'opacity-100' : 'opacity-0',
+              'h-full w-full'
+            )}
+          >
+            <Check className="h-3 w-3" strokeWidth={3} />
+          </span>
+        </button>
+        <Text size={'body2'} weight={'regular'} className="ml-2">
+          {label}
+        </Text>
+      </div>
+    );
+  }
 );
 
 ChallengeGoalToggle.displayName = 'ChallengeGoalToggle';

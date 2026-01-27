@@ -9,6 +9,7 @@ on:
 jobs:
   push-to-fork:
     runs-on: ubuntu-latest
+    if: github.repository != 'NOGUEN/1D1S-client'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
