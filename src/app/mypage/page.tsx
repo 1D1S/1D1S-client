@@ -81,12 +81,7 @@ export default function MyPage(): React.ReactElement {
 
           <Spacing className="h-4" />
 
-          {/* 스트릭 그리드 */}
-          <div className="w-full overflow-x-auto">
-            <Streak data={streakData} />
-          </div>
-
-          <Spacing className="h-8" />
+          <Streak data={streakData} />
 
           {/* 챌린지 목록 */}
           <div className="flex items-center gap-2">
@@ -119,7 +114,7 @@ export default function MyPage(): React.ReactElement {
           <ScrollArea className="w-full">
             <div className="flex gap-3 pb-4">
               {items.map((item) => (
-                <div key={item.id} className="shrink-0 w-[240px]">
+                <div key={item.id} className="w-[240px] shrink-0">
                   <DiaryCard
                     imageUrl={item.imageUrl}
                     percent={item.percent}

@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
+    "clean": "rm -rf .next node_modules && pnpm install",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -11,7 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@1d1s/design-system": "^0.1.13",
+    "@1d1s/design-system": "^0.1.17",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-alert-dialog": "^1.1.7",
     "@radix-ui/react-aspect-ratio": "^1.1.3",
