@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@component/ui/scroll-area';
 import {
   PageTitle,
   Text,

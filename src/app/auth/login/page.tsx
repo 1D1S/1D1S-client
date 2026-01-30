@@ -1,6 +1,6 @@
 'use client';
 
-import { LoginButtons } from '@/features/auth/presentation/components/login-buttons';
+import { LoginButtons } from '@feature/auth/presentation/components/login-buttons';
 import { PageTitle, Spacing, Text } from '@1d1s/design-system';
 
 export default function LoginPage(): React.ReactElement {

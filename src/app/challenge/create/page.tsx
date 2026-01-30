@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { StepProgress } from '@/features/challenge/presentation/components/step-progress';
-import { useChallengeCreateForm } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
-import { Form } from '@/shared/components/ui/form';
+import { StepProgress } from '@feature/challenge/presentation/components/step-progress';
+import { useChallengeCreateForm } from '@feature/challenge/presentation/hooks/use-challenge-create-form';
+import { Form } from '@component/ui/form';
 import { PageTitle, Spacing } from '@1d1s/design-system';
 import { ChallengeCreateForm } from './step-pages/challenge-create-form';
 

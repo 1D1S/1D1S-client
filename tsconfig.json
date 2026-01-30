@@ -23,12 +23,12 @@
       }
     ],
     "paths": {
-      "/public/*": [
-        "./public/*"
-      ],
-      "@/*": [
-        "./src/*"
-      ]
+      "/public/*": ["./public/*"],
+      "@/*": ["./src/*"],
+      "@component/*": ["./src/app.component/*"],
+      "@feature/*": ["./src/app.feature/*"],
+      "@module/*": ["./src/app.module/*"],
+      "@constants/*": ["./src/app.constants/*"]
     },
     "experimentalDecorators": true, // 데코레이터 문법 허용
     "emitDecoratorMetadata": true // 런타임에 타입 메타데이터를 생성 (tsyringe가 필요)

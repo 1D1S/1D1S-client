@@ -8,7 +8,7 @@ import {
   Text,
   DiaryCard,
 } from '@1d1s/design-system';
-import { useDiaryItems } from '@/features/diary/presentation/hooks/diary-items';
+import { useDiaryItems } from '@feature/diary/presentation/hooks/diary-items';
 
 export default function DiaryList(): React.ReactElement {
   const { items, loading } = useDiaryItems(12, 12);

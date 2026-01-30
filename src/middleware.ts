@@ -1,4 +1,4 @@
-import { middleware } from '@/lib/middleware/middleware';
+import { middleware } from '@module/middleware/middleware';
 
 export { middleware };
 

@@ -9,10 +9,10 @@ import {
   TextField,
   ChallengeListItem,
 } from '@1d1s/design-system';
-import { ChallengePicker } from '@/features/diary/presentation/components/challenge-picker';
-import { ChallengeGoalToggle } from '@/features/diary/presentation/components/challenge-goal-toggle';
-import { DiaryContentField } from '@/features/diary/presentation/components/diary-content-field';
-import BottomExpandablePanel from '@/features/diary/presentation/components/bottom-expandable-panel';
+import { ChallengePicker } from '@feature/diary/presentation/components/challenge-picker';
+import { ChallengeGoalToggle } from '@feature/diary/presentation/components/challenge-goal-toggle';
+import { DiaryContentField } from '@feature/diary/presentation/components/diary-content-field';
+import BottomExpandablePanel from '@feature/diary/presentation/components/bottom-expandable-panel';
 
 export default function DiaryCreate(): React.ReactElement {
   const [challengeSelected, setChallengeSelected] = useState<boolean>(false);

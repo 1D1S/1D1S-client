@@ -3,16 +3,16 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FormProvider } from 'react-hook-form';
 
-import { useChallengeCreateForm } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
+import { useChallengeCreateForm } from '@feature/challenge/presentation/hooks/use-challenge-create-form';
 import { ChallengeCreateForm } from '@/app/challenge/create/step-pages/challenge-create-form';
 
 // ✅ Jest mock을 먼저 선언하고 나중에 mockImplementation으로 제어
-jest.mock('@/features/challenge/presentation/hooks/use-step-validation', () => ({
+jest.mock('@feature/challenge/presentation/hooks/use-step-validation', () => ({
   useStepValidation: jest.fn(),
 }));
 
 // mock된 훅을 import
-import { useStepValidation } from '@/features/challenge/presentation/hooks/use-step-validation';
+import { useStepValidation } from '@feature/challenge/presentation/hooks/use-step-validation';
 const mockUseStepValidation = useStepValidation as jest.MockedFunction<typeof useStepValidation>;
 
 // ✅ 테스트용 Wrapper 컴포넌트

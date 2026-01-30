@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { ChallengeGoalToggle } from '@/features/diary/presentation/components/challenge-goal-toggle';
-import { DiaryContentField } from '@/features/diary/presentation/components/diary-content-field';
+import { ChallengeGoalToggle } from '@feature/diary/presentation/components/challenge-goal-toggle';
+import { DiaryContentField } from '@feature/diary/presentation/components/diary-content-field';
 import {
   ChallengeListItem,
   Text,

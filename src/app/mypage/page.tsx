@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@component/ui/scroll-area';
 import {
   DiaryCard,
   PageTitle,
@@ -13,7 +13,7 @@ import {
   Streak,
   Checkbox,
 } from '@1d1s/design-system';
-import { useDiaryItems } from '@/features/diary/presentation/hooks/diary-items';
+import { useDiaryItems } from '@feature/diary/presentation/hooks/diary-items';
 
 export default function MyPage(): React.ReactElement {
   const { items, loading } = useDiaryItems(12, 12);

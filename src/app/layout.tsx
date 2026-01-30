@@ -1,10 +1,10 @@
 // app/layout.tsx
-import { AppProviders } from '@/shared/providers';
-import { pretendard, suite } from '@/shared/lib/font';
-import '@/shared/styles/globals.css';
+import { AppProviders } from '@module/providers';
+import { pretendard, suite } from '@module/lib/font';
+import '@module/styles/globals.css';
 import type { Metadata, Viewport } from 'next';
-import GlobalChromeWrapper from '@/shared/components/layout/global-chrome-wrapper';
-import FooterWrapper from '@/shared/components/layout/footer-wrapper';
+import GlobalChromeWrapper from '@component/layout/global-chrome-wrapper';
+import FooterWrapper from '@component/layout/footer-wrapper';
 
 export const metadata: Metadata = {
   title: 'Create Next App',

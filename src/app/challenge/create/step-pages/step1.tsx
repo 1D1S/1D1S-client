@@ -6,9 +6,9 @@ import {
   ToggleGroupItem,
 } from '@1d1s/design-system';
 import { useFormContext } from 'react-hook-form';
-import { ChallengeCreateFormValues } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
-import { FormControl, FormField, FormItem, FormMessage } from '@/shared/components/ui/form';
-import { CATEGORY_OPTIONS } from '@/shared/constants/categories';
+import { ChallengeCreateFormValues } from '@feature/challenge/presentation/hooks/use-challenge-create-form';
+import { FormControl, FormField, FormItem, FormMessage } from '@component/ui/form';
+import { CATEGORY_OPTIONS } from '@constants/categories';
 
 export function Step1(): React.ReactElement {
   const { control } = useFormContext<ChallengeCreateFormValues>();

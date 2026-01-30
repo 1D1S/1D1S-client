@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@component/ui/scroll-area';
 import {
   PageTitle,
   Spacing,
@@ -14,7 +14,7 @@ import {
   CircularProgress,
   DiaryCard,
 } from '@1d1s/design-system';
-import { ChallengeGoalToggle } from '@/features/diary/presentation/components/challenge-goal-toggle';
+import { ChallengeGoalToggle } from '@feature/diary/presentation/components/challenge-goal-toggle';
 
 interface ChallengeDetailContentProps {
   id: string;

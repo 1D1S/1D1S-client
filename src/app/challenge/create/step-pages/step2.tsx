@@ -2,8 +2,8 @@
 import {
   ChallengeToggleGroup,
   ChallengeToggle,
-} from '@/features/challenge/presentation/components/challenge-toggle';
-import { ChallengeCreateFormValues } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
+} from '@feature/challenge/presentation/components/challenge-toggle';
+import { ChallengeCreateFormValues } from '@feature/challenge/presentation/hooks/use-challenge-create-form';
 import {
   DatePicker,
   Select,
@@ -15,7 +15,7 @@ import {
   Spacing,
   TextField,
 } from '@1d1s/design-system';
-import { FormControl, FormField, FormItem, FormMessage } from '@/shared/components/ui/form';
+import { FormControl, FormField, FormItem, FormMessage } from '@component/ui/form';
 import { useFormContext } from 'react-hook-form';
 
 export function Step2(): React.ReactElement {

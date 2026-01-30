@@ -1,6 +1,6 @@
-import { ChallengeCreateDialog } from '@/features/challenge/presentation/components/challenge-create-dialog';
-import { ChallengeCreateSuccessDialog } from '@/features/challenge/presentation/components/challenge-create-success-dialog';
-import { ChallengeCreateFormValues } from '@/features/challenge/presentation/hooks/use-challenge-create-form';
+import { ChallengeCreateDialog } from '@feature/challenge/presentation/components/challenge-create-dialog';
+import { ChallengeCreateSuccessDialog } from '@feature/challenge/presentation/components/challenge-create-success-dialog';
+import { ChallengeCreateFormValues } from '@feature/challenge/presentation/hooks/use-challenge-create-form';
 import { Button } from '@1d1s/design-system';
 import { Step1 } from './step1';
 import { Step2 } from './step2';
@@ -8,7 +8,7 @@ import { Step3 } from './step3';
 import { Step4 } from './step4';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { useStepValidation } from '@/features/challenge/presentation/hooks/use-step-validation';
+import { useStepValidation } from '@feature/challenge/presentation/hooks/use-step-validation';
 
 export function ChallengeCreateForm({
   step,
