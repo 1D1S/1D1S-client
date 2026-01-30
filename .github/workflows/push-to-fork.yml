@@ -1,7 +1,10 @@
 name: Push to Fork
 
 on:
-  push:
+  workflow_run:
+    workflows: ['CI']
+    types:
+      - completed
     branches:
       - main
       - develop
@@ -9,7 +12,9 @@ on:
 jobs:
   push-to-fork:
     runs-on: ubuntu-latest
-    if: github.repository != 'NOGUEN/1D1S-client'
+    if: |
+      github.repository != 'NOGUEN/1D1S-client' &&
+      github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,17 +22,16 @@ jobs:
           persist-credentials: true
           fetch-depth: 0
           token: ${{ secrets.AUTO_PUSH_TOKEN }}
+          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Push to another repository
         uses: cpina/github-action-push-to-another-repository@main
         env:
-          # Settings > Secrets and variables > Actions 에서 AUTO_PUSH_TOKEN을 설정해주세요.
-          # 토큰 권한: repo, workflow
           API_TOKEN_GITHUB: ${{ secrets.AUTO_PUSH_TOKEN }}
         with:
           source-directory: '.'
-          destination-github-username: 'NOGUEN' # 포크한 계정 이름으로 변경해주세요
-          destination-repository-name: '1D1S-client' # 포크한 레포지토리 이름으로 변경해주세요
-          user-email: 'nhg1113@icloud.com' # 커밋에 사용할 이메일로 변경해주세요
-          target-branch: ${{ github.ref_name }} # 현재 푸쉬된 브랜치 이름 그대로 타겟 레포에 푸쉬합니다
-          commit-message: ${{ github.event.head_commit.message }}
+          destination-github-username: 'NOGUEN'
+          destination-repository-name: '1D1S-client'
+          user-email: 'nhg1113@icloud.com'
+          target-branch: ${{ github.event.workflow_run.head_branch }}
+          commit-message: ${{ github.event.workflow_run.head_commit.message }}
