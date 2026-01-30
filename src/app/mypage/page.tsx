@@ -32,7 +32,7 @@ export default function MyPage(): React.ReactElement {
     date.setDate(date.getDate() - (89 - i));
     return {
       date: date.toISOString().split('T')[0],
-      count: Math.floor(Math.random() * 5), // 0-4 활동 레벨
+      count: (i * 7 + 3) % 5, // 0-4 활동 레벨 (고정 패턴)
     };
   });
 
