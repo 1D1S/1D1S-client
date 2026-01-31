@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -11,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -19,9 +23,24 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "/public/*": ["./public/*"],
+      "@/*": ["./src/*"],
+      "@component/*": ["./src/app.component/*"],
+      "@feature/*": ["./src/app.feature/*"],
+      "@module/*": ["./src/app.module/*"],
+      "@constants/*": ["./src/app.constants/*"]
+    },
+    "experimentalDecorators": true, // 데코레이터 문법 허용
+    "emitDecoratorMetadata": true // 런타임에 타입 메타데이터를 생성 (tsyringe가 필요)
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

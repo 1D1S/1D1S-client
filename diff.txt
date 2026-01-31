@@ -1,0 +1,3614 @@
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 321a26b..51cdbdf 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -1,7 +1,7 @@
+-import { AppProviders } from '@/presentation/providers';
++import { AppProviders } from '@/shared/providers';
+ import type { Metadata } from 'next';
+-import { pretendard, suite } from '@/presentation/lib/font';
+-import '@/presentation/styles/globals.css';
++import { pretendard, suite } from '@/shared/lib/font';
++import '@/shared/styles/globals.css';
+ 
+ export const metadata: Metadata = {
+   title: 'Create Next App',
+diff --git a/src/app/main/page.tsx b/src/app/main/page.tsx
+index 2bf7a83..bd0434c 100644
+--- a/src/app/main/page.tsx
++++ b/src/app/main/page.tsx
+@@ -1,11 +1,11 @@
+-import { OdosPageTitle } from '@/presentation/components/odos-ui/page-title';
+-import { OdosChallengeCard } from '@/presentation/components/odos-ui/challenge-card';
+-import { OdosFooter } from '@/presentation/components/odos-ui/footer';
+-import { OdosLabel } from '@/presentation/components/odos-ui/label';
+-import { ScrollArea, ScrollBar } from '@/presentation/components/ui/scroll-area';
+-import { OdosSpacing } from '@/presentation/components/odos-ui/spacing';
+-import { OdosPageWatermark } from '@/presentation/components/odos-ui/page-watermark';
+-import { OdosPageBackground } from '@/presentation/components/odos-ui/page-background';
++import { OdosPageTitle } from '@/shared/components/odos-ui/page-title';
++import { OdosChallengeCard } from '@/shared/components/odos-ui/challenge-card';
++import { OdosFooter } from '@/shared/components/odos-ui/footer';
++import { OdosLabel } from '@/shared/components/odos-ui/label';
++import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
++import { OdosSpacing } from '@/shared/components/odos-ui/spacing';
++import { OdosPageWatermark } from '@/shared/components/odos-ui/page-watermark';
++import { OdosPageBackground } from '@/shared/components/odos-ui/page-background';
+ 
+ function SectionHeader({
+   title,
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 08cbe40..a938f6a 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -1,6 +1,8 @@
++import 'reflect-metadata';
+ import Image from 'next/image';
+ import { ReactElement } from 'react';
+ 
++
+ export default function Home(): ReactElement {
+   return (
+     <div className="grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20">
+diff --git a/src/data/repositories/UserRepository.ts b/src/data/repositories/UserRepository.ts
+deleted file mode 100644
+index 771e6c8..0000000
+--- a/src/data/repositories/UserRepository.ts
++++ /dev/null
+@@ -1,43 +0,0 @@
+-// src/data/repositories/UserRepositoryImpl.ts
+-
+-import { IUserRepository } from '@/domain/repositories/IUserRepository';
+-
+-/**
+- * 예시 레포지토리입니다.
+- * - IUserRepository를 구현합니다.
+- */
+-export class UserRepositoryImpl implements IUserRepository {
+-  /**
+-   * #1 id로 사용자 검색
+-   * @param id 사용자 ID
+-   * @returns 사용자 ID 또는 null
+-   */
+-  async findById(id: string): Promise<string | null> {
+-    return id;
+-  }
+-
+-  /**
+-   * #2 email로 사용자 검색
+-   * @param email 사용자 Email
+-   * @returns 사용자 ID 또는 null
+-   */
+-  async findByEmail(email: string): Promise<string | null> {
+-    return email;
+-  }
+-
+-  /**
+-   * #3 사용자 저장
+-   * @param id 사용자 ID
+-   */
+-  async save(id: string): Promise<void> {
+-    console.log(id);
+-  }
+-
+-  /**
+-   * #4 사용자 삭제
+-   * @param id 사용자 ID
+-   */
+-  async delete(id: string): Promise<void> {
+-    console.log(id);
+-  }
+-}
+\ No newline at end of file
+diff --git a/src/domain/entities/UserModel.ts b/src/domain/entities/UserModel.ts
+deleted file mode 100644
+index 3a8a268..0000000
+--- a/src/domain/entities/UserModel.ts
++++ /dev/null
+@@ -1,98 +0,0 @@
+-import { DomainError } from '@/domain/exceptions/DomainError';
+-import { ErrorCode } from '@/domain/exceptions/ErrorCode';
+-
+-/** 예시 도메인 모델입니다.*/ 
+-export class UserModel {
+-  private constructor(
+-    private readonly _id: string,
+-    private _email: string,
+-    private _name: string,
+-    private readonly _createdAt: Date,
+-  ) {}
+-
+-  // Factory: 새 사용자 생성
+-  static create(params: {
+-    id: string;
+-    email: string;
+-    name: string;
+-    createdAt?: Date;
+-  }): UserModel {
+-    const { id, email, name, createdAt } = params;
+-    if (!id) {
+-      throw new DomainError(ErrorCode.USER_ID_REQUIRED, 'User ID는 필수 항목입니다.');
+-    }
+-    const emailVo = email;
+-    if (!name || name.trim().length === 0) {
+-      throw new DomainError(ErrorCode.USER_NAME_REQUIRED, '사용자 이름은 비어 있을 수 없습니다.');
+-    }
+-    return new UserModel(id, emailVo, name.trim(), createdAt ?? new Date());
+-  }
+-
+-  // Persistence에서 로드할 때
+-  static fromPersistence(record: {
+-    id: string;
+-    email: string;
+-    name: string;
+-    createdAt: string | Date;
+-  }): UserModel {
+-    const emailVo = record.email;
+-    const created = record.createdAt instanceof Date
+-      ? record.createdAt
+-      : new Date(record.createdAt);
+-    return new UserModel(record.id, emailVo, record.name, created);
+-  }
+-
+-  // 엔터티 ID
+-  get id(): string {
+-    return this._id;
+-  }
+-
+-  // 이메일 조회
+-  get email(): string {
+-    return this._email;
+-  }
+-
+-  // 이름 조회
+-  get name(): string {
+-    return this._name;
+-  }
+-
+-  // 생성일 조회
+-  get createdAt(): Date {
+-    return this._createdAt;
+-  }
+-
+-  // 이메일 변경 도메인 행위
+-  changeEmail(newEmail: string): void {
+-    const emailVo = newEmail;
+-    this._email = emailVo;
+-  }
+-
+-  // 이름 변경 도메인 행위
+-  changeName(newName: string): void {
+-    if (!newName || newName.trim().length === 0) {
+-      throw new DomainError(ErrorCode.USER_NAME_REQUIRED, '사용자 이름은 비어 있을 수 없습니다.');
+-    }
+-    this._name = newName.trim();
+-  }
+-
+-  // 엔터티 동등성: ID 비교
+-  equals(other: UserModel): boolean {
+-    return this._id === other._id;
+-  }
+-
+-  // Persistence 변환
+-  toPersistence(): {
+-    id: string;
+-    email: string;
+-    name: string;
+-    createdAt: string;
+-  } {
+-    return {
+-      id: this._id,
+-      email: this._email,
+-      name: this._name,
+-      createdAt: this._createdAt.toISOString(),
+-    };
+-  }
+-}
+\ No newline at end of file
+diff --git a/src/domain/exceptions/DomainError.ts b/src/domain/exceptions/DomainError.ts
+deleted file mode 100644
+index 4b1c551..0000000
+--- a/src/domain/exceptions/DomainError.ts
++++ /dev/null
+@@ -1,33 +0,0 @@
+-import { ErrorCode } from '@/domain/exceptions/ErrorCode';
+-
+-/**
+- * 예시입니다.
+- * DomainError
+- * - 도메인 레이어에서 비즈니스 규칙 위반 시 사용되는 예외 클래스입니다.
+- *
+- * @param code    고유 오류 코드
+- * @param message human-readable 메시지
+- */
+-export class DomainError extends Error {
+-  readonly code: ErrorCode;
+-
+-  constructor(code: ErrorCode, message?: string) {
+-    super(message);
+-    this.name = 'DomainError';
+-    this.code = code;
+-
+-    // V8 환경에서 stack trace 최적화
+-    if (Error.captureStackTrace) {
+-      Error.captureStackTrace(this, DomainError);
+-    }
+-  }
+-
+-  toJSON() {
+-    return {
+-      name: this.name,
+-      code: this.code,
+-      message: this.message,
+-      stack: this.stack,
+-    };
+-  }
+-}
+diff --git a/src/domain/exceptions/ErrorCode.ts b/src/domain/exceptions/ErrorCode.ts
+deleted file mode 100644
+index 105a7c5..0000000
+--- a/src/domain/exceptions/ErrorCode.ts
++++ /dev/null
+@@ -1,10 +0,0 @@
+-/**
+- * 에러코드 예시입니다.
+- * 이후 더 세분화 하여 사용합니다.
+- */
+-
+-export enum ErrorCode {
+-  USER_ID_REQUIRED = 'USER_ID_REQUIRED',
+-  USER_NAME_REQUIRED = 'USER_NAME_REQUIRED',
+-  INVALID_EMAIL = 'INVALID_EMAIL',
+-}
+\ No newline at end of file
+diff --git a/src/domain/repositories/IUserRepository.ts b/src/domain/repositories/IUserRepository.ts
+deleted file mode 100644
+index 32d6fb5..0000000
+--- a/src/domain/repositories/IUserRepository.ts
++++ /dev/null
+@@ -1,36 +0,0 @@
+-import { UserModel } from '../entities/UserModel';
+-
+-/**
+- * 예시 레포지토리 인터페이스
+- * - 레포지토리 인터페이스를 정의합니다.
+- * - 이후 data/repositories/UserRepository.ts에서 구현합니다.
+- * - 인터페이스 파일 앞에는 I를 붙입니다.
+- * **아래의 API들은 모두 예시입니다.**
+- */
+-export interface IUserRepository {
+-  /**
+-   * #1 id로 사용자 검색
+-   * @param id 사용자 ID
+-   * @returns 사용자 ID 또는 null
+-   */
+-  findById(id: string): Promise<UserModel | null>;
+-
+-  /**
+-   * #2 email로 사용자 검색
+-   * @param email 사용자 Email
+-   * @returns 사용자 ID 또는 null
+-   */
+-  findByEmail(email: string): Promise<UserModel | null>;
+-
+-  /**
+-   * #3 사용자 저장
+-   * @param user 사용자 ID
+-   */
+-  save(user: string): Promise<void>;
+-
+-  /**
+-   * #4 사용자 삭제
+-   * @param id 사용자 ID
+-   */
+-  delete(id: string): Promise<void>;
+-}
+\ No newline at end of file
+diff --git a/src/domain/usecases/CreateUserUseCase.ts b/src/domain/usecases/CreateUserUseCase.ts
+deleted file mode 100644
+index 602d131..0000000
+--- a/src/domain/usecases/CreateUserUseCase.ts
++++ /dev/null
+@@ -1,60 +0,0 @@
+-// src/domain/usecases/user/CreateUserUseCase.ts
+-
+-import { IUserRepository } from '@/domain/repositories/IUserRepository';
+-import { UserModel } from '@/domain/entities/UserModel';
+-
+-/**
+- * CreateUserRequest
+- * - 사용자 생성에 필요한 데이터 구조
+- */
+-export interface CreateUserRequest {
+-  /** 사용자 ID */
+-  id: string;
+-  /** 사용자 이메일 */
+-  email: string;
+-  /** 사용자 이름 */
+-  name: string;
+-}
+-
+-/**
+- * CreateUserResponse
+- * - 사용자 생성 후 반환 데이터 구조
+- */
+-export interface CreateUserResponse {
+-  /** 생성된 사용자 ID */
+-  id: string;
+-  /** 생성된 이메일 */
+-  email: string;
+-  /** 생성된 이름 */
+-  name: string;
+-}
+-
+-/**
+- * CreateUserUseCase
+- * - 사용자를 생성하는 유스케이스 구현체
+- */
+-export class CreateUserUseCase {
+-  constructor(private readonly userRepository: IUserRepository) {}
+-
+-  /**
+-   * #1: 사용자 생성
+-   *
+-   * @param request CreateUserRequest
+-   * @returns CreateUserResponse
+-   */
+-  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+-    const { id, email, name } = request;
+-
+-    // User 엔티티 내부에서 값 객체 및 규칙 검증 수행
+-    const user = UserModel.create({ id, email, name });
+-
+-    // 영속성 저장
+-    await this.userRepository.save(user.id);
+-
+-    return {
+-      id: user.id,
+-      email: user.email,
+-      name: user.name,
+-    };
+-  }
+-}
+diff --git a/src/presentation/components/odos-ui/button.tsx b/src/presentation/components/odos-ui/button.tsx
+deleted file mode 100644
+index e1cba0d..0000000
+--- a/src/presentation/components/odos-ui/button.tsx
++++ /dev/null
+@@ -1,110 +0,0 @@
+-import { cn } from '@/presentation/lib/utils';
+-import { buttonVariants } from '@/components/ui/button';
+-import { Slot } from '@radix-ui/react-slot';
+-import { cva, type VariantProps } from 'class-variance-authority';
+-import { OdosLabel } from './label';
+-
+-const allButtonVariants = 'h-auto px-6 border-none shadow-none px-6';
+-const largeButtonVariants = 'rounded-odos-2 py-4';
+-const smallButtonVariants = 'rounded-odos-1 py-1.5';
+-
+-const odosButtonVariants = cva('', {
+-  variants: {
+-    variant: {
+-      default: cn(
+-        buttonVariants({ variant: 'default', size: 'default' }),
+-        allButtonVariants,
+-        largeButtonVariants,
+-        'bg-main-900 text-white hover:bg-main-800'
+-      ),
+-      disabled: cn(
+-        buttonVariants({ variant: 'default', size: 'default' }),
+-        allButtonVariants,
+-        largeButtonVariants,
+-        'bg-gray-400 text-gray-600 hover:bg-gray-400'
+-      ),
+-      warning: cn(
+-        buttonVariants({ variant: 'destructive', size: 'default' }),
+-        allButtonVariants,
+-        largeButtonVariants,
+-        'bg-warning text-white'
+-      ),
+-      loading: cn(
+-        buttonVariants({ variant: 'default', size: 'default' }),
+-        allButtonVariants,
+-        largeButtonVariants,
+-        'bg-main-900 hover:bg-main-900'
+-      ),
+-      outline: cn(
+-        buttonVariants({ variant: 'outline', size: 'default' }),
+-        allButtonVariants,
+-        largeButtonVariants,
+-        'text-gray-900 hover:bg-main-900 hover:text-white inset-ring-[1.5px] inset-ring-main-900'
+-      ),
+-      defaultSmall: cn(
+-        buttonVariants({ variant: 'default', size: 'sm' }),
+-        allButtonVariants,
+-        smallButtonVariants,
+-        'bg-main-900 text-white hover:bg-main-800'
+-      ),
+-      disabledSmall: cn(
+-        buttonVariants({ variant: 'default', size: 'sm' }),
+-        allButtonVariants,
+-        smallButtonVariants,
+-        'bg-gray-400 text-gray-600 hover:bg-gray-400'
+-      ),
+-      warningSmall: cn(
+-        buttonVariants({ variant: 'destructive', size: 'sm' }),
+-        allButtonVariants,
+-        smallButtonVariants,
+-        'bg-warning text-white'
+-      ),
+-      loadingSmall: cn(
+-        buttonVariants({ variant: 'default', size: 'sm' }),
+-        allButtonVariants,
+-        smallButtonVariants,
+-        'bg-main-900 hover:bg-main-900'
+-      ),
+-      outlineSmall: cn(
+-        buttonVariants({ variant: 'outline', size: 'sm' }),
+-        allButtonVariants,
+-        smallButtonVariants,
+-        'text-gray-900 hover:bg-main-900 hover:text-white inset-ring-[1px] inset-ring-main-900'
+-      ),
+-    },
+-  },
+-  defaultVariants: {
+-    variant: 'default',
+-  },
+-});
+-
+-/**
+- * OdosButton
+- * 커스텀 버튼 컴포넌트
+- * @param variant 버튼스타일 :default, disabled, warning, loading, outline, defaultSmall, disabledSmall, warningSmall, loadingSmall, outlineSmall
+- *
+- * @example 기본 버튼
+- * ```tsx
+- * <OdosButton variant="default">Default OdosButton</OdosButton>
+- * ```
+- */
+-export function OdosButton({
+-  className,
+-  variant,
+-  asChild = false,
+-  ...props
+-}: React.ComponentProps<'button'> &
+-  VariantProps<typeof odosButtonVariants> & {
+-    asChild?: boolean;
+-  }): React.ReactElement {
+-  const Comp = asChild ? Slot : 'button';
+-  const isSmall = variant?.includes('Small');
+-  const isDisabled = variant?.includes('disalbed');
+-  return (
+-    <Comp data-slot="button" className={cn(odosButtonVariants({ variant, className }))} {...props}>
+-      <OdosLabel size={isSmall ? 'caption3' : 'body1'} weight={isDisabled ? 'regular' : 'bold'}>
+-        {props.children}
+-      </OdosLabel>
+-    </Comp>
+-  );
+-}
+diff --git a/src/presentation/components/odos-ui/challenge-card.tsx b/src/presentation/components/odos-ui/challenge-card.tsx
+deleted file mode 100644
+index e05e3d8..0000000
+--- a/src/presentation/components/odos-ui/challenge-card.tsx
++++ /dev/null
+@@ -1,84 +0,0 @@
+-import { cn } from '@/presentation/lib/utils';
+-import Image from 'next/image';
+-import { OdosLabel } from './label';
+-import { OdosTag } from './tag';
+-import logo from '/public/images/logo.png';
+-
+-interface ChallengeProps {
+-  challengeTitle: string;
+-  challengeType: string;
+-  currentUserCount: number;
+-  maxUserCount: number;
+-  startDate: string;
+-  endDate: string;
+-  isOngoing: boolean;
+-  className?: string;
+-}
+-
+-/**
+- * OdosChallengeCard
+- * 챌린지 카드 컴포넌트 - 제목, 유형, 참여자 수, 기간, 상태(진행중/모집중) 표시
+- *
+- * @param challengeTitle 챌린지 이름
+- * @param challengeType 챌린지 유형
+- * @param currentUserCount 현재 참여자 수
+- * @param maxUserCount 최대 참여자 수
+- * @param startDate 시작일 (YYYY-MM-DD)
+- * @param endDate 종료일 (YYYY-MM-DD)
+- * @param isOngoing 챌린지 진행 상태 (true: 진행중, false: 모집중)
+- *
+- * @example 기본 사용 예
+- * ```tsx
+- * <OdosChallengeCard
+- *   challengeTitle="챌린지 제목"
+- *   challengeType="고정목표형"
+- *   currentUserCount={12}
+- *   maxUserCount={20}
+- *   startDate="2023-10-01"
+- *   endDate="2023-10-31"
+- *   isOngoing={true}
+- * />
+- * ```
+- */
+-export function OdosChallengeCard({
+-  challengeTitle,
+-  challengeType,
+-  currentUserCount,
+-  maxUserCount,
+-  startDate,
+-  endDate,
+-  isOngoing = false,
+-  className,
+-}: ChallengeProps): React.ReactElement {
+-  return (
+-    <div className="hover:rounded-odos-2 hover:shadow-odos-default w-min hover:bg-white hover:px-2 hover:py-4">
+-      <div className={cn('flex w-50 flex-wrap items-start justify-between gap-y-2', className)}>
+-        <OdosLabel size="body1" weight="bold" className="text-black">
+-          {challengeTitle}
+-        </OdosLabel>
+-        <div className="rounded-odos-1 bg-main-200 relative h-37.5 w-50">
+-          <div className="absolute flex flex-row gap-1.5 pt-1 pl-1">
+-            <OdosTag icon="💻">개발</OdosTag>
+-            {isOngoing && <OdosTag className="bg-mint-700">진행중</OdosTag>}
+-            {!isOngoing && <OdosTag className="bg-blue-500">모집중</OdosTag>}
+-          </div>
+-          <div className="absolute inset-0 flex items-center justify-center">
+-            <Image src={logo} alt="로고" width="48" />
+-          </div>
+-        </div>
+-        <OdosLabel size="caption3" weight="bold">
+-          {challengeType}
+-        </OdosLabel>
+-        <div className="flex flex-row gap-1">
+-          <Image src="/images/user.png" alt="유저" width="12" height="12" />
+-          <OdosLabel size="caption2" weight="medium">
+-            {currentUserCount} / {maxUserCount}
+-          </OdosLabel>
+-        </div>
+-        <OdosLabel size="caption3" weight="medium">
+-          {startDate} - {endDate}
+-        </OdosLabel>
+-      </div>
+-    </div>
+-  );
+-}
+diff --git a/src/presentation/components/odos-ui/footer.tsx b/src/presentation/components/odos-ui/footer.tsx
+deleted file mode 100644
+index aa1d7f1..0000000
+--- a/src/presentation/components/odos-ui/footer.tsx
++++ /dev/null
+@@ -1,43 +0,0 @@
+-import Image from 'next/image';
+-import { OdosLabel } from './label';
+-
+-/**
+- * OdosFooter
+- * 공통 하단 정보 영역 컴포넌트
+- * - 로고 및 서비스명 표시
+- * - 고객문의 이메일 제공
+- * - 이용약관 / 개인정보처리방침 / 운영정책 링크 항목 포함
+- */
+-export function OdosFooter(): React.ReactElement {
+-  return (
+-    <footer className="flex w-screen items-center justify-center bg-gray-900 pt-14 pb-21.5">
+-      <div className="flex w-250 flex-col gap-7.5 px-7.5">
+-        <div className="flex flex-row items-center gap-5">
+-          <Image src="/images/logo-white.png" alt="로고" width={30} height={50} />
+-          <OdosLabel size="heading1" weight="bold" className="text-white">
+-            1D1S
+-          </OdosLabel>
+-        </div>
+-        <div className="flex flex-row gap-2.5">
+-          <OdosLabel size="body2" weight="medium" className="text-white">
+-            고객문의
+-          </OdosLabel>
+-          <OdosLabel size="body2" weight="regular" className="text-white">
+-            1d1s@gmail.com
+-          </OdosLabel>
+-        </div>
+-        <div className="flex flex-row gap-12.5">
+-          <OdosLabel size="body2" weight="medium" className="text-white">
+-            서비스 이용약관
+-          </OdosLabel>
+-          <OdosLabel size="body2" weight="medium" className="text-white">
+-            개인정보 처리방침
+-          </OdosLabel>
+-          <OdosLabel size="body2" weight="medium" className="text-white">
+-            운영정책
+-          </OdosLabel>
+-        </div>
+-      </div>
+-    </footer>
+-  );
+-}
+diff --git a/src/presentation/components/odos-ui/label.tsx b/src/presentation/components/odos-ui/label.tsx
+deleted file mode 100644
+index 469ed69..0000000
+--- a/src/presentation/components/odos-ui/label.tsx
++++ /dev/null
+@@ -1,57 +0,0 @@
+-import { cn } from '@/presentation/lib/utils';
+-import { cva, type VariantProps } from 'class-variance-authority';
+-
+-const odosLabelVariants = cva('', {
+-  variants: {
+-    size: {
+-      heading1: 'text-3xl',
+-      heading2: 'text-2xl',
+-      body1: 'text-xl',
+-      body2: 'text-lg',
+-      caption1: 'text-base',
+-      caption2: 'text-sm',
+-      caption3: 'text-xs',
+-      pageTitle: 'text-3xl',
+-    },
+-    weight: {
+-      bold: 'font-bold',
+-      medium: 'font-medium',
+-      regular: 'font-regular',
+-      light: 'font-light',
+-    },
+-  },
+-  defaultVariants: {
+-    size: 'body2',
+-    weight: 'medium',
+-  },
+-});
+-
+-/**
+- * OdosLabel
+- * 텍스트에 사이즈 및 굵기를 적용하는 커스텀 라벨 컴포넌트
+- *
+- * @param size 텍스트 크기 : heading1, heading2, body1, body2, caption1, caption2, caption3, pageTitle
+- * @default size body2
+- * @param weight 텍스트 굵기 : bold, medium, regular, light
+- * @param as HTML 태그 또는 커스텀 컴포넌트로 렌더링 (기본값: span)
+- *
+- * @example 기본 사용
+- * ```tsx
+- * <OdosLabel size="body1" weight="bold">텍스트</OdosLabel>
+- * ```
+- *
+- * @example HTML 태그 변경
+- * ```tsx
+- * <OdosLabel as="p" size="caption1" weight="regular">단락 텍스트</OdosLabel>
+- * ```
+- */
+-export function OdosLabel({
+-  className,
+-  size,
+-  weight,
+-  as: Tag = 'span',
+-  ...props
+-}: { as?: React.ElementType } & React.ComponentPropsWithoutRef<'span'> &
+-  VariantProps<typeof odosLabelVariants>): React.ReactElement {
+-  return <Tag className={cn(odosLabelVariants({ size, weight, className }))} {...props} />;
+-}
+diff --git a/src/presentation/components/odos-ui/page-background.tsx b/src/presentation/components/odos-ui/page-background.tsx
+deleted file mode 100644
+index a4086e2..0000000
+--- a/src/presentation/components/odos-ui/page-background.tsx
++++ /dev/null
+@@ -1,31 +0,0 @@
+-import { cn } from '@/presentation/lib/utils';
+-
+-/**
+- * OdosPageBackground
+- * 페이지 또는 카드의 기본 배경 영역을 구성하는 컨테이너 컴포넌트
+- *
+- * @example
+- * ```tsx
+- * <OdosPageBackground className="min-w-250">
+- *   <SomeSection />
+- * </OdosPageBackground>
+- * ```
+- */
+-export function OdosPageBackground({
+-  children,
+-  className,
+-}: {
+-  children: React.ReactNode;
+-  className?: string;
+-}): React.ReactElement {
+-  return (
+-    <div
+-      className={cn(
+-        'shadow-odos-default flex h-full min-w-200 flex-col items-center bg-white',
+-        className
+-      )}
+-    >
+-      {children}
+-    </div>
+-  );
+-}
+diff --git a/src/presentation/components/odos-ui/page-title.tsx b/src/presentation/components/odos-ui/page-title.tsx
+deleted file mode 100644
+index c8f6e27..0000000
+--- a/src/presentation/components/odos-ui/page-title.tsx
++++ /dev/null
+@@ -1,63 +0,0 @@
+-import { cn } from '@/presentation/lib/utils';
+-import { OdosLabel } from './label';
+-import Image from 'next/image';
+-import { cva, VariantProps } from 'class-variance-authority';
+-
+-const pageTitleVariants = cva('flex flex-col items-center', {
+-  variants: {
+-    variant: {
+-      withSubtitle: 'pb-2 pt-6 gap-2',
+-      noSubtitle: 'py-5',
+-    },
+-  },
+-  defaultVariants: {
+-    variant: 'noSubtitle',
+-  },
+-});
+-
+-type PageTitleProps = {
+-  title: string;
+-  subtitle?: string;
+-  className?: string;
+-} & VariantProps<typeof pageTitleVariants>;
+-
+-/**
+- * OdosPageTitle
+- * 페이지 상단 타이틀 및 부제목 컴포넌트
+- *
+- * @param title 페이지 제목 텍스트
+- * @param subtitle 선택적 부제목 텍스트 (variant가 'withSubtitle'일 때 표시)
+- * @param variant 타이틀 스타일 종류 ('noSubtitle' | 'withSubtitle')
+- *
+- * @example 기본 사용
+- * ```tsx
+- * <OdosPageTitle title="오늘의 챌린지" />
+- * ```
+- *
+- * @example 부제목 포함
+- * ```tsx
+- * <OdosPageTitle title="챌린지 소개" subtitle="매일 7시에 기상하기" variant="withSubtitle" />
+- * ```
+- */
+-export function OdosPageTitle({
+-  title,
+-  subtitle,
+-  variant = 'noSubtitle',
+-  className,
+-}: PageTitleProps): React.ReactElement {
+-  return (
+-    <div className={cn('flex items-end gap-6', className)}>
+-      <Image src="/images/logo.png" alt="로고" width={48} height={80} />
+-      <div className={pageTitleVariants({ variant })}>
+-        <OdosLabel size="pageTitle" weight="bold" className="text-black">
+-          {title}
+-        </OdosLabel>
+-        {variant === 'withSubtitle' && subtitle && (
+-          <OdosLabel size="caption1" weight="medium" className="text-black">
+-            {subtitle}
+-          </OdosLabel>
+-        )}
+-      </div>
+-    </div>
+-  );
+-}
+diff --git a/src/presentation/components/odos-ui/page-watermark.tsx b/src/presentation/components/odos-ui/page-watermark.tsx
+deleted file mode 100644
+index cf1e245..0000000
+--- a/src/presentation/components/odos-ui/page-watermark.tsx
++++ /dev/null
+@@ -1,13 +0,0 @@
+-import { OdosLabel } from './label';
+-import Image from 'next/image';
+-
+-export function OdosPageWatermark(): React.ReactElement {
+-  return (
+-    <div className="flex items-end gap-2">
+-      <Image src="/images/logo-gray.png" alt="로고" width={24} height={40} />
+-      <OdosLabel size="body1" weight="bold" className="my-2.5 text-gray-300">
+-        1D1S
+-      </OdosLabel>
+-    </div>
+-  );
+-}
+diff --git a/src/presentation/components/odos-ui/spacing.tsx b/src/presentation/components/odos-ui/spacing.tsx
+deleted file mode 100644
+index b418544..0000000
+--- a/src/presentation/components/odos-ui/spacing.tsx
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/**
+- * OdosSpacing
+- * 레이아웃 내 간격을 위해 사용되는 유틸리티 컴포넌트
+- *
+- * @param className Tailwind 유틸리티 클래스로 간격 크기 지정
+- *
+- * @example 기본 사용
+- * ```tsx
+- * <OdosSpacing className="h-4" />
+- * ```
+- */
+-export function OdosSpacing({
+-  className,
+-}: React.ComponentPropsWithoutRef<'div'>): React.ReactElement {
+-  return <div className={className} />;
+-}
+diff --git a/src/presentation/components/odos-ui/tag.tsx b/src/presentation/components/odos-ui/tag.tsx
+deleted file mode 100644
+index b9c4ecb..0000000
+--- a/src/presentation/components/odos-ui/tag.tsx
++++ /dev/null
+@@ -1,57 +0,0 @@
+-import { cn } from '@/presentation/lib/utils';
+-import { cva, type VariantProps } from 'class-variance-authority';
+-import { OdosLabel } from './label';
+-
+-const tagVariants = cva(
+-  'inline-flex items-center rounded-odos-1 px-1.5 py-1 bg-main-900 text-white',
+-  {
+-    variants: {
+-      hasIcon: {
+-        true: 'gap-1',
+-        false: '',
+-      },
+-    },
+-    defaultVariants: {
+-      hasIcon: false,
+-    },
+-  }
+-);
+-
+-type TagProps = {
+-  icon?: string;
+-  children: React.ReactNode;
+-  className?: string;
+-  weight?: 'bold' | 'medium' | 'regular' | 'light';
+-} & VariantProps<typeof tagVariants>;
+-
+-/**
+- * OdosTag
+- * 간단한 태그 스타일을 위한 컴포넌트 (텍스트 + 아이콘 구성)
+- *
+- * @param icon 선택적 아이콘 이모지 텍스트
+- * @param weight 텍스트 굵기 (기본값: bold) : bold, medium, regular, light
+- *
+- * @example 기본 사용
+- * ```tsx
+- * <OdosTag icon="🔥">인기</OdosTag>
+- * ```
+- */
+-export function OdosTag({
+-  icon,
+-  children,
+-  weight = 'bold',
+-  className,
+-}: TagProps): React.ReactElement {
+-  return (
+-    <span className={cn(tagVariants({ hasIcon: Boolean(icon) }), className)}>
+-      {icon && (
+-        <OdosLabel size="caption3" weight="medium">
+-          {icon}
+-        </OdosLabel>
+-      )}
+-      <OdosLabel size="caption3" weight={weight}>
+-        {children}
+-      </OdosLabel>
+-    </span>
+-  );
+-}
+diff --git a/src/presentation/components/ui/alert-dialog.tsx b/src/presentation/components/ui/alert-dialog.tsx
+deleted file mode 100644
+index 902a035..0000000
+--- a/src/presentation/components/ui/alert-dialog.tsx
++++ /dev/null
+@@ -1,145 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
+-
+-import { cn } from '@/presentation/lib/utils';
+-import { buttonVariants } from '@/components/ui/button';
+-
+-function AlertDialog({
+-  ...props
+-}: React.ComponentProps<typeof AlertDialogPrimitive.Root>): React.ReactElement {
+-  return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />;
+-}
+-
+-function AlertDialogTrigger({
+-  ...props
+-}: React.ComponentProps<typeof AlertDialogPrimitive.Trigger>): React.ReactElement {
+-  return <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />;
+-}
+-
+-function AlertDialogPortal({
+-  ...props
+-}: React.ComponentProps<typeof AlertDialogPrimitive.Portal>): React.ReactElement {
+-  return <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />;
+-}
+-
+-function AlertDialogOverlay({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof AlertDialogPrimitive.Overlay>): React.ReactElement {
+-  return (
+-    <AlertDialogPrimitive.Overlay
+-      data-slot="alert-dialog-overlay"
+-      className={cn(
+-        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function AlertDialogContent({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof AlertDialogPrimitive.Content>): React.ReactElement {
+-  return (
+-    <AlertDialogPortal>
+-      <AlertDialogOverlay />
+-      <AlertDialogPrimitive.Content
+-        data-slot="alert-dialog-content"
+-        className={cn(
+-          'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg',
+-          className
+-        )}
+-        {...props}
+-      />
+-    </AlertDialogPortal>
+-  );
+-}
+-
+-function AlertDialogHeader({
+-  className,
+-  ...props
+-}: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="alert-dialog-header"
+-      className={cn('flex flex-col gap-2 text-center sm:text-left', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function AlertDialogFooter({
+-  className,
+-  ...props
+-}: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="alert-dialog-footer"
+-      className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function AlertDialogTitle({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof AlertDialogPrimitive.Title>): React.ReactElement {
+-  return (
+-    <AlertDialogPrimitive.Title
+-      data-slot="alert-dialog-title"
+-      className={cn('text-lg font-semibold', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function AlertDialogDescription({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof AlertDialogPrimitive.Description>): React.ReactElement {
+-  return (
+-    <AlertDialogPrimitive.Description
+-      data-slot="alert-dialog-description"
+-      className={cn('text-muted-foreground text-sm', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function AlertDialogAction({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof AlertDialogPrimitive.Action>): React.ReactElement {
+-  return <AlertDialogPrimitive.Action className={cn(buttonVariants(), className)} {...props} />;
+-}
+-
+-function AlertDialogCancel({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof AlertDialogPrimitive.Cancel>): React.ReactElement {
+-  return (
+-    <AlertDialogPrimitive.Cancel
+-      className={cn(buttonVariants({ variant: 'outline' }), className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export {
+-  AlertDialog,
+-  AlertDialogPortal,
+-  AlertDialogOverlay,
+-  AlertDialogTrigger,
+-  AlertDialogContent,
+-  AlertDialogHeader,
+-  AlertDialogFooter,
+-  AlertDialogTitle,
+-  AlertDialogDescription,
+-  AlertDialogAction,
+-  AlertDialogCancel,
+-};
+diff --git a/src/presentation/components/ui/aspect-ratio.tsx b/src/presentation/components/ui/aspect-ratio.tsx
+deleted file mode 100644
+index a849e8f..0000000
+--- a/src/presentation/components/ui/aspect-ratio.tsx
++++ /dev/null
+@@ -1,11 +0,0 @@
+-'use client';
+-
+-import * as AspectRatioPrimitive from '@radix-ui/react-aspect-ratio';
+-
+-function AspectRatio({
+-  ...props
+-}: React.ComponentProps<typeof AspectRatioPrimitive.Root>): React.ReactElement {
+-  return <AspectRatioPrimitive.Root data-slot="aspect-ratio" {...props} />;
+-}
+-
+-export { AspectRatio };
+diff --git a/src/presentation/components/ui/avatar.tsx b/src/presentation/components/ui/avatar.tsx
+deleted file mode 100644
+index b12d376..0000000
+--- a/src/presentation/components/ui/avatar.tsx
++++ /dev/null
+@@ -1,47 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as AvatarPrimitive from '@radix-ui/react-avatar';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Avatar({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof AvatarPrimitive.Root>): React.ReactElement {
+-  return (
+-    <AvatarPrimitive.Root
+-      data-slot="avatar"
+-      className={cn('relative flex size-8 shrink-0 overflow-hidden rounded-full', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function AvatarImage({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof AvatarPrimitive.Image>): React.ReactElement {
+-  return (
+-    <AvatarPrimitive.Image
+-      data-slot="avatar-image"
+-      className={cn('aspect-square size-full', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function AvatarFallback({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>): React.ReactElement {
+-  return (
+-    <AvatarPrimitive.Fallback
+-      data-slot="avatar-fallback"
+-      className={cn('bg-muted flex size-full items-center justify-center rounded-full', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export { Avatar, AvatarImage, AvatarFallback };
+diff --git a/src/presentation/components/ui/badge.tsx b/src/presentation/components/ui/badge.tsx
+deleted file mode 100644
+index 8197067..0000000
+--- a/src/presentation/components/ui/badge.tsx
++++ /dev/null
+@@ -1,40 +0,0 @@
+-import * as React from 'react';
+-import { Slot } from '@radix-ui/react-slot';
+-import { cva, type VariantProps } from 'class-variance-authority';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-const badgeVariants = cva(
+-  'inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden',
+-  {
+-    variants: {
+-      variant: {
+-        default: 'border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90',
+-        secondary:
+-          'border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90',
+-        destructive:
+-          'border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+-        outline: 'text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
+-      },
+-    },
+-    defaultVariants: {
+-      variant: 'default',
+-    },
+-  }
+-);
+-
+-function Badge({
+-  className,
+-  variant,
+-  asChild = false,
+-  ...props
+-}: React.ComponentProps<'span'> &
+-  VariantProps<typeof badgeVariants> & { asChild?: boolean }): React.ReactElement {
+-  const Comp = asChild ? Slot : 'span';
+-
+-  return (
+-    <Comp data-slot="badge" className={cn(badgeVariants({ variant }), className)} {...props} />
+-  );
+-}
+-
+-export { Badge, badgeVariants };
+diff --git a/src/presentation/components/ui/button.tsx b/src/presentation/components/ui/button.tsx
+deleted file mode 100644
+index 7b0fc9f..0000000
+--- a/src/presentation/components/ui/button.tsx
++++ /dev/null
+@@ -1,56 +0,0 @@
+-import * as React from 'react';
+-import { Slot } from '@radix-ui/react-slot';
+-import { cva, type VariantProps } from 'class-variance-authority';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-const buttonVariants = cva(
+-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+-  {
+-    variants: {
+-      variant: {
+-        default: 'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
+-        destructive:
+-          'bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+-        outline:
+-          'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
+-        secondary: 'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
+-        ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
+-        link: 'text-primary underline-offset-4 hover:underline',
+-      },
+-      size: {
+-        default: 'h-9 px-4 py-2 has-[>svg]:px-3',
+-        sm: 'h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
+-        lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
+-        icon: 'size-9',
+-      },
+-    },
+-    defaultVariants: {
+-      variant: 'default',
+-      size: 'default',
+-    },
+-  }
+-);
+-
+-function Button({
+-  className,
+-  variant,
+-  size,
+-  asChild = false,
+-  ...props
+-}: React.ComponentProps<'button'> &
+-  VariantProps<typeof buttonVariants> & {
+-    asChild?: boolean;
+-  }): React.ReactElement {
+-  const Comp = asChild ? Slot : 'button';
+-
+-  return (
+-    <Comp
+-      data-slot="button"
+-      className={cn(buttonVariants({ variant, size, className }))}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export { Button, buttonVariants };
+diff --git a/src/presentation/components/ui/calendar.tsx b/src/presentation/components/ui/calendar.tsx
+deleted file mode 100644
+index 5ddd542..0000000
+--- a/src/presentation/components/ui/calendar.tsx
++++ /dev/null
+@@ -1,72 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import { ChevronLeft, ChevronRight } from 'lucide-react';
+-import { DayPicker } from 'react-day-picker';
+-
+-import { cn } from '@/presentation/lib/utils';
+-import { buttonVariants } from '@/components/ui/button';
+-
+-function Calendar({
+-  className,
+-  classNames,
+-  showOutsideDays = true,
+-  ...props
+-}: React.ComponentProps<typeof DayPicker>): React.ReactElement {
+-  return (
+-    <DayPicker
+-      showOutsideDays={showOutsideDays}
+-      className={cn('p-3', className)}
+-      classNames={{
+-        months: 'flex flex-col sm:flex-row gap-2',
+-        month: 'flex flex-col gap-4',
+-        caption: 'flex justify-center pt-1 relative items-center w-full',
+-        caption_label: 'text-sm font-medium',
+-        nav: 'flex items-center gap-1',
+-        nav_button: cn(
+-          buttonVariants({ variant: 'outline' }),
+-          'size-7 bg-transparent p-0 opacity-50 hover:opacity-100'
+-        ),
+-        nav_button_previous: 'absolute left-1',
+-        nav_button_next: 'absolute right-1',
+-        table: 'w-full border-collapse space-x-1',
+-        head_row: 'flex',
+-        head_cell: 'text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]',
+-        row: 'flex w-full mt-2',
+-        cell: cn(
+-          'relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-range-end)]:rounded-r-md',
+-          props.mode === 'range'
+-            ? '[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md'
+-            : '[&:has([aria-selected])]:rounded-md'
+-        ),
+-        day: cn(
+-          buttonVariants({ variant: 'ghost' }),
+-          'size-8 p-0 font-normal aria-selected:opacity-100'
+-        ),
+-        day_range_start:
+-          'day-range-start aria-selected:bg-primary aria-selected:text-primary-foreground',
+-        day_range_end:
+-          'day-range-end aria-selected:bg-primary aria-selected:text-primary-foreground',
+-        day_selected:
+-          'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground',
+-        day_today: 'bg-accent text-accent-foreground',
+-        day_outside: 'day-outside text-muted-foreground aria-selected:text-muted-foreground',
+-        day_disabled: 'text-muted-foreground opacity-50',
+-        day_range_middle: 'aria-selected:bg-accent aria-selected:text-accent-foreground',
+-        day_hidden: 'invisible',
+-        ...classNames,
+-      }}
+-      components={{
+-        IconLeft: ({ className, ...props }) => (
+-          <ChevronLeft className={cn('size-4', className)} {...props} />
+-        ),
+-        IconRight: ({ className, ...props }) => (
+-          <ChevronRight className={cn('size-4', className)} {...props} />
+-        ),
+-      }}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export { Calendar };
+diff --git a/src/presentation/components/ui/card.tsx b/src/presentation/components/ui/card.tsx
+deleted file mode 100644
+index 4a0c9bd..0000000
+--- a/src/presentation/components/ui/card.tsx
++++ /dev/null
+@@ -1,75 +0,0 @@
+-import * as React from 'react';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Card({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="card"
+-      className={cn(
+-        'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function CardHeader({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="card-header"
+-      className={cn(
+-        '@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function CardTitle({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="card-title"
+-      className={cn('leading-none font-semibold', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function CardDescription({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="card-description"
+-      className={cn('text-muted-foreground text-sm', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function CardAction({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="card-action"
+-      className={cn('col-start-2 row-span-2 row-start-1 self-start justify-self-end', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function CardContent({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  return <div data-slot="card-content" className={cn('px-6', className)} {...props} />;
+-}
+-
+-function CardFooter({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="card-footer"
+-      className={cn('flex items-center px-6 [.border-t]:pt-6', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent };
+diff --git a/src/presentation/components/ui/checkbox.tsx b/src/presentation/components/ui/checkbox.tsx
+deleted file mode 100644
+index 1b83e43..0000000
+--- a/src/presentation/components/ui/checkbox.tsx
++++ /dev/null
+@@ -1,32 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
+-import { CheckIcon } from 'lucide-react';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Checkbox({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof CheckboxPrimitive.Root>): React.ReactElement {
+-  return (
+-    <CheckboxPrimitive.Root
+-      data-slot="checkbox"
+-      className={cn(
+-        'peer border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50',
+-        className
+-      )}
+-      {...props}
+-    >
+-      <CheckboxPrimitive.Indicator
+-        data-slot="checkbox-indicator"
+-        className="flex items-center justify-center text-current transition-none"
+-      >
+-        <CheckIcon className="size-3.5" />
+-      </CheckboxPrimitive.Indicator>
+-    </CheckboxPrimitive.Root>
+-  );
+-}
+-
+-export { Checkbox };
+diff --git a/src/presentation/components/ui/command.tsx b/src/presentation/components/ui/command.tsx
+deleted file mode 100644
+index 5d97d1a..0000000
+--- a/src/presentation/components/ui/command.tsx
++++ /dev/null
+@@ -1,168 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import { Command as CommandPrimitive } from 'cmdk';
+-import { SearchIcon } from 'lucide-react';
+-
+-import { cn } from '@/presentation/lib/utils';
+-import {
+-  Dialog,
+-  DialogContent,
+-  DialogDescription,
+-  DialogHeader,
+-  DialogTitle,
+-} from '@/components/ui/dialog';
+-
+-function Command({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof CommandPrimitive>): React.ReactElement {
+-  return (
+-    <CommandPrimitive
+-      data-slot="command"
+-      className={cn(
+-        'bg-popover text-popover-foreground flex h-full w-full flex-col overflow-hidden rounded-md',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function CommandDialog({
+-  title = 'Command Palette',
+-  description = 'Search for a command to run...',
+-  children,
+-  ...props
+-}: React.ComponentProps<typeof Dialog> & {
+-  title?: string;
+-  description?: string;
+-}): React.ReactElement {
+-  return (
+-    <Dialog {...props}>
+-      <DialogHeader className="sr-only">
+-        <DialogTitle>{title}</DialogTitle>
+-        <DialogDescription>{description}</DialogDescription>
+-      </DialogHeader>
+-      <DialogContent className="overflow-hidden p-0">
+-        <Command className="[&_[cmdk-group-heading]]:text-muted-foreground **:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
+-          {children}
+-        </Command>
+-      </DialogContent>
+-    </Dialog>
+-  );
+-}
+-
+-function CommandInput({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof CommandPrimitive.Input>): React.ReactElement {
+-  return (
+-    <div data-slot="command-input-wrapper" className="flex h-9 items-center gap-2 border-b px-3">
+-      <SearchIcon className="size-4 shrink-0 opacity-50" />
+-      <CommandPrimitive.Input
+-        data-slot="command-input"
+-        className={cn(
+-          'placeholder:text-muted-foreground flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50',
+-          className
+-        )}
+-        {...props}
+-      />
+-    </div>
+-  );
+-}
+-
+-function CommandList({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof CommandPrimitive.List>): React.ReactElement {
+-  return (
+-    <CommandPrimitive.List
+-      data-slot="command-list"
+-      className={cn('max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function CommandEmpty({
+-  ...props
+-}: React.ComponentProps<typeof CommandPrimitive.Empty>): React.ReactElement {
+-  return (
+-    <CommandPrimitive.Empty
+-      data-slot="command-empty"
+-      className="py-6 text-center text-sm"
+-      {...props}
+-    />
+-  );
+-}
+-
+-function CommandGroup({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof CommandPrimitive.Group>): React.ReactElement {
+-  return (
+-    <CommandPrimitive.Group
+-      data-slot="command-group"
+-      className={cn(
+-        'text-foreground [&_[cmdk-group-heading]]:text-muted-foreground overflow-hidden p-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function CommandSeparator({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof CommandPrimitive.Separator>): React.ReactElement {
+-  return (
+-    <CommandPrimitive.Separator
+-      data-slot="command-separator"
+-      className={cn('bg-border -mx-1 h-px', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function CommandItem({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof CommandPrimitive.Item>): React.ReactElement {
+-  return (
+-    <CommandPrimitive.Item
+-      data-slot="command-item"
+-      className={cn(
+-        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function CommandShortcut({
+-  className,
+-  ...props
+-}: React.ComponentProps<'span'>): React.ReactElement {
+-  return (
+-    <span
+-      data-slot="command-shortcut"
+-      className={cn('text-muted-foreground ml-auto text-xs tracking-widest', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export {
+-  Command,
+-  CommandDialog,
+-  CommandInput,
+-  CommandList,
+-  CommandEmpty,
+-  CommandGroup,
+-  CommandItem,
+-  CommandShortcut,
+-  CommandSeparator,
+-};
+diff --git a/src/presentation/components/ui/dialog.tsx b/src/presentation/components/ui/dialog.tsx
+deleted file mode 100644
+index 2aad93e..0000000
+--- a/src/presentation/components/ui/dialog.tsx
++++ /dev/null
+@@ -1,132 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as DialogPrimitive from '@radix-ui/react-dialog';
+-import { XIcon } from 'lucide-react';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Dialog({
+-  ...props
+-}: React.ComponentProps<typeof DialogPrimitive.Root>): React.ReactElement {
+-  return <DialogPrimitive.Root data-slot="dialog" {...props} />;
+-}
+-
+-function DialogTrigger({
+-  ...props
+-}: React.ComponentProps<typeof DialogPrimitive.Trigger>): React.ReactElement {
+-  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
+-}
+-
+-function DialogPortal({
+-  ...props
+-}: React.ComponentProps<typeof DialogPrimitive.Portal>): React.ReactElement {
+-  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
+-}
+-
+-function DialogClose({
+-  ...props
+-}: React.ComponentProps<typeof DialogPrimitive.Close>): React.ReactElement {
+-  return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
+-}
+-
+-function DialogOverlay({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof DialogPrimitive.Overlay>): React.ReactElement {
+-  return (
+-    <DialogPrimitive.Overlay
+-      data-slot="dialog-overlay"
+-      className={cn(
+-        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function DialogContent({
+-  className,
+-  children,
+-  ...props
+-}: React.ComponentProps<typeof DialogPrimitive.Content>): React.ReactElement {
+-  return (
+-    <DialogPortal data-slot="dialog-portal">
+-      <DialogOverlay />
+-      <DialogPrimitive.Content
+-        data-slot="dialog-content"
+-        className={cn(
+-          'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg',
+-          className
+-        )}
+-        {...props}
+-      >
+-        {children}
+-        <DialogPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4">
+-          <XIcon />
+-          <span className="sr-only">Close</span>
+-        </DialogPrimitive.Close>
+-      </DialogPrimitive.Content>
+-    </DialogPortal>
+-  );
+-}
+-
+-function DialogHeader({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="dialog-header"
+-      className={cn('flex flex-col gap-2 text-center sm:text-left', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function DialogFooter({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="dialog-footer"
+-      className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function DialogTitle({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof DialogPrimitive.Title>): React.ReactElement {
+-  return (
+-    <DialogPrimitive.Title
+-      data-slot="dialog-title"
+-      className={cn('text-lg leading-none font-semibold', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function DialogDescription({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof DialogPrimitive.Description>): React.ReactElement {
+-  return (
+-    <DialogPrimitive.Description
+-      data-slot="dialog-description"
+-      className={cn('text-muted-foreground text-sm', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export {
+-  Dialog,
+-  DialogClose,
+-  DialogContent,
+-  DialogDescription,
+-  DialogFooter,
+-  DialogHeader,
+-  DialogOverlay,
+-  DialogPortal,
+-  DialogTitle,
+-  DialogTrigger,
+-};
+diff --git a/src/presentation/components/ui/drawer.tsx b/src/presentation/components/ui/drawer.tsx
+deleted file mode 100644
+index 754caed..0000000
+--- a/src/presentation/components/ui/drawer.tsx
++++ /dev/null
+@@ -1,132 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import { Drawer as DrawerPrimitive } from 'vaul';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Drawer({
+-  ...props
+-}: React.ComponentProps<typeof DrawerPrimitive.Root>): React.ReactElement {
+-  return <DrawerPrimitive.Root data-slot="drawer" {...props} />;
+-}
+-
+-function DrawerTrigger({
+-  ...props
+-}: React.ComponentProps<typeof DrawerPrimitive.Trigger>): React.ReactElement {
+-  return <DrawerPrimitive.Trigger data-slot="drawer-trigger" {...props} />;
+-}
+-
+-function DrawerPortal({
+-  ...props
+-}: React.ComponentProps<typeof DrawerPrimitive.Portal>): React.ReactElement {
+-  return <DrawerPrimitive.Portal data-slot="drawer-portal" {...props} />;
+-}
+-
+-function DrawerClose({
+-  ...props
+-}: React.ComponentProps<typeof DrawerPrimitive.Close>): React.ReactElement {
+-  return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />;
+-}
+-
+-function DrawerOverlay({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof DrawerPrimitive.Overlay>): React.ReactElement {
+-  return (
+-    <DrawerPrimitive.Overlay
+-      data-slot="drawer-overlay"
+-      className={cn(
+-        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function DrawerContent({
+-  className,
+-  children,
+-  ...props
+-}: React.ComponentProps<typeof DrawerPrimitive.Content>): React.ReactElement {
+-  return (
+-    <DrawerPortal data-slot="drawer-portal">
+-      <DrawerOverlay />
+-      <DrawerPrimitive.Content
+-        data-slot="drawer-content"
+-        className={cn(
+-          'group/drawer-content bg-background fixed z-50 flex h-auto flex-col',
+-          'data-[vaul-drawer-direction=top]:inset-x-0 data-[vaul-drawer-direction=top]:top-0 data-[vaul-drawer-direction=top]:mb-24 data-[vaul-drawer-direction=top]:max-h-[80vh] data-[vaul-drawer-direction=top]:rounded-b-lg data-[vaul-drawer-direction=top]:border-b',
+-          'data-[vaul-drawer-direction=bottom]:inset-x-0 data-[vaul-drawer-direction=bottom]:bottom-0 data-[vaul-drawer-direction=bottom]:mt-24 data-[vaul-drawer-direction=bottom]:max-h-[80vh] data-[vaul-drawer-direction=bottom]:rounded-t-lg data-[vaul-drawer-direction=bottom]:border-t',
+-          'data-[vaul-drawer-direction=right]:inset-y-0 data-[vaul-drawer-direction=right]:right-0 data-[vaul-drawer-direction=right]:w-3/4 data-[vaul-drawer-direction=right]:border-l data-[vaul-drawer-direction=right]:sm:max-w-sm',
+-          'data-[vaul-drawer-direction=left]:inset-y-0 data-[vaul-drawer-direction=left]:left-0 data-[vaul-drawer-direction=left]:w-3/4 data-[vaul-drawer-direction=left]:border-r data-[vaul-drawer-direction=left]:sm:max-w-sm',
+-          className
+-        )}
+-        {...props}
+-      >
+-        <div className="bg-muted mx-auto mt-4 hidden h-2 w-[100px] shrink-0 rounded-full group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
+-        {children}
+-      </DrawerPrimitive.Content>
+-    </DrawerPortal>
+-  );
+-}
+-
+-function DrawerHeader({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="drawer-header"
+-      className={cn('flex flex-col gap-1.5 p-4', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function DrawerFooter({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="drawer-footer"
+-      className={cn('mt-auto flex flex-col gap-2 p-4', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function DrawerTitle({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof DrawerPrimitive.Title>): React.ReactElement {
+-  return (
+-    <DrawerPrimitive.Title
+-      data-slot="drawer-title"
+-      className={cn('text-foreground font-semibold', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function DrawerDescription({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof DrawerPrimitive.Description>): React.ReactElement {
+-  return (
+-    <DrawerPrimitive.Description
+-      data-slot="drawer-description"
+-      className={cn('text-muted-foreground text-sm', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export {
+-  Drawer,
+-  DrawerPortal,
+-  DrawerOverlay,
+-  DrawerTrigger,
+-  DrawerClose,
+-  DrawerContent,
+-  DrawerHeader,
+-  DrawerFooter,
+-  DrawerTitle,
+-  DrawerDescription,
+-};
+diff --git a/src/presentation/components/ui/form.tsx b/src/presentation/components/ui/form.tsx
+deleted file mode 100644
+index f3f229e..0000000
+--- a/src/presentation/components/ui/form.tsx
++++ /dev/null
+@@ -1,168 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as LabelPrimitive from '@radix-ui/react-label';
+-import { Slot } from '@radix-ui/react-slot';
+-import {
+-  Controller,
+-  FieldError,
+-  FormProvider,
+-  useFormContext,
+-  useFormState,
+-  type ControllerProps,
+-  type FieldPath,
+-  type FieldValues,
+-} from 'react-hook-form';
+-
+-import { cn } from '@/presentation/lib/utils';
+-import { Label } from '@/components/ui/label';
+-
+-const Form = FormProvider;
+-
+-interface FormFieldContextValue<
+-  TFieldValues extends FieldValues = FieldValues,
+-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+-> {
+-  name: TName;
+-}
+-
+-const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue);
+-
+-const FormField = <
+-  TFieldValues extends FieldValues = FieldValues,
+-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+->({
+-  ...props
+-}: ControllerProps<TFieldValues, TName>): React.ReactElement => (
+-  <FormFieldContext.Provider value={{ name: props.name }}>
+-    <Controller {...props} />
+-  </FormFieldContext.Provider>
+-);
+-
+-interface FormItemContextValue {
+-  id: string;
+-}
+-
+-const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
+-
+-const useFormField = (): {
+-  id: string;
+-  name: string;
+-  formItemId: string;
+-  formDescriptionId: string;
+-  formMessageId: string;
+-  invalid: boolean;
+-  isDirty: boolean;
+-  isTouched: boolean;
+-  isValidating: boolean;
+-  error?: FieldError;
+-} => {
+-  const fieldContext = React.useContext(FormFieldContext);
+-  const itemContext = React.useContext(FormItemContext);
+-  const { getFieldState } = useFormContext();
+-  const formState = useFormState({ name: fieldContext.name });
+-  const fieldState = getFieldState(fieldContext.name, formState);
+-
+-  if (!fieldContext) {
+-    throw new Error('useFormField should be used within <FormField>');
+-  }
+-
+-  const { id } = itemContext;
+-
+-  return {
+-    id,
+-    name: fieldContext.name,
+-    formItemId: `${id}-form-item`,
+-    formDescriptionId: `${id}-form-item-description`,
+-    formMessageId: `${id}-form-item-message`,
+-    ...fieldState,
+-  };
+-};
+-
+-function FormItem({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  const id = React.useId();
+-
+-  return (
+-    <FormItemContext.Provider value={{ id }}>
+-      <div data-slot="form-item" className={cn('grid gap-2', className)} {...props} />
+-    </FormItemContext.Provider>
+-  );
+-}
+-
+-function FormLabel({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof LabelPrimitive.Root>): React.ReactElement {
+-  const { error, formItemId } = useFormField();
+-
+-  return (
+-    <Label
+-      data-slot="form-label"
+-      data-error={Boolean(error)}
+-      className={cn('data-[error=true]:text-destructive', className)}
+-      htmlFor={formItemId}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function FormControl({ ...props }: React.ComponentProps<typeof Slot>): React.ReactElement {
+-  const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
+-
+-  return (
+-    <Slot
+-      data-slot="form-control"
+-      id={formItemId}
+-      aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
+-      aria-invalid={Boolean(error)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function FormDescription({ className, ...props }: React.ComponentProps<'p'>): React.ReactElement {
+-  const { formDescriptionId } = useFormField();
+-
+-  return (
+-    <p
+-      data-slot="form-description"
+-      id={formDescriptionId}
+-      className={cn('text-muted-foreground text-sm', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function FormMessage({
+-  className,
+-  ...props
+-}: React.ComponentProps<'p'>): React.ReactElement | null {
+-  const { error, formMessageId } = useFormField();
+-  const body = error ? String(error?.message ?? '') : props.children;
+-
+-  if (!body) {
+-    return null;
+-  }
+-
+-  return (
+-    <p
+-      data-slot="form-message"
+-      id={formMessageId}
+-      className={cn('text-destructive text-sm', className)}
+-      {...props}
+-    >
+-      {body}
+-    </p>
+-  );
+-}
+-
+-export {
+-  useFormField,
+-  Form,
+-  FormItem,
+-  FormLabel,
+-  FormControl,
+-  FormDescription,
+-  FormMessage,
+-  FormField,
+-};
+diff --git a/src/presentation/components/ui/input.tsx b/src/presentation/components/ui/input.tsx
+deleted file mode 100644
+index 18c311c..0000000
+--- a/src/presentation/components/ui/input.tsx
++++ /dev/null
+@@ -1,21 +0,0 @@
+-import * as React from 'react';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Input({ className, type, ...props }: React.ComponentProps<'input'>): React.ReactElement {
+-  return (
+-    <input
+-      type={type}
+-      data-slot="input"
+-      className={cn(
+-        'file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+-        'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
+-        'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export { Input };
+diff --git a/src/presentation/components/ui/label.tsx b/src/presentation/components/ui/label.tsx
+deleted file mode 100644
+index ecd4e14..0000000
+--- a/src/presentation/components/ui/label.tsx
++++ /dev/null
+@@ -1,24 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as LabelPrimitive from '@radix-ui/react-label';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Label({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof LabelPrimitive.Root>): React.ReactElement {
+-  return (
+-    <LabelPrimitive.Root
+-      data-slot="label"
+-      className={cn(
+-        'flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export { Label };
+diff --git a/src/presentation/components/ui/menubar.tsx b/src/presentation/components/ui/menubar.tsx
+deleted file mode 100644
+index 5a7c842..0000000
+--- a/src/presentation/components/ui/menubar.tsx
++++ /dev/null
+@@ -1,268 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as MenubarPrimitive from '@radix-ui/react-menubar';
+-import { CheckIcon, ChevronRightIcon, CircleIcon } from 'lucide-react';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Menubar({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.Root>): React.ReactElement {
+-  return (
+-    <MenubarPrimitive.Root
+-      data-slot="menubar"
+-      className={cn(
+-        'bg-background flex h-9 items-center gap-1 rounded-md border p-1 shadow-xs',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function MenubarMenu({
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.Menu>): React.ReactElement {
+-  return <MenubarPrimitive.Menu data-slot="menubar-menu" {...props} />;
+-}
+-
+-function MenubarGroup({
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.Group>): React.ReactElement {
+-  return <MenubarPrimitive.Group data-slot="menubar-group" {...props} />;
+-}
+-
+-function MenubarPortal({
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.Portal>): React.ReactElement {
+-  return <MenubarPrimitive.Portal data-slot="menubar-portal" {...props} />;
+-}
+-
+-function MenubarRadioGroup({
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.RadioGroup>): React.ReactElement {
+-  return <MenubarPrimitive.RadioGroup data-slot="menubar-radio-group" {...props} />;
+-}
+-
+-function MenubarTrigger({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.Trigger>): React.ReactElement {
+-  return (
+-    <MenubarPrimitive.Trigger
+-      data-slot="menubar-trigger"
+-      className={cn(
+-        'focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground flex items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden select-none',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function MenubarContent({
+-  className,
+-  align = 'start',
+-  alignOffset = -4,
+-  sideOffset = 8,
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.Content>): React.ReactElement {
+-  return (
+-    <MenubarPortal>
+-      <MenubarPrimitive.Content
+-        data-slot="menubar-content"
+-        align={align}
+-        alignOffset={alignOffset}
+-        sideOffset={sideOffset}
+-        className={cn(
+-          'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[12rem] origin-(--radix-menubar-content-transform-origin) overflow-hidden rounded-md border p-1 shadow-md',
+-          className
+-        )}
+-        {...props}
+-      />
+-    </MenubarPortal>
+-  );
+-}
+-
+-function MenubarItem({
+-  className,
+-  inset,
+-  variant = 'default',
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.Item> & {
+-  inset?: boolean;
+-  variant?: 'default' | 'destructive';
+-}): React.ReactElement {
+-  return (
+-    <MenubarPrimitive.Item
+-      data-slot="menubar-item"
+-      data-inset={inset}
+-      data-variant={variant}
+-      className={cn(
+-        "focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 dark:data-[variant=destructive]:focus:bg-destructive/20 data-[variant=destructive]:focus:text-destructive data-[variant=destructive]:*:[svg]:!text-destructive [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[inset]:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function MenubarCheckboxItem({
+-  className,
+-  children,
+-  checked,
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.CheckboxItem>): React.ReactElement {
+-  return (
+-    <MenubarPrimitive.CheckboxItem
+-      data-slot="menubar-checkbox-item"
+-      className={cn(
+-        "focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-xs py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+-        className
+-      )}
+-      checked={checked}
+-      {...props}
+-    >
+-      <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
+-        <MenubarPrimitive.ItemIndicator>
+-          <CheckIcon className="size-4" />
+-        </MenubarPrimitive.ItemIndicator>
+-      </span>
+-      {children}
+-    </MenubarPrimitive.CheckboxItem>
+-  );
+-}
+-
+-function MenubarRadioItem({
+-  className,
+-  children,
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.RadioItem>): React.ReactElement {
+-  return (
+-    <MenubarPrimitive.RadioItem
+-      data-slot="menubar-radio-item"
+-      className={cn(
+-        "focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-xs py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+-        className
+-      )}
+-      {...props}
+-    >
+-      <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
+-        <MenubarPrimitive.ItemIndicator>
+-          <CircleIcon className="size-2 fill-current" />
+-        </MenubarPrimitive.ItemIndicator>
+-      </span>
+-      {children}
+-    </MenubarPrimitive.RadioItem>
+-  );
+-}
+-
+-function MenubarLabel({
+-  className,
+-  inset,
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.Label> & {
+-  inset?: boolean;
+-}): React.ReactElement {
+-  return (
+-    <MenubarPrimitive.Label
+-      data-slot="menubar-label"
+-      data-inset={inset}
+-      className={cn('px-2 py-1.5 text-sm font-medium data-[inset]:pl-8', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function MenubarSeparator({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.Separator>): React.ReactElement {
+-  return (
+-    <MenubarPrimitive.Separator
+-      data-slot="menubar-separator"
+-      className={cn('bg-border -mx-1 my-1 h-px', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function MenubarShortcut({
+-  className,
+-  ...props
+-}: React.ComponentProps<'span'>): React.ReactElement {
+-  return (
+-    <span
+-      data-slot="menubar-shortcut"
+-      className={cn('text-muted-foreground ml-auto text-xs tracking-widest', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function MenubarSub({
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.Sub>): React.ReactElement {
+-  return <MenubarPrimitive.Sub data-slot="menubar-sub" {...props} />;
+-}
+-
+-function MenubarSubTrigger({
+-  className,
+-  inset,
+-  children,
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.SubTrigger> & {
+-  inset?: boolean;
+-}): React.ReactElement {
+-  return (
+-    <MenubarPrimitive.SubTrigger
+-      data-slot="menubar-sub-trigger"
+-      data-inset={inset}
+-      className={cn(
+-        'focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none data-[inset]:pl-8',
+-        className
+-      )}
+-      {...props}
+-    >
+-      {children}
+-      <ChevronRightIcon className="ml-auto h-4 w-4" />
+-    </MenubarPrimitive.SubTrigger>
+-  );
+-}
+-
+-function MenubarSubContent({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof MenubarPrimitive.SubContent>): React.ReactElement {
+-  return (
+-    <MenubarPrimitive.SubContent
+-      data-slot="menubar-sub-content"
+-      className={cn(
+-        'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] origin-(--radix-menubar-content-transform-origin) overflow-hidden rounded-md border p-1 shadow-lg',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export {
+-  Menubar,
+-  MenubarPortal,
+-  MenubarMenu,
+-  MenubarTrigger,
+-  MenubarContent,
+-  MenubarGroup,
+-  MenubarSeparator,
+-  MenubarLabel,
+-  MenubarItem,
+-  MenubarShortcut,
+-  MenubarCheckboxItem,
+-  MenubarRadioGroup,
+-  MenubarRadioItem,
+-  MenubarSub,
+-  MenubarSubTrigger,
+-  MenubarSubContent,
+-};
+diff --git a/src/presentation/components/ui/pagination.tsx b/src/presentation/components/ui/pagination.tsx
+deleted file mode 100644
+index a06be79..0000000
+--- a/src/presentation/components/ui/pagination.tsx
++++ /dev/null
+@@ -1,123 +0,0 @@
+-import * as React from 'react';
+-import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from 'lucide-react';
+-
+-import { cn } from '@/presentation/lib/utils';
+-import { Button, buttonVariants } from '@/components/ui/button';
+-
+-function Pagination({ className, ...props }: React.ComponentProps<'nav'>): React.ReactElement {
+-  return (
+-    <nav
+-      role="navigation"
+-      aria-label="pagination"
+-      data-slot="pagination"
+-      className={cn('mx-auto flex w-full justify-center', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function PaginationContent({
+-  className,
+-  ...props
+-}: React.ComponentProps<'ul'>): React.ReactElement {
+-  return (
+-    <ul
+-      data-slot="pagination-content"
+-      className={cn('flex flex-row items-center gap-1', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function PaginationItem({ ...props }: React.ComponentProps<'li'>): React.ReactElement {
+-  return <li data-slot="pagination-item" {...props} />;
+-}
+-
+-type PaginationLinkProps = {
+-  isActive?: boolean;
+-} & Pick<React.ComponentProps<typeof Button>, 'size'> &
+-  React.ComponentProps<'a'>;
+-
+-function PaginationLink({
+-  className,
+-  isActive,
+-  size = 'icon',
+-  ...props
+-}: PaginationLinkProps): React.ReactElement {
+-  return (
+-    <a
+-      aria-current={isActive ? 'page' : undefined}
+-      data-slot="pagination-link"
+-      data-active={isActive}
+-      className={cn(
+-        buttonVariants({
+-          variant: isActive ? 'outline' : 'ghost',
+-          size,
+-        }),
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function PaginationPrevious({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof PaginationLink>): React.ReactElement {
+-  return (
+-    <PaginationLink
+-      aria-label="Go to previous page"
+-      size="default"
+-      className={cn('gap-1 px-2.5 sm:pl-2.5', className)}
+-      {...props}
+-    >
+-      <ChevronLeftIcon />
+-      <span className="hidden sm:block">Previous</span>
+-    </PaginationLink>
+-  );
+-}
+-
+-function PaginationNext({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof PaginationLink>): React.ReactElement {
+-  return (
+-    <PaginationLink
+-      aria-label="Go to next page"
+-      size="default"
+-      className={cn('gap-1 px-2.5 sm:pr-2.5', className)}
+-      {...props}
+-    >
+-      <span className="hidden sm:block">Next</span>
+-      <ChevronRightIcon />
+-    </PaginationLink>
+-  );
+-}
+-
+-function PaginationEllipsis({
+-  className,
+-  ...props
+-}: React.ComponentProps<'span'>): React.ReactElement {
+-  return (
+-    <span
+-      aria-hidden
+-      data-slot="pagination-ellipsis"
+-      className={cn('flex size-9 items-center justify-center', className)}
+-      {...props}
+-    >
+-      <MoreHorizontalIcon className="size-4" />
+-      <span className="sr-only">More pages</span>
+-    </span>
+-  );
+-}
+-
+-export {
+-  Pagination,
+-  PaginationContent,
+-  PaginationLink,
+-  PaginationItem,
+-  PaginationPrevious,
+-  PaginationNext,
+-  PaginationEllipsis,
+-};
+diff --git a/src/presentation/components/ui/popover.tsx b/src/presentation/components/ui/popover.tsx
+deleted file mode 100644
+index fb0235c..0000000
+--- a/src/presentation/components/ui/popover.tsx
++++ /dev/null
+@@ -1,48 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as PopoverPrimitive from '@radix-ui/react-popover';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Popover({
+-  ...props
+-}: React.ComponentProps<typeof PopoverPrimitive.Root>): React.ReactElement {
+-  return <PopoverPrimitive.Root data-slot="popover" {...props} />;
+-}
+-
+-function PopoverTrigger({
+-  ...props
+-}: React.ComponentProps<typeof PopoverPrimitive.Trigger>): React.ReactElement {
+-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
+-}
+-
+-function PopoverContent({
+-  className,
+-  align = 'center',
+-  sideOffset = 4,
+-  ...props
+-}: React.ComponentProps<typeof PopoverPrimitive.Content>): React.ReactElement {
+-  return (
+-    <PopoverPrimitive.Portal>
+-      <PopoverPrimitive.Content
+-        data-slot="popover-content"
+-        align={align}
+-        sideOffset={sideOffset}
+-        className={cn(
+-          'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-md border p-4 shadow-md outline-hidden',
+-          className
+-        )}
+-        {...props}
+-      />
+-    </PopoverPrimitive.Portal>
+-  );
+-}
+-
+-function PopoverAnchor({
+-  ...props
+-}: React.ComponentProps<typeof PopoverPrimitive.Anchor>): React.ReactElement {
+-  return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />;
+-}
+-
+-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };
+diff --git a/src/presentation/components/ui/progress.tsx b/src/presentation/components/ui/progress.tsx
+deleted file mode 100644
+index c40d894..0000000
+--- a/src/presentation/components/ui/progress.tsx
++++ /dev/null
+@@ -1,28 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as ProgressPrimitive from '@radix-ui/react-progress';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Progress({
+-  className,
+-  value,
+-  ...props
+-}: React.ComponentProps<typeof ProgressPrimitive.Root>): React.ReactElement {
+-  return (
+-    <ProgressPrimitive.Root
+-      data-slot="progress"
+-      className={cn('bg-primary/20 relative h-2 w-full overflow-hidden rounded-full', className)}
+-      {...props}
+-    >
+-      <ProgressPrimitive.Indicator
+-        data-slot="progress-indicator"
+-        className="bg-primary h-full w-full flex-1 transition-all"
+-        style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+-      />
+-    </ProgressPrimitive.Root>
+-  );
+-}
+-
+-export { Progress };
+diff --git a/src/presentation/components/ui/radio-group.tsx b/src/presentation/components/ui/radio-group.tsx
+deleted file mode 100644
+index e5df72d..0000000
+--- a/src/presentation/components/ui/radio-group.tsx
++++ /dev/null
+@@ -1,45 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as RadioGroupPrimitive from '@radix-ui/react-radio-group';
+-import { CircleIcon } from 'lucide-react';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function RadioGroup({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof RadioGroupPrimitive.Root>): React.ReactElement {
+-  return (
+-    <RadioGroupPrimitive.Root
+-      data-slot="radio-group"
+-      className={cn('grid gap-3', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function RadioGroupItem({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof RadioGroupPrimitive.Item>): React.ReactElement {
+-  return (
+-    <RadioGroupPrimitive.Item
+-      data-slot="radio-group-item"
+-      className={cn(
+-        'border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50',
+-        className
+-      )}
+-      {...props}
+-    >
+-      <RadioGroupPrimitive.Indicator
+-        data-slot="radio-group-indicator"
+-        className="relative flex items-center justify-center"
+-      >
+-        <CircleIcon className="fill-primary absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2" />
+-      </RadioGroupPrimitive.Indicator>
+-    </RadioGroupPrimitive.Item>
+-  );
+-}
+-
+-export { RadioGroup, RadioGroupItem };
+diff --git a/src/presentation/components/ui/resizable.tsx b/src/presentation/components/ui/resizable.tsx
+deleted file mode 100644
+index 63a6a4a..0000000
+--- a/src/presentation/components/ui/resizable.tsx
++++ /dev/null
+@@ -1,53 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import { GripVerticalIcon } from 'lucide-react';
+-import * as ResizablePrimitive from 'react-resizable-panels';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function ResizablePanelGroup({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof ResizablePrimitive.PanelGroup>): React.ReactElement {
+-  return (
+-    <ResizablePrimitive.PanelGroup
+-      data-slot="resizable-panel-group"
+-      className={cn('flex h-full w-full data-[panel-group-direction=vertical]:flex-col', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function ResizablePanel({
+-  ...props
+-}: React.ComponentProps<typeof ResizablePrimitive.Panel>): React.ReactElement {
+-  return <ResizablePrimitive.Panel data-slot="resizable-panel" {...props} />;
+-}
+-
+-function ResizableHandle({
+-  withHandle,
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof ResizablePrimitive.PanelResizeHandle> & {
+-  withHandle?: boolean;
+-}): React.ReactElement {
+-  return (
+-    <ResizablePrimitive.PanelResizeHandle
+-      data-slot="resizable-handle"
+-      className={cn(
+-        'bg-border focus-visible:ring-ring relative flex w-px items-center justify-center after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:outline-hidden data-[panel-group-direction=vertical]:h-px data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:after:left-0 data-[panel-group-direction=vertical]:after:h-1 data-[panel-group-direction=vertical]:after:w-full data-[panel-group-direction=vertical]:after:translate-x-0 data-[panel-group-direction=vertical]:after:-translate-y-1/2 [&[data-panel-group-direction=vertical]>div]:rotate-90',
+-        className
+-      )}
+-      {...props}
+-    >
+-      {withHandle && (
+-        <div className="bg-border z-10 flex h-4 w-3 items-center justify-center rounded-xs border">
+-          <GripVerticalIcon className="size-2.5" />
+-        </div>
+-      )}
+-    </ResizablePrimitive.PanelResizeHandle>
+-  );
+-}
+-
+-export { ResizablePanelGroup, ResizablePanel, ResizableHandle };
+diff --git a/src/presentation/components/ui/scroll-area.tsx b/src/presentation/components/ui/scroll-area.tsx
+deleted file mode 100644
+index 2aaed1b..0000000
+--- a/src/presentation/components/ui/scroll-area.tsx
++++ /dev/null
+@@ -1,56 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function ScrollBar({
+-  className,
+-  orientation = 'vertical',
+-  ...props
+-}: React.ComponentProps<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>): React.ReactElement {
+-  return (
+-    <ScrollAreaPrimitive.ScrollAreaScrollbar
+-      data-slot="scroll-area-scrollbar"
+-      orientation={orientation}
+-      className={cn(
+-        'flex touch-none p-px transition-colors select-none',
+-        orientation === 'vertical' && 'h-full w-2.5 border-l border-l-transparent',
+-        orientation === 'horizontal' && 'h-2.5 flex-col border-t border-t-transparent',
+-        className
+-      )}
+-      {...props}
+-    >
+-      <ScrollAreaPrimitive.ScrollAreaThumb
+-        data-slot="scroll-area-thumb"
+-        className="bg-border relative flex-1 rounded-full"
+-      />
+-    </ScrollAreaPrimitive.ScrollAreaScrollbar>
+-  );
+-}
+-
+-function ScrollArea({
+-  className,
+-  children,
+-  ...props
+-}: React.ComponentProps<typeof ScrollAreaPrimitive.Root>): React.ReactElement {
+-  return (
+-    <ScrollAreaPrimitive.Root
+-      data-slot="scroll-area"
+-      className={cn('relative', className)}
+-      {...props}
+-    >
+-      <ScrollAreaPrimitive.Viewport
+-        data-slot="scroll-area-viewport"
+-        className="focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1"
+-      >
+-        {children}
+-      </ScrollAreaPrimitive.Viewport>
+-      <ScrollBar />
+-      <ScrollAreaPrimitive.Corner />
+-    </ScrollAreaPrimitive.Root>
+-  );
+-}
+-
+-export { ScrollArea, ScrollBar };
+diff --git a/src/presentation/components/ui/select.tsx b/src/presentation/components/ui/select.tsx
+deleted file mode 100644
+index 0f4737c..0000000
+--- a/src/presentation/components/ui/select.tsx
++++ /dev/null
+@@ -1,179 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as SelectPrimitive from '@radix-ui/react-select';
+-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Select({
+-  ...props
+-}: React.ComponentProps<typeof SelectPrimitive.Root>): React.ReactElement {
+-  return <SelectPrimitive.Root data-slot="select" {...props} />;
+-}
+-
+-function SelectGroup({
+-  ...props
+-}: React.ComponentProps<typeof SelectPrimitive.Group>): React.ReactElement {
+-  return <SelectPrimitive.Group data-slot="select-group" {...props} />;
+-}
+-
+-function SelectValue({
+-  ...props
+-}: React.ComponentProps<typeof SelectPrimitive.Value>): React.ReactElement {
+-  return <SelectPrimitive.Value data-slot="select-value" {...props} />;
+-}
+-
+-function SelectTrigger({
+-  className,
+-  size = 'default',
+-  children,
+-  ...props
+-}: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
+-  size?: 'sm' | 'default';
+-}): React.ReactElement {
+-  return (
+-    <SelectPrimitive.Trigger
+-      data-slot="select-trigger"
+-      data-size={size}
+-      className={cn(
+-        "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+-        className
+-      )}
+-      {...props}
+-    >
+-      {children}
+-      <SelectPrimitive.Icon asChild>
+-        <ChevronDownIcon className="size-4 opacity-50" />
+-      </SelectPrimitive.Icon>
+-    </SelectPrimitive.Trigger>
+-  );
+-}
+-
+-function SelectItem({
+-  className,
+-  children,
+-  ...props
+-}: React.ComponentProps<typeof SelectPrimitive.Item>): React.ReactElement {
+-  return (
+-    <SelectPrimitive.Item
+-      data-slot="select-item"
+-      className={cn(
+-        "focus:bg-accent focus:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+-        className
+-      )}
+-      {...props}
+-    >
+-      <span className="absolute right-2 flex size-3.5 items-center justify-center">
+-        <SelectPrimitive.ItemIndicator>
+-          <CheckIcon className="size-4" />
+-        </SelectPrimitive.ItemIndicator>
+-      </span>
+-      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+-    </SelectPrimitive.Item>
+-  );
+-}
+-
+-function SelectSeparator({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof SelectPrimitive.Separator>): React.ReactElement {
+-  return (
+-    <SelectPrimitive.Separator
+-      data-slot="select-separator"
+-      className={cn('bg-border pointer-events-none -mx-1 my-1 h-px', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-function SelectScrollUpButton({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof SelectPrimitive.ScrollUpButton>): React.ReactElement {
+-  return (
+-    <SelectPrimitive.ScrollUpButton
+-      data-slot="select-scroll-up-button"
+-      className={cn('flex cursor-default items-center justify-center py-1', className)}
+-      {...props}
+-    >
+-      <ChevronUpIcon className="size-4" />
+-    </SelectPrimitive.ScrollUpButton>
+-  );
+-}
+-
+-function SelectScrollDownButton({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof SelectPrimitive.ScrollDownButton>): React.ReactElement {
+-  return (
+-    <SelectPrimitive.ScrollDownButton
+-      data-slot="select-scroll-down-button"
+-      className={cn('flex cursor-default items-center justify-center py-1', className)}
+-      {...props}
+-    >
+-      <ChevronDownIcon className="size-4" />
+-    </SelectPrimitive.ScrollDownButton>
+-  );
+-}
+-
+-function SelectContent({
+-  className,
+-  children,
+-  position = 'popper',
+-  ...props
+-}: React.ComponentProps<typeof SelectPrimitive.Content>): React.ReactElement {
+-  return (
+-    <SelectPrimitive.Portal>
+-      <SelectPrimitive.Content
+-        data-slot="select-content"
+-        className={cn(
+-          'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border shadow-md',
+-          position === 'popper' &&
+-            'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
+-          className
+-        )}
+-        position={position}
+-        {...props}
+-      >
+-        <SelectScrollUpButton />
+-        <SelectPrimitive.Viewport
+-          className={cn(
+-            'p-1',
+-            position === 'popper' &&
+-              'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1'
+-          )}
+-        >
+-          {children}
+-        </SelectPrimitive.Viewport>
+-        <SelectScrollDownButton />
+-      </SelectPrimitive.Content>
+-    </SelectPrimitive.Portal>
+-  );
+-}
+-
+-function SelectLabel({
+-  className,
+-  ...props
+-}: React.ComponentProps<typeof SelectPrimitive.Label>): React.ReactElement {
+-  return (
+-    <SelectPrimitive.Label
+-      data-slot="select-label"
+-      className={cn('text-muted-foreground px-2 py-1.5 text-xs', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export {
+-  Select,
+-  SelectContent,
+-  SelectGroup,
+-  SelectItem,
+-  SelectLabel,
+-  SelectScrollDownButton,
+-  SelectScrollUpButton,
+-  SelectSeparator,
+-  SelectTrigger,
+-  SelectValue,
+-};
+diff --git a/src/presentation/components/ui/separator.tsx b/src/presentation/components/ui/separator.tsx
+deleted file mode 100644
+index 12c1712..0000000
+--- a/src/presentation/components/ui/separator.tsx
++++ /dev/null
+@@ -1,28 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as SeparatorPrimitive from '@radix-ui/react-separator';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Separator({
+-  className,
+-  orientation = 'horizontal',
+-  decorative = true,
+-  ...props
+-}: React.ComponentProps<typeof SeparatorPrimitive.Root>): React.ReactElement {
+-  return (
+-    <SeparatorPrimitive.Root
+-      data-slot="separator-root"
+-      decorative={decorative}
+-      orientation={orientation}
+-      className={cn(
+-        'bg-border shrink-0 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export { Separator };
+diff --git a/src/presentation/components/ui/skeleton.tsx b/src/presentation/components/ui/skeleton.tsx
+deleted file mode 100644
+index 1859d3d..0000000
+--- a/src/presentation/components/ui/skeleton.tsx
++++ /dev/null
+@@ -1,13 +0,0 @@
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Skeleton({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+-  return (
+-    <div
+-      data-slot="skeleton"
+-      className={cn('bg-accent animate-pulse rounded-md', className)}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export { Skeleton };
+diff --git a/src/presentation/components/ui/textarea.tsx b/src/presentation/components/ui/textarea.tsx
+deleted file mode 100644
+index 22104fa..0000000
+--- a/src/presentation/components/ui/textarea.tsx
++++ /dev/null
+@@ -1,18 +0,0 @@
+-import * as React from 'react';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-function Textarea({ className, ...props }: React.ComponentProps<'textarea'>): React.ReactElement {
+-  return (
+-    <textarea
+-      data-slot="textarea"
+-      className={cn(
+-        'border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+-        className
+-      )}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export { Textarea };
+diff --git a/src/presentation/components/ui/toggle-group.tsx b/src/presentation/components/ui/toggle-group.tsx
+deleted file mode 100644
+index f939c4a..0000000
+--- a/src/presentation/components/ui/toggle-group.tsx
++++ /dev/null
+@@ -1,71 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group';
+-import { type VariantProps } from 'class-variance-authority';
+-
+-import { cn } from '@/presentation/lib/utils';
+-import { toggleVariants } from '@/components/ui/toggle';
+-
+-const ToggleGroupContext = React.createContext<VariantProps<typeof toggleVariants>>({
+-  size: 'default',
+-  variant: 'default',
+-});
+-
+-function ToggleGroup({
+-  className,
+-  variant,
+-  size,
+-  children,
+-  ...props
+-}: React.ComponentProps<typeof ToggleGroupPrimitive.Root> &
+-  VariantProps<typeof toggleVariants>): React.ReactElement {
+-  return (
+-    <ToggleGroupPrimitive.Root
+-      data-slot="toggle-group"
+-      data-variant={variant}
+-      data-size={size}
+-      className={cn(
+-        'group/toggle-group flex w-fit items-center rounded-md data-[variant=outline]:shadow-xs',
+-        className
+-      )}
+-      {...props}
+-    >
+-      <ToggleGroupContext.Provider value={{ variant, size }}>
+-        {children}
+-      </ToggleGroupContext.Provider>
+-    </ToggleGroupPrimitive.Root>
+-  );
+-}
+-
+-function ToggleGroupItem({
+-  className,
+-  children,
+-  variant,
+-  size,
+-  ...props
+-}: React.ComponentProps<typeof ToggleGroupPrimitive.Item> &
+-  VariantProps<typeof toggleVariants>): React.ReactElement {
+-  const context = React.useContext(ToggleGroupContext);
+-
+-  return (
+-    <ToggleGroupPrimitive.Item
+-      data-slot="toggle-group-item"
+-      data-variant={context.variant || variant}
+-      data-size={context.size || size}
+-      className={cn(
+-        toggleVariants({
+-          variant: context.variant || variant,
+-          size: context.size || size,
+-        }),
+-        'min-w-0 flex-1 shrink-0 rounded-none shadow-none first:rounded-l-md last:rounded-r-md focus:z-10 focus-visible:z-10 data-[variant=outline]:border-l-0 data-[variant=outline]:first:border-l',
+-        className
+-      )}
+-      {...props}
+-    >
+-      {children}
+-    </ToggleGroupPrimitive.Item>
+-  );
+-}
+-
+-export { ToggleGroup, ToggleGroupItem };
+diff --git a/src/presentation/components/ui/toggle.tsx b/src/presentation/components/ui/toggle.tsx
+deleted file mode 100644
+index b0ce4e8..0000000
+--- a/src/presentation/components/ui/toggle.tsx
++++ /dev/null
+@@ -1,47 +0,0 @@
+-'use client';
+-
+-import * as React from 'react';
+-import * as TogglePrimitive from '@radix-ui/react-toggle';
+-import { cva, type VariantProps } from 'class-variance-authority';
+-
+-import { cn } from '@/presentation/lib/utils';
+-
+-const toggleVariants = cva(
+-  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium hover:bg-muted hover:text-muted-foreground disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none transition-[color,box-shadow] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive whitespace-nowrap",
+-  {
+-    variants: {
+-      variant: {
+-        default: 'bg-transparent',
+-        outline:
+-          'border border-input bg-transparent shadow-xs hover:bg-accent hover:text-accent-foreground',
+-      },
+-      size: {
+-        default: 'h-9 px-2 min-w-9',
+-        sm: 'h-8 px-1.5 min-w-8',
+-        lg: 'h-10 px-2.5 min-w-10',
+-      },
+-    },
+-    defaultVariants: {
+-      variant: 'default',
+-      size: 'default',
+-    },
+-  }
+-);
+-
+-function Toggle({
+-  className,
+-  variant,
+-  size,
+-  ...props
+-}: React.ComponentProps<typeof TogglePrimitive.Root> &
+-  VariantProps<typeof toggleVariants>): React.ReactElement {
+-  return (
+-    <TogglePrimitive.Root
+-      data-slot="toggle"
+-      className={cn(toggleVariants({ variant, size, className }))}
+-      {...props}
+-    />
+-  );
+-}
+-
+-export { Toggle, toggleVariants };
+diff --git a/src/presentation/lib/font.ts b/src/presentation/lib/font.ts
+deleted file mode 100644
+index 8dea7bb..0000000
+--- a/src/presentation/lib/font.ts
++++ /dev/null
+@@ -1,44 +0,0 @@
+-import localFont from 'next/font/local';
+-
+-// define a custom local font
+-const pretendard = localFont({
+-  src: [
+-    {
+-      path: '../../../public/fonts/pretendard/Pretendard-Light.woff2',
+-      weight: '300',
+-      style: 'normal',
+-    },
+-    {
+-      path: '../../../public/fonts/pretendard/Pretendard-Regular.woff2',
+-      weight: '400',
+-      style: 'normal',
+-    },
+-    {
+-      path: '../../../public/fonts/pretendard/Pretendard-Medium.woff2',
+-      weight: '500',
+-      style: 'normal',
+-    },
+-    {
+-      path: '../../../public/fonts/pretendard/Pretendard-Bold.woff2',
+-      weight: '600',
+-      style: 'normal',
+-    },
+-  ],
+-  variable: '--font-pretendard',
+-  display: 'swap',
+-  fallback: ['system-ui', 'sans-serif'],
+-});
+-
+-const suite = localFont({
+-  src: [
+-    {
+-      path: '../../../public/fonts/suite/SUITE-Bold.woff2',
+-      weight: '700',
+-    },
+-  ],
+-  variable: '--font-suite',
+-  display: 'swap',
+-  fallback: ['system-ui', 'sans-serif'],
+-});
+-
+-export { pretendard, suite };
+diff --git a/src/presentation/lib/utils.ts b/src/presentation/lib/utils.ts
+deleted file mode 100644
+index a7c2663..0000000
+--- a/src/presentation/lib/utils.ts
++++ /dev/null
+@@ -1,6 +0,0 @@
+-import { clsx, type ClassValue } from 'clsx';
+-import { twMerge } from 'tailwind-merge';
+-
+-export function cn(...inputs: ClassValue[]): string {
+-  return twMerge(clsx(inputs));
+-}
+diff --git a/src/presentation/providers/apollo.tsx b/src/presentation/providers/apollo.tsx
+deleted file mode 100644
+index 5a024ed..0000000
+--- a/src/presentation/providers/apollo.tsx
++++ /dev/null
+@@ -1,19 +0,0 @@
+-'use client';
+-
+-import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+-
+-const client = new ApolloClient({
+-  uri: process.env.NEXT_PUBLIC_GRAPHQL_API_URL!,
+-  cache: new InMemoryCache(),
+-  devtools: {
+-    enabled: process.env.NODE_ENV !== 'production',
+-  },
+-});
+-
+-export function ApolloClientProvider({
+-  children,
+-}: {
+-  children: React.ReactNode;
+-}): React.ReactElement {
+-  return <ApolloProvider client={client}>{children}</ApolloProvider>;
+-}
+diff --git a/src/presentation/providers/index.tsx b/src/presentation/providers/index.tsx
+deleted file mode 100644
+index 60f0152..0000000
+--- a/src/presentation/providers/index.tsx
++++ /dev/null
+@@ -1,5 +0,0 @@
+-import { ApolloClientProvider } from './apollo';
+-
+-export function AppProviders({ children }: { children: React.ReactNode }): React.ReactElement {
+-  return <ApolloClientProvider>{children}</ApolloClientProvider>;
+-}
+diff --git a/src/presentation/styles/colors.css b/src/presentation/styles/colors.css
+deleted file mode 100644
+index f36635b..0000000
+--- a/src/presentation/styles/colors.css
++++ /dev/null
+@@ -1,128 +0,0 @@
+-@theme inline {
+-  /* Gray Colors */
+-  --color-gray-50: var(--gray-50);
+-  --color-gray-100: var(--gray-100);
+-  --color-gray-200: var(--gray-200);
+-  --color-gray-300: var(--gray-300);
+-  --color-gray-400: var(--gray-400);
+-  --color-gray-500: var(--gray-500);
+-  --color-gray-600: var(--gray-600);
+-  --color-gray-700: var(--gray-700);
+-  --color-gray-800: var(--gray-800);
+-  --color-gray-900: var(--gray-900);
+-
+-  /* Main Colors */
+-  --color-main-100: var(--main-100);
+-  --color-main-200: var(--main-200);
+-  --color-main-300: var(--main-300);
+-  --color-main-400: var(--main-400);
+-  --color-main-500: var(--main-500);
+-  --color-main-600: var(--main-600);
+-  --color-main-700: var(--main-700);
+-  --color-main-800: var(--main-800);
+-  --color-main-900: var(--main-900);
+-
+-  /* Default Colors */
+-  --color-white: var(--white);
+-  --color-black: var(--black);
+-  --color-dark-shadow-70: var(--dark-shadow-70);
+-  --color-warning: var(--warning);
+-  --color-accent: var(--accent);
+-
+-  /* Green Colors */
+-  --color-green-400: var(--green-400);
+-  --color-green-500: var(--green-500);
+-  --color-green-600: var(--green-600);
+-  --color-green-700: var(--green-700);
+-  --color-green-800: var(--green-800);
+-
+-  /* Blue Colors */
+-  --color-blue-200: var(--blue-200);
+-  --color-blue-300: var(--blue-300);
+-  --color-blue-400: var(--blue-400);
+-  --color-blue-500: var(--blue-500);
+-  --color-blue-600: var(--blue-600);
+-
+-  /* Red Colors */
+-
+-  --color-red-300: var(--red-300);
+-  --color-red-400: var(--red-400);
+-  --color-red-500: var(--red-500);
+-  --color-red-600: var(--red-600);
+-  --color-red-700: var(--red-700);
+-
+-  /* Mint Colors */
+-  --color-mint-100: var(--mint-100);
+-  --color-mint-200: var(--mint-200);
+-  --color-mint-300: var(--mint-300);
+-  --color-mint-400: var(--mint-400);
+-  --color-mint-500: var(--mint-500);
+-  --color-mint-600: var(--mint-600);
+-  --color-mint-700: var(--mint-700);
+-  --color-mint-800: var(--mint-800);
+-  --color-mint-900: var(--mint-900);
+-}
+-
+-:root {
+-  /* Gray Colors */
+-  --gray-50: #f7f8f9;
+-  --gray-100: #f6f6f6;
+-  --gray-200: #eeeeee;
+-  --gray-300: #e3e3e3;
+-  --gray-400: #d0d0d0;
+-  --gray-500: #aaaaaa;
+-  --gray-600: #767676;
+-  --gray-700: #666666;
+-  --gray-800: #424242;
+-  --gray-900: #222222;
+-
+-  /* Main Colors */
+-  --main-100: #fffbfa;
+-  --main-200: #fff6f2;
+-  --main-300: #ffebe3;
+-  --main-400: #ffdac7;
+-  --main-500: #ffc3ad;
+-  --main-600: #ffae90;
+-  --main-700: #ff6b4a;
+-  --main-800: #ff5900;
+-  --main-900: #ff3c00;
+-
+-  /* Default Colors */
+-  --white: #ffffff;
+-  --black: #111111;
+-  --gray-shadow-70: #000000b3;
+-  --warning: #ff2020;
+-  --accent: #ff5722;
+-
+-  /* Green Colors */
+-  --green-400: #b8d530;
+-  --green-500: #8dc71e;
+-  --green-600: #69b41e;
+-  --green-700: #187c19;
+-  --green-800: #0d5b11;
+-
+-  /* Blue Colors */
+-  --blue-200: #deecfb;
+-  --blue-300: #bedaf7;
+-  --blue-400: #7ab3ef;
+-  --blue-500: #368ce7;
+-  --blue-600: #1666ba;
+-
+-  /* Red Colors */
+-  --red-300: #ffbaba;
+-  --red-400: #ff7b7b;
+-  --red-500: #ff5252;
+-  --red-600: #ff0000;
+-  --red-700: #a70000;
+-
+-  /* Mint Colors */
+-  --mint-100: #e5fff4;
+-  --mint-200: #c8f4e1;
+-  --mint-300: #b6f6da;
+-  --mint-400: #aaf0d1;
+-  --mint-500: #96e6c2;
+-  --mint-600: #7dd8b5;
+-  --mint-700: #5ec69d;
+-  --mint-800: #3eb489;
+-  --mint-900: #1d9c6d;
+-}
+diff --git a/src/presentation/styles/globals.css b/src/presentation/styles/globals.css
+deleted file mode 100644
+index c1025dd..0000000
+--- a/src/presentation/styles/globals.css
++++ /dev/null
+@@ -1,121 +0,0 @@
+-@import 'tailwindcss';
+-@import 'tw-animate-css';
+-@import './colors.css';
+-@import './typography.css';
+-@import './shape.css';
+-@import './shadow.css';
+-
+-@custom-variant dark (&:is(.dark *));
+-
+-@theme inline {
+-  --radius-sm: calc(var(--radius) - 4px);
+-  --radius-md: calc(var(--radius) - 2px);
+-  --radius-lg: var(--radius);
+-  --radius-xl: calc(var(--radius) + 4px);
+-  --color-background: var(--background);
+-  --color-foreground: var(--foreground);
+-  --color-card: var(--card);
+-  --color-card-foreground: var(--card-foreground);
+-  --color-popover: var(--popover);
+-  --color-popover-foreground: var(--popover-foreground);
+-  --color-primary: var(--primary);
+-  --color-primary-foreground: var(--primary-foreground);
+-  --color-secondary: var(--secondary);
+-  --color-secondary-foreground: var(--secondary-foreground);
+-  --color-muted: var(--muted);
+-  --color-muted-foreground: var(--muted-foreground);
+-  --color-accent-foreground: var(--accent-foreground);
+-  --color-destructive: var(--destructive);
+-  --color-border: var(--border);
+-  --color-input: var(--input);
+-  --color-ring: var(--ring);
+-  --color-chart-1: var(--chart-1);
+-  --color-chart-2: var(--chart-2);
+-  --color-chart-3: var(--chart-3);
+-  --color-chart-4: var(--chart-4);
+-  --color-chart-5: var(--chart-5);
+-  --color-sidebar: var(--sidebar);
+-  --color-sidebar-foreground: var(--sidebar-foreground);
+-  --color-sidebar-primary: var(--sidebar-primary);
+-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+-  --color-sidebar-accent: var(--sidebar-accent);
+-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+-  --color-sidebar-border: var(--sidebar-border);
+-  --color-sidebar-ring: var(--sidebar-ring);
+-}
+-
+-:root {
+-  --radius: 0.625rem;
+-  --background: oklch(1 0 0);
+-  --foreground: oklch(0.13 0.028 261.692);
+-  --card: oklch(1 0 0);
+-  --card-foreground: oklch(0.13 0.028 261.692);
+-  --popover: oklch(1 0 0);
+-  --popover-foreground: oklch(0.13 0.028 261.692);
+-  --primary: oklch(0.21 0.034 264.665);
+-  --primary-foreground: oklch(0.985 0.002 247.839);
+-  --secondary: oklch(0.967 0.003 264.542);
+-  --secondary-foreground: oklch(0.21 0.034 264.665);
+-  --muted: oklch(0.967 0.003 264.542);
+-  --muted-foreground: oklch(0.551 0.027 264.364);
+-  --accent-foreground: oklch(0.21 0.034 264.665);
+-  --destructive: oklch(0.577 0.245 27.325);
+-  --border: oklch(0.928 0.006 264.531);
+-  --input: oklch(0.928 0.006 264.531);
+-  --ring: oklch(0.707 0.022 261.325);
+-  --chart-1: oklch(0.646 0.222 41.116);
+-  --chart-2: oklch(0.6 0.118 184.704);
+-  --chart-3: oklch(0.398 0.07 227.392);
+-  --chart-4: oklch(0.828 0.189 84.429);
+-  --chart-5: oklch(0.769 0.188 70.08);
+-  --sidebar: oklch(0.985 0.002 247.839);
+-  --sidebar-foreground: oklch(0.13 0.028 261.692);
+-  --sidebar-primary: oklch(0.21 0.034 264.665);
+-  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
+-  --sidebar-accent: oklch(0.967 0.003 264.542);
+-  --sidebar-accent-foreground: oklch(0.21 0.034 264.665);
+-  --sidebar-border: oklch(0.928 0.006 264.531);
+-  --sidebar-ring: oklch(0.707 0.022 261.325);
+-}
+-
+-.dark {
+-  --background: oklch(0.13 0.028 261.692);
+-  --foreground: oklch(0.985 0.002 247.839);
+-  --card: oklch(0.21 0.034 264.665);
+-  --card-foreground: oklch(0.985 0.002 247.839);
+-  --popover: oklch(0.21 0.034 264.665);
+-  --popover-foreground: oklch(0.985 0.002 247.839);
+-  --primary: oklch(0.928 0.006 264.531);
+-  --primary-foreground: oklch(0.21 0.034 264.665);
+-  --secondary: oklch(0.278 0.033 256.848);
+-  --secondary-foreground: oklch(0.985 0.002 247.839);
+-  --muted: oklch(0.278 0.033 256.848);
+-  --muted-foreground: oklch(0.707 0.022 261.325);
+-  --accent-foreground: oklch(0.985 0.002 247.839);
+-  --destructive: oklch(0.704 0.191 22.216);
+-  --border: oklch(1 0 0 / 10%);
+-  --input: oklch(1 0 0 / 15%);
+-  --ring: oklch(0.551 0.027 264.364);
+-  --chart-1: oklch(0.488 0.243 264.376);
+-  --chart-2: oklch(0.696 0.17 162.48);
+-  --chart-3: oklch(0.769 0.188 70.08);
+-  --chart-4: oklch(0.627 0.265 303.9);
+-  --chart-5: oklch(0.645 0.246 16.439);
+-  --sidebar: oklch(0.21 0.034 264.665);
+-  --sidebar-foreground: oklch(0.985 0.002 247.839);
+-  --sidebar-primary: oklch(0.488 0.243 264.376);
+-  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
+-  --sidebar-accent: oklch(0.278 0.033 256.848);
+-  --sidebar-accent-foreground: oklch(0.985 0.002 247.839);
+-  --sidebar-border: oklch(1 0 0 / 10%);
+-  --sidebar-ring: oklch(0.551 0.027 264.364);
+-}
+-
+-@layer base {
+-  * {
+-    @apply border-border outline-ring/50;
+-  }
+-  body {
+-    @apply bg-background text-foreground;
+-  }
+-}
+diff --git a/src/presentation/styles/shadow.css b/src/presentation/styles/shadow.css
+deleted file mode 100644
+index 960253e..0000000
+--- a/src/presentation/styles/shadow.css
++++ /dev/null
+@@ -1,4 +0,0 @@
+-@theme inline {
+-  /* shadow */
+-  --shadow-odos-default: 0 2px 10px 0 rgba(0, 0, 0, 0.1);
+-}
+diff --git a/src/presentation/styles/shape.css b/src/presentation/styles/shape.css
+deleted file mode 100644
+index c26ceeb..0000000
+--- a/src/presentation/styles/shape.css
++++ /dev/null
+@@ -1,21 +0,0 @@
+-@theme inline {
+-  /* border radius */
+-  --radius-odos-0: var(--radius-odos-0);
+-  --radius-odos-0\.5: var(--radius-odos-0\.5);
+-  --radius-odos-1: var(--radius-odos-1);
+-  --radius-odos-1\.5: var(--radius-odos-1\.5);
+-  --radius-odos-2: var(--radius-odos-2);
+-  --radius-odos-3: var(--radius-odos-3);
+-  --radius-odos-4: var(--radius-odos-4);
+-}
+-
+-:root {
+-  /* border radius */
+-  --radius-odos-0: 0rem; /* 0px */
+-  --radius-odos-0\.5: 0.125rem; /* 2px */
+-  --radius-odos-1: 0.25rem; /* 4px */
+-  --radius-odos-1\.5: 0.375rem; /* 6px */
+-  --radius-odos-2: 0.5rem; /* 8px */
+-  --radius-odos-3: 0.75rem; /* 12px */
+-  --radius-odos-4: 1rem; /* 16px */
+-}
+diff --git a/src/presentation/styles/typography.css b/src/presentation/styles/typography.css
+deleted file mode 100644
+index bb946a5..0000000
+--- a/src/presentation/styles/typography.css
++++ /dev/null
+@@ -1,50 +0,0 @@
+-@theme inline {
+-  /* font family */
+-  --font-pretendard: var(--font-pretendard);
+-  --font-suite: var(--font-suite);
+-
+-  /* font size */
+-  --text-xs: var(--text-xs);
+-  --text-sm: var(--text-sm);
+-  --text-base: var(--text-base);
+-  --text-lg: var(--text-lg);
+-  --text-xl: var(--text-xl);
+-  --text-2xl: var(--text-2xl);
+-  --text-3xl: var(--text-3xl);
+-  --text-4xl: var(--text-4xl);
+-  --text-5xl: var(--text-5xl);
+-
+-  /* line height */
+-  --text-xs--line-height: var(--text-xs--line-height);
+-  --text-sm--line-height: var(--text-sm--line-height);
+-  --text-base--line-height: var(--text-base--line-height);
+-  --text-lg--line-height: var(--text-lg--line-height);
+-  --text-xl--line-height: var(--text-xl--line-height);
+-  --text-2xl--line-height: var(--text-2xl--line-height);
+-  --text-3xl--line-height: var(--text-3xl--line-height);
+-  --text-4xl--line-height: var(--text-4xl--line-height);
+-}
+-
+-:root {
+-  /* font size */
+-  --text-xs: 0.75rem; /* 12px */
+-  --text-sm: 0.8125rem; /* 13px */
+-  --text-base: 0.875rem; /* 14px */
+-  --text-lg: 1rem; /* 16px */
+-  --text-xl: 1.125rem; /* 18px */
+-  --text-2xl: 1.25rem; /* 20px */
+-  --text-3xl: 1.5rem; /* 24px */
+-  --text-4xl: 1.75rem; /* 28px */
+-  --text-5xl: 2rem; /* 32px */
+-
+-  /* line height */
+-  --text-xs--line-height: 1;
+-  --text-sm--line-height: 1;
+-  --text-base--line-height: 1;
+-  --text-lg--line-height: calc(24 / 16);
+-  --text-xl--line-height: calc(27 / 18);
+-  --text-2xl--line-height: 1;
+-  --text-3xl--line-height: 1;
+-  --text-4xl--line-height: 1;
+-  --text-5xl--line-height: 1;
+-}

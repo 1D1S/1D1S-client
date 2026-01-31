@@ -1,17 +1,12 @@
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { FlatCompat } from '@eslint/eslintrc';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+import nextConfig from 'eslint-config-next';
+import tseslint from 'typescript-eslint';
+import prettierConfig from 'eslint-config-prettier';
 
 const eslintConfig = [
-  ...compat.config({
-    extends: ['next/core-web-vitals', 'next/typescript', 'prettier'],
+  ...nextConfig,
+  ...tseslint.configs.recommended,
+  prettierConfig,
+  {
     rules: {
       'no-var': 'error',
       'prefer-const': 'error',
@@ -27,23 +22,15 @@ const eslintConfig = [
       ],
       'no-object-constructor': 'error',
       'guard-for-in': 'error',
-      'lines-between-class-members': [
-        'error',
-        'always',
-        { exceptAfterSingleLine: true },
-      ],
+      'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
       '@typescript-eslint/method-signature-style': ['error', 'method'],
       'new-parens': 'error',
-      '@typescript-eslint/explicit-member-accessibility': [
-        'error',
-        { accessibility: 'no-public' },
-      ],
+      '@typescript-eslint/explicit-member-accessibility': ['error', { accessibility: 'no-public' }],
       'no-restricted-syntax': [
         'error',
         {
           selector: 'PropertyDefinition[key.type="PrivateIdentifier"]',
-          message:
-            'Avoid using #private fields. Use TypeScript visibility modifiers instead.',
+          message: 'Avoid using #private fields. Use TypeScript visibility modifiers instead.',
         },
       ],
       'func-style': ['error', 'declaration', { allowArrowFunctions: true }],
@@ -94,8 +81,7 @@ const eslintConfig = [
       semi: ['error', 'always'],
       'no-extend-native': 'error',
       'no-global-assign': 'error',
-
-      'id-length': ['warn', { min: 2, exceptions: ['i', 'j', 'k', 'x', 'y'] }],
+      'id-length': ['warn', { min: 2, exceptions: ['i', 'j', 'k', 'x', 'y', '_'] }],
       '@typescript-eslint/explicit-function-return-type': [
         'warn',
         {
@@ -126,7 +112,7 @@ const eslintConfig = [
       ],
       'react/jsx-no-useless-fragment': 'warn',
     },
-  }),
+  },
 ];
 
 export default eslintConfig;

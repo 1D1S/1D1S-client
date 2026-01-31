@@ -1,0 +1,37 @@
+name: Push to Fork
+
+on:
+  workflow_run:
+    workflows: ['CI']
+    types:
+      - completed
+    branches:
+      - main
+      - develop
+
+jobs:
+  push-to-fork:
+    runs-on: ubuntu-latest
+    if: |
+      github.repository != 'NOGUEN/1D1S-client' &&
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+          token: ${{ secrets.AUTO_PUSH_TOKEN }}
+          ref: ${{ github.event.workflow_run.head_branch }}
+
+      - name: Push to another repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.AUTO_PUSH_TOKEN }}
+        with:
+          source-directory: '.'
+          destination-github-username: 'NOGUEN'
+          destination-repository-name: '1D1S-client'
+          user-email: 'nhg1113@icloud.com'
+          target-branch: ${{ github.event.workflow_run.head_branch }}
+          commit-message: ${{ github.event.workflow_run.head_commit.message }}

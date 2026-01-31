@@ -1,84 +1,133 @@
-import Image from 'next/image';
-import { ReactElement } from 'react';
+'use client';
 
-export default function Home(): ReactElement {
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { ScrollArea, ScrollBar } from '@component/ui/scroll-area';
+import {
+  PageTitle,
+  Text,
+  Spacing,
+  PageWatermark,
+  DiaryCard,
+  ChallengeCard,
+  InfoButton,
+} from '@1d1s/design-system';
+
+function SectionHeader({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle: string;
+}): React.ReactElement {
   return (
-    <div className="grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20">
-      <main className="row-start-2 flex flex-col items-center gap-[32px] sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-center font-[family-name:var(--font-geist-mono)] text-sm/6 sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{' '}
-            <code className="rounded bg-black/[.05] px-1 py-0.5 font-[family-name:var(--font-geist-mono)] font-semibold dark:bg-white/[.06]">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">Save and see your changes instantly.</li>
-        </ol>
+    <div className="flex w-full flex-col gap-2 px-4">
+      <div className="flex flex-row items-center gap-2">
+        <Text size="heading1" weight="bold" className="text-black">
+          {title}
+        </Text>
+        <Text size="body2" weight="medium" className="text-gray-500">
+          더보기 +
+        </Text>
+      </div>
+      <Text size="caption3" weight="medium" className="text-gray-600">
+        {subtitle}
+      </Text>
+    </div>
+  );
+}
 
-        <div className="flex flex-col items-center gap-4 sm:flex-row">
-          <a
-            className="bg-foreground text-background flex h-10 items-center justify-center gap-2 rounded-full border border-solid border-transparent px-4 text-sm font-medium transition-colors hover:bg-[#383838] sm:h-12 sm:w-auto sm:px-5 sm:text-base dark:hover:bg-[#ccc]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="flex h-10 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-4 text-sm font-medium transition-colors hover:border-transparent hover:bg-[#f2f2f2] sm:h-12 sm:w-auto sm:px-5 sm:text-base md:w-[158px] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export default function MainPage(): React.ReactElement {
+  const router = useRouter();
+  const CARD_COUNT = 8;
+
+  return (
+    <div className="flex min-h-screen w-full flex-col bg-white">
+      {/* 메인 콘텐츠 */}
+      <div className="flex w-full flex-col pt-16">
+        <Spacing className="h-8" />
+        <div className="flex w-full justify-center">
+          <PageTitle title="1D1S" variant="noSubtitle" />
         </div>
-      </main>
-      <footer className="row-start-3 flex flex-wrap items-center justify-center gap-[24px]">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <Spacing className="h-8" />
+
+        {/* 인포 버튼 */}
+        <div className="flex w-full md:w-1/2 flex-row gap-3 px-4">
+          <InfoButton
+            mainText={'1D1S가 처음이신가요?'}
+            subText={'온보딩'}
+            imageSrc={'/images/logo-white.png'}
+            gradientFrom={'#1D9C6D'}
+            gradientTo={'#5EC69D'}
+            className="flex-1 h-32 cursor-pointer"
+            onClick={() => router.push('/onboarding')}
+          />
+          <InfoButton
+            mainText={'불편한 점이 있으신가요?'}
+            subText={'문의'}
+            imageSrc={'/images/message.png'}
+            gradientFrom={'#1666BA'}
+            gradientTo={'#7AB3EF'}
+            className="flex-1 h-32 cursor-pointer"
+            onClick={() => router.push('/inquiry')}
+          />
+        </div>
+
+        <Spacing className="h-12" />
+
+        {/* 랜덤 챌린지 */}
+        <SectionHeader title="랜덤 챌린지" subtitle="챌린지에 참여하고 목표를 달성해봐요." />
+        <Spacing className="h-4" />
+        <ScrollArea className="w-full">
+          <div className="flex gap-3 px-4 pb-4">
+            {Array.from({ length: CARD_COUNT }).map((_, i) => (
+              <div key={i} className="shrink-0 w-[280px]">
+                <ChallengeCard
+                  challengeTitle="챌린지 제목"
+                  challengeType="고정목표형"
+                  currentUserCount={12}
+                  maxUserCount={20}
+                  startDate="2023-10-01"
+                  endDate="2023-10-31"
+                  isOngoing={i === 0}
+                />
+              </div>
+            ))}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+
+        <Spacing className="h-12" />
+
+        {/* 랜덤 일지 */}
+        <SectionHeader title="랜덤 일지" subtitle="챌린저들의 일지를 보며 의욕을 충전해봐요." />
+        <Spacing className="h-4" />
+        <ScrollArea className="w-full">
+          <div className="flex gap-3 px-4 pb-4">
+            {Array.from({ length: CARD_COUNT }).map((_, i) => (
+              <div key={i} className="shrink-0 w-[240px]">
+                <DiaryCard
+                  percent={0}
+                  likes={0}
+                  title="테스트"
+                  user="고라니"
+                  challengeLabel="테스트"
+                  challengeUrl=""
+                  date="2025.06.10"
+                  emotion="happy"
+                />
+              </div>
+            ))}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+
+        <Spacing className="h-12" />
+        <div className="flex w-full justify-center">
+          <PageWatermark />
+        </div>
+        <Spacing className="h-8" />
+      </div>
     </div>
   );
 }
