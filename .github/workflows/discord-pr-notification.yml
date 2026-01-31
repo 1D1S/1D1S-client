@@ -26,14 +26,10 @@ jobs:
             const channelId = process.env.CHANNEL_ID;
             const roleId = process.env.ROLE_ID;
 
-            // 컨텍스트에서 PR 정보 추출
             const pr = context.payload.pull_request || context.payload.issue;
             const isPr = !!pr.pull_request_url || !!pr.html_url.includes('/pull/');
 
-            if (!isPr) {
-              console.log('Not a PR event.');
-              return;
-            }
+            if (!isPr) { console.log('Not a PR event.'); return; }
 
             const eventName = context.eventName;
             const action = context.payload.action;
@@ -41,7 +37,6 @@ jobs:
             const prTitle = pr.title;
             const sender = context.payload.sender.login;
 
-            // 메시지 내용 구성
             let content = '';
             let isNew = false;
 
@@ -52,12 +47,9 @@ jobs:
               const merged = context.payload.pull_request.merged;
               content = merged ? `✅ **PR이 병합되었습니다.**` : `⛔ **PR이 닫혔습니다.**`;
             } else if (eventName === 'issue_comment' || eventName === 'pull_request_review') {
-               content = `💬 **${sender}**님이 코멘트를 남겼습니다.\n> ${context.payload.comment ? context.payload.comment.body.slice(0, 50) + '...' : '리뷰 제출됨'}`;
-            } else {
-               return; // 처리하지 않는 이벤트
-            }
+               content = `💬 **${sender}**님이 코멘트를 남겼습니다.\n> ${context.payload.comment ? context.payload.comment.body.slice(0, 100) + '...' : '리뷰 제출됨'}`;
+            } else { return; }
 
-            // Discord API 요청 함수
             function request(method, path, body) {
               return new Promise((resolve, reject) => {
                 const req = https.request({
@@ -71,7 +63,10 @@ jobs:
                 }, res => {
                   let data = '';
                   res.on('data', c => data += c);
-                  res.on('end', () => resolve(JSON.parse(data)));
+                  res.on('end', () => {
+                      try { resolve(JSON.parse(data)); }
+                      catch(e) { resolve({}); }
+                  });
                 });
                 req.on('error', reject);
                 if (body) req.write(JSON.stringify(body));
@@ -86,23 +81,34 @@ jobs:
                 return;
               }
 
-              // 2. 기존 PR이면 원본 메시지를 찾아서 스레드(답글) 달기
-              // 최근 메시지 50개를 가져와서 해당 PR 링크가 있는 봇 메시지를 찾음
+              // 2. 기존 PR이면 원본 메시지를 찾아서 스레드로 이어가기
               const messages = await request('GET', `/channels/${channelId}/messages?limit=50`);
-              
-              const originalMsg = messages.find(m => 
-                m.author.bot && 
-                m.content.includes(prUrl)
-              );
+              const originalMsg = messages.find(m => m.author.bot && m.content.includes(prUrl));
 
               if (originalMsg) {
-                // 원본 메시지에 답글 달기 (스레드처럼 보임)
-                await request('POST', `/channels/${channelId}/messages`, {
-                  content,
-                  message_reference: { message_id: originalMsg.id }
-                });
+                let threadId = originalMsg.thread ? originalMsg.thread.id : null;
+
+                // 스레드가 없으면 새로 생성
+                if (!threadId) {
+                   // 이미 스레드(Thread) 채널이거나, 메시지에 달린 스레드가 없을 때 생성 시도
+                   const newThread = await request('POST', `/channels/${channelId}/messages/${originalMsg.id}/threads`, {
+                     name: `💬 PR Discussion: ${prTitle.slice(0, 50)}`,
+                     auto_archive_duration: 1440 // 24시간 후 보관
+                   });
+                   if (newThread.id) threadId = newThread.id;
+                }
+
+                // 스레드 ID가 확보되면 그 안으로 메시지 전송
+                if (threadId) {
+                  await request('POST', `/channels/${threadId}/messages`, { content });
+                } else {
+                  // 스레드 생성 실패 시(이미 존재하거나 권한 문제 등), 그냥 답글로 전송
+                  await request('POST', `/channels/${channelId}/messages`, { 
+                    content, message_reference: { message_id: originalMsg.id } 
+                  });
+                }
               } else {
-                // 원본을 못 찾으면 그냥 새 메시지로 전송 (링크 포함해서 맥락 유지)
+                // 원본을 못 찾으면 새 메시지
                 await request('POST', `/channels/${channelId}/messages`, { 
                   content: `[PR Link](${prUrl})\n${content}` 
                 });
