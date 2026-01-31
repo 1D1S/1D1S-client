@@ -1,0 +1,50 @@
+name: Auto PR Title
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  update-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update PR Title
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const branchName = pr.head.ref; // 예: feat/ODS-123-login
+            const oldTitle = pr.title;      // 예: 로그인 기능 구현
+
+            // 1. 이미 포맷이 적용되어 있는지 확인 ([ODS-123] ...)
+            if (oldTitle.startsWith('[')) {
+              console.log("Title seems already formatted. Skipping.");
+              return;
+            }
+
+            // 2. 브랜치 이름 파싱 (정규식)
+            // 패턴: (타입)/(ODS-숫자)-(나머지)
+            const regex = /^([a-z]+)\/(ODS-\d+).*/i;
+            const match = branchName.match(regex);
+
+            if (!match) {
+              console.log(`Branch name '${branchName}' does not match pattern 'type/ODS-xxx'. Skipping.`);
+              return;
+            }
+
+            const type = match[1]; // feat, refactor, hotfix
+            const odsId = match[2]; // ODS-123
+
+            // 3. 새 제목 생성
+            // [ODS-123] feat: 원래제목
+            const newTitle = `[${odsId}] ${type}: ${oldTitle}`;
+
+            console.log(`Renaming PR from "${oldTitle}" to "${newTitle}"`);
+
+            // 4. PR 제목 업데이트 API 호출
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              title: newTitle
+            });
