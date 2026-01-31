@@ -29,7 +29,7 @@ export async function Prefetch<TData>({
   queries,
   children,
 }: {
-  queries: PrefetchOptions<TData>[];
+  queries: Array<PrefetchOptions<TData>>;
   children: React.ReactNode;
 }): Promise<React.ReactElement> {
   const queryClient = getQueryClient();
