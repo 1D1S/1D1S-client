@@ -17,37 +17,74 @@ jobs:
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: '1351796500279197757' # pr-리뷰-요청 채널
-          ROLE_ID: '1347541606927962152' # 프론트엔드 역할
+          ROLE_ID: '1347541606927962152'    # 프론트엔드 역할
         with:
           script: |
             const https = require('https');
-
+            
             const token = process.env.DISCORD_BOT_TOKEN;
             const channelId = process.env.CHANNEL_ID;
             const roleId = process.env.ROLE_ID;
-
+            
             const pr = context.payload.pull_request || context.payload.issue;
             const isPr = !!pr.pull_request_url || !!pr.html_url.includes('/pull/');
-
+            
             if (!isPr) { console.log('Not a PR event.'); return; }
 
             const eventName = context.eventName;
             const action = context.payload.action;
             const prUrl = pr.html_url;
             const prTitle = pr.title;
-            const sender = context.payload.sender.login;
-
-            let content = '';
+            const prBody = pr.body || '(내용 없음)';
+            const sender = context.payload.sender;
+            
+            let content = '';       // 멘션용 (Embed 밖)
+            let embeds = [];        // 디자인된 메시지
             let isNew = false;
+            let threadName = `💬 ${prTitle.slice(0, 50)}`;
 
+            // 1. PR 생성 (Opened)
             if (eventName === 'pull_request' && action === 'opened') {
               isNew = true;
-              content = `<@&${roleId}> 📢 **새로운 PR이 도착했습니다!**\n\n**[${prTitle}](${prUrl})**\nBy: ${sender}`;
-            } else if (eventName === 'pull_request' && action === 'closed') {
+              content = `<@&${roleId}>`; // 멘션
+              embeds = [{
+                title: `🚀 새로운 PR: ${prTitle}`,
+                url: prUrl,
+                description: prBody.length > 200 ? prBody.slice(0, 200) + '...' : prBody,
+                color: 5763719, // Green (#57F287)
+                author: {
+                  name: sender.login,
+                  icon_url: sender.avatar_url
+                },
+                fields: [
+                  { name: 'Repository', value: context.repo.repo, inline: true },
+                  { name: 'Branch', value: `${context.payload.pull_request.head.ref} ➡️ ${context.payload.pull_request.base.ref}`, inline: true }
+                ],
+                footer: { text: 'Review Requested' },
+                timestamp: new Date().toISOString()
+              }];
+            } 
+            // 2. PR 닫힘/병합 (Closed)
+            else if (eventName === 'pull_request' && action === 'closed') {
               const merged = context.payload.pull_request.merged;
-              content = merged ? `✅ **PR이 병합되었습니다.**` : `⛔ **PR이 닫혔습니다.**`;
-            } else if (eventName === 'issue_comment' || eventName === 'pull_request_review') {
-               content = `💬 **${sender}**님이 코멘트를 남겼습니다.\n> ${context.payload.comment ? context.payload.comment.body.slice(0, 100) + '...' : '리뷰 제출됨'}`;
+              embeds = [{
+                title: merged ? `✅ PR 병합됨: ${prTitle}` : `⛔ PR 닫힘: ${prTitle}`,
+                url: prUrl,
+                color: merged ? 10181046 : 15548997, // Purple (Merged) or Red (Closed)
+                author: { name: sender.login, icon_url: sender.avatar_url },
+                footer: { text: merged ? 'Merged' : 'Closed' },
+                timestamp: new Date().toISOString()
+              }];
+            } 
+            // 3. 코멘트/리뷰 (Comment)
+            else if (eventName === 'issue_comment' || eventName === 'pull_request_review') {
+               const commentBody = context.payload.comment ? context.payload.comment.body : '리뷰가 제출되었습니다.';
+               embeds = [{
+                description: `💬 **코멘트 등록**\n${commentBody.length > 300 ? commentBody.slice(0, 300) + '...' : commentBody}`,
+                color: 3447003, // Blue (#3498DB)
+                author: { name: sender.login, icon_url: sender.avatar_url },
+                url: context.payload.comment ? context.payload.comment.html_url : prUrl
+               }];
             } else { return; }
 
             function request(method, path, body) {
@@ -75,44 +112,54 @@ jobs:
             }
 
             async function main() {
-              // 1. 새 PR이면 그냥 메시지 전송
+              // 1. 새 PR 전송
               if (isNew) {
-                await request('POST', `/channels/${channelId}/messages`, { content });
+                const msg = await request('POST', `/channels/${channelId}/messages`, { content, embeds });
+                // 메시지 전송 후 바로 스레드 생성 (선택 사항: 깔끔한 관리를 위해 미리 생성)
+                if (msg.id) {
+                    await request('POST', `/channels/${channelId}/messages/${msg.id}/threads`, {
+                        name: threadName,
+                        auto_archive_duration: 1440
+                    });
+                }
                 return;
               }
 
-              // 2. 기존 PR이면 원본 메시지를 찾아서 스레드로 이어가기
+              // 2. 기존 PR 업데이트 (스레드 찾기)
               const messages = await request('GET', `/channels/${channelId}/messages?limit=50`);
-              const originalMsg = messages.find(m => m.author.bot && m.content.includes(prUrl));
+              // Embed가 있는 메시지 중에서 URL이 일치하는 것을 찾음
+              const originalMsg = messages.find(m => 
+                m.author.bot && 
+                ((m.embeds && m.embeds[0] && m.embeds[0].url === prUrl) || m.content.includes(prUrl))
+              );
 
               if (originalMsg) {
                 let threadId = originalMsg.thread ? originalMsg.thread.id : null;
 
-                // 스레드가 없으면 새로 생성
+                // 스레드 없으면 생성
                 if (!threadId) {
-                   // 이미 스레드(Thread) 채널이거나, 메시지에 달린 스레드가 없을 때 생성 시도
                    const newThread = await request('POST', `/channels/${channelId}/messages/${originalMsg.id}/threads`, {
-                     name: `💬 PR Discussion: ${prTitle.slice(0, 50)}`,
-                     auto_archive_duration: 1440 // 24시간 후 보관
+                     name: threadName,
+                     auto_archive_duration: 1440
                    });
                    if (newThread.id) threadId = newThread.id;
                 }
 
-                // 스레드 ID가 확보되면 그 안으로 메시지 전송
+                // 전송
                 if (threadId) {
-                  await request('POST', `/channels/${threadId}/messages`, { content });
+                  await request('POST', `/channels/${threadId}/messages`, { embeds });
                 } else {
-                  // 스레드 생성 실패 시(이미 존재하거나 권한 문제 등), 그냥 답글로 전송
                   await request('POST', `/channels/${channelId}/messages`, { 
-                    content, message_reference: { message_id: originalMsg.id } 
+                    embeds, message_reference: { message_id: originalMsg.id } 
                   });
                 }
               } else {
-                // 원본을 못 찾으면 새 메시지
+                // 원본 못 찾으면 그냥 전송 (링크 포함)
                 await request('POST', `/channels/${channelId}/messages`, { 
-                  content: `[PR Link](${prUrl})\n${content}` 
+                  content: `[PR Link](${prUrl})`, embeds 
                 });
               }
             }
 
             await main();
+```</final>
