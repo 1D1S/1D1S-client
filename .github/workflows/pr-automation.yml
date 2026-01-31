@@ -1,0 +1,141 @@
+name: PR Automation (Title & Notion)
+
+on:
+  pull_request:
+    types: [opened, reopened, closed, edited]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  automate-pr:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. PR 제목 자동 수정 (ODS 태그 붙이기)
+      - name: Auto-format PR Title
+        id: format-title
+        if: github.event.action == 'opened' || github.event.action == 'reopened'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const branchName = pr.head.ref;
+            let currentTitle = pr.title;
+
+            // 이미 [ODS-123] 형식이면 패스
+            if (currentTitle.startsWith('[')) {
+              return currentTitle;
+            }
+
+            // 브랜치 파싱: feat/ODS-123-foo
+            const regex = /^([a-z]+)\/(ODS-\d+).*/i;
+            const match = branchName.match(regex);
+
+            if (match) {
+              const type = match[1];
+              const odsId = match[2];
+              const newTitle = `[${odsId}] ${type}: ${currentTitle}`;
+              
+              console.log(`Renaming to: ${newTitle}`);
+              
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                title: newTitle
+              });
+              
+              return newTitle; // 다음 스텝을 위해 반환
+            }
+            return currentTitle;
+
+      # 2. 노션 상태 업데이트 (변경된 제목 사용)
+      - name: Update Notion Status
+        uses: actions/github-script@v6
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: '2f841807241280379e84f43daa636edb'
+        with:
+          script: |
+            const https = require('https');
+
+            // 이전 스텝에서 바뀐 제목이 있으면 가져오고, 없으면 API로 다시 조회
+            // (context.payload.pull_request.title은 여전히 옛날 제목일 수 있음)
+            const prNumber = context.payload.pull_request.number;
+            const { data: pr } = await github.rest.pulls.get({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               pull_number: prNumber
+            });
+
+            const title = pr.title;
+            const body = pr.body || "";
+            const NOTION_API_KEY = process.env.NOTION_API_KEY;
+            const DATABASE_ID = process.env.NOTION_DATABASE_ID;
+
+            // ODS- 숫자 찾기
+            const regex = /ODS-(\d+)/i;
+            const match = title.match(regex) || body.match(regex);
+
+            if (!match) {
+              console.log("No Notion ID found. Skipping.");
+              return;
+            }
+
+            const issueId = parseInt(match[1], 10);
+            console.log(`Processing ODS-${issueId}`);
+
+            // 상태 결정
+            let newStatus = null;
+            if (context.payload.action === 'opened' || context.payload.action === 'reopened') {
+               newStatus = '진행중';
+            } else if (context.payload.action === 'closed' && pr.merged) {
+               newStatus = '완료';
+            }
+
+            if (!newStatus) return;
+
+            // Notion API 호출
+            function notionRequest(method, path, body) {
+              return new Promise((resolve, reject) => {
+                const req = https.request({
+                  hostname: 'api.notion.com',
+                  path: '/v1' + path,
+                  method,
+                  headers: {
+                    'Authorization': `Bearer ${NOTION_API_KEY}`,
+                    'Notion-Version': '2022-06-28',
+                    'Content-Type': 'application/json'
+                  }
+                }, res => {
+                  let data = '';
+                  res.on('data', c => data += c);
+                  res.on('end', () => resolve(JSON.parse(data)));
+                });
+                req.on('error', reject);
+                if (body) req.write(JSON.stringify(body));
+                req.end();
+              });
+            }
+
+            async function main() {
+              // 페이지 검색
+              const queryRes = await notionRequest('POST', `/databases/${DATABASE_ID}/query`, {
+                filter: { property: "ID", unique_id: { equals: issueId } }
+              });
+
+              if (!queryRes.results || queryRes.results.length === 0) {
+                 console.log(`Page not found for ODS-${issueId}`);
+                 return;
+              }
+
+              const pageId = queryRes.results[0].id;
+              
+              // 상태 업데이트
+              await notionRequest('PATCH', `/pages/${pageId}`, {
+                properties: { "상태": { status: { name: newStatus } } }
+              });
+              console.log(`Updated status to ${newStatus}`);
+            }
+
+            await main();
