@@ -16,7 +16,7 @@ jobs:
         uses: actions/github-script@v6
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-          CHANNEL_ID: '1351796500279197757'
+          CHANNEL_ID: '1352445288102494358'
           ROLE_ID: '1347541606927962152'
         with:
           script: |
