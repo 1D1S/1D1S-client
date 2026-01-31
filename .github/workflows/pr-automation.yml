@@ -11,70 +11,60 @@ jobs:
   automate-pr:
     runs-on: ubuntu-latest
     steps:
-      # 1. PR 제목 자동 수정 (ODS 태그 붙이기)
+      # 1. PR 제목 자동 수정
       - name: Auto-format PR Title
         id: format-title
-        if: github.event.action == 'opened' || github.event.action == 'reopened'
         uses: actions/github-script@v6
         with:
           script: |
             const pr = context.payload.pull_request;
             const branchName = pr.head.ref;
-            let currentTitle = pr.title;
+            let finalTitle = pr.title;
 
-            // 이미 [ODS-123] 형식이면 패스
-            if (currentTitle.startsWith('[')) {
-              return currentTitle;
+            // Opened/Reopened일 때만 제목 변경 시도
+            if (context.payload.action === 'opened' || context.payload.action === 'reopened') {
+              if (!finalTitle.startsWith('[')) {
+                const regex = /^([a-z]+)\/(ODS-\d+).*/i;
+                const match = branchName.match(regex);
+                if (match) {
+                  const type = match[1];
+                  const odsId = match[2];
+                  finalTitle = `[ODS-${odsId.split('-')[1]}] ${type}: ${pr.title}`; // ODS-3 형식 보장
+                  
+                  await github.rest.pulls.update({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: pr.number,
+                    title: finalTitle
+                  });
+                }
+              }
             }
 
-            // 브랜치 파싱: feat/ODS-123-foo
-            const regex = /^([a-z]+)\/(ODS-\d+).*/i;
-            const match = branchName.match(regex);
+            // ⭐ 중요: 최종 제목을 다음 단계로 넘김
+            core.setOutput('final_title', finalTitle);
 
-            if (match) {
-              const type = match[1];
-              const odsId = match[2];
-              const newTitle = `[${odsId}] ${type}: ${currentTitle}`;
-              
-              console.log(`Renaming to: ${newTitle}`);
-              
-              await github.rest.pulls.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: pr.number,
-                title: newTitle
-              });
-              
-              return newTitle;
-            }
-            return currentTitle;
-
-      # 2. 노션 상태 및 링크 업데이트
+      # 2. 노션 업데이트 (전달받은 제목 사용)
       - name: Update Notion Status & Link
         uses: actions/github-script@v6
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           NOTION_DATABASE_ID: '2f841807241280379e84f43daa636edb'
+          FINAL_TITLE: ${{ steps.format-title.outputs.final_title }} # 여기서 받음!
         with:
           script: |
             const https = require('https');
 
-            // 최신 PR 정보 다시 조회 (제목 변경 반영 확인)
-            const prNumber = context.payload.pull_request.number;
-            const { data: pr } = await github.rest.pulls.get({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               pull_number: prNumber
-            });
+            // 전달받은 제목 사용 (없으면 원래 제목)
+            const title = process.env.FINAL_TITLE || context.payload.pull_request.title;
+            const body = context.payload.pull_request.body || "";
+            const prUrl = context.payload.pull_request.html_url;
 
-            const title = pr.title;
-            const body = pr.body || "";
-            const prUrl = pr.html_url;
+            console.log(`Analyzing Title: ${title}`); // 로그로 확인
 
             const NOTION_API_KEY = process.env.NOTION_API_KEY;
             const DATABASE_ID = process.env.NOTION_DATABASE_ID;
 
-            // ODS- 숫자 찾기
             const regex = /ODS-(\d+)/i;
             const match = title.match(regex) || body.match(regex);
 
@@ -86,17 +76,16 @@ jobs:
             const issueId = parseInt(match[1], 10);
             console.log(`Processing ODS-${issueId}`);
 
-            // 상태 결정
+            // (이하 노션 API 호출 로직은 동일)
             let newStatus = null;
             if (context.payload.action === 'opened' || context.payload.action === 'reopened') {
                newStatus = '진행중';
-            } else if (context.payload.action === 'closed' && pr.merged) {
+            } else if (context.payload.action === 'closed' && context.payload.pull_request.merged) {
                newStatus = '완료';
             }
 
             if (!newStatus) return;
 
-            // Notion API 호출 함수
             function notionRequest(method, path, body) {
               return new Promise((resolve, reject) => {
                 const req = https.request({
@@ -120,7 +109,6 @@ jobs:
             }
 
             async function main() {
-              // 페이지 검색
               const queryRes = await notionRequest('POST', `/databases/${DATABASE_ID}/query`, {
                 filter: { property: "ID", unique_id: { equals: issueId } }
               });
@@ -132,14 +120,13 @@ jobs:
 
               const pageId = queryRes.results[0].id;
               
-              // 상태 및 링크 업데이트
               await notionRequest('PATCH', `/pages/${pageId}`, {
                 properties: {
                   "상태": { status: { name: newStatus } },
-                  "PR 링크": { url: prUrl } // 노션 속성 이름 확인 필수!
+                  "PR 링크": { url: prUrl }
                 }
               });
-              console.log(`Updated status to ${newStatus} and linked PR URL.`);
+              console.log(`Updated status to ${newStatus}`);
             }
 
             await main();
