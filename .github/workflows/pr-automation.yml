@@ -45,12 +45,12 @@ jobs:
                 title: newTitle
               });
               
-              return newTitle; // 다음 스텝을 위해 반환
+              return newTitle;
             }
             return currentTitle;
 
-      # 2. 노션 상태 업데이트 (변경된 제목 사용)
-      - name: Update Notion Status
+      # 2. 노션 상태 및 링크 업데이트
+      - name: Update Notion Status & Link
         uses: actions/github-script@v6
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
@@ -59,8 +59,7 @@ jobs:
           script: |
             const https = require('https');
 
-            // 이전 스텝에서 바뀐 제목이 있으면 가져오고, 없으면 API로 다시 조회
-            // (context.payload.pull_request.title은 여전히 옛날 제목일 수 있음)
+            // 최신 PR 정보 다시 조회 (제목 변경 반영 확인)
             const prNumber = context.payload.pull_request.number;
             const { data: pr } = await github.rest.pulls.get({
                owner: context.repo.owner,
@@ -70,6 +69,8 @@ jobs:
 
             const title = pr.title;
             const body = pr.body || "";
+            const prUrl = pr.html_url;
+
             const NOTION_API_KEY = process.env.NOTION_API_KEY;
             const DATABASE_ID = process.env.NOTION_DATABASE_ID;
 
@@ -95,7 +96,7 @@ jobs:
 
             if (!newStatus) return;
 
-            // Notion API 호출
+            // Notion API 호출 함수
             function notionRequest(method, path, body) {
               return new Promise((resolve, reject) => {
                 const req = https.request({
@@ -131,11 +132,14 @@ jobs:
 
               const pageId = queryRes.results[0].id;
               
-              // 상태 업데이트
+              // 상태 및 링크 업데이트
               await notionRequest('PATCH', `/pages/${pageId}`, {
-                properties: { "상태": { status: { name: newStatus } } }
+                properties: {
+                  "상태": { status: { name: newStatus } },
+                  "PR 링크": { url: prUrl } // 노션 속성 이름 확인 필수!
+                }
               });
-              console.log(`Updated status to ${newStatus}`);
+              console.log(`Updated status to ${newStatus} and linked PR URL.`);
             }
 
             await main();
