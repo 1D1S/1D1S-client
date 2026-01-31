@@ -1,0 +1,112 @@
+name: Discord PR Notification
+
+on:
+  pull_request:
+    types: [opened, closed, reopened]
+  issue_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  discord-notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord
+        uses: actions/github-script@v6
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          CHANNEL_ID: '1351796500279197757' # pr-리뷰-요청 채널
+          ROLE_ID: '1347541606927962152' # 프론트엔드 역할
+        with:
+          script: |
+            const https = require('https');
+
+            const token = process.env.DISCORD_BOT_TOKEN;
+            const channelId = process.env.CHANNEL_ID;
+            const roleId = process.env.ROLE_ID;
+
+            // 컨텍스트에서 PR 정보 추출
+            const pr = context.payload.pull_request || context.payload.issue;
+            const isPr = !!pr.pull_request_url || !!pr.html_url.includes('/pull/');
+
+            if (!isPr) {
+              console.log('Not a PR event.');
+              return;
+            }
+
+            const eventName = context.eventName;
+            const action = context.payload.action;
+            const prUrl = pr.html_url;
+            const prTitle = pr.title;
+            const sender = context.payload.sender.login;
+
+            // 메시지 내용 구성
+            let content = '';
+            let isNew = false;
+
+            if (eventName === 'pull_request' && action === 'opened') {
+              isNew = true;
+              content = `<@&${roleId}> 📢 **새로운 PR이 도착했습니다!**\n\n**[${prTitle}](${prUrl})**\nBy: ${sender}`;
+            } else if (eventName === 'pull_request' && action === 'closed') {
+              const merged = context.payload.pull_request.merged;
+              content = merged ? `✅ **PR이 병합되었습니다.**` : `⛔ **PR이 닫혔습니다.**`;
+            } else if (eventName === 'issue_comment' || eventName === 'pull_request_review') {
+               content = `💬 **${sender}**님이 코멘트를 남겼습니다.\n> ${context.payload.comment ? context.payload.comment.body.slice(0, 50) + '...' : '리뷰 제출됨'}`;
+            } else {
+               return; // 처리하지 않는 이벤트
+            }
+
+            // Discord API 요청 함수
+            function request(method, path, body) {
+              return new Promise((resolve, reject) => {
+                const req = https.request({
+                  hostname: 'discord.com',
+                  path: '/api/v10' + path,
+                  method,
+                  headers: {
+                    'Authorization': `Bot ${token}`,
+                    'Content-Type': 'application/json'
+                  }
+                }, res => {
+                  let data = '';
+                  res.on('data', c => data += c);
+                  res.on('end', () => resolve(JSON.parse(data)));
+                });
+                req.on('error', reject);
+                if (body) req.write(JSON.stringify(body));
+                req.end();
+              });
+            }
+
+            async function main() {
+              // 1. 새 PR이면 그냥 메시지 전송
+              if (isNew) {
+                await request('POST', `/channels/${channelId}/messages`, { content });
+                return;
+              }
+
+              // 2. 기존 PR이면 원본 메시지를 찾아서 스레드(답글) 달기
+              // 최근 메시지 50개를 가져와서 해당 PR 링크가 있는 봇 메시지를 찾음
+              const messages = await request('GET', `/channels/${channelId}/messages?limit=50`);
+              
+              const originalMsg = messages.find(m => 
+                m.author.bot && 
+                m.content.includes(prUrl)
+              );
+
+              if (originalMsg) {
+                // 원본 메시지에 답글 달기 (스레드처럼 보임)
+                await request('POST', `/channels/${channelId}/messages`, {
+                  content,
+                  message_reference: { message_id: originalMsg.id }
+                });
+              } else {
+                // 원본을 못 찾으면 그냥 새 메시지로 전송 (링크 포함해서 맥락 유지)
+                await request('POST', `/channels/${channelId}/messages`, { 
+                  content: `[PR Link](${prUrl})\n${content}` 
+                });
+              }
+            }
+
+            await main();
