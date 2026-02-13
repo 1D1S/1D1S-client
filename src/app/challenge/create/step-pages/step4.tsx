@@ -1,98 +1,156 @@
-// app/challenge/create/components/Step1.tsx
-import {
-  ChallengeGoalCreateButton,
-  ChallengeGoalDeleteButton,
-} from '@feature/challenge/presentation/components/challenge-goal-buttons';
-import {
-  ChallengeToggleGroup,
-  ChallengeToggle,
-} from '@feature/challenge/presentation/components/challenge-toggle';
 import { ChallengeCreateFormValues } from '@feature/challenge/presentation/hooks/use-challenge-create-form';
-import { Text, Spacing, TextField } from '@1d1s/design-system';
+import {
+  Button,
+  CheckContainer,
+  Text,
+  TextField,
+} from '@1d1s/design-system';
 import { FormControl, FormField, FormItem, FormMessage } from '@component/ui/form';
+import { cn } from '@module/lib/utils';
+import { Flag, Plus, Target, Trash2 } from 'lucide-react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 
 export function Step4(): React.ReactElement {
-  const { control } = useFormContext<ChallengeCreateFormValues>();
+  const { control, formState } = useFormContext<ChallengeCreateFormValues>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'goals',
   });
 
   return (
-    <div>
-      <Spacing className="h-25" />
-      <Text size="display2" weight="bold">
-        목표를 설정해주세요.
-      </Text>
-      <Spacing className="h-5" />
-
-      <FormField
-        control={control}
-        name="goalType"
-        render={({ field }) => (
-          <FormItem>
-            <ChallengeToggleGroup
-              type="single"
-              defaultValue="FIXED"
-              value={field.value}
-              onValueChange={field.onChange}
-            >
-              <ChallengeToggle
-                value="FIXED"
-                title="고정 목표"
-                subtitle={'주최자가 설정한 목표로\n진행하는 챌린지입니다.'}
-                isActive={field.value === 'FIXED'}
-                activeImageSrc={'/images/pin-white.png'}
-                inactiveImageSrc={'/images/pin-gray.png'}
-                imageWidth={36}
-                imageHeight={60}
-              />
-              <ChallengeToggle
-                value="FLEXIBLE"
-                title="자유 목표"
-                subtitle={'참여자 각자의 목표로\n진행하는 챌린지입니다.'}
-                isActive={field.value === 'FLEXIBLE'}
-                activeImageSrc={'/images/add-white.png'}
-                inactiveImageSrc={'/images/add-gray.png'}
-                imageWidth={60}
-                imageHeight={60}
-              />
-            </ChallengeToggleGroup>
-          </FormItem>
-        )}
-      />
-
-      <Spacing className="h-12" />
-      <Text size="heading1" weight="bold">
-        목표를 설정해주세요.
-      </Text>
-      <Spacing className="h-5" />
-      {fields.map((field, index) => (
+    <div className="mx-auto w-full max-w-[980px] space-y-8">
+      <div className="space-y-3">
+        <Text size="heading1" weight="bold" className="text-gray-900">
+          목표 방식
+        </Text>
         <FormField
-          key={field.id}
           control={control}
-          name={`goals.${index}.value`}
+          name="goalType"
           render={({ field }) => (
             <FormItem>
-              <div className="flex w-235 items-center gap-2">
-                <div className="flex-1">
-                  <FormControl>
-                    <TextField type="text" placeholder="목표를 입력하세요" {...field} />
-                  </FormControl>
-                </div>
-                <ChallengeGoalDeleteButton type="button" onClick={() => remove(index)} />
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <CheckContainer
+                  checked={field.value === 'FIXED'}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      field.onChange('FIXED');
+                    }
+                  }}
+                  width="100%"
+                  height={176}
+                  className={cn(
+                    '!items-start !justify-start !rounded-3 p-6 text-left',
+                    field.value === 'FIXED'
+                      ? '!border-main-800 !bg-main-200'
+                      : '!border-gray-300 !bg-white'
+                  )}
+                  aria-label="고정 목표"
+                >
+                  <div className="flex h-full flex-col justify-between">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                      <Flag className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <Text size="heading1" weight="bold" className="text-gray-900">
+                        고정 목표
+                      </Text>
+                      <Text size="body2" weight="regular" className="mt-2 text-gray-600">
+                        참여자가 동일한 목표를 달성하는 방식입니다.
+                      </Text>
+                    </div>
+                  </div>
+                </CheckContainer>
+
+                <CheckContainer
+                  checked={field.value === 'FLEXIBLE'}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      field.onChange('FLEXIBLE');
+                    }
+                  }}
+                  width="100%"
+                  height={176}
+                  className={cn(
+                    '!items-start !justify-start !rounded-3 p-6 text-left',
+                    field.value === 'FLEXIBLE'
+                      ? '!border-main-800 !bg-main-200'
+                      : '!border-gray-300 !bg-white'
+                  )}
+                  aria-label="자유 목표"
+                >
+                  <div className="flex h-full flex-col justify-between">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                      <Target className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <Text size="heading1" weight="bold" className="text-gray-900">
+                        자유 목표
+                      </Text>
+                      <Text size="body2" weight="regular" className="mt-2 text-gray-600">
+                        참여자가 각자 목표를 설정해 진행하는 방식입니다.
+                      </Text>
+                    </div>
+                  </div>
+                </CheckContainer>
               </div>
               <FormMessage />
-              <Spacing className="h-2" />
             </FormItem>
           )}
         />
-      ))}
+      </div>
 
-      <ChallengeGoalCreateButton type="button" onClick={() => append({ value: '' })}>
-        + 목표 추가
-      </ChallengeGoalCreateButton>
+      <div className="space-y-3">
+        <Text size="heading1" weight="bold" className="text-gray-900">
+          목표 목록
+        </Text>
+        <div className="space-y-3">
+          {fields.map((goalField, index) => (
+            <FormField
+              key={goalField.id}
+              control={control}
+              name={`goals.${index}.value`}
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-start gap-2">
+                    <div className="flex-1">
+                      <FormControl>
+                        <TextField placeholder={`목표 ${index + 1}을 입력하세요`} {...field} />
+                      </FormControl>
+                    </div>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => remove(index)}
+                      disabled={fields.length === 1}
+                      className="h-14 w-14 p-0"
+                      aria-label={`목표 ${index + 1} 삭제`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ))}
+        </div>
+
+        {formState.errors.goals?.message ? (
+          <Text size="body2" weight="medium" className="text-red-500">
+            {formState.errors.goals.message}
+          </Text>
+        ) : null}
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => append({ value: '' })}
+          className="px-5"
+        >
+          <Plus className="mr-1 h-4 w-4" />
+          목표 추가
+        </Button>
+      </div>
     </div>
   );
 }

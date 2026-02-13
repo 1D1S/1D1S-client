@@ -19,15 +19,17 @@ import { ChallengeCreateDialogContent } from './challenge-create-dialog-content'
 export function ChallengeCreateDialog({
   onConfirm,
   disabled,
+  triggerText = '완료',
 }: {
   onConfirm?(): void;
   disabled?: boolean;
+  triggerText?: string;
 }): React.ReactElement {
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="default" type="button" disabled={disabled}>
-          완료
+          {triggerText}
         </Button>
       </DialogTrigger>
       <DialogContent className="min-w-150 gap-6 p-6">

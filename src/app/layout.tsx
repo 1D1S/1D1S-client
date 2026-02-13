@@ -3,8 +3,7 @@ import { AppProviders } from '@module/providers';
 import { pretendard, suite } from '@module/lib/font';
 import '@module/styles/globals.css';
 import type { Metadata, Viewport } from 'next';
-import GlobalChromeWrapper from '@component/layout/global-chrome-wrapper';
-import FooterWrapper from '@component/layout/footer-wrapper';
+import AppLayoutShell from '@component/layout/app-layout-shell';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -26,14 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${pretendard.variable} ${suite.variable} font-pretendard bg-gray-100 text-gray-900`}
+        className={`${pretendard.variable} ${suite.variable} font-pretendard bg-white text-gray-900`}
       >
         <AppProviders>
-          <div className="mx-auto min-h-screen w-full max-w-[768px] bg-white shadow-lg relative">
-            <GlobalChromeWrapper />
-            <div style={{ position: 'relative', minHeight: '100vh' }}>{children}</div>
-          </div>
-          <FooterWrapper />
+          <AppLayoutShell>{children}</AppLayoutShell>
         </AppProviders>
       </body>
     </html>

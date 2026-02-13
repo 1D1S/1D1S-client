@@ -1,6 +1,6 @@
 // components/ChallengePicker.tsx
 
-import { Text, ChallengeListItem } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { useState, useEffect } from 'react';
 import { cn } from '@module/lib/utils';
 
@@ -100,18 +100,25 @@ export function ChallengePicker({
           </Text>
           <div className="flex max-h-[60vh] flex-col space-y-2 overflow-y-auto pr-2">
             {challenges.map((challenge) => (
-              <ChallengeListItem
+              <button
                 key={challenge.id}
-                challengeName={challenge.title}
-                startDate={challenge.startDate}
-                endDate={challenge.endDate}
-                maxParticipants={challenge.capacity}
-                currentParticipants={challenge.participants}
+                type="button"
+                className="w-full rounded-lg border border-gray-200 p-3 text-left transition hover:bg-gray-50"
                 onClick={() => {
                   onSelect?.();
                   setIsOpen(false);
                 }}
-              />
+              >
+                <Text size="body1" weight="bold" className="text-black">
+                  {challenge.title}
+                </Text>
+                <Text size="caption2" weight="regular" className="text-gray-600">
+                  {challenge.startDate} - {challenge.endDate}
+                </Text>
+                <Text size="caption2" weight="regular" className="text-gray-600">
+                  {challenge.participants}/{challenge.capacity}
+                </Text>
+              </button>
             ))}
           </div>
         </div>

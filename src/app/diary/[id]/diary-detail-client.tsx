@@ -3,14 +3,7 @@
 import React from 'react';
 import { ChallengeGoalToggle } from '@feature/diary/presentation/components/challenge-goal-toggle';
 import { DiaryContentField } from '@feature/diary/presentation/components/diary-content-field';
-import {
-  ChallengeListItem,
-  Text,
-  PageTitle,
-  PageWatermark,
-  Spacing,
-  Tag,
-} from '@1d1s/design-system';
+import { Text, PageTitle, PageWatermark, Spacing, Tag } from '@1d1s/design-system';
 
 interface DiaryData {
   id: string;
@@ -62,13 +55,17 @@ function ChallengeGoalsSection({
       <Text size="heading2" weight="bold">
         챌린지
       </Text>
-      <ChallengeListItem
-        challengeName={'챌린지'}
-        startDate={'2025-06-28'}
-        endDate={'2025-07-28'}
-        maxParticipants={10}
-        currentParticipants={5}
-      />
+      <div className="mt-3 rounded-lg border border-gray-200 p-3">
+        <Text size="body1" weight="bold">
+          챌린지
+        </Text>
+        <Text size="caption2" weight="regular" className="text-gray-600">
+          2025-06-28 - 2025-07-28
+        </Text>
+        <Text size="caption2" weight="regular" className="text-gray-600">
+          5/10
+        </Text>
+      </div>
       <Spacing className="h-6" />
       <div className="flex gap-2">
         <Text size="heading2" weight="bold">
