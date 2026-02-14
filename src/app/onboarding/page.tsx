@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { PageTitle, Spacing, Text, Button } from '@1d1s/design-system';
+import { Text, Button } from '@1d1s/design-system';
 
 function OnboardingSection({
   title,
@@ -47,10 +47,12 @@ export default function OnboardingPage(): React.ReactElement {
   return (
     <div className="flex min-h-screen w-full flex-col bg-white pt-16">
       <div className="flex w-full justify-center">
-        <PageTitle title="1D1S 소개" />
+        <Text size="display1" weight="bold" className="text-gray-900">
+          1D1S 소개
+        </Text>
       </div>
 
-      <Spacing className="h-4" />
+      <div className="h-4" />
 
       <div className="flex flex-col">
         <OnboardingSection
@@ -74,7 +76,7 @@ export default function OnboardingPage(): React.ReactElement {
       <div className="px-6 py-10">
         <Button
           variant="default"
-          className="h-14 w-full text-lg"
+          className="h-14 w-full text-base"
           onClick={() => router.push('/challenge')}
         >
           챌린지 시작하기

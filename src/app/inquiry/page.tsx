@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react';
 import {
-  PageTitle,
-  Spacing,
   Text,
   Accordion,
   AccordionItem,
@@ -43,13 +41,15 @@ export default function InquiryPage(): React.ReactElement {
   return (
     <div className="flex min-h-screen w-full flex-col bg-white">
       <div className="flex w-full flex-col items-center pt-16">
-        <PageTitle title="문의하기" />
+        <Text size="display1" weight="bold" className="text-gray-900">
+          문의하기
+        </Text>
       </div>
 
       {/* 모바일 뷰 기준 컨테이너 (레이아웃에서 제어됨) */}
       <div className="flex w-full flex-1 flex-col px-6">
-        <Spacing className="h-10" />
-        
+        <div className="h-10" />
+
         {/* FAQ 섹션 */}
         <Text size="heading1" weight="bold" className="text-gray-900 mb-4">
           자주 묻는 질문 (FAQ)
@@ -71,7 +71,7 @@ export default function InquiryPage(): React.ReactElement {
           ))}
         </Accordion>
 
-        <Spacing className="h-20" />
+        <div className="h-20" />
 
         {/* 1:1 문의 섹션 */}
         <div className="flex flex-col items-center text-center">
@@ -100,7 +100,7 @@ export default function InquiryPage(): React.ReactElement {
                 className="flex shrink-0 items-center gap-1 text-blue-600 hover:text-blue-700 transition-colors"
               >
                 <Copy size={16} />
-                <span className="text-sm font-bold">{copied ? '복사됨' : '복사'}</span>
+                <span className="text-xs font-bold">{copied ? '복사됨' : '복사'}</span>
               </button>
             </div>
           </div>

@@ -33,7 +33,7 @@ export default function MyPage(): React.ReactElement {
   });
 
   return (
-    <div className="min-h-screen w-full bg-gray-100 p-4">
+    <div className="min-h-screen w-full bg-white p-4">
       <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)_320px]">
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
@@ -263,7 +263,7 @@ function ChallengeProgressCard({
     <article className="rounded-4 border border-gray-200 bg-white p-4">
       <div className="flex items-start gap-3">
         <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${iconBgClass}`}>
-          <span className="text-xl">{tone === 'orange' ? '🐾' : tone === 'blue' ? '✍️' : '🏃'}</span>
+          <span className="text-lg">{tone === 'orange' ? '🐾' : tone === 'blue' ? '✍️' : '🏃'}</span>
         </div>
         <div className="min-w-0 flex-1">
           <Text size="heading1" weight="bold" className="text-gray-900">

@@ -1,21 +1,16 @@
 import { ChallengeCreateFormValues } from '@feature/challenge/presentation/hooks/use-challenge-create-form';
 import {
-  Button,
   CheckContainer,
+  GoalAddList,
   Text,
-  TextField,
 } from '@1d1s/design-system';
 import { FormControl, FormField, FormItem, FormMessage } from '@component/ui/form';
 import { cn } from '@module/lib/utils';
-import { Flag, Plus, Target, Trash2 } from 'lucide-react';
-import { useFieldArray, useFormContext } from 'react-hook-form';
+import { Flag, Target } from 'lucide-react';
+import { useFormContext } from 'react-hook-form';
 
 export function Step4(): React.ReactElement {
-  const { control, formState } = useFormContext<ChallengeCreateFormValues>();
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'goals',
-  });
+  const { control } = useFormContext<ChallengeCreateFormValues>();
 
   return (
     <div className="mx-auto w-full max-w-[980px] space-y-8">
@@ -103,53 +98,25 @@ export function Step4(): React.ReactElement {
         <Text size="heading1" weight="bold" className="text-gray-900">
           목표 목록
         </Text>
-        <div className="space-y-3">
-          {fields.map((goalField, index) => (
-            <FormField
-              key={goalField.id}
-              control={control}
-              name={`goals.${index}.value`}
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-start gap-2">
-                    <div className="flex-1">
-                      <FormControl>
-                        <TextField placeholder={`목표 ${index + 1}을 입력하세요`} {...field} />
-                      </FormControl>
-                    </div>
-                    <Button
-                      variant="outline"
-                      type="button"
-                      onClick={() => remove(index)}
-                      disabled={fields.length === 1}
-                      className="h-14 w-14 p-0"
-                      aria-label={`목표 ${index + 1} 삭제`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ))}
-        </div>
-
-        {formState.errors.goals?.message ? (
-          <Text size="body2" weight="medium" className="text-red-500">
-            {formState.errors.goals.message}
-          </Text>
-        ) : null}
-
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => append({ value: '' })}
-          className="px-5"
-        >
-          <Plus className="mr-1 h-4 w-4" />
-          목표 추가
-        </Button>
+        <FormField
+          control={control}
+          name="goals"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <GoalAddList
+                  goals={(field.value ?? []).map((goal) => goal.value).filter(Boolean)}
+                  onGoalsChange={(goals) => {
+                    field.onChange(goals.map((goal) => ({ value: goal })));
+                  }}
+                  placeholder="목표를 입력하고 Enter를 눌러 추가하세요"
+                  inputAriaLabel="목표 입력"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
     </div>
   );

@@ -98,7 +98,7 @@ export default function DiaryCreate(): React.ReactElement {
   );
 
   return (
-    <div className="min-h-screen w-full bg-gray-100">
+    <div className="min-h-screen w-full bg-white">
       <div className="mx-auto w-full max-w-[1080px] px-4 py-6 pb-28">
         <div className="flex flex-col gap-1">
           <Text size="display2" weight="bold" className="text-gray-900">

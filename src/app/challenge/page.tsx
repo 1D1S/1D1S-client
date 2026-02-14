@@ -3,7 +3,9 @@
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  Button,
   ChallengeCard,
+  Icon,
   Pagination,
   Text,
   TextField,
@@ -250,17 +252,29 @@ export default function ChallengeList(): React.ReactElement {
           </Text>
         </div>
 
-        <div className="mt-6 max-w-[460px]">
-          <TextField
-            variant="search"
-            className="w-full"
-            placeholder="챌린지 검색 (이름, 설명)"
-            value={query}
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setCurrentPage(1);
-            }}
-          />
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="w-full max-w-[460px]">
+            <TextField
+              variant="search"
+              className="w-full"
+              placeholder="챌린지 검색 (이름, 설명)"
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+          <Button
+            size="medium"
+            onClick={() => router.push('/challenge/create')}
+            className="whitespace-nowrap"
+          >
+            <span className="flex items-center gap-1">
+              <Icon name="Plus" size={16} />
+              새 챌린지 생성
+            </span>
+          </Button>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -283,7 +297,8 @@ export default function ChallengeList(): React.ReactElement {
           ))}
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="challenge-grid-container mt-8">
+          <div className="challenge-card-grid grid grid-cols-1 gap-4">
           {paginatedChallenges.map((challenge) => (
             <div key={challenge.id} className="min-w-0">
               <ChallengeCard
@@ -301,6 +316,7 @@ export default function ChallengeList(): React.ReactElement {
               />
             </div>
           ))}
+          </div>
         </div>
 
         {paginatedChallenges.length === 0 ? (

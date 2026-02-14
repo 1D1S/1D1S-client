@@ -94,7 +94,7 @@ export function useChallengeCreateForm(): ReturnType<typeof useForm<ChallengeCre
       participationType: 'INDIVIDUAL',
       memberCountNumber: '2',
       goalType: 'FIXED',
-      goals: [{ value: '' }],
+      goals: [],
     },
   });
 

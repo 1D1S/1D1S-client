@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { ArrowUpDown } from 'lucide-react';
-import { DiaryCard, Text, Toggle } from '@1d1s/design-system';
+import { DiaryCard, Text } from '@1d1s/design-system';
 
 type DiaryCategory = 'all' | 'dev' | 'exercise' | 'reading' | 'design' | 'diet';
 type SortMode = 'latest' | 'likes';
@@ -22,15 +23,6 @@ interface CommunityDiaryItem {
   challengeLabel: string;
 }
 
-const CATEGORY_OPTIONS: Array<{ key: DiaryCategory; label: string; icon?: string }> = [
-  { key: 'all', label: '전체' },
-  { key: 'dev', label: '개발', icon: '💻' },
-  { key: 'exercise', label: '운동', icon: '💪' },
-  { key: 'reading', label: '독서', icon: '📚' },
-  { key: 'design', label: '디자인', icon: '🎨' },
-  { key: 'diet', label: '식단', icon: '🥗' },
-];
-
 const COMMUNITY_DIARIES: CommunityDiaryItem[] = [
   {
     id: 1,
@@ -42,7 +34,7 @@ const COMMUNITY_DIARIES: CommunityDiaryItem[] = [
     likes: 10,
     percent: 60,
     emotion: 'happy',
-    imageUrl: 'https://picsum.photos/seed/community-dev-1/900/600',
+    imageUrl: '/images/default-card.png',
     challengeLabel: '개발',
   },
   {
@@ -55,7 +47,7 @@ const COMMUNITY_DIARIES: CommunityDiaryItem[] = [
     likes: 7,
     percent: 100,
     emotion: 'happy',
-    imageUrl: 'https://picsum.photos/seed/community-diet-1/900/600',
+    imageUrl: '/images/default-card.png',
     challengeLabel: '식단',
   },
   {
@@ -68,7 +60,7 @@ const COMMUNITY_DIARIES: CommunityDiaryItem[] = [
     likes: 3,
     percent: 30,
     emotion: 'soso',
-    imageUrl: 'https://picsum.photos/seed/community-design-1/900/600',
+    imageUrl: '/images/default-card.png',
     challengeLabel: '디자인',
   },
   {
@@ -81,7 +73,7 @@ const COMMUNITY_DIARIES: CommunityDiaryItem[] = [
     likes: 1,
     percent: 20,
     emotion: 'sad',
-    imageUrl: 'https://picsum.photos/seed/community-reading-1/900/600',
+    imageUrl: '/images/default-card.png',
     challengeLabel: '독서',
   },
   {
@@ -94,7 +86,7 @@ const COMMUNITY_DIARIES: CommunityDiaryItem[] = [
     likes: 2,
     percent: 100,
     emotion: 'happy',
-    imageUrl: 'https://picsum.photos/seed/community-exercise-1/900/600',
+    imageUrl: '/images/default-card.png',
     challengeLabel: '운동',
   },
   {
@@ -107,7 +99,7 @@ const COMMUNITY_DIARIES: CommunityDiaryItem[] = [
     likes: 33,
     percent: 90,
     emotion: 'happy',
-    imageUrl: 'https://picsum.photos/seed/community-dev-2/900/600',
+    imageUrl: '/images/default-card.png',
     challengeLabel: '개발',
   },
   {
@@ -120,7 +112,7 @@ const COMMUNITY_DIARIES: CommunityDiaryItem[] = [
     likes: 14,
     percent: 40,
     emotion: 'happy',
-    imageUrl: 'https://picsum.photos/seed/community-reading-2/900/600',
+    imageUrl: '/images/default-card.png',
     challengeLabel: '독서',
   },
   {
@@ -133,36 +125,22 @@ const COMMUNITY_DIARIES: CommunityDiaryItem[] = [
     likes: 24,
     percent: 100,
     emotion: 'happy',
-    imageUrl: 'https://picsum.photos/seed/community-design-2/900/600',
+    imageUrl: '/images/default-card.png',
     challengeLabel: '일상',
   },
 ];
 
 export default function DiaryList(): React.ReactElement {
   const router = useRouter();
-  const [category, setCategory] = useState<DiaryCategory>('all');
   const [sortMode, setSortMode] = useState<SortMode>('latest');
-
-  const filteredItems = useMemo(() => {
-    const filtered = COMMUNITY_DIARIES.filter(
-      (item) => category === 'all' || item.category === category
-    );
-
-    return [...filtered].sort((leftItem, rightItem) => {
-      if (sortMode === 'likes') {
-        return rightItem.likes - leftItem.likes;
-      }
-      return new Date(rightItem.createdAt).getTime() - new Date(leftItem.createdAt).getTime();
-    });
-  }, [category, sortMode]);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-white p-4">
-      <section className="w-full rounded-3 bg-white p-2">
+      <section className="rounded-3 w-full bg-white p-2">
         <div className="flex items-start justify-between border-b border-gray-200 pb-5">
           <div className="flex flex-col gap-2">
             <Text size="display1" weight="bold" className="text-gray-900">
-              Community Logs
+              일지
             </Text>
             <Text size="body1" weight="regular" className="text-gray-600">
               다른 챌린저의 일지를 보며 동기부여를 얻어보세요
@@ -181,51 +159,31 @@ export default function DiaryList(): React.ReactElement {
           </button>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          {CATEGORY_OPTIONS.map((option) => (
-            <Toggle
-              key={option.key}
-              shape="square"
-              icon={option.icon}
-              pressed={category === option.key}
-              onPressedChange={(pressed) => {
-                if (pressed) {
-                  setCategory(option.key);
-                }
-              }}
-              className="h-10 px-4"
-            >
-              {option.label}
-            </Toggle>
-          ))}
-        </div>
-
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {filteredItems.map((item) => (
-            <DiaryCard
+        <div className="diary-grid-container mt-6">
+          <div className="diary-card-grid grid grid-cols-2 gap-4">
+          {COMMUNITY_DIARIES.map((item) => (
+            <motion.div
               key={item.id}
-              imageUrl={item.imageUrl}
-              percent={item.percent}
-              likes={item.likes}
-              title={item.title}
-              user={item.user}
-              userImage={''}
-              challengeLabel={item.challengeLabel}
-              challengeUrl={''}
-              date={item.date}
-              emotion={item.emotion}
-              onClick={() => router.push(`/diary/${item.id}`)}
-            />
+              layout
+              transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+            >
+              <DiaryCard
+                imageUrl={item.imageUrl}
+                percent={item.percent}
+                likes={item.likes}
+                title={item.title}
+                user={item.user}
+                userImage={'/images/default-profile.png'}
+                challengeLabel={item.challengeLabel}
+                challengeUrl={'/challenge'}
+                date={item.date}
+                emotion={item.emotion}
+                onClick={() => router.push(`/diary/${item.id}`)}
+              />
+            </motion.div>
           ))}
-        </div>
-
-        {filteredItems.length === 0 ? (
-          <div className="flex w-full items-center justify-center py-16">
-            <Text size="body1" weight="medium" className="text-gray-500">
-              조건에 맞는 일지가 없습니다.
-            </Text>
           </div>
-        ) : null}
+        </div>
       </section>
     </div>
   );

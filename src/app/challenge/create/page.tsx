@@ -21,7 +21,7 @@ export default function ChallengeCreate(): React.ReactElement {
   const prev = (): void => setStep((step) => Math.max(step - 1, 1));
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-gray-100">
+    <div className="flex min-h-screen w-full flex-col bg-white">
       <div className="mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-12 pt-10">
         <div className="text-center">
           <Text size="display1" weight="bold" className="text-gray-900">

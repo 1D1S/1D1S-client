@@ -211,7 +211,7 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
   );
 
   return (
-    <div className="min-h-screen w-full bg-gray-100 px-4 py-4">
+    <div className="min-h-screen w-full bg-white px-4 py-4">
       <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-4">
         <section className="rounded-4 border border-gray-200 bg-white p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">

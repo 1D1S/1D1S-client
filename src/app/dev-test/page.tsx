@@ -3,7 +3,6 @@
 // import { Button } from '@/components/odos-ui/button';
 import {
   Text,
-  PageTitle,
   SelectSeparator,
   Select,
   SelectItem,
@@ -36,8 +35,17 @@ export default function DevTest(): React.ReactElement {
       </Text>
 
       {/* Page Title */}
-      <PageTitle title="페이지 타이틀" variant="noSubtitle" />
-      <PageTitle title="페이지 타이틀" variant="withSubtitle" subtitle="페이지 타이틀" />
+      <Text size="display1" weight="bold">
+        페이지 타이틀
+      </Text>
+      <div className="flex flex-col items-center gap-1">
+        <Text size="display1" weight="bold">
+          페이지 타이틀
+        </Text>
+        <Text size="body1" weight="medium" className="text-gray-600">
+          페이지 타이틀
+        </Text>
+      </div>
 
       {/* Buttons */}
       {/*

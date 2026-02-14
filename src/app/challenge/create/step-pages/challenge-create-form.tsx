@@ -84,7 +84,7 @@ export function ChallengeCreateForm({
           {step === 1 ? (
             <div />
           ) : (
-            <Button variant="outline" type="button" onClick={previousStep} className="px-6">
+            <Button variant="ghost" size="small" type="button" onClick={previousStep} className="px-4">
               이전 단계
             </Button>
           )}
@@ -92,10 +92,11 @@ export function ChallengeCreateForm({
           {step < totalSteps ? (
             <Button
               variant="default"
+              size="small"
               type="button"
               onClick={nextStep}
               disabled={!isStepValid}
-              className="px-8"
+              className="px-5"
             >
               다음 단계
             </Button>

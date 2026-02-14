@@ -135,3 +135,83 @@
     }
   }
 }
+
+@layer utilities {
+  /* 디자인 시스템 DiaryCard 이미지 영역 비율 보정 */
+  .aspect-4\/5,
+  [class~='aspect-4/5'] {
+    aspect-ratio: 4 / 5 !important;
+  }
+
+  [class~='aspect-4/5'][class*='w-full'] {
+    min-height: 220px;
+  }
+
+}
+
+/* Diary 페이지 컨테이너 너비 기반 6/4/3/2 컬럼 */
+.diary-grid-container {
+  container-type: inline-size;
+}
+
+/* fallback: grid 유틸리티가 기본 2열을 보장 */
+.diary-card-grid {
+  transition: grid-template-columns 300ms ease-in-out;
+}
+
+@supports (container-type: inline-size) {
+  .diary-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @container (min-width: 640px) {
+    .diary-card-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @container (min-width: 900px) {
+    .diary-card-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @container (min-width: 1200px) {
+    .diary-card-grid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+}
+
+/* Challenge 페이지 컨테이너 너비 기반 4/3/2/1 컬럼 */
+.challenge-grid-container {
+  container-type: inline-size;
+}
+
+.challenge-card-grid {
+  transition: grid-template-columns 280ms ease-in-out;
+}
+
+@supports (container-type: inline-size) {
+  .challenge-card-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  @container (min-width: 760px) {
+    .challenge-card-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @container (min-width: 1060px) {
+    .challenge-card-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @container (min-width: 1380px) {
+    .challenge-card-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+}

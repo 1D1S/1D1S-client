@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   PageWatermark,
   Text,
-  Spacing,
   DatePicker,
 } from '@1d1s/design-system';
 import { cn } from '@module/lib/utils';
@@ -80,7 +79,7 @@ export default function BottomExpandablePanel(): React.ReactElement {
                 </Text>
                 <MoodToggle selected={mood} onSelect={setMood} />
 
-                <Spacing className="h-24" />
+                <div className="h-24" />
               </div>
             </motion.div>
           )}
