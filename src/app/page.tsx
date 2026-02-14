@@ -4,75 +4,17 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import {
   BannerCarousel,
-  type BannerCarouselItem,
   Text,
   PageWatermark,
   DiaryCard,
   ChallengeCard,
   InfoButton,
 } from '@1d1s/design-system';
-
-interface MainBannerItem extends BannerCarouselItem {
-  href: string;
-}
-
-const RANDOM_DIARY_ITEMS = Array.from({ length: 12 }).map((_, index) => ({
-  id: index + 1,
-  imageUrl: '/images/default-card.png',
-  percent: [60, 100, 30, 85, 42, 70, 90, 55, 76, 64, 33, 88][index],
-  likes: [10, 24, 5, 18, 11, 9, 17, 8, 21, 6, 4, 14][index],
-  title: [
-    '고라니 밥주기 3일차 성공!',
-    '오늘의 목표 전부 달성!',
-    '아직 갈 길이 멀다',
-    '매일 매일 조금씩 성장',
-    '오늘도 인증 성공, 내일도 이어간다',
-    '한 챕터 정리 완료, 조금씩 쌓이는 중',
-    '아침 러닝 5km 인증 완료',
-    '오늘도 물 2L 달성!',
-    'UI 시안 2개 완성',
-    '독서 메모 10줄 작성',
-    '프로틴 식단 지키기 성공',
-    '알고리즘 난이도 업 도전',
-  ][index],
-  user: ['고라니', '개발자킴', '디자이너리', '성실맨', '러닝조아', '북러버'][index % 6],
-  userImage: '/images/default-profile.png',
-  challengeLabel: [
-    '고라니 챌린지',
-    '알고리즘 챌린지',
-    'UI 디자인 챌린지',
-    '독서 챌린지',
-    '아침 운동 챌린지',
-    '독서 루틴 챌린지',
-  ][index % 6],
-  challengeUrl: '/diary',
-  date: '2025.03.05',
-  emotion: (['happy', 'happy', 'soso', 'happy', 'happy', 'soso'] as const)[index % 6],
-}));
-
-const MAIN_BANNERS: MainBannerItem[] = [
-  {
-    id: 'popular-challenge',
-    type: '이번 주 추천',
-    title: '지금 인기 챌린지 보러가기',
-    subtitle: '가장 많이 참여 중인 챌린지를 확인해보세요.',
-    href: '/challenge',
-  },
-  {
-    id: 'community-diary',
-    type: '커뮤니티 인기',
-    title: '오늘의 커뮤니티 일지 보기',
-    subtitle: '다른 챌린저들의 기록에서 동기를 받아보세요.',
-    href: '/diary',
-  },
-  {
-    id: 'challenge-create',
-    type: '빠른 시작',
-    title: '새 챌린지 만들기',
-    subtitle: '지금 바로 목표를 정하고 챌린지를 시작해보세요.',
-    href: '/challenge/create',
-  },
-];
+import {
+  HOME_MAIN_BANNERS,
+  HOME_RANDOM_CHALLENGE_ITEMS,
+  HOME_RANDOM_DIARY_ITEMS,
+} from '@constants/consts/home-data';
 
 function SectionHeader({
   title,
@@ -110,13 +52,13 @@ export default function MainPage(): React.ReactElement {
         {/* 메인 배너 영역 */}
         <div className="w-full px-4">
           <BannerCarousel
-            items={MAIN_BANNERS}
+            items={HOME_MAIN_BANNERS}
             autoSlideIntervalMs={5000}
             enableLoop
             showIndicators
             aspectRatioClassName="aspect-[4/1]"
             onItemClick={(_, index) => {
-              const route = MAIN_BANNERS[index]?.href;
+              const route = HOME_MAIN_BANNERS[index]?.href;
 
               if (route) {
                 router.push(route);
@@ -130,7 +72,7 @@ export default function MainPage(): React.ReactElement {
         {/* 버튼 영역 */}
         <div className="w-full px-4">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-            <div className="h-[200px] min-h-[200px] max-h-[200px]">
+            <div className="h-[200px] max-h-[200px] min-h-[200px]">
               <InfoButton
                 mainText={'1D1S가 처음이신가요?'}
                 subText={'온보딩'}
@@ -142,7 +84,7 @@ export default function MainPage(): React.ReactElement {
               />
             </div>
 
-            <div className="h-[200px] min-h-[200px] max-h-[200px]">
+            <div className="h-[200px] max-h-[200px] min-h-[200px]">
               <InfoButton
                 mainText={'불편한 점이 있으신가요?'}
                 subText={'문의'}
@@ -154,7 +96,7 @@ export default function MainPage(): React.ReactElement {
               />
             </div>
 
-            <div className="h-[200px] min-h-[200px] max-h-[200px]">
+            <div className="h-[200px] max-h-[200px] min-h-[200px]">
               <InfoButton
                 mainText={'새로운 목표를 시작해보세요'}
                 subText={'챌린지 생성'}
@@ -174,16 +116,16 @@ export default function MainPage(): React.ReactElement {
         <SectionHeader title="랜덤 챌린지" subtitle="챌린지에 참여하고 목표를 달성해봐요." />
         <div className="h-4" />
         <div className="grid grid-cols-1 gap-3 px-4 pb-4 lg:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="min-w-0">
+          {HOME_RANDOM_CHALLENGE_ITEMS.map((challenge) => (
+            <div key={challenge.id} className="min-w-0">
               <ChallengeCard
-                challengeTitle="챌린지 제목"
-                challengeType="고정목표형"
-                currentUserCount={12}
-                maxUserCount={20}
-                startDate="2023-10-01"
-                endDate="2023-10-31"
-                isOngoing={i === 0}
+                challengeTitle={challenge.challengeTitle}
+                challengeType={challenge.challengeType}
+                currentUserCount={challenge.currentUserCount}
+                maxUserCount={challenge.maxUserCount}
+                startDate={challenge.startDate}
+                endDate={challenge.endDate}
+                isOngoing={challenge.isOngoing}
               />
             </div>
           ))}
@@ -196,7 +138,7 @@ export default function MainPage(): React.ReactElement {
         <div className="h-4" />
         <div className="diary-grid-container px-4 pb-4">
           <div className="diary-card-grid grid grid-cols-2 gap-3">
-            {RANDOM_DIARY_ITEMS.map((item) => (
+            {HOME_RANDOM_DIARY_ITEMS.map((item) => (
               <div key={item.id} className="min-w-0 self-start">
                 <DiaryCard
                   imageUrl={item.imageUrl}

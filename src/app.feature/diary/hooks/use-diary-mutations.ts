@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient, UseMutationResult } from '@tanstack/react-query';
-import { diaryApi } from '../data/api';
+import { diaryApi } from '../api/diary-api';
 import {
   CreateDiaryRequest,
   CreateDiaryResponse,
@@ -8,8 +8,8 @@ import {
   CreateDiaryReportRequest,
   UploadImageResponse,
   UploadImagesResponse,
-} from '../data/types';
-import { DIARY_QUERY_KEYS } from './use-diary-queries';
+} from '../type/diary';
+import { DIARY_QUERY_KEYS } from '../const/query-keys';
 
 // 다이어리 생성하기
 export function useCreateDiary(): UseMutationResult<

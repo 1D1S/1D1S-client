@@ -1,13 +1,13 @@
 import { useMutation, useQueryClient, UseMutationResult } from '@tanstack/react-query';
-import { authApi } from '../data/api';
+import { authApi } from '../api/auth-api';
 import {
   RefreshTokenResponse,
   SignUpInfoRequest,
   SignUpInfoResponse,
   SignUpInfoWithFileRequest,
   LogoutResponse,
-} from '../data/types';
-import { AUTH_QUERY_KEYS } from './use-auth-queries';
+} from '../type/auth';
+import { AUTH_QUERY_KEYS } from '../const/query-keys';
 import { authStorage } from '@module/utils/auth';
 
 // 토큰 갱신

@@ -4,24 +4,16 @@ import {
   UseQueryResult,
   UseInfiniteQueryResult,
 } from '@tanstack/react-query';
-import { diaryApi } from '../data/api';
+import { diaryApi } from '../api/diary-api';
 import {
   DiaryListParams,
   RandomDiaryParams,
   DiaryDetail,
   DiaryItem,
   DiaryListResponse,
-} from '../data/types';
-
-export const DIARY_QUERY_KEYS = {
-  all: ['diaries'] as const,
-  lists: () => [...DIARY_QUERY_KEYS.all, 'list'] as const,
-  list: (params: DiaryListParams) => [...DIARY_QUERY_KEYS.lists(), params] as const,
-  details: () => [...DIARY_QUERY_KEYS.all, 'detail'] as const,
-  detail: (id: number) => [...DIARY_QUERY_KEYS.details(), id] as const,
-  random: (params: RandomDiaryParams) => [...DIARY_QUERY_KEYS.all, 'random', params] as const,
-  allDiaries: () => [...DIARY_QUERY_KEYS.all, 'all'] as const,
-};
+} from '../type/diary';
+import { DIARY_QUERY_KEYS } from '../const/query-keys';
+export { DIARY_QUERY_KEYS } from '../const/query-keys';
 
 // 다이어리 상세 조회
 export function useDiaryDetail(diaryId: number): UseQueryResult<DiaryDetail, Error> {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChallengeDetailContent } from './challenge-detail-content';
+import { ChallengeDetailContent } from '@feature/challenge/detail/screen/challenge-detail-screen';
 
 interface ChallengeDetailProps {
   params: Promise<{ id: string }>;

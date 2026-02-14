@@ -17,20 +17,19 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import {
+  buildMyPageStreakData,
+  MY_PAGE_CHALLENGE_PROGRESS_ITEMS,
+  MY_PAGE_FRIEND_ITEMS,
+  MY_PAGE_FRIEND_REQUEST_ITEMS,
+  MY_PAGE_PROFILE_DATA,
+  MY_PAGE_STAT_ITEMS,
+} from '@constants/consts/mypage-data';
+import type { MyPageStatIconType } from '@constants/consts/mypage-data';
 
 export default function MyPage(): React.ReactElement {
   const router = useRouter();
-
-  const streakData = Array.from({ length: 364 }).map((_, index) => {
-    const activityLevel = (index * 11 + 7) % 8;
-    const count = activityLevel <= 1 ? 0 : activityLevel <= 3 ? 1 : activityLevel <= 5 ? 3 : 6;
-
-    const baseDate = new Date(2025, 0, 1);
-    baseDate.setDate(baseDate.getDate() + index);
-    const date = baseDate.toISOString().slice(0, 10);
-
-    return { date, count };
-  });
+  const streakData = buildMyPageStreakData();
 
   return (
     <div className="min-h-screen w-full bg-white p-4">
@@ -47,27 +46,16 @@ export default function MyPage(): React.ReactElement {
             </button>
           </div>
 
-          <ChallengeProgressCard
-            title="고라니 밥주기"
-            dday="D-15"
-            progress={60}
-            countText="12/20명 참여"
-            tone="orange"
-          />
-          <ChallengeProgressCard
-            title="매일 일기 쓰기"
-            dday="D-25"
-            progress={80}
-            countText="8/10명 참여"
-            tone="blue"
-          />
-          <ChallengeProgressCard
-            title="아침 운동 인증"
-            dday="종료됨"
-            progress={100}
-            countText="24/30명 참여"
-            tone="gray"
-          />
+          {MY_PAGE_CHALLENGE_PROGRESS_ITEMS.map((item) => (
+            <ChallengeProgressCard
+              key={item.title}
+              title={item.title}
+              dday={item.dday}
+              progress={item.progress}
+              countText={item.countText}
+              tone={item.tone}
+            />
+          ))}
         </div>
 
         <main className="space-y-4">
@@ -87,13 +75,16 @@ export default function MyPage(): React.ReactElement {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <StatCard icon={<Flame className="h-4 w-4" />} title="현재 일지 스트릭" value="12" unit="일" />
-              <StatCard icon={<Trophy className="h-4 w-4" />} title="일지 최장 스트릭" value="42" unit="일" />
-              <StatCard icon={<Trophy className="h-4 w-4" />} title="목표 최장 스트릭" value="30" unit="일" />
-              <StatCard icon={<Flag className="h-4 w-4" />} title="참여한 모든 챌린지" value="15" unit="개" iconTone="text-blue-600" />
-              <StatCard icon={<CheckCircle2 className="h-4 w-4" />} title="완료한 단기 챌린지" value="8" unit="개" iconTone="text-emerald-600" />
-              <StatCard icon={<FileText className="h-4 w-4" />} title="작성한 전체 일지" value="156" unit="개" iconTone="text-purple-600" />
-              <StatCard icon={<Target className="h-4 w-4" />} title="완료한 전체 목표" value="320" unit="개" iconTone="text-pink-600" />
+              {MY_PAGE_STAT_ITEMS.map((item) => (
+                <StatCard
+                  key={item.title}
+                  icon={getMyPageStatIcon(item.icon)}
+                  title={item.title}
+                  value={item.value}
+                  unit={item.unit}
+                  iconTone={item.iconTone}
+                />
+              ))}
             </div>
           </section>
 
@@ -129,41 +120,40 @@ export default function MyPage(): React.ReactElement {
                     친구 요청 리스트
                   </Text>
                   <Text size="body1" weight="bold" className="text-gray-700">
-                    1건
+                    {MY_PAGE_FRIEND_REQUEST_ITEMS.length}건
                   </Text>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <CircleAvatar
-                      imageUrl="https://picsum.photos/seed/friend-request/80/80"
-                      size="md"
-                    />
-                    <div>
-                      <Text size="heading2" weight="bold" className="text-gray-900">
-                        DesignKing
-                      </Text>
-                      <Text size="body2" weight="regular" className="text-gray-600">
-                        함께 챌린지 해요!
-                      </Text>
+                {MY_PAGE_FRIEND_REQUEST_ITEMS.map((item) => (
+                  <div key={item.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <CircleAvatar imageUrl={item.imageUrl} size="md" />
+                      <div>
+                        <Text size="heading2" weight="bold" className="text-gray-900">
+                          {item.name}
+                        </Text>
+                        <Text size="body2" weight="regular" className="text-gray-600">
+                          {item.message}
+                        </Text>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-main-200 text-main-800"
+                        aria-label="친구 요청 수락"
+                      >
+                        <Check className="h-5 w-5" />
+                      </button>
+                      <button
+                        type="button"
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-gray-500"
+                        aria-label="친구 요청 거절"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-main-200 text-main-800"
-                      aria-label="친구 요청 수락"
-                    >
-                      <Check className="h-5 w-5" />
-                    </button>
-                    <button
-                      type="button"
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-gray-500"
-                      aria-label="친구 요청 거절"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
+                ))}
               </div>
 
               <div className="rounded-4 border border-gray-200 bg-white p-4">
@@ -179,8 +169,14 @@ export default function MyPage(): React.ReactElement {
                 </div>
 
                 <div className="space-y-3">
-                  <FriendRow name="HealthLover" status="🔥 연속 11일 활동" imageSeed="friend-health" />
-                  <FriendRow name="DevMaster" status="10분 전 활동" imageSeed="friend-dev" />
+                  {MY_PAGE_FRIEND_ITEMS.map((friend) => (
+                    <FriendRow
+                      key={friend.name}
+                      name={friend.name}
+                      status={friend.status}
+                      imageSeed={friend.imageSeed}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
@@ -190,15 +186,15 @@ export default function MyPage(): React.ReactElement {
         <aside className="space-y-4">
           <section className="rounded-4 border border-gray-200 bg-white p-5 text-center">
             <div className="mx-auto mb-3 flex h-[120px] w-[120px] items-center justify-center rounded-full border-4 border-main-800/20 bg-main-200">
-              <CircleAvatar imageUrl="https://picsum.photos/seed/mypage-user/200/200" size="xl" />
+              <CircleAvatar imageUrl={MY_PAGE_PROFILE_DATA.imageUrl} size="xl" />
             </div>
             <Text size="display2" weight="bold" className="text-gray-900">
-              닉네임
+              {MY_PAGE_PROFILE_DATA.nickname}
             </Text>
             <div className="mt-2 flex items-center justify-center gap-1 text-gray-600">
               <Users className="h-4 w-4" />
               <Text size="body2" weight="medium">
-                친구 24명
+                친구 {MY_PAGE_PROFILE_DATA.friendCount}명
               </Text>
             </div>
             <button
@@ -234,6 +230,25 @@ export default function MyPage(): React.ReactElement {
       </div>
     </div>
   );
+}
+
+function getMyPageStatIcon(iconType: MyPageStatIconType): React.ReactElement {
+  if (iconType === 'flame') {
+    return <Flame className="h-4 w-4" />;
+  }
+  if (iconType === 'trophy') {
+    return <Trophy className="h-4 w-4" />;
+  }
+  if (iconType === 'flag') {
+    return <Flag className="h-4 w-4" />;
+  }
+  if (iconType === 'check-circle') {
+    return <CheckCircle2 className="h-4 w-4" />;
+  }
+  if (iconType === 'file-text') {
+    return <FileText className="h-4 w-4" />;
+  }
+  return <Target className="h-4 w-4" />;
 }
 
 function ChallengeProgressCard({

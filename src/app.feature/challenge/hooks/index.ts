@@ -3,8 +3,8 @@ export {
   useRandomChallenges,
   useChallengeList,
   useMemberChallenges,
-  CHALLENGE_QUERY_KEYS,
-} from './use-challenge-queries';
+} from '../board/hooks/use-challenge-queries';
+export { CHALLENGE_QUERY_KEYS } from '../board/const/query-keys';
 
 export {
   useCreateChallenge,
@@ -14,4 +14,4 @@ export {
   useLeaveChallenge,
   useLikeChallenge,
   useUnlikeChallenge,
-} from './use-challenge-mutations';
+} from '../detail/hooks/use-challenge-mutations';

@@ -2,16 +2,13 @@ import {
   useQuery,
   UseQueryResult,
 } from '@tanstack/react-query';
-import { authApi } from '../data/api';
+import { authApi } from '../api/auth-api';
 import {
   SocialLoginResponse,
   OAuthProvider,
-} from '../data/types';
-
-export const AUTH_QUERY_KEYS = {
-  all: ['auth'] as const,
-  socialLogin: (provider: OAuthProvider) => [...AUTH_QUERY_KEYS.all, 'socialLogin', provider] as const,
-};
+} from '../type/auth';
+import { AUTH_QUERY_KEYS } from '../const/query-keys';
+export { AUTH_QUERY_KEYS } from '../const/query-keys';
 
 // 소셜 로그인 결과 조회
 export function useSocialLoginResult(

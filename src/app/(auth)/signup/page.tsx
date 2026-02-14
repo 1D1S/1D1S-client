@@ -1,7 +1,7 @@
 'use client';
 
-import { SignUpForm } from '@feature/auth/presentation/components/sign-up-form';
+import { SignUpScreen } from '@feature/auth/screen/sign-up-screen';
 
 export default function SignUpPage(): React.ReactElement {
-  return <SignUpForm />;
+  return <SignUpScreen />;
 }
