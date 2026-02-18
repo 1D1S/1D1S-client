@@ -1,10 +1,5 @@
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
-import {
-  CheckContainer,
-  DatePicker,
-  Text,
-  TextField,
-} from '@1d1s/design-system';
+import { CheckContainer, DatePicker, Text, TextField } from '@1d1s/design-system';
 import { FormControl, FormField, FormItem, FormMessage } from '@component/ui/form';
 import { cn } from '@module/lib/utils';
 import { CalendarDays, Infinity, Timer } from 'lucide-react';
@@ -26,7 +21,7 @@ export function Step2(): React.ReactElement {
 
   return (
     <div className="mx-auto w-full max-w-[980px] space-y-8">
-      <div className="space-y-3">
+      <div className="flex flex-col gap-2 space-y-3">
         <Text size="heading1" weight="bold" className="text-gray-900">
           기간 유형
         </Text>
@@ -46,7 +41,7 @@ export function Step2(): React.ReactElement {
                   width="100%"
                   height={176}
                   className={cn(
-                    '!items-start !justify-start !rounded-3 p-6 text-left',
+                    '!rounded-3 !items-start !justify-start p-6 text-left',
                     field.value === 'ENDLESS'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
@@ -57,11 +52,11 @@ export function Step2(): React.ReactElement {
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                       <Infinity className="h-5 w-5" />
                     </span>
-                    <div>
+                    <div className="flex flex-col">
                       <Text size="heading1" weight="bold" className="text-gray-900">
                         무기한 챌린지
                       </Text>
-                      <Text size="body2" weight="regular" className="mt-2 text-gray-600">
+                      <Text size="caption1" weight="regular" className="mt-2 text-gray-600">
                         종료일 없이 루틴을 이어가는 장기 챌린지입니다.
                       </Text>
                     </div>
@@ -78,7 +73,7 @@ export function Step2(): React.ReactElement {
                   width="100%"
                   height={176}
                   className={cn(
-                    '!items-start !justify-start !rounded-3 p-6 text-left',
+                    '!rounded-3 !items-start !justify-start p-6 text-left',
                     field.value === 'LIMITED'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
@@ -89,11 +84,11 @@ export function Step2(): React.ReactElement {
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                       <Timer className="h-5 w-5" />
                     </span>
-                    <div>
+                    <div className="flex flex-col">
                       <Text size="heading1" weight="bold" className="text-gray-900">
                         기간 챌린지
                       </Text>
-                      <Text size="body2" weight="regular" className="mt-2 text-gray-600">
+                      <Text size="caption1" weight="regular" className="mt-2 text-gray-600">
                         시작일과 종료일을 정해 집중적으로 진행합니다.
                       </Text>
                     </div>
@@ -108,7 +103,7 @@ export function Step2(): React.ReactElement {
 
       {periodType === 'LIMITED' ? (
         <>
-          <div className="space-y-3">
+          <div className="flex flex-col space-y-3">
             <Text size="heading1" weight="bold" className="text-gray-900">
               챌린지 기간
             </Text>
@@ -158,7 +153,7 @@ export function Step2(): React.ReactElement {
           </div>
 
           {period === 'etc' ? (
-            <div className="space-y-2">
+            <div className="flex flex-col space-y-2">
               <Text size="body1" weight="medium" className="text-gray-700">
                 직접 입력 (최대 730일)
               </Text>
@@ -182,7 +177,7 @@ export function Step2(): React.ReactElement {
             </div>
           ) : null}
 
-          <div className="space-y-3">
+          <div className="flex flex-col space-y-3">
             <Text size="heading1" weight="bold" className="text-gray-900">
               시작일
             </Text>

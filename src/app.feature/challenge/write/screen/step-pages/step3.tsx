@@ -24,7 +24,7 @@ export function Step3(): React.ReactElement {
 
   return (
     <div className="mx-auto w-full max-w-[980px] space-y-8">
-      <div className="space-y-3">
+      <div className="flex flex-col space-y-3">
         <Text size="heading1" weight="bold" className="text-gray-900">
           챌린지 형태
         </Text>
@@ -44,7 +44,7 @@ export function Step3(): React.ReactElement {
                   width="100%"
                   height={176}
                   className={cn(
-                    '!items-start !justify-start !rounded-3 p-6 text-left',
+                    '!rounded-3 !items-start !justify-start p-6 text-left',
                     field.value === 'INDIVIDUAL'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
@@ -55,11 +55,11 @@ export function Step3(): React.ReactElement {
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                       <User className="h-5 w-5" />
                     </span>
-                    <div>
+                    <div className="flex flex-col">
                       <Text size="heading1" weight="bold" className="text-gray-900">
                         개인 챌린지
                       </Text>
-                      <Text size="body2" weight="regular" className="mt-2 text-gray-600">
+                      <Text size="caption1" weight="regular" className="mt-2 text-gray-600">
                         혼자 진행하는 챌린지입니다.
                       </Text>
                     </div>
@@ -76,7 +76,7 @@ export function Step3(): React.ReactElement {
                   width="100%"
                   height={176}
                   className={cn(
-                    '!items-start !justify-start !rounded-3 p-6 text-left',
+                    '!rounded-3 !items-start !justify-start p-6 text-left',
                     field.value === 'GROUP'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
@@ -87,11 +87,11 @@ export function Step3(): React.ReactElement {
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                       <Users className="h-5 w-5" />
                     </span>
-                    <div>
+                    <div className="flex flex-col">
                       <Text size="heading1" weight="bold" className="text-gray-900">
                         단체 챌린지
                       </Text>
-                      <Text size="body2" weight="regular" className="mt-2 text-gray-600">
+                      <Text size="caption1" weight="regular" className="mt-2 text-gray-600">
                         다른 참여자와 함께 목표를 달성합니다.
                       </Text>
                     </div>
@@ -106,7 +106,7 @@ export function Step3(): React.ReactElement {
 
       {participationType === 'GROUP' ? (
         <>
-          <div className="space-y-3">
+          <div className="flex flex-col space-y-3">
             <Text size="heading1" weight="bold" className="text-gray-900">
               최대 참여 인원
             </Text>
@@ -138,7 +138,7 @@ export function Step3(): React.ReactElement {
           </div>
 
           {memberCount === 'etc' ? (
-            <div className="space-y-2">
+            <div className="flex flex-col space-y-2">
               <Text size="body1" weight="medium" className="text-gray-700">
                 직접 입력 (최대 50명)
               </Text>
@@ -164,7 +164,7 @@ export function Step3(): React.ReactElement {
 
           <div className="rounded-2xl border border-gray-200 bg-gray-100 px-4 py-4">
             <div className="flex items-center justify-between gap-3">
-              <div>
+              <div className='flex items-center gap-3'>
                 <Text size="body1" weight="bold" className="text-gray-800">
                   중도 참여 수용 <span className="text-gray-500">(선택)</span>
                 </Text>
