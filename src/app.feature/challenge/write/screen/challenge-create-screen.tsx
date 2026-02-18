@@ -23,7 +23,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
   return (
     <div className="flex min-h-screen w-full flex-col bg-white">
       <div className="mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-12 pt-10">
-        <div className="text-center">
+        <div className="flex flex-col text-center">
           <Text size="display1" weight="bold" className="text-gray-900">
             챌린지 생성
           </Text>

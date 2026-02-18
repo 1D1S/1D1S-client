@@ -69,7 +69,7 @@ export function ChallengeCreateForm({
       className="mt-8 w-full"
     >
       <section className="rounded-4 border border-gray-200 bg-white p-8 md:p-10">
-        <div className="text-center">
+        <div className="flex flex-col text-center">
           <Text size="display2" weight="bold" className="text-gray-900">
             {stepHeader[step].title}
           </Text>
