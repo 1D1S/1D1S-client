@@ -9,6 +9,9 @@ import { Step4 } from './step-pages/step4';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useStepValidation } from '@feature/challenge/write/hooks/use-step-validation';
+import { useCreateChallenge } from '../../hooks';
+import { ChallengeCategory, CreateChallengeRequest } from '../../board/type/challenge';
+import { add } from 'date-fns';
 
 export function ChallengeCreateForm({
   step,
@@ -57,17 +60,41 @@ export function ChallengeCreateForm({
 
   const form = useFormContext<ChallengeCreateFormValues>();
   const isStepValid = useStepValidation(step);
+  const createChallenge = useCreateChallenge();
+
+  const formatFormValues = (values: ChallengeCreateFormValues): CreateChallengeRequest => ({
+    title: values.title,
+    // 'BOOK' 카테고리 싱크가 맞지 않음
+    category: values.category as ChallengeCategory,
+    description: values.description!,
+    startDate: values.startDate!.toISOString(),
+    // periodType === 'ENDLESS'일 때는 어떻게 대응해야 하는가
+    // period 값이 있는 지를 확인하고, periodNumber로 대응되도록 해야 함
+    endDate: add(values.startDate!, { days: Number(values.periodNumber) }).toISOString(),
+    maxParticipantCnt: Number(
+      values.memberCount === 'etc' ? values.memberCountNumber : values.memberCount
+    ),
+    // 싱크가 맞지 않는 부분 존재
+    challengeType: values.goalType,
+    goals: values.goals.map((goal) => goal.value),
+  });
 
   const onSubmit = (values: ChallengeCreateFormValues): void => {
-    console.log('Form submitted with values:', values);
+    console.log('폼 값:', values);
+    // API 호출
+    createChallenge.mutate(formatFormValues(values), {
+      onSuccess: (data) => {
+        console.log('createChallenge 성공:', data);
+      },
+      onError: (error) => {
+        console.error('createChallenge 실패:', error);
+      },
+    });
     setIsSuccessOpen(true);
   };
 
   return (
-    <form
-      onSubmit={form.handleSubmit(onSubmit)}
-      className="mt-8 w-full"
-    >
+    <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 w-full">
       <section className="rounded-4 border border-gray-200 bg-white p-8 md:p-10">
         <div className="flex flex-col text-center">
           <Text size="display2" weight="bold" className="text-gray-900">
@@ -84,7 +111,13 @@ export function ChallengeCreateForm({
           {step === 1 ? (
             <div />
           ) : (
-            <Button variant="ghost" size="small" type="button" onClick={previousStep} className="px-4">
+            <Button
+              variant="ghost"
+              size="small"
+              type="button"
+              onClick={previousStep}
+              className="px-4"
+            >
               이전 단계
             </Button>
           )}
