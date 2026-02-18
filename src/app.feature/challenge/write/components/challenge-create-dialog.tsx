@@ -41,14 +41,14 @@ export function ChallengeCreateDialog({
           </DialogTitle>
         </DialogHeader>
         {/* 챌린지 정보 요약 */}
-        <div className="h-[1px] w-full bg-gray-300" />
+        <div className="h-[1px] w-full bg-gray-300 my-4" />
         <Text size="heading2" weight="medium" className="text-gray-500">
           미리 보기
         </Text>
 
         <ChallengeCreateDialogContent />
 
-        <div className="h-[1px] w-full bg-gray-300" />
+        <div className="h-[1px] w-full bg-gray-300 my-4" />
 
         {/* 챌린지 생성 확인 메시지 Footer */}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
