@@ -6,6 +6,9 @@ import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
 import tseslint from 'typescript-eslint';
 
 const eslintConfig = [
+  {
+    ignores: ['dev-server.js'],
+  },
   ...nextConfig,
   ...tseslint.configs.recommended,
   prettierConfig,
