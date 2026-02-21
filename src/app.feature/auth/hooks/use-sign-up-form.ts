@@ -1,7 +1,7 @@
 'use client';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 const GENDER_VALUES = ['MALE', 'FEMALE', 'OTHER'] as const;
 const OCCUPATION_VALUES = [
@@ -13,7 +13,15 @@ const OCCUPATION_VALUES = [
   'JOB_SEEKER',
   'OTHER',
 ] as const;
-const TOPIC_VALUES = ['DEV', 'EXERCISE', 'BOOK', 'MUSIC', 'STUDY', 'LEISURE', 'ECONOMY'] as const;
+const TOPIC_VALUES = [
+  'DEV',
+  'EXERCISE',
+  'BOOK',
+  'MUSIC',
+  'STUDY',
+  'LEISURE',
+  'ECONOMY',
+] as const;
 
 export const signupFormSchema = z.object({
   fullName: z

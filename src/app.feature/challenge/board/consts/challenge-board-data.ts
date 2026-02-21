@@ -1,4 +1,10 @@
-export type ChallengeCategory = 'all' | 'development' | 'exercise' | 'reading' | 'design' | 'diet';
+export type ChallengeCategory =
+  | 'all'
+  | 'development'
+  | 'exercise'
+  | 'reading'
+  | 'design'
+  | 'diet';
 export type ChallengeStatus = 'recruiting' | 'closingSoon' | 'ended';
 
 export interface ChallengeItem {
@@ -176,7 +182,9 @@ export const CHALLENGE_BOARD_LIST: ChallengeItem[] = [
   },
 ];
 
-export function getChallengeCategoryLabel(category: ChallengeItem['category']): string {
+export function getChallengeCategoryLabel(
+  category: ChallengeItem['category']
+): string {
   if (category === 'development') {
     return '개발';
   }

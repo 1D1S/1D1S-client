@@ -42,10 +42,20 @@ export interface MyPageProfileData {
   imageUrl: string;
 }
 
-export function buildMyPageStreakData(): Array<{ date: string; count: number }> {
+export function buildMyPageStreakData(): Array<{
+  date: string;
+  count: number;
+}> {
   return Array.from({ length: 364 }).map((_, index) => {
     const activityLevel = (index * 11 + 7) % 8;
-    const count = activityLevel <= 1 ? 0 : activityLevel <= 3 ? 1 : activityLevel <= 5 ? 3 : 6;
+    const count =
+      activityLevel <= 1
+        ? 0
+        : activityLevel <= 3
+          ? 1
+          : activityLevel <= 5
+            ? 3
+            : 6;
 
     const baseDate = new Date(2025, 0, 1);
     baseDate.setDate(baseDate.getDate() + index);
@@ -122,7 +132,11 @@ export const MY_PAGE_FRIEND_REQUEST_ITEMS: MyPageFriendRequestItem[] = [
 ];
 
 export const MY_PAGE_FRIEND_ITEMS: MyPageFriendItem[] = [
-  { name: 'HealthLover', status: '🔥 연속 11일 활동', imageSeed: 'friend-health' },
+  {
+    name: 'HealthLover',
+    status: '🔥 연속 11일 활동',
+    imageSeed: 'friend-health',
+  },
   { name: 'DevMaster', status: '10분 전 활동', imageSeed: 'friend-dev' },
 ];
 

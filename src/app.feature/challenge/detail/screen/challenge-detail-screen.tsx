@@ -1,7 +1,5 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import {
   Button,
   CircularProgress,
@@ -22,6 +20,9 @@ import {
   Settings,
   UserRound,
 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import React, { useMemo, useState } from 'react';
+
 import {
   CHALLENGE_DETAIL_PARTICIPANTS,
   CHALLENGE_DETAIL_PENDING_MEMBERS,
@@ -29,22 +30,30 @@ import {
   CHALLENGE_DETAIL_WEEK_LABELS,
 } from '../consts/challenge-detail-data';
 
-interface ChallengeDetailContentProps {
+interface ChallengeDetailScreenProps {
   id: string;
 }
 
 type UserRole = 'host' | 'participant';
 
 function getMonthLabel(monthDate: Date): string {
-  return new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long' }).format(monthDate);
+  return new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+  }).format(monthDate);
 }
 
-function getActivityBars(dayOfMonth: number): Array<{ width: string; tone: 'main' | 'soft' }> {
+function getActivityBars(
+  dayOfMonth: number
+): Array<{ width: string; tone: 'main' | 'soft' }> {
   if (dayOfMonth % 6 === 0) {
     return [{ width: '82%', tone: 'main' }];
   }
   if (dayOfMonth % 4 === 0) {
-    return [{ width: '72%', tone: 'main' }, { width: '54%', tone: 'soft' }];
+    return [
+      { width: '72%', tone: 'main' },
+      { width: '54%', tone: 'soft' },
+    ];
   }
   if (dayOfMonth % 3 === 0) {
     return [{ width: '68%', tone: 'soft' }];
@@ -52,7 +61,10 @@ function getActivityBars(dayOfMonth: number): Array<{ width: string; tone: 'main
   return [];
 }
 
-function buildCalendarRows(baseMonth: Date, userRole: UserRole): ScheduleCalendarCell[][] {
+function buildCalendarRows(
+  baseMonth: Date,
+  userRole: UserRole
+): ScheduleCalendarCell[][] {
   const year = baseMonth.getFullYear();
   const month = baseMonth.getMonth();
   const firstWeekday = new Date(year, month, 1).getDay();
@@ -62,7 +74,8 @@ function buildCalendarRows(baseMonth: Date, userRole: UserRole): ScheduleCalenda
 
   for (let cellIndex = 0; cellIndex < 42; cellIndex += 1) {
     if (cellIndex < firstWeekday) {
-      const previousMonthDay = daysInPreviousMonth - firstWeekday + cellIndex + 1;
+      const previousMonthDay =
+        daysInPreviousMonth - firstWeekday + cellIndex + 1;
       calendarCells.push({
         day: previousMonthDay,
         muted: true,
@@ -81,7 +94,8 @@ function buildCalendarRows(baseMonth: Date, userRole: UserRole): ScheduleCalenda
 
     const bars = getActivityBars(currentDay);
     const highlighted = userRole === 'host' && currentDay % 5 === 0;
-    const subtitle = currentDay % 7 === 0 ? `${(currentDay % 3) + 1}건` : undefined;
+    const subtitle =
+      currentDay % 7 === 0 ? `${(currentDay % 3) + 1}건` : undefined;
     const title = currentDay % 9 === 0 ? '인증' : undefined;
 
     calendarCells.push({
@@ -135,7 +149,7 @@ function PendingMemberItem({
   joinedAt: string;
 }): React.ReactElement {
   return (
-    <div className="flex items-center justify-between rounded-2 border border-gray-200 bg-gray-100 px-3 py-2.5">
+    <div className="rounded-2 flex items-center justify-between border border-gray-200 bg-gray-100 px-3 py-2.5">
       <div className="flex items-center gap-2">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-gray-500">
           <UserRound className="h-5 w-5" />
@@ -153,7 +167,7 @@ function PendingMemberItem({
       <div className="flex items-center gap-2">
         <button
           type="button"
-          className="flex h-8 w-8 items-center justify-center rounded-xl bg-main-200 text-main-800"
+          className="bg-main-200 text-main-800 flex h-8 w-8 items-center justify-center rounded-xl"
           aria-label="참여 승인"
         >
           <Check className="h-4 w-4" />
@@ -170,15 +184,23 @@ function PendingMemberItem({
   );
 }
 
-export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): React.ReactElement {
+export function ChallengeDetailScreen({
+  id,
+}: ChallengeDetailScreenProps): React.ReactElement {
   const searchParams = useSearchParams();
   const roleParam = searchParams.get('role');
-  const userRole: UserRole = roleParam === 'participant' ? 'participant' : 'host';
+  const userRole: UserRole =
+    roleParam === 'participant' ? 'participant' : 'host';
   const isHost = userRole === 'host';
 
-  const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date(2025, 1, 1));
+  const [calendarMonth, setCalendarMonth] = useState<Date>(
+    () => new Date(2025, 1, 1)
+  );
 
-  const monthLabel = useMemo(() => getMonthLabel(calendarMonth), [calendarMonth]);
+  const monthLabel = useMemo(
+    () => getMonthLabel(calendarMonth),
+    [calendarMonth]
+  );
   const calendarRows = useMemo(
     () => buildCalendarRows(calendarMonth, userRole),
     [calendarMonth, userRole]
@@ -190,10 +212,10 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
         <section className="rounded-4 border border-gray-200 bg-white p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="rounded-1.5 bg-main-200 px-2.5 py-1 text-caption1 font-bold text-main-800">
+              <span className="rounded-1.5 bg-main-200 text-caption1 text-main-800 px-2.5 py-1 font-bold">
                 {isHost ? 'HOST VIEW' : 'PARTICIPANT VIEW'}
               </span>
-              <span className="rounded-1.5 bg-gray-100 px-2.5 py-1 text-caption1 font-medium text-gray-600">
+              <span className="rounded-1.5 text-caption1 bg-gray-100 px-2.5 py-1 font-medium text-gray-600">
                 {'<>'} 개발 챌린지
               </span>
             </div>
@@ -206,7 +228,8 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
             [고라니 밥주기] {id}
           </Text>
           <Text size="body1" weight="regular" className="mt-2 text-gray-600">
-            매일 아침 고라니에게 밥을 주고 기록하는 챌린지입니다. {isHost
+            매일 아침 고라니에게 밥을 주고 기록하는 챌린지입니다.{' '}
+            {isHost
               ? '호스트로서 챌린지를 꾸준히 운영하고 참여자를 관리해보세요.'
               : '참여자로서 목표를 달성하고 기록을 쌓아보세요.'}
           </Text>
@@ -215,13 +238,13 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="flex min-w-0 flex-col gap-4">
             {isHost ? (
-              <section className="rounded-4 border border-main-300 bg-white p-4">
+              <section className="rounded-4 border-main-300 border bg-white p-4">
                 <div className="flex items-center gap-2">
-                  <CircleAlert className="h-5 w-5 text-main-800" />
+                  <CircleAlert className="text-main-800 h-5 w-5" />
                   <Text size="heading2" weight="bold" className="text-gray-900">
                     참여 인원 대기
                   </Text>
-                  <span className="rounded-full bg-main-200 px-2 py-0.5 text-caption1 font-bold text-main-800">
+                  <span className="bg-main-200 text-caption1 text-main-800 rounded-full px-2 py-0.5 font-bold">
                     {CHALLENGE_DETAIL_PENDING_MEMBERS.length}명
                   </span>
                 </div>
@@ -246,20 +269,38 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
                   rightText={isHost ? 'Rank #1 (Host)' : 'Rank #7'}
                 />
                 <div className="mt-4 flex items-center gap-4">
-                  <CircularProgress value={isHost ? 95 : 78} size="lg" showPercentage />
+                  <CircularProgress
+                    value={isHost ? 95 : 78}
+                    size="lg"
+                    showPercentage
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
-                      <Text size="caption1" weight="medium" className="text-gray-600">
+                      <Text
+                        size="caption1"
+                        weight="medium"
+                        className="text-gray-600"
+                      >
                         평균 달성률
                       </Text>
-                      <Text size="body2" weight="bold" className="text-gray-900">
+                      <Text
+                        size="body2"
+                        weight="bold"
+                        className="text-gray-900"
+                      >
                         {isHost ? '92M' : '79M'}
                       </Text>
                     </div>
                     <div className="mt-2 h-2 rounded-full bg-gray-200">
-                      <div className={`h-full rounded-full bg-main-700 ${isHost ? 'w-[95%]' : 'w-[78%]'}`} />
+                      <div
+                        className={`bg-main-700 h-full rounded-full ${isHost ? 'w-[95%]' : 'w-[78%]'}`}
+                      />
                     </div>
-                    <Text size="caption1" weight="regular" className="mt-3 text-gray-600">
+                    <Text
+                      size="caption1"
+                      weight="regular"
+                      className="mt-3 text-gray-600"
+                    >
                       {isHost
                         ? '호스트로서 모범을 보이고 계시네요. 계속 힘내세요.'
                         : '꾸준히 목표를 수행하고 있어요. 지금처럼 유지해보세요.'}
@@ -270,37 +311,55 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
 
               <section className="rounded-4 border border-gray-200 bg-white p-4">
                 <StatHeader
-                  icon={<Flame className="h-5 w-5 text-main-800" />}
+                  icon={<Flame className="text-main-800 h-5 w-5" />}
                   title="스트릭 & 목표"
                   rightText={isHost ? '30 Days' : '12 Days'}
                 />
                 <div className="mt-4 flex flex-col gap-4">
                   <div>
                     <div className="mb-1 flex items-center justify-between">
-                      <Text size="body2" weight="medium" className="text-gray-700">
+                      <Text
+                        size="body2"
+                        weight="medium"
+                        className="text-gray-700"
+                      >
                         아침 밥주기
                       </Text>
-                      <Text size="body2" weight="bold" className="text-main-800">
+                      <Text
+                        size="body2"
+                        weight="bold"
+                        className="text-main-800"
+                      >
                         {isHost ? '100%' : '82%'}
                       </Text>
                     </div>
                     <div className="h-2 rounded-full bg-gray-200">
-                      <div className={`h-full rounded-full bg-main-700 ${isHost ? 'w-full' : 'w-[82%]'}`} />
+                      <div
+                        className={`bg-main-700 h-full rounded-full ${isHost ? 'w-full' : 'w-[82%]'}`}
+                      />
                     </div>
                   </div>
 
                   <div>
                     <div className="mb-1 flex items-center justify-between">
-                      <Text size="body2" weight="medium" className="text-gray-700">
+                      <Text
+                        size="body2"
+                        weight="medium"
+                        className="text-gray-700"
+                      >
                         물통 확인하기
                       </Text>
-                      <Text size="body2" weight="bold" className="text-gray-600">
+                      <Text
+                        size="body2"
+                        weight="bold"
+                        className="text-gray-600"
+                      >
                         {isHost ? '98%' : '64%'}
                       </Text>
                     </div>
                     <div className="h-2 rounded-full bg-gray-200">
                       <div
-                        className={`h-full rounded-full bg-main-600/70 ${isHost ? 'w-[98%]' : 'w-[64%]'}`}
+                        className={`bg-main-600/70 h-full rounded-full ${isHost ? 'w-[98%]' : 'w-[64%]'}`}
                       />
                     </div>
                   </div>
@@ -310,7 +369,10 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
 
             <section className="rounded-4 border border-gray-200 bg-white p-4">
               <div className="mb-3 flex items-center justify-between">
-                <StatHeader icon={<CalendarDays className="h-5 w-5 text-main-800" />} title="활동 캘린더" />
+                <StatHeader
+                  icon={<CalendarDays className="text-main-800 h-5 w-5" />}
+                  title="활동 캘린더"
+                />
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -319,13 +381,21 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
                     onClick={() =>
                       setCalendarMonth(
                         (prevMonth) =>
-                          new Date(prevMonth.getFullYear(), prevMonth.getMonth() - 1, 1)
+                          new Date(
+                            prevMonth.getFullYear(),
+                            prevMonth.getMonth() - 1,
+                            1
+                          )
                       )
                     }
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
-                  <Text size="body2" weight="bold" className="min-w-[120px] text-center text-gray-700">
+                  <Text
+                    size="body2"
+                    weight="bold"
+                    className="min-w-[120px] text-center text-gray-700"
+                  >
                     {monthLabel}
                   </Text>
                   <button
@@ -335,7 +405,11 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
                     onClick={() =>
                       setCalendarMonth(
                         (prevMonth) =>
-                          new Date(prevMonth.getFullYear(), prevMonth.getMonth() + 1, 1)
+                          new Date(
+                            prevMonth.getFullYear(),
+                            prevMonth.getMonth() + 1,
+                            1
+                          )
                       )
                     }
                   >
@@ -351,29 +425,47 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
             </section>
 
             <section className="rounded-4 border border-gray-200 bg-white p-4">
-              <StatHeader icon={<Clock3 className="h-5 w-5 text-main-800" />} title="최근 활동 로그" />
+              <StatHeader
+                icon={<Clock3 className="text-main-800 h-5 w-5" />}
+                title="최근 활동 로그"
+              />
               <div className="mt-3 divide-y divide-gray-200">
                 {CHALLENGE_DETAIL_RECENT_LOGS.map((log) => (
-                  <div key={log.title} className="flex items-start justify-between gap-3 py-4">
+                  <div
+                    key={log.title}
+                    className="flex items-start justify-between gap-3 py-4"
+                  >
                     <div className="flex items-start gap-3">
-                      <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-full bg-main-200 text-main-800">
+                      <div className="bg-main-200 text-main-800 mt-1 flex h-10 w-10 items-center justify-center rounded-full">
                         <Check className="h-5 w-5" />
                       </div>
                       <div>
-                        <Text size="heading2" weight="bold" className="text-gray-900">
+                        <Text
+                          size="heading2"
+                          weight="bold"
+                          className="text-gray-900"
+                        >
                           {log.title}
                         </Text>
-                        <Text size="body2" weight="regular" className="mt-1 text-gray-600">
+                        <Text
+                          size="body2"
+                          weight="regular"
+                          className="mt-1 text-gray-600"
+                        >
                           {log.description}
                         </Text>
                         {log.badge ? (
-                          <span className="mt-2 inline-flex rounded-1.5 bg-gray-100 px-2.5 py-1 text-caption1 font-medium text-gray-600">
+                          <span className="rounded-1.5 text-caption1 mt-2 inline-flex bg-gray-100 px-2.5 py-1 font-medium text-gray-600">
                             {log.badge}
                           </span>
                         ) : null}
                       </div>
                     </div>
-                    <Text size="caption1" weight="medium" className="text-gray-500">
+                    <Text
+                      size="caption1"
+                      weight="medium"
+                      className="text-gray-500"
+                    >
                       {log.time}
                     </Text>
                   </div>
@@ -399,7 +491,11 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
                       <Settings className="h-4 w-4" />
                       정보 수정하기
                     </Button>
-                    <Button variant="ghost" size="large" className="w-full text-gray-600">
+                    <Button
+                      variant="ghost"
+                      size="large"
+                      className="w-full text-gray-600"
+                    >
                       챌린지 삭제
                     </Button>
                   </>
@@ -425,7 +521,7 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
                   </Text>
                 </div>
                 <div className="h-2 rounded-full bg-gray-200">
-                  <div className="h-full w-[60%] rounded-full bg-mint-800" />
+                  <div className="bg-mint-800 h-full w-[60%] rounded-full" />
                 </div>
                 <div className="mt-3 flex items-center gap-2 text-gray-600">
                   <CalendarDays className="h-4 w-4" />
@@ -449,7 +545,10 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
               </div>
               <div className="mt-3 grid grid-cols-4 gap-3">
                 {CHALLENGE_DETAIL_PARTICIPANTS.map((member) => (
-                  <div key={member.name} className="flex flex-col items-center gap-1.5">
+                  <div
+                    key={member.name}
+                    className="flex flex-col items-center gap-1.5"
+                  >
                     <div
                       className={`flex h-12 w-12 items-center justify-center rounded-full border ${
                         member.highlighted
@@ -465,13 +564,19 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
                         <CircleUserRound className="h-5 w-5" />
                       )}
                     </div>
-                    <Text size="caption2" weight="medium" className="text-gray-700">
+                    <Text
+                      size="caption2"
+                      weight="medium"
+                      className="text-gray-700"
+                    >
                       {member.name}
                     </Text>
                     <Text
                       size="caption3"
                       weight="regular"
-                      className={member.highlighted ? 'text-main-800' : 'text-gray-500'}
+                      className={
+                        member.highlighted ? 'text-main-800' : 'text-gray-500'
+                      }
                     >
                       {member.role}
                     </Text>
@@ -495,16 +600,24 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
                 {isHost ? '나의 목표 리스트' : '내가 선택한 목표'}
               </Text>
               <div className="mt-3 flex flex-col gap-2">
-                <div className="rounded-2 border border-main-200 bg-main-100 p-3">
+                <div className="rounded-2 border-main-200 bg-main-100 border p-3">
                   <div className="flex items-start gap-2">
-                    <div className="mt-1 text-main-800">
+                    <div className="text-main-800 mt-1">
                       <Check className="h-4 w-4" />
                     </div>
                     <div>
-                      <Text size="body2" weight="bold" className="text-gray-900">
+                      <Text
+                        size="body2"
+                        weight="bold"
+                        className="text-gray-900"
+                      >
                         매일 아침 7시 특식 인증
                       </Text>
-                      <Text size="caption2" weight="regular" className="text-gray-600">
+                      <Text
+                        size="caption2"
+                        weight="regular"
+                        className="text-gray-600"
+                      >
                         고정목표
                       </Text>
                     </div>
@@ -515,10 +628,18 @@ export function ChallengeDetailContent({ id }: ChallengeDetailContentProps): Rea
                   <div className="flex items-start gap-2">
                     <div className="mt-1 text-gray-500">○</div>
                     <div>
-                      <Text size="body2" weight="bold" className="text-gray-900">
+                      <Text
+                        size="body2"
+                        weight="bold"
+                        className="text-gray-900"
+                      >
                         물 2L 마시기
                       </Text>
-                      <Text size="caption2" weight="regular" className="text-gray-600">
+                      <Text
+                        size="caption2"
+                        weight="regular"
+                        className="text-gray-600"
+                      >
                         개인목표
                       </Text>
                     </div>

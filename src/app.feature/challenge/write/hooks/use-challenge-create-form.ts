@@ -1,7 +1,7 @@
 'use client';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 export const challengeCreateFormSchema = z
   .object({
@@ -10,10 +10,16 @@ export const challengeCreateFormSchema = z
       .min(1, '챌린지 제목을 입력해주세요.')
       .max(50, '챌린지 제목은 50자 이하로 입력해주세요.'),
     // 카테고리를 필수로 하고, 선택하지 않았을 때 에러 메시지 지정
-    category: z.enum(['DEV', 'EXERCISE', 'BOOK', 'MUSIC', 'STUDY', 'LEISURE', 'ECONOMY'], {
-      message: '카테고리를 선택해주세요.',
-    }),
-    description: z.string().max(500, '챌린지 설명은 500자 이하로 입력해주세요.').optional(),
+    category: z.enum(
+      ['DEV', 'EXERCISE', 'BOOK', 'MUSIC', 'STUDY', 'LEISURE', 'ECONOMY'],
+      {
+        message: '카테고리를 선택해주세요.',
+      }
+    ),
+    description: z
+      .string()
+      .max(500, '챌린지 설명은 500자 이하로 입력해주세요.')
+      .optional(),
     periodType: z.enum(['ENDLESS', 'LIMITED']),
     period: z.enum(['7', '14', '30', '60', '365', 'etc']).optional(),
     periodNumber: z.string().refine(
@@ -78,9 +84,13 @@ export const challengeCreateFormSchema = z
     }
   });
 
-export type ChallengeCreateFormValues = z.infer<typeof challengeCreateFormSchema>;
+export type ChallengeCreateFormValues = z.infer<
+  typeof challengeCreateFormSchema
+>;
 
-export function useChallengeCreateForm(): ReturnType<typeof useForm<ChallengeCreateFormValues>> {
+export function useChallengeCreateForm(): ReturnType<
+  typeof useForm<ChallengeCreateFormValues>
+> {
   const form = useForm<ChallengeCreateFormValues>({
     shouldUnregister: false,
     mode: 'onChange',

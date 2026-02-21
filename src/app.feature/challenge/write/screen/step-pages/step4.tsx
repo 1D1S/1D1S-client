@@ -1,9 +1,15 @@
-import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
-import { CheckContainer, GoalAddList, Text } from '@1d1s/design-system';
-import { FormControl, FormField, FormItem, FormMessage } from '@component/ui/form';
-import { cn } from '@module/lib/utils';
+import { CheckContainer, cn, GoalAddList, Text } from '@1d1s/design-system';
 import { Flag, Target } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
+
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/app.component/ui/form';
+
+import { ChallengeCreateFormValues } from '../../hooks/use-challenge-create-form';
 
 export function Step4(): React.ReactElement {
   const { control } = useFormContext<ChallengeCreateFormValues>();
@@ -42,10 +48,18 @@ export function Step4(): React.ReactElement {
                       <Flag className="h-5 w-5" />
                     </span>
                     <div className="flex flex-col">
-                      <Text size="heading1" weight="bold" className="text-gray-900">
+                      <Text
+                        size="heading1"
+                        weight="bold"
+                        className="text-gray-900"
+                      >
                         고정 목표
                       </Text>
-                      <Text size="caption1" weight="regular" className="mt-2 text-gray-600">
+                      <Text
+                        size="caption1"
+                        weight="regular"
+                        className="mt-2 text-gray-600"
+                      >
                         참여자가 동일한 목표를 달성하는 방식입니다.
                       </Text>
                     </div>
@@ -74,10 +88,18 @@ export function Step4(): React.ReactElement {
                       <Target className="h-5 w-5" />
                     </span>
                     <div className="flex flex-col">
-                      <Text size="heading1" weight="bold" className="text-gray-900">
+                      <Text
+                        size="heading1"
+                        weight="bold"
+                        className="text-gray-900"
+                      >
                         자유 목표
                       </Text>
-                      <Text size="caption1" weight="regular" className="mt-2 text-gray-600">
+                      <Text
+                        size="caption1"
+                        weight="regular"
+                        className="mt-2 text-gray-600"
+                      >
                         참여자가 각자 목표를 설정해 진행하는 방식입니다.
                       </Text>
                     </div>
@@ -101,7 +123,9 @@ export function Step4(): React.ReactElement {
             <FormItem>
               <FormControl>
                 <GoalAddList
-                  goals={(field.value ?? []).map((goal) => goal.value).filter(Boolean)}
+                  goals={(field.value ?? [])
+                    .map((goal) => goal.value)
+                    .filter(Boolean)}
                   onGoalsChange={(goals) => {
                     field.onChange(goals.map((goal) => ({ value: goal })));
                   }}

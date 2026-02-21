@@ -2,16 +2,16 @@
 
 // import { Button } from '@/components/odos-ui/button';
 import {
-  Text,
-  SelectSeparator,
   Select,
-  SelectItem,
-  SelectGroup,
-  SelectTrigger,
   SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
   SelectValue,
-  Toggle,
+  Text,
   TextField,
+  Toggle,
 } from '@1d1s/design-system';
 // import { Tag } from '@/components/odos-ui/tag';
 // import { ChallengeCard } from '@/shared/components/odos-ui/challenge-card';
@@ -20,8 +20,12 @@ export default function DevTest(): React.ReactElement {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2 p-24">
       <h1 className="font-suite text-2xl font-bold">Dev Test 수트</h1>
-      <p className="text-main-700 font-pretendard">This is a test page for development purposes.</p>
-      <p className="text-main-700">This is a test page for development purposes.</p>
+      <p className="text-main-700 font-pretendard">
+        This is a test page for development purposes.
+      </p>
+      <p className="text-main-700">
+        This is a test page for development purposes.
+      </p>
 
       {/* Labels */}
       <Text size="heading1" weight={'bold'}>

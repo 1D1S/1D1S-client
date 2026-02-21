@@ -1,5 +1,5 @@
 import { Text } from '@1d1s/design-system';
-import { cn } from '@module/lib/utils';
+import { cn } from '@module/utils/cn';
 import { Slot } from '@radix-ui/react-slot';
 import { X } from 'lucide-react';
 

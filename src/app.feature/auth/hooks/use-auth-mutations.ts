@@ -1,17 +1,26 @@
-import { useMutation, useQueryClient, UseMutationResult } from '@tanstack/react-query';
-import { authApi } from '../api/auth-api';
+import { authStorage } from '@module/utils/auth';
 import {
+  useMutation,
+  UseMutationResult,
+  useQueryClient,
+} from '@tanstack/react-query';
+
+import { authApi } from '../api/auth-api';
+import { AUTH_QUERY_KEYS } from '../consts/query-keys';
+import {
+  LogoutResponse,
   RefreshTokenResponse,
   SignUpInfoRequest,
   SignUpInfoResponse,
   SignUpInfoWithFileRequest,
-  LogoutResponse,
 } from '../type/auth';
-import { AUTH_QUERY_KEYS } from '../const/query-keys';
-import { authStorage } from '@module/utils/auth';
 
 // 토큰 갱신
-export function useRefreshToken(): UseMutationResult<RefreshTokenResponse, Error, string> {
+export function useRefreshToken(): UseMutationResult<
+  RefreshTokenResponse,
+  Error,
+  string
+> {
   return useMutation({
     mutationFn: (refreshToken: string) => authApi.refreshToken(refreshToken),
     onSuccess: (data) => {
@@ -33,8 +42,13 @@ export function useCompleteSignUpInfo(): UseMutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ data, accessToken }: { data: SignUpInfoRequest; accessToken: string }) =>
-      authApi.completeSignUpInfo(data, accessToken),
+    mutationFn: ({
+      data,
+      accessToken,
+    }: {
+      data: SignUpInfoRequest;
+      accessToken: string;
+    }) => authApi.completeSignUpInfo(data, accessToken),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: AUTH_QUERY_KEYS.all,
@@ -52,8 +66,13 @@ export function useCompleteSignUpInfoWithFile(): UseMutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ data, accessToken }: { data: SignUpInfoWithFileRequest; accessToken: string }) =>
-      authApi.completeSignUpInfoWithFile(data, accessToken),
+    mutationFn: ({
+      data,
+      accessToken,
+    }: {
+      data: SignUpInfoWithFileRequest;
+      accessToken: string;
+    }) => authApi.completeSignUpInfoWithFile(data, accessToken),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: AUTH_QUERY_KEYS.all,

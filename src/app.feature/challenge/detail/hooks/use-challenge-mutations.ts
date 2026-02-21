@@ -1,12 +1,18 @@
-import { useMutation, useQueryClient, UseMutationResult } from '@tanstack/react-query';
-import { challengeApi } from '../../board/api/challenge-api';
+import {
+  useMutation,
+  UseMutationResult,
+  useQueryClient,
+} from '@tanstack/react-query';
+
+import { CHALLENGE_QUERY_KEYS } from '../../board/consts/query-keys';
 import {
   CreateChallengeRequest,
   CreateChallengeResponse,
   JoinChallengeRequest,
   JoinChallengeResponse,
 } from '../../board/type/challenge';
-import { CHALLENGE_QUERY_KEYS } from '../../board/const/query-keys';
+import { challengeWriteApi } from '../../write/api/challenge-write-api';
+import { challengeDetailApi } from '../api/challenge-detail-api';
 
 // 챌린지 생성하기
 export function useCreateChallenge(): UseMutationResult<
@@ -17,7 +23,8 @@ export function useCreateChallenge(): UseMutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateChallengeRequest) => challengeApi.createChallenge(data),
+    mutationFn: (data: CreateChallengeRequest) =>
+      challengeWriteApi.createChallenge(data),
     onSuccess: () => {
       // 챌린지 리스트 무효화
       queryClient.invalidateQueries({
@@ -41,8 +48,13 @@ export function useJoinChallenge(): UseMutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ challengeId, data }: { challengeId: number; data: JoinChallengeRequest }) =>
-      challengeApi.joinChallenge(challengeId, data),
+    mutationFn: ({
+      challengeId,
+      data,
+    }: {
+      challengeId: number;
+      data: JoinChallengeRequest;
+    }) => challengeDetailApi.joinChallenge(challengeId, data),
     onSuccess: (_, { challengeId }) => {
       // 해당 챌린지 상세 정보 무효화
       queryClient.invalidateQueries({
@@ -61,7 +73,8 @@ export function useAcceptParticipant(): UseMutationResult<void, Error, number> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (participantId: number) => challengeApi.acceptParticipant(participantId),
+    mutationFn: (participantId: number) =>
+      challengeDetailApi.acceptParticipant(participantId),
     onSuccess: () => {
       // 모든 챌린지 상세 정보 무효화
       queryClient.invalidateQueries({
@@ -76,7 +89,8 @@ export function useRejectParticipant(): UseMutationResult<void, Error, number> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (participantId: number) => challengeApi.rejectParticipant(participantId),
+    mutationFn: (participantId: number) =>
+      challengeDetailApi.rejectParticipant(participantId),
     onSuccess: () => {
       // 모든 챌린지 상세 정보 무효화
       queryClient.invalidateQueries({
@@ -91,7 +105,8 @@ export function useLeaveChallenge(): UseMutationResult<void, Error, number> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (challengeId: number) => challengeApi.leaveChallenge(challengeId),
+    mutationFn: (challengeId: number) =>
+      challengeDetailApi.leaveChallenge(challengeId),
     onSuccess: (_, challengeId) => {
       // 해당 챌린지 상세 정보 무효화
       queryClient.invalidateQueries({
@@ -115,7 +130,8 @@ export function useLikeChallenge(): UseMutationResult<void, Error, number> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (challengeId: number) => challengeApi.likeChallenge(challengeId),
+    mutationFn: (challengeId: number) =>
+      challengeDetailApi.likeChallenge(challengeId),
     onSuccess: (_, challengeId) => {
       // 해당 챌린지 상세 정보 무효화
       queryClient.invalidateQueries({
@@ -139,7 +155,8 @@ export function useUnlikeChallenge(): UseMutationResult<void, Error, number> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (challengeId: number) => challengeApi.unlikeChallenge(challengeId),
+    mutationFn: (challengeId: number) =>
+      challengeDetailApi.unlikeChallenge(challengeId),
     onSuccess: (_, challengeId) => {
       // 해당 챌린지 상세 정보 무효화
       queryClient.invalidateQueries({

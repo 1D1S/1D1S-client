@@ -24,7 +24,10 @@ export function headersMiddleware(res: NextResponse): void {
 `;
   res.headers.set('X-Frame-Options', 'DENY');
   // res.headers.set('x-nonce', nonce);
-  res.headers.set('Content-Security-Policy', cspHeader.replace(/\s{2,}/g, ' ').trim());
+  res.headers.set(
+    'Content-Security-Policy',
+    cspHeader.replace(/\s{2,}/g, ' ').trim()
+  );
   // 이 부분은 1시간이 적합한지 논의 필요
   res.headers.set('Cache-Control', 'public, max-age=3600');
 }

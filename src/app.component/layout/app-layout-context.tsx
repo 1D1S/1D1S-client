@@ -19,7 +19,11 @@ export function AppLayoutProvider({
   value: AppLayoutContextValue;
   children: React.ReactNode;
 }): React.ReactElement {
-  return <AppLayoutContext.Provider value={value}>{children}</AppLayoutContext.Provider>;
+  return (
+    <AppLayoutContext.Provider value={value}>
+      {children}
+    </AppLayoutContext.Provider>
+  );
 }
 
 export function useAppLayoutContext(): AppLayoutContextValue {

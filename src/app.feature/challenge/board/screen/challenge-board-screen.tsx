@@ -1,7 +1,5 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Button,
   ChallengeCard,
@@ -11,6 +9,9 @@ import {
   TextField,
   Toggle,
 } from '@1d1s/design-system';
+import { useRouter } from 'next/navigation';
+import React, { useMemo, useState } from 'react';
+
 import {
   CHALLENGE_BOARD_CATEGORY_FILTERS,
   CHALLENGE_BOARD_ITEMS_PER_PAGE,
@@ -19,10 +20,11 @@ import {
   getChallengeCategoryLabel,
 } from '../consts/challenge-board-data';
 
-export default function ChallengeList(): React.ReactElement {
+export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<ChallengeCategory>('all');
+  const [selectedCategory, setSelectedCategory] =
+    useState<ChallengeCategory>('all');
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredChallenges = useMemo(() => {
@@ -44,22 +46,30 @@ export default function ChallengeList(): React.ReactElement {
         challenge.title.toLowerCase().includes(normalizedQuery) ||
         challenge.description.toLowerCase().includes(normalizedQuery) ||
         challenge.challengeType.toLowerCase().includes(normalizedQuery) ||
-        getChallengeCategoryLabel(challenge.category).toLowerCase().includes(normalizedQuery)
+        getChallengeCategoryLabel(challenge.category)
+          .toLowerCase()
+          .includes(normalizedQuery)
       );
     });
   }, [query, selectedCategory]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredChallenges.length / CHALLENGE_BOARD_ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredChallenges.length / CHALLENGE_BOARD_ITEMS_PER_PAGE)
+  );
   const safeCurrentPage = Math.min(currentPage, totalPages);
 
   const paginatedChallenges = useMemo(() => {
     const start = (safeCurrentPage - 1) * CHALLENGE_BOARD_ITEMS_PER_PAGE;
-    return filteredChallenges.slice(start, start + CHALLENGE_BOARD_ITEMS_PER_PAGE);
+    return filteredChallenges.slice(
+      start,
+      start + CHALLENGE_BOARD_ITEMS_PER_PAGE
+    );
   }, [filteredChallenges, safeCurrentPage]);
 
   return (
     <div className="flex min-h-screen w-full flex-col p-4">
-      <section className="w-full rounded-4 px-1 pb-6">
+      <section className="rounded-4 w-full px-1 pb-6">
         <div className="flex flex-col gap-2">
           <Text size="display1" weight="bold" className="text-gray-900">
             전체 챌린지
@@ -88,8 +98,7 @@ export default function ChallengeList(): React.ReactElement {
             className="whitespace-nowrap"
           >
             <span className="flex items-center gap-1">
-              <Icon name="Plus" size={16} />
-              새 챌린지 생성
+              <Icon name="Plus" size={16} />새 챌린지 생성
             </span>
           </Button>
         </div>
@@ -116,23 +125,25 @@ export default function ChallengeList(): React.ReactElement {
 
         <div className="challenge-grid-container mt-8">
           <div className="challenge-card-grid grid grid-cols-1 gap-4">
-          {paginatedChallenges.map((challenge) => (
-            <div key={challenge.id} className="min-w-0">
-              <ChallengeCard
-                challengeTitle={challenge.title}
-                challengeType={challenge.challengeType}
-                challengeCategory={getChallengeCategoryLabel(challenge.category)}
-                currentUserCount={challenge.currentParticipants}
-                maxUserCount={challenge.maxParticipants}
-                startDate={challenge.startDate}
-                endDate={challenge.endDate}
-                isOngoing={challenge.status === 'closingSoon'}
-                isEnded={challenge.status === 'ended'}
-                className="h-full"
-                onClick={() => router.push(`/challenge/${challenge.id}`)}
-              />
-            </div>
-          ))}
+            {paginatedChallenges.map((challenge) => (
+              <div key={challenge.id} className="min-w-0">
+                <ChallengeCard
+                  challengeTitle={challenge.title}
+                  challengeType={challenge.challengeType}
+                  challengeCategory={getChallengeCategoryLabel(
+                    challenge.category
+                  )}
+                  currentUserCount={challenge.currentParticipants}
+                  maxUserCount={challenge.maxParticipants}
+                  startDate={challenge.startDate}
+                  endDate={challenge.endDate}
+                  isOngoing={challenge.status === 'closingSoon'}
+                  isEnded={challenge.status === 'ended'}
+                  className="h-full"
+                  onClick={() => router.push(`/challenge/${challenge.id}`)}
+                />
+              </div>
+            ))}
           </div>
         </div>
 

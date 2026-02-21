@@ -46,4 +46,12 @@ export const CHALLENGE_DETAIL_RECENT_LOGS: RecentLogItem[] = [
   },
 ];
 
-export const CHALLENGE_DETAIL_WEEK_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+export const CHALLENGE_DETAIL_WEEK_LABELS = [
+  'SUN',
+  'MON',
+  'TUE',
+  'WED',
+  'THU',
+  'FRI',
+  'SAT',
+];

@@ -29,41 +29,45 @@ export interface HomeRandomChallengeItem {
   isOngoing: boolean;
 }
 
-export const HOME_RANDOM_DIARY_ITEMS: HomeRandomDiaryItem[] = Array.from({ length: 12 }).map(
-  (_, index) => ({
-    id: index + 1,
-    imageUrl: '/images/default-card.png',
-    percent: [60, 100, 30, 85, 42, 70, 90, 55, 76, 64, 33, 88][index],
-    likes: [10, 24, 5, 18, 11, 9, 17, 8, 21, 6, 4, 14][index],
-    title: [
-      '고라니 밥주기 3일차 성공!',
-      '오늘의 목표 전부 달성!',
-      '아직 갈 길이 멀다',
-      '매일 매일 조금씩 성장',
-      '오늘도 인증 성공, 내일도 이어간다',
-      '한 챕터 정리 완료, 조금씩 쌓이는 중',
-      '아침 러닝 5km 인증 완료',
-      '오늘도 물 2L 달성!',
-      'UI 시안 2개 완성',
-      '독서 메모 10줄 작성',
-      '프로틴 식단 지키기 성공',
-      '알고리즘 난이도 업 도전',
-    ][index],
-    user: ['고라니', '개발자킴', '디자이너리', '성실맨', '러닝조아', '북러버'][index % 6],
-    userImage: '/images/default-profile.png',
-    challengeLabel: [
-      '고라니 챌린지',
-      '알고리즘 챌린지',
-      'UI 디자인 챌린지',
-      '독서 챌린지',
-      '아침 운동 챌린지',
-      '독서 루틴 챌린지',
-    ][index % 6],
-    challengeUrl: '/diary',
-    date: '2025.03.05',
-    emotion: (['happy', 'happy', 'soso', 'happy', 'happy', 'soso'] as const)[index % 6],
-  })
-);
+export const HOME_RANDOM_DIARY_ITEMS: HomeRandomDiaryItem[] = Array.from({
+  length: 12,
+}).map((_, index) => ({
+  id: index + 1,
+  imageUrl: '/images/default-card.png',
+  percent: [60, 100, 30, 85, 42, 70, 90, 55, 76, 64, 33, 88][index],
+  likes: [10, 24, 5, 18, 11, 9, 17, 8, 21, 6, 4, 14][index],
+  title: [
+    '고라니 밥주기 3일차 성공!',
+    '오늘의 목표 전부 달성!',
+    '아직 갈 길이 멀다',
+    '매일 매일 조금씩 성장',
+    '오늘도 인증 성공, 내일도 이어간다',
+    '한 챕터 정리 완료, 조금씩 쌓이는 중',
+    '아침 러닝 5km 인증 완료',
+    '오늘도 물 2L 달성!',
+    'UI 시안 2개 완성',
+    '독서 메모 10줄 작성',
+    '프로틴 식단 지키기 성공',
+    '알고리즘 난이도 업 도전',
+  ][index],
+  user: ['고라니', '개발자킴', '디자이너리', '성실맨', '러닝조아', '북러버'][
+    index % 6
+  ],
+  userImage: '/images/default-profile.png',
+  challengeLabel: [
+    '고라니 챌린지',
+    '알고리즘 챌린지',
+    'UI 디자인 챌린지',
+    '독서 챌린지',
+    '아침 운동 챌린지',
+    '독서 루틴 챌린지',
+  ][index % 6],
+  challengeUrl: '/diary',
+  date: '2025.03.05',
+  emotion: (['happy', 'happy', 'soso', 'happy', 'happy', 'soso'] as const)[
+    index % 6
+  ],
+}));
 
 export const HOME_MAIN_BANNERS: MainBannerItem[] = [
   {

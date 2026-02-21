@@ -1,8 +1,9 @@
 import { Text } from '@1d1s/design-system';
-import { cn } from '@module/lib/utils';
+import { cn } from '@module/utils/cn';
 import Image from 'next/image';
 
-interface LoginButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface LoginButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   img: string;
   text: string;
 }

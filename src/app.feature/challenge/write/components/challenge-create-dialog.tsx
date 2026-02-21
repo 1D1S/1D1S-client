@@ -1,6 +1,5 @@
 import {
   Button,
-  Text,
   Dialog,
   DialogClose,
   DialogContent,
@@ -9,7 +8,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  Text,
 } from '@1d1s/design-system';
+
 import { ChallengeCreateDialogContent } from './challenge-create-dialog-content';
 
 /**
@@ -70,7 +71,12 @@ export function ChallengeCreateDialog({
             </Button>
           </DialogClose>
           <DialogClose asChild>
-            <Button variant="default" type="submit" className="w-37.5" onClick={onConfirm}>
+            <Button
+              variant="default"
+              type="submit"
+              className="w-37.5"
+              onClick={onConfirm}
+            >
               생성
             </Button>
           </DialogClose>

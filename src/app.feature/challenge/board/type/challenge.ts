@@ -1,6 +1,18 @@
-export type ChallengeCategory = 'DEV' | 'HEALTH' | 'STUDY' | 'EXERCISE' | 'HOBBY' | 'OTHER';
+export type ChallengeCategory =
+  | 'DEV'
+  | 'HEALTH'
+  | 'STUDY'
+  | 'EXERCISE'
+  | 'HOBBY'
+  | 'OTHER';
 export type ChallengeType = 'FIXED' | 'FLEXIBLE';
-export type ParticipantStatus = 'NONE' | 'PENDING' | 'REJECTED' | 'ACCEPTED' | 'HOST' | 'PARTICIPANT';
+export type ParticipantStatus =
+  | 'NONE'
+  | 'PENDING'
+  | 'REJECTED'
+  | 'ACCEPTED'
+  | 'HOST'
+  | 'PARTICIPANT';
 
 export interface LikeInfo {
   likedByMe: boolean;

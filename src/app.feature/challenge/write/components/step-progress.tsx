@@ -1,8 +1,8 @@
 'use client';
 
-import React, { memo } from 'react';
 import { Text } from '@1d1s/design-system';
-import { cn } from '@module/lib/utils';
+import { cn } from '@module/utils/cn';
+import React, { memo } from 'react';
 
 interface StepIndicatorProps {
   step: number;
@@ -89,19 +89,28 @@ interface StepProgressProps {
   currentStep: number;
 }
 
-export const StepProgress = memo<StepProgressProps>(({ steps, currentStep }) => (
-  <div className="w-full">
-    {/* 스텝 라벨과 숫자 */}
-    <div className="mx-1 mb-2 flex justify-between gap-2 text-sm text-gray-600">
-      {steps.map((label, idx) => {
-        const step = idx + 1;
-        const isActive = step <= currentStep;
-        return <StepIndicator key={step} step={step} label={label} isActive={isActive} />;
-      })}
-    </div>
+export const StepProgress = memo<StepProgressProps>(
+  ({ steps, currentStep }) => (
+    <div className="w-full">
+      {/* 스텝 라벨과 숫자 */}
+      <div className="mx-1 mb-2 flex justify-between gap-2 text-sm text-gray-600">
+        {steps.map((label, idx) => {
+          const step = idx + 1;
+          const isActive = step <= currentStep;
+          return (
+            <StepIndicator
+              key={step}
+              step={step}
+              label={label}
+              isActive={isActive}
+            />
+          );
+        })}
+      </div>
 
-    {/* 진행 막대 */}
-    <ProgressBar total={steps.length} current={currentStep} />
-  </div>
-));
+      {/* 진행 막대 */}
+      <ProgressBar total={steps.length} current={currentStep} />
+    </div>
+  )
+);
 StepProgress.displayName = 'StepProgress';

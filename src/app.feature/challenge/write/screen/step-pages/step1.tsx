@@ -1,9 +1,15 @@
-import { CheckContainer, Text, TextField } from '@1d1s/design-system';
+import { CheckContainer, cn, Text, TextField } from '@1d1s/design-system';
 import { useFormContext } from 'react-hook-form';
-import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
-import { FormControl, FormField, FormItem, FormMessage } from '@component/ui/form';
-import { CATEGORY_OPTIONS } from '@constants/categories';
-import { cn } from '@module/lib/utils';
+
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/app.component/ui/form';
+import { CATEGORY_OPTIONS } from '@/app.constants/categories';
+
+import { ChallengeCreateFormValues } from '../../hooks/use-challenge-create-form';
 
 export function Step1(): React.ReactElement {
   const { control } = useFormContext<ChallengeCreateFormValues>();
@@ -71,7 +77,9 @@ export function Step1(): React.ReactElement {
                         <Text
                           size="body1"
                           weight="medium"
-                          className={isSelected ? 'text-white' : 'text-gray-700'}
+                          className={
+                            isSelected ? 'text-white' : 'text-gray-700'
+                          }
                         >
                           {option.label}
                         </Text>

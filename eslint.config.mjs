@@ -1,13 +1,49 @@
 import nextConfig from 'eslint-config-next';
-import tseslint from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
+import importPlugin from 'eslint-plugin-import';
+import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
+import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
+import tseslint from 'typescript-eslint';
 
 const eslintConfig = [
   ...nextConfig,
   ...tseslint.configs.recommended,
   prettierConfig,
   {
+    plugins: {
+      import: importPlugin,
+      'simple-import-sort': simpleImportSortPlugin,
+      tailwindcss: tailwindcssPlugin,
+    },
+    settings: {
+      tailwindcss: {
+        callees: ['cn', 'clsx', 'cva'],
+        config: {},
+      },
+    },
     rules: {
+      'max-len': [
+        'error',
+        {
+          code: 80,
+          tabWidth: 2,
+          ignoreComments: true,
+          ignoreUrls: true,
+          ignoreStrings: true,
+          ignoreTemplateLiterals: true,
+          ignoreRegExpLiterals: true,
+          ignorePattern: '^\\s*import\\s.+$',
+        },
+      ],
+      'import/first': 'error',
+      'import/newline-after-import': ['error', { count: 1 }],
+      'import/no-duplicates': 'error',
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
+      'tailwindcss/classnames-order': 'warn',
+      'tailwindcss/no-contradicting-classname': 'error',
+      'tailwindcss/enforces-shorthand': 'warn',
+      'tailwindcss/no-custom-classname': 'off',
       'no-var': 'error',
       'prefer-const': 'error',
       'one-var': ['error', 'never'],
@@ -22,15 +58,23 @@ const eslintConfig = [
       ],
       'no-object-constructor': 'error',
       'guard-for-in': 'error',
-      'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
+      'lines-between-class-members': [
+        'error',
+        'always',
+        { exceptAfterSingleLine: true },
+      ],
       '@typescript-eslint/method-signature-style': ['error', 'method'],
       'new-parens': 'error',
-      '@typescript-eslint/explicit-member-accessibility': ['error', { accessibility: 'no-public' }],
+      '@typescript-eslint/explicit-member-accessibility': [
+        'error',
+        { accessibility: 'no-public' },
+      ],
       'no-restricted-syntax': [
         'error',
         {
           selector: 'PropertyDefinition[key.type="PrivateIdentifier"]',
-          message: 'Avoid using #private fields. Use TypeScript visibility modifiers instead.',
+          message:
+            'Avoid using #private fields. Use TypeScript visibility modifiers instead.',
         },
       ],
       'func-style': ['error', 'declaration', { allowArrowFunctions: true }],
@@ -81,7 +125,10 @@ const eslintConfig = [
       semi: ['error', 'always'],
       'no-extend-native': 'error',
       'no-global-assign': 'error',
-      'id-length': ['warn', { min: 2, exceptions: ['i', 'j', 'k', 'x', 'y', '_'] }],
+      'id-length': [
+        'warn',
+        { min: 2, exceptions: ['i', 'j', 'k', 'x', 'y', '_'] },
+      ],
       '@typescript-eslint/explicit-function-return-type': [
         'warn',
         {

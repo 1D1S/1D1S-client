@@ -1,6 +1,13 @@
 export type JobType = 'STUDENT' | 'EMPLOYEE' | 'OTHER';
 export type GenderType = 'MALE' | 'FEMALE' | 'OTHER';
-export type CategoryType = 'DEV' | 'EXERCISE' | 'BOOK' | 'MUSIC' | 'STUDY' | 'LEISURE' | 'ECONOMY';
+export type CategoryType =
+  | 'DEV'
+  | 'EXERCISE'
+  | 'BOOK'
+  | 'MUSIC'
+  | 'STUDY'
+  | 'LEISURE'
+  | 'ECONOMY';
 export type OAuthProvider = 'google' | 'kakao' | 'naver';
 
 export interface TokenData {

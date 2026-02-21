@@ -1,20 +1,20 @@
 'use client';
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
 import {
   BannerCarousel,
-  Text,
-  PageWatermark,
-  DiaryCard,
   ChallengeCard,
+  DiaryCard,
   InfoButton,
+  PageWatermark,
+  Text,
 } from '@1d1s/design-system';
 import {
   HOME_MAIN_BANNERS,
   HOME_RANDOM_CHALLENGE_ITEMS,
   HOME_RANDOM_DIARY_ITEMS,
 } from '@constants/consts/home-data';
+import { useRouter } from 'next/navigation';
+import React from 'react';
 
 function SectionHeader({
   title,
@@ -113,7 +113,10 @@ export default function MainPage(): React.ReactElement {
         <div className="h-10" />
 
         {/* 랜덤 챌린지 */}
-        <SectionHeader title="랜덤 챌린지" subtitle="챌린지에 참여하고 목표를 달성해봐요." />
+        <SectionHeader
+          title="랜덤 챌린지"
+          subtitle="챌린지에 참여하고 목표를 달성해봐요."
+        />
         <div className="h-4" />
         <div className="grid grid-cols-1 gap-3 px-4 pb-4 lg:grid-cols-2 xl:grid-cols-4">
           {HOME_RANDOM_CHALLENGE_ITEMS.map((challenge) => (
@@ -134,7 +137,10 @@ export default function MainPage(): React.ReactElement {
         <div className="h-12" />
 
         {/* 랜덤 일지 */}
-        <SectionHeader title="랜덤 일지" subtitle="챌린저들의 일지를 보며 의욕을 충전해봐요." />
+        <SectionHeader
+          title="랜덤 일지"
+          subtitle="챌린저들의 일지를 보며 의욕을 충전해봐요."
+        />
         <div className="h-4" />
         <div className="diary-grid-container px-4 pb-4">
           <div className="diary-card-grid grid grid-cols-2 gap-3">

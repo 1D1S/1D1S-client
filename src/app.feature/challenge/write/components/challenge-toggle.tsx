@@ -1,7 +1,7 @@
-import Image from 'next/image';
 import { Text } from '@1d1s/design-system';
-import { cn } from '@module/lib/utils';
+import { cn } from '@module/utils/cn';
 import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group';
+import Image from 'next/image';
 
 interface ToggleButtonProps {
   title: string;
@@ -46,7 +46,8 @@ export function ChallengeToggle({
   imageWidth,
   imageHeight,
   ...props
-}: ToggleButtonProps & React.ComponentProps<typeof ToggleGroupPrimitive.Item>): React.ReactElement {
+}: ToggleButtonProps &
+  React.ComponentProps<typeof ToggleGroupPrimitive.Item>): React.ReactElement {
   return (
     <ToggleGroupPrimitive.Item
       className={cn(
@@ -60,13 +61,21 @@ export function ChallengeToggle({
       {...props}
     >
       <div className="flex flex-col items-start">
-        <Text size="heading2" weight="bold" className="mb-2 block transition-colors">
+        <Text
+          size="heading2"
+          weight="bold"
+          className="mb-2 block transition-colors"
+        >
           {title}
         </Text>
         <Text
           size="body2"
           weight="medium"
-          className={cn('block text-left', 'transition-colors', 'whitespace-pre-line')}
+          className={cn(
+            'block text-left',
+            'transition-colors',
+            'whitespace-pre-line'
+          )}
         >
           {subtitle}
         </Text>
@@ -103,7 +112,10 @@ export function ChallengeToggleGroup({
 }: React.ComponentProps<typeof ToggleGroupPrimitive.Root>): React.ReactElement {
   return (
     <ToggleGroupPrimitive.Root
-      className={cn('flex flex-wrap gap-x-7.5 gap-y-2.5 rounded-none', className)}
+      className={cn(
+        'flex flex-wrap gap-x-7.5 gap-y-2.5 rounded-none',
+        className
+      )}
       {...props}
     >
       {children}

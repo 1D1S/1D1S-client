@@ -1,9 +1,10 @@
-import { Text, Tag } from '@1d1s/design-system';
-import { ChallengeGoalToggle } from '@feature/challenge/detail/components/challenge-goal-toggle';
-import { useFormContext } from 'react-hook-form';
-import { ChallengeCreateFormValues } from '../hooks/use-challenge-create-form';
+import { Tag,Text } from '@1d1s/design-system';
 import { CATEGORY_OPTIONS } from '@constants/categories';
+import { ChallengeGoalToggle } from '@feature/challenge/detail/components/challenge-goal-toggle';
 import { format } from 'date-fns';
+import { useFormContext } from 'react-hook-form';
+
+import { ChallengeCreateFormValues } from '../hooks/use-challenge-create-form';
 
 /**
  * ChallengeCreateDialogContent
@@ -12,7 +13,9 @@ import { format } from 'date-fns';
 export function ChallengeCreateDialogContent(): React.ReactElement {
   const { getValues } = useFormContext<ChallengeCreateFormValues>();
   const values = getValues();
-  const category = CATEGORY_OPTIONS.find((option) => option.value === values.category);
+  const category = CATEGORY_OPTIONS.find(
+    (option) => option.value === values.category
+  );
 
   return (
     <div className="flex flex-col gap-10 my-6">
@@ -37,12 +40,15 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
           <Text size="heading2" weight="bold" className="text-black">
             챌린지 기간
           </Text>
-          <Tag>{values.periodType === 'ENDLESS' ? '무한 기간' : '유한 기간'}</Tag>
+          <Tag>
+            {values.periodType === 'ENDLESS' ? '무한 기간' : '유한 기간'}
+          </Tag>
         </div>
         {values.periodType === 'LIMITED' && (
           <>
             <Text size="body2" weight="medium" className="text-black">
-              {values.period !== 'etc' ? values.period! : values.periodNumber!}일
+              {values.period !== 'etc' ? values.period! : values.periodNumber!}
+              일
             </Text>
             <Text size="body2" weight="medium" className="text-black">
               {format(values.startDate!, 'yyyy-MM-dd')} 시작
@@ -58,12 +64,17 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
             챌린지 인원
           </Text>
           <Tag>
-            {values.participationType === 'INDIVIDUAL' ? '개인 챌린지' : '단체 챌린지'}
+            {values.participationType === 'INDIVIDUAL'
+              ? '개인 챌린지'
+              : '단체 챌린지'}
           </Tag>
         </div>
         {values.participationType === 'GROUP' && (
           <Text size="body2" weight="medium" className="text-black">
-            {values.memberCount !== 'etc' ? values.memberCount! : values.memberCountNumber!}명
+            {values.memberCount !== 'etc'
+              ? values.memberCount!
+              : values.memberCountNumber!}
+            명
           </Text>
         )}
       </div>
@@ -78,7 +89,11 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
         </div>
         <div className="flex flex-col gap-0.5">
           {values.goals.map((goal, index) => (
-            <ChallengeGoalToggle key={index} checked={true} label={goal.value} />
+            <ChallengeGoalToggle
+              key={index}
+              checked={true}
+              label={goal.value}
+            />
           ))}
         </div>
       </div>

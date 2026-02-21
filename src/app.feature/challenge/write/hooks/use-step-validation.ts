@@ -1,8 +1,10 @@
-import { useFormContext } from 'react-hook-form';
-import { useEffect, useMemo, useState } from 'react';
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
+import { useEffect, useMemo, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 
-export function getFieldsByStep(step: number): Array<keyof ChallengeCreateFormValues> {
+export function getFieldsByStep(
+  step: number
+): Array<keyof ChallengeCreateFormValues> {
   switch (step) {
     case 1:
       return ['title', 'category', 'description'];

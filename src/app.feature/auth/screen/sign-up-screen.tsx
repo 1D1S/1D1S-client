@@ -1,5 +1,3 @@
-import React from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Button,
   CheckContainer,
@@ -15,14 +13,23 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@1d1s/design-system';
-import { SignupFormValues, useSignUpForm } from '../hooks/use-sign-up-form';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@component/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@component/ui/form';
+import { useRouter } from 'next/navigation';
+import React from 'react';
+
 import {
   SIGN_UP_GENDER_OPTIONS,
   SIGN_UP_OCCUPATION_OPTIONS,
   SIGN_UP_TOPIC_OPTIONS,
   SignUpGenderValue,
 } from '../consts/sign-up-options';
+import { SignupFormValues, useSignUpForm } from '../hooks/use-sign-up-form';
 
 type Step = 1 | 2;
 
@@ -88,7 +95,14 @@ export function SignUpScreen(): React.ReactElement {
   };
 
   const handleNextStep = async (): Promise<void> => {
-    const stepOneValid = await form.trigger(['fullName', 'year', 'month', 'day', 'gender', 'job']);
+    const stepOneValid = await form.trigger([
+      'fullName',
+      'year',
+      'month',
+      'day',
+      'gender',
+      'job',
+    ]);
 
     if (!stepOneValid) {
       return;
@@ -102,21 +116,36 @@ export function SignUpScreen(): React.ReactElement {
       <SignUpHeader step={step} totalSteps={totalSteps} onBack={handleBack} />
 
       <Form {...form}>
-        <form className="flex flex-1 flex-col" onSubmit={form.handleSubmit(onSubmit)}>
+        <form
+          className="flex flex-1 flex-col"
+          onSubmit={form.handleSubmit(onSubmit)}
+        >
           {step === 1 ? (
             <div className="mx-auto flex w-full max-w-[1200px] flex-1 items-center px-6 py-10">
               <div className="grid w-full gap-10 lg:grid-cols-[1fr_1.15fr]">
                 <section className="flex flex-col justify-center">
-                  <Text size="caption3" weight="medium" className="text-gray-600">
+                  <Text
+                    size="caption3"
+                    weight="medium"
+                    className="text-gray-600"
+                  >
                     Step 1 : Personal Profile
                   </Text>
-                  <Text size="display1" weight="bold" className="mt-4 text-gray-900">
+                  <Text
+                    size="display1"
+                    weight="bold"
+                    className="mt-4 text-gray-900"
+                  >
                     Tell us about
                   </Text>
                   <Text size="display1" weight="bold" className="text-main-600">
                     yourself.
                   </Text>
-                  <Text size="body2" weight="regular" className="mt-3 text-gray-600">
+                  <Text
+                    size="body2"
+                    weight="regular"
+                    className="mt-3 text-gray-600"
+                  >
                     몇 가지 정보를 입력하고 맞춤 챌린지를 추천받아보세요.
                   </Text>
 
@@ -127,7 +156,9 @@ export function SignUpScreen(): React.ReactElement {
                       render={({ field }) => (
                         <FormItem>
                           <ImagePicker
-                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            onChange={(
+                              event: React.ChangeEvent<HTMLInputElement>
+                            ) => {
                               const file = event.target.files?.[0] || undefined;
                               field.onChange(file);
                             }}
@@ -164,7 +195,11 @@ export function SignUpScreen(): React.ReactElement {
                   />
 
                   <div className="mt-5">
-                    <Text size="body2" weight="bold" className="mb-1 text-gray-800">
+                    <Text
+                      size="body2"
+                      weight="bold"
+                      className="mb-1 text-gray-800"
+                    >
                       생년월일
                     </Text>
                     <div className="grid grid-cols-3 gap-3">
@@ -173,7 +208,10 @@ export function SignUpScreen(): React.ReactElement {
                         name="year"
                         render={({ field }) => (
                           <FormItem>
-                            <Select value={field.value} onValueChange={field.onChange}>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
                               <FormControl>
                                 <SelectTrigger className="w-full !min-w-0">
                                   <SelectValue placeholder="년" />
@@ -197,7 +235,10 @@ export function SignUpScreen(): React.ReactElement {
                         name="month"
                         render={({ field }) => (
                           <FormItem>
-                            <Select value={field.value} onValueChange={field.onChange}>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
                               <FormControl>
                                 <SelectTrigger className="w-full !min-w-0">
                                   <SelectValue placeholder="월" />
@@ -221,7 +262,10 @@ export function SignUpScreen(): React.ReactElement {
                         name="day"
                         render={({ field }) => (
                           <FormItem>
-                            <Select value={field.value} onValueChange={field.onChange}>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
                               <FormControl>
                                 <SelectTrigger className="w-full !min-w-0">
                                   <SelectValue placeholder="일" />
@@ -243,7 +287,11 @@ export function SignUpScreen(): React.ReactElement {
                   </div>
 
                   <div className="mt-5">
-                    <Text size="body2" weight="bold" className="mb-1 text-gray-800">
+                    <Text
+                      size="body2"
+                      weight="bold"
+                      className="mb-1 text-gray-800"
+                    >
                       성별
                     </Text>
                     <FormField
@@ -279,7 +327,11 @@ export function SignUpScreen(): React.ReactElement {
                   </div>
 
                   <div className="mt-5">
-                    <Text size="body2" weight="bold" className="mb-1 text-gray-800">
+                    <Text
+                      size="body2"
+                      weight="bold"
+                      className="mb-1 text-gray-800"
+                    >
                       직업
                     </Text>
                     <FormField
@@ -287,7 +339,10 @@ export function SignUpScreen(): React.ReactElement {
                       name="job"
                       render={({ field }) => (
                         <FormItem>
-                          <Select value={field.value} onValueChange={field.onChange}>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
                             <FormControl>
                               <SelectTrigger className="w-full !min-w-0">
                                 <SelectValue placeholder="직업 선택" />
@@ -295,7 +350,10 @@ export function SignUpScreen(): React.ReactElement {
                             </FormControl>
                             <SelectContent>
                               {SIGN_UP_OCCUPATION_OPTIONS.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
                                   {option.label}
                                 </SelectItem>
                               ))}
@@ -308,7 +366,11 @@ export function SignUpScreen(): React.ReactElement {
                   </div>
 
                   <div className="mt-8 flex justify-end">
-                    <Button type="button" size="medium" onClick={handleNextStep}>
+                    <Button
+                      type="button"
+                      size="medium"
+                      onClick={handleNextStep}
+                    >
                       다음 단계
                     </Button>
                   </div>
@@ -319,16 +381,28 @@ export function SignUpScreen(): React.ReactElement {
             <div className="mx-auto flex w-full max-w-[1200px] flex-1 items-center px-6 py-10">
               <div className="grid w-full gap-10 lg:grid-cols-[1fr_1.15fr]">
                 <section className="flex flex-col justify-center">
-                  <Text size="caption3" weight="medium" className="text-gray-600">
+                  <Text
+                    size="caption3"
+                    weight="medium"
+                    className="text-gray-600"
+                  >
                     Step 2 : Interests
                   </Text>
-                  <Text size="display1" weight="bold" className="mt-4 text-gray-900">
+                  <Text
+                    size="display1"
+                    weight="bold"
+                    className="mt-4 text-gray-900"
+                  >
                     What are you
                   </Text>
                   <Text size="display1" weight="bold" className="text-main-600">
                     passionate about?
                   </Text>
-                  <Text size="body2" weight="regular" className="mt-3 text-gray-600">
+                  <Text
+                    size="body2"
+                    weight="regular"
+                    className="mt-3 text-gray-600"
+                  >
                     도전하고 싶은 관심 주제를 선택해주세요.
                   </Text>
                 </section>
@@ -352,7 +426,9 @@ export function SignUpScreen(): React.ReactElement {
                                   const currentTopics = field.value;
                                   const nextTopics = nextChecked
                                     ? [...currentTopics, option.value]
-                                    : currentTopics.filter((topic) => topic !== option.value);
+                                    : currentTopics.filter(
+                                        (topic) => topic !== option.value
+                                      );
 
                                   field.onChange(nextTopics);
                                 }}
@@ -362,8 +438,14 @@ export function SignUpScreen(): React.ReactElement {
                                 className="rounded-3 w-full min-w-0 border border-gray-200 px-3"
                               >
                                 <div className="flex w-full flex-col items-center justify-center gap-2">
-                                  <span className="text-xl leading-none">{option.icon}</span>
-                                  <Text size="body2" weight="medium" className="text-gray-700">
+                                  <span className="text-xl leading-none">
+                                    {option.icon}
+                                  </span>
+                                  <Text
+                                    size="body2"
+                                    weight="medium"
+                                    className="text-gray-700"
+                                  >
                                     {option.label}
                                   </Text>
                                 </div>

@@ -1,7 +1,7 @@
 name: PR Automation (Title & Notion)
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, reopened, closed, edited]
 
 permissions:
@@ -79,7 +79,7 @@ jobs:
             // (이하 노션 API 호출 로직은 동일)
             let newStatus = null;
             if (context.payload.action === 'opened' || context.payload.action === 'reopened') {
-               newStatus = '진행중';
+               newStatus = 'PR리뷰중';
             } else if (context.payload.action === 'closed' && context.payload.pull_request.merged) {
                newStatus = '완료';
             }

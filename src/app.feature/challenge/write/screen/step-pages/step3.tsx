@@ -1,7 +1,6 @@
-import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
 import {
-  CheckContainer,
   Checkbox,
+  CheckContainer,
   Select,
   SelectContent,
   SelectItem,
@@ -10,8 +9,14 @@ import {
   Text,
   TextField,
 } from '@1d1s/design-system';
-import { FormControl, FormField, FormItem, FormMessage } from '@component/ui/form';
-import { cn } from '@module/lib/utils';
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@component/ui/form';
+import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
+import { cn } from '@module/utils/cn';
 import { User, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -56,10 +61,18 @@ export function Step3(): React.ReactElement {
                       <User className="h-5 w-5" />
                     </span>
                     <div className="flex flex-col">
-                      <Text size="heading1" weight="bold" className="text-gray-900">
+                      <Text
+                        size="heading1"
+                        weight="bold"
+                        className="text-gray-900"
+                      >
                         개인 챌린지
                       </Text>
-                      <Text size="caption1" weight="regular" className="mt-2 text-gray-600">
+                      <Text
+                        size="caption1"
+                        weight="regular"
+                        className="mt-2 text-gray-600"
+                      >
                         혼자 진행하는 챌린지입니다.
                       </Text>
                     </div>
@@ -88,10 +101,18 @@ export function Step3(): React.ReactElement {
                       <Users className="h-5 w-5" />
                     </span>
                     <div className="flex flex-col">
-                      <Text size="heading1" weight="bold" className="text-gray-900">
+                      <Text
+                        size="heading1"
+                        weight="bold"
+                        className="text-gray-900"
+                      >
                         단체 챌린지
                       </Text>
-                      <Text size="caption1" weight="regular" className="mt-2 text-gray-600">
+                      <Text
+                        size="caption1"
+                        weight="regular"
+                        className="mt-2 text-gray-600"
+                      >
                         다른 참여자와 함께 목표를 달성합니다.
                       </Text>
                     </div>
@@ -164,17 +185,23 @@ export function Step3(): React.ReactElement {
 
           <div className="rounded-2xl border border-gray-200 bg-gray-100 px-4 py-4">
             <div className="flex items-center justify-between gap-3">
-              <div className='flex items-center gap-3'>
+              <div className="flex items-center gap-3">
                 <Text size="body1" weight="bold" className="text-gray-800">
                   중도 참여 수용 <span className="text-gray-500">(선택)</span>
                 </Text>
-                <Text size="body2" weight="regular" className="mt-1 text-gray-600">
+                <Text
+                  size="body2"
+                  weight="regular"
+                  className="mt-1 text-gray-600"
+                >
                   챌린지 시작 후에도 새로운 참여자를 받을 수 있습니다.
                 </Text>
               </div>
               <Checkbox
                 checked={allowJoinAfterStart}
-                onCheckedChange={(checked) => setAllowJoinAfterStart(Boolean(checked))}
+                onCheckedChange={(checked) =>
+                  setAllowJoinAfterStart(Boolean(checked))
+                }
                 aria-label="중도 참여 수용"
               />
             </div>

@@ -1,19 +1,23 @@
+import { Button, Text } from '@1d1s/design-system';
 import { ChallengeCreateDialog } from '@feature/challenge/write/components/challenge-create-dialog';
 import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/components/challenge-create-success-dialog';
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
-import { Button, Text } from '@1d1s/design-system';
+import { useStepValidation } from '@feature/challenge/write/hooks/use-step-validation';
+import { add } from 'date-fns';
+import { useState } from 'react';
+import { useFormContext } from 'react-hook-form';
+
+import {
+  ChallengeCategory,
+  CreateChallengeRequest,
+} from '../../board/type/challenge';
+import { useCreateChallenge } from '../../detail/hooks/use-challenge-mutations';
 import { Step1 } from './step-pages/step1';
 import { Step2 } from './step-pages/step2';
 import { Step3 } from './step-pages/step3';
 import { Step4 } from './step-pages/step4';
-import { useState } from 'react';
-import { useFormContext } from 'react-hook-form';
-import { useStepValidation } from '@feature/challenge/write/hooks/use-step-validation';
-import { useCreateChallenge } from '../../hooks';
-import { ChallengeCategory, CreateChallengeRequest } from '../../board/type/challenge';
-import { add } from 'date-fns';
 
-export function ChallengeCreateForm({
+export function ChallengeCreateFormScreen({
   step,
   totalSteps,
   nextStep,
@@ -62,7 +66,9 @@ export function ChallengeCreateForm({
   const isStepValid = useStepValidation(step);
   const createChallenge = useCreateChallenge();
 
-  const formatFormValues = (values: ChallengeCreateFormValues): CreateChallengeRequest => ({
+  const formatFormValues = (
+    values: ChallengeCreateFormValues
+  ): CreateChallengeRequest => ({
     title: values.title,
     // 'BOOK' 카테고리 싱크가 맞지 않음
     category: values.category as ChallengeCategory,
@@ -70,9 +76,13 @@ export function ChallengeCreateForm({
     startDate: values.startDate!.toISOString(),
     // periodType === 'ENDLESS'일 때는 어떻게 대응해야 하는가
     // period 값이 있는 지를 확인하고, periodNumber로 대응되도록 해야 함
-    endDate: add(values.startDate!, { days: Number(values.periodNumber) }).toISOString(),
+    endDate: add(values.startDate!, {
+      days: Number(values.periodNumber),
+    }).toISOString(),
     maxParticipantCnt: Number(
-      values.memberCount === 'etc' ? values.memberCountNumber : values.memberCount
+      values.memberCount === 'etc'
+        ? values.memberCountNumber
+        : values.memberCount
     ),
     // 싱크가 맞지 않는 부분 존재
     challengeType: values.goalType,
@@ -142,7 +152,10 @@ export function ChallengeCreateForm({
           )}
         </div>
       </section>
-      <ChallengeCreateSuccessDialog open={isSuccessOpen} onOpenChange={setIsSuccessOpen} />
+      <ChallengeCreateSuccessDialog
+        open={isSuccessOpen}
+        onOpenChange={setIsSuccessOpen}
+      />
     </form>
   );
 }

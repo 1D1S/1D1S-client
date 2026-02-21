@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { useChallengeCreateForm } from '@feature/challenge/write/hooks/use-challenge-create-form';
-import { Form } from '@component/ui/form';
 import { StepIndicator, Text } from '@1d1s/design-system';
-import { ChallengeCreateForm } from './challenge-create-form-screen';
+import { Form } from '@component/ui/form';
+import { useChallengeCreateForm } from '@feature/challenge/write/hooks/use-challenge-create-form';
+import { useState } from 'react';
+
+import { ChallengeCreateFormScreen } from './challenge-create-form-screen';
 
 export default function ChallengeCreateScreen(): React.ReactElement {
   const form = useChallengeCreateForm();
@@ -22,7 +23,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-white">
-      <div className="mx-auto flex w-full max-w-[1120px] flex-col px-6 pb-12 pt-10">
+      <div className="mx-auto flex w-full max-w-[1120px] flex-col px-6 pt-10 pb-12">
         <div className="flex flex-col text-center">
           <Text size="display1" weight="bold" className="text-gray-900">
             챌린지 생성
@@ -35,7 +36,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
           <StepIndicator steps={steps} currentStep={step} />
         </div>
         <Form {...form}>
-          <ChallengeCreateForm
+          <ChallengeCreateFormScreen
             step={step}
             totalSteps={totalSteps}
             nextStep={next}

@@ -1,9 +1,11 @@
 // app/layout.tsx
-import { AppProviders } from '@module/providers';
-import { pretendard, suite } from '@module/lib/font';
-import '@module/styles/globals.css';
-import type { Metadata, Viewport } from 'next';
+import '@/app.styles/globals.css';
+
 import AppLayoutShell from '@component/layout/app-layout-shell';
+import { AppProviders } from '@module/providers';
+import type { Metadata, Viewport } from 'next';
+
+import { pretendard, suite } from '@/app.lib/font';
 
 export const metadata: Metadata = {
   title: 'Create Next App',

@@ -1,7 +1,7 @@
 // components/ChallengeGoalToggle.tsx
 
 import { Text } from '@1d1s/design-system';
-import { cn } from '@module/lib/utils';
+import { cn } from '@module/utils/cn';
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { Check } from 'lucide-react';
 import React from 'react';

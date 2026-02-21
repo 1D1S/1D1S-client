@@ -1,20 +1,21 @@
 import {
-  useQuery,
   useInfiniteQuery,
-  UseQueryResult,
   UseInfiniteQueryResult,
+  useQuery,
+  UseQueryResult,
 } from '@tanstack/react-query';
-import { challengeApi } from '../api/challenge-api';
+
+import { challengeDetailApi } from '../../detail/api/challenge-detail-api';
+import { challengeBoardApi } from '../api/challenge-board-api';
+import { CHALLENGE_QUERY_KEYS } from '../consts/query-keys';
 import {
-  ChallengeListParams,
-  RandomChallengesParams,
-  MemberChallengesParams,
   ChallengeDetailResponse,
   ChallengeListItem,
+  ChallengeListParams,
   ChallengeListResponse,
+  MemberChallengesParams,
+  RandomChallengesParams,
 } from '../type/challenge';
-import { CHALLENGE_QUERY_KEYS } from '../const/query-keys';
-export { CHALLENGE_QUERY_KEYS } from '../const/query-keys';
 
 // 챌린지 상세 조회
 export function useChallengeDetail(
@@ -22,7 +23,7 @@ export function useChallengeDetail(
 ): UseQueryResult<ChallengeDetailResponse, Error> {
   return useQuery({
     queryKey: CHALLENGE_QUERY_KEYS.detail(challengeId),
-    queryFn: () => challengeApi.getChallengeDetail(challengeId),
+    queryFn: () => challengeDetailApi.getChallengeDetail(challengeId),
     enabled: Boolean(challengeId),
   });
 }
@@ -33,7 +34,7 @@ export function useRandomChallenges(
 ): UseQueryResult<ChallengeListItem[], Error> {
   return useQuery({
     queryKey: CHALLENGE_QUERY_KEYS.random(params),
-    queryFn: () => challengeApi.getRandomChallenges(params),
+    queryFn: () => challengeBoardApi.getRandomChallenges(params),
   });
 }
 
@@ -44,7 +45,7 @@ export function useChallengeList(
   return useInfiniteQuery({
     queryKey: CHALLENGE_QUERY_KEYS.list(params),
     queryFn: ({ pageParam }) =>
-      challengeApi.getChallengeList({
+      challengeBoardApi.getChallengeList({
         ...params,
         cursor: pageParam,
       }),
@@ -60,7 +61,7 @@ export function useMemberChallenges(
 ): UseQueryResult<ChallengeListItem[], Error> {
   return useQuery({
     queryKey: CHALLENGE_QUERY_KEYS.memberChallenges(params),
-    queryFn: () => challengeApi.getMemberChallenges(params),
+    queryFn: () => challengeBoardApi.getMemberChallenges(params),
     enabled: Boolean(params.memberId),
   });
 }

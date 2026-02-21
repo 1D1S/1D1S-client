@@ -1,7 +1,7 @@
 name: Discord PR Notification
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, closed, reopened, edited, synchronize]
   issue_comment:
     types: [created]
@@ -17,18 +17,18 @@ jobs:
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: '1352445288102494358' # 프론트엔드 채널
-          ROLE_ID: '1347541606927962152'    # 프론트엔드 역할
+          ROLE_ID: '1347541606927962152' # 프론트엔드 역할
         with:
           script: |
             const https = require('https');
-            
+
             const token = process.env.DISCORD_BOT_TOKEN;
             const channelId = process.env.CHANNEL_ID;
             const roleId = process.env.ROLE_ID;
-            
+
             const pr = context.payload.pull_request || context.payload.issue;
             const isPr = !!pr.pull_request_url || !!pr.html_url.includes('/pull/');
-            
+
             if (!isPr) { console.log('Not a PR event.'); return; }
 
             const eventName = context.eventName;
@@ -36,7 +36,7 @@ jobs:
             const prUrl = pr.html_url;
             const prTitle = pr.title;
             const sender = context.payload.sender;
-            
+
             let content = '';
             let embeds = [];
             let isNew = false;

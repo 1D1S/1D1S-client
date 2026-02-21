@@ -1,9 +1,16 @@
 /* eslint-disable no-use-before-define */
 'use client';
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
 import { CircleAvatar, Streak, Text } from '@1d1s/design-system';
+import type { MyPageStatIconType } from '@constants/consts/mypage-data';
+import {
+  buildMyPageStreakData,
+  MY_PAGE_CHALLENGE_PROGRESS_ITEMS,
+  MY_PAGE_FRIEND_ITEMS,
+  MY_PAGE_FRIEND_REQUEST_ITEMS,
+  MY_PAGE_PROFILE_DATA,
+  MY_PAGE_STAT_ITEMS,
+} from '@constants/consts/mypage-data';
 import {
   Check,
   CheckCircle2,
@@ -17,15 +24,8 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import {
-  buildMyPageStreakData,
-  MY_PAGE_CHALLENGE_PROGRESS_ITEMS,
-  MY_PAGE_FRIEND_ITEMS,
-  MY_PAGE_FRIEND_REQUEST_ITEMS,
-  MY_PAGE_PROFILE_DATA,
-  MY_PAGE_STAT_ITEMS,
-} from '@constants/consts/mypage-data';
-import type { MyPageStatIconType } from '@constants/consts/mypage-data';
+import { useRouter } from 'next/navigation';
+import React from 'react';
 
 export default function MyPage(): React.ReactElement {
   const router = useRouter();
@@ -61,14 +61,18 @@ export default function MyPage(): React.ReactElement {
         <main className="space-y-4">
           <section className="rounded-4 border border-gray-200 bg-white p-5">
             <div className="flex items-start gap-2">
-              <div className="mt-1 rounded-1.5 bg-main-200 p-1 text-main-800">
+              <div className="rounded-1.5 bg-main-200 text-main-800 mt-1 p-1">
                 <Gauge className="h-4 w-4" />
               </div>
               <div>
                 <Text size="display1" weight="bold" className="text-gray-900">
                   User Statistics
                 </Text>
-                <Text size="body1" weight="regular" className="mt-1 text-gray-600">
+                <Text
+                  size="body1"
+                  weight="regular"
+                  className="mt-1 text-gray-600"
+                >
                   나의 활동 기록과 성장 지표를 한눈에 확인하세요.
                 </Text>
               </div>
@@ -91,7 +95,7 @@ export default function MyPage(): React.ReactElement {
           <section className="rounded-4 border border-gray-200 bg-white p-5">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Gauge className="h-5 w-5 text-main-800" />
+                <Gauge className="text-main-800 h-5 w-5" />
                 <Text size="display2" weight="bold" className="text-gray-900">
                   활동 기록
                 </Text>
@@ -124,14 +128,25 @@ export default function MyPage(): React.ReactElement {
                   </Text>
                 </div>
                 {MY_PAGE_FRIEND_REQUEST_ITEMS.map((item) => (
-                  <div key={item.name} className="flex items-center justify-between">
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center gap-3">
                       <CircleAvatar imageUrl={item.imageUrl} size="md" />
                       <div>
-                        <Text size="heading2" weight="bold" className="text-gray-900">
+                        <Text
+                          size="heading2"
+                          weight="bold"
+                          className="text-gray-900"
+                        >
                           {item.name}
                         </Text>
-                        <Text size="body2" weight="regular" className="text-gray-600">
+                        <Text
+                          size="body2"
+                          weight="regular"
+                          className="text-gray-600"
+                        >
                           {item.message}
                         </Text>
                       </div>
@@ -139,7 +154,7 @@ export default function MyPage(): React.ReactElement {
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        className="flex h-10 w-10 items-center justify-center rounded-full bg-main-200 text-main-800"
+                        className="bg-main-200 text-main-800 flex h-10 w-10 items-center justify-center rounded-full"
                         aria-label="친구 요청 수락"
                       >
                         <Check className="h-5 w-5" />
@@ -185,8 +200,11 @@ export default function MyPage(): React.ReactElement {
 
         <aside className="space-y-4">
           <section className="rounded-4 border border-gray-200 bg-white p-5 text-center">
-            <div className="mx-auto mb-3 flex h-[120px] w-[120px] items-center justify-center rounded-full border-4 border-main-800/20 bg-main-200">
-              <CircleAvatar imageUrl={MY_PAGE_PROFILE_DATA.imageUrl} size="xl" />
+            <div className="border-main-800/20 bg-main-200 mx-auto mb-3 flex h-[120px] w-[120px] items-center justify-center rounded-full border-4">
+              <CircleAvatar
+                imageUrl={MY_PAGE_PROFILE_DATA.imageUrl}
+                size="xl"
+              />
             </div>
             <Text size="display2" weight="bold" className="text-gray-900">
               {MY_PAGE_PROFILE_DATA.nickname}
@@ -272,13 +290,21 @@ function ChallengeProgressCard({
         : 'bg-gray-400 text-gray-500';
 
   const iconBgClass =
-    tone === 'orange' ? 'bg-main-200 text-main-800' : tone === 'blue' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-500';
+    tone === 'orange'
+      ? 'bg-main-200 text-main-800'
+      : tone === 'blue'
+        ? 'bg-blue-100 text-blue-600'
+        : 'bg-purple-100 text-purple-500';
 
   return (
     <article className="rounded-4 border border-gray-200 bg-white p-4">
       <div className="flex items-start gap-3">
-        <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${iconBgClass}`}>
-          <span className="text-lg">{tone === 'orange' ? '🐾' : tone === 'blue' ? '✍️' : '🏃'}</span>
+        <div
+          className={`flex h-14 w-14 items-center justify-center rounded-2xl ${iconBgClass}`}
+        >
+          <span className="text-lg">
+            {tone === 'orange' ? '🐾' : tone === 'blue' ? '✍️' : '🏃'}
+          </span>
         </div>
         <div className="min-w-0 flex-1">
           <Text size="heading1" weight="bold" className="text-gray-900">
@@ -291,7 +317,10 @@ function ChallengeProgressCard({
       </div>
 
       <div className="mt-4 h-2 rounded-full bg-gray-200">
-        <div className={`h-full rounded-full ${toneClass.split(' ')[0]}`} style={{ width: `${progress}%` }} />
+        <div
+          className={`h-full rounded-full ${toneClass.split(' ')[0]}`}
+          style={{ width: `${progress}%` }}
+        />
       </div>
       <div className="mt-2 flex items-center justify-between">
         <Text size="body2" weight="medium" className="text-gray-500">
@@ -350,7 +379,10 @@ function FriendRow({
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <CircleAvatar imageUrl={`https://picsum.photos/seed/${imageSeed}/80/80`} size="md" />
+        <CircleAvatar
+          imageUrl={`https://picsum.photos/seed/${imageSeed}/80/80`}
+          size="md"
+        />
         <div>
           <Text size="heading2" weight="bold" className="text-gray-900">
             {name}
@@ -384,9 +416,7 @@ function QuickActionItem({
   tone?: 'main' | 'blue';
 }): React.ReactElement {
   const iconClass =
-    tone === 'main'
-      ? 'bg-main-200 text-main-800'
-      : 'bg-blue-100 text-blue-600';
+    tone === 'main' ? 'bg-main-200 text-main-800' : 'bg-blue-100 text-blue-600';
 
   return (
     <button
@@ -395,7 +425,9 @@ function QuickActionItem({
       className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-3 py-3 transition hover:bg-gray-100"
     >
       <div className="flex items-center gap-3">
-        <span className={`flex h-9 w-9 items-center justify-center rounded-full ${iconClass}`}>
+        <span
+          className={`flex h-9 w-9 items-center justify-center rounded-full ${iconClass}`}
+        >
           {icon}
         </span>
         <Text size="heading2" weight="medium" className="text-gray-800">

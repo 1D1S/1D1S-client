@@ -1,7 +1,5 @@
-import Image from 'next/image';
 import {
   Button,
-  Text,
   Dialog,
   DialogClose,
   DialogContent,
@@ -9,7 +7,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Text,
 } from '@1d1s/design-system';
+import Image from 'next/image';
 
 /**
  * ChallengeCreateSuccessDialog
@@ -32,7 +32,12 @@ export function ChallengeCreateSuccessDialog({
         </DialogHeader>
         <div className="flex flex-col items-center">
           <div className="bg-main-900 flex h-37.5 w-37.5 items-center justify-center rounded-full">
-            <Image src="/images/check.png" alt="success" width="75" height="75" />
+            <Image
+              src="/images/check.png"
+              alt="success"
+              width="75"
+              height="75"
+            />
           </div>
         </div>
         <DialogFooter className="justify-center mb-8">
