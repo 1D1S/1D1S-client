@@ -79,7 +79,7 @@ export function useUpdateDiary(): UseMutationResult<
 }
 
 // 다이어리 삭제하기
-export function useDeleteDiary(): UseMutationResult<void, Error, number> {
+export function useDeleteDiary(): UseMutationResult<boolean, Error, number> {
   const queryClient = useQueryClient();
 
   return useMutation({

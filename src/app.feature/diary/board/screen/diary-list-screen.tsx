@@ -4,13 +4,95 @@ import { DiaryCard, Text } from '@1d1s/design-system';
 import { motion } from 'framer-motion';
 import { ArrowUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
-import { COMMUNITY_DIARIES, SortMode } from '../consts/diary-list-data';
+import { useAllDiaries } from '../hooks/use-diary-queries';
+import { type DiaryItem, Feeling } from '../type/diary';
+
+type SortMode = 'latest' | 'likes';
+type DiaryEmotion = 'happy' | 'soso' | 'sad';
+
+const relativeTimeFormatter = new Intl.RelativeTimeFormat('ko', {
+  numeric: 'auto',
+});
+
+function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
+  switch (feeling) {
+    case 'HAPPY':
+      return 'happy';
+    case 'SAD':
+      return 'sad';
+    case 'NORMAL':
+    case 'NONE':
+    default:
+      return 'soso';
+  }
+}
+
+function toRelativeDateLabel(createdAt: string): string {
+  if (!createdAt) {
+    return '방금 전';
+  }
+
+  const targetDate = new Date(createdAt);
+  if (Number.isNaN(targetDate.getTime())) {
+    return '방금 전';
+  }
+
+  const diffMinutes = Math.round((targetDate.getTime() - Date.now()) / 60000);
+  const absMinutes = Math.abs(diffMinutes);
+
+  if (absMinutes < 60) {
+    return relativeTimeFormatter.format(diffMinutes, 'minute');
+  }
+
+  const diffHours = Math.round(diffMinutes / 60);
+  if (Math.abs(diffHours) < 24) {
+    return relativeTimeFormatter.format(diffHours, 'hour');
+  }
+
+  const diffDays = Math.round(diffHours / 24);
+  return relativeTimeFormatter.format(diffDays, 'day');
+}
+
+function sortDiaries(items: DiaryItem[], sortMode: SortMode): DiaryItem[] {
+  const sorted = [...items];
+
+  if (sortMode === 'likes') {
+    sorted.sort(
+      (leftDiary, rightDiary) =>
+        rightDiary.likeInfo.likeCnt - leftDiary.likeInfo.likeCnt
+    );
+    return sorted;
+  }
+
+  sorted.sort((leftDiary, rightDiary) => {
+    const leftDiaryTime = new Date(
+      leftDiary.diaryInfoDto?.createdAt ||
+        leftDiary.diaryInfoDto?.challengedDate ||
+        ''
+    ).getTime();
+    const rightDiaryTime = new Date(
+      rightDiary.diaryInfoDto?.createdAt ||
+        rightDiary.diaryInfoDto?.challengedDate ||
+        ''
+    ).getTime();
+
+    return rightDiaryTime - leftDiaryTime;
+  });
+
+  return sorted;
+}
 
 export default function DiaryListScreen(): React.ReactElement {
   const router = useRouter();
   const [sortMode, setSortMode] = useState<SortMode>('latest');
+  const { data: diaries = [], isLoading, isError } = useAllDiaries();
+
+  const sortedDiaries = useMemo(
+    () => sortDiaries(diaries, sortMode),
+    [diaries, sortMode]
+  );
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-white p-4">
@@ -39,31 +121,66 @@ export default function DiaryListScreen(): React.ReactElement {
           </button>
         </div>
 
-        <div className="diary-grid-container mt-6">
-          <div className="diary-card-grid grid grid-cols-2 gap-4">
-            {COMMUNITY_DIARIES.map((item) => (
-              <motion.div
-                key={item.id}
-                layout
-                transition={{ type: 'spring', stiffness: 280, damping: 30 }}
-              >
-                <DiaryCard
-                  imageUrl={item.imageUrl}
-                  percent={item.percent}
-                  likes={item.likes}
-                  title={item.title}
-                  user={item.user}
-                  userImage={'/images/default-profile.png'}
-                  challengeLabel={item.challengeLabel}
-                  challengeUrl={'/challenge'}
-                  date={item.date}
-                  emotion={item.emotion}
-                  onClick={() => router.push(`/diary/${item.id}`)}
-                />
-              </motion.div>
-            ))}
+        {isLoading ? (
+          <div className="mt-10 flex w-full justify-center py-10">
+            <Text size="body1" weight="medium" className="text-gray-500">
+              일지를 불러오는 중입니다.
+            </Text>
           </div>
-        </div>
+        ) : null}
+
+        {isError ? (
+          <div className="mt-10 flex w-full justify-center py-10">
+            <Text size="body1" weight="medium" className="text-red-600">
+              일지를 불러오지 못했습니다.
+            </Text>
+          </div>
+        ) : null}
+
+        {!isLoading && !isError ? (
+          <div className="diary-grid-container mt-6">
+            <div className="diary-card-grid grid grid-cols-2 gap-4">
+              {sortedDiaries.map((item) => (
+                <motion.div
+                  key={item.id}
+                  layout
+                  transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+                >
+                  <DiaryCard
+                    imageUrl={item.imgUrl?.[0] ?? '/images/default-card.png'}
+                    percent={item.diaryInfoDto?.achievementRate ?? 0}
+                    likes={item.likeInfo.likeCnt}
+                    title={item.title}
+                    user={item.authorInfoDto?.nickname ?? '익명'}
+                    userImage={
+                      item.authorInfoDto?.profileImage ??
+                      '/images/default-profile.png'
+                    }
+                    challengeLabel={
+                      item.challenge?.title ?? item.challenge?.category ?? '챌린지'
+                    }
+                    challengeUrl={
+                      item.challenge
+                        ? `/challenge/${item.challenge.challengeId}`
+                        : '/challenge'
+                    }
+                    date={toRelativeDateLabel(item.diaryInfoDto?.createdAt ?? '')}
+                    emotion={mapFeelingToEmotion(item.diaryInfoDto?.feeling ?? 'NONE')}
+                    onClick={() => router.push(`/diary/${item.id}`)}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {!isLoading && !isError && sortedDiaries.length === 0 ? (
+          <div className="mt-10 flex w-full justify-center py-10">
+            <Text size="body1" weight="medium" className="text-gray-500">
+              아직 등록된 일지가 없습니다.
+            </Text>
+          </div>
+        ) : null}
       </section>
     </div>
   );

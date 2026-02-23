@@ -1,5 +1,5 @@
 import { apiClient } from '@module/api/client';
-import { buildQueryString, requestData } from '@module/api/request';
+import { buildQueryString, requestBody, requestData } from '@module/api/request';
 
 import {
   DiaryItem,
@@ -7,6 +7,18 @@ import {
   DiaryListResponse,
   RandomDiaryParams,
 } from '../type/diary';
+
+type AllDiariesApiResponse = DiaryItem[] | { data?: DiaryItem[] };
+
+const normalizeAllDiariesResponse = (
+  response: AllDiariesApiResponse
+): DiaryItem[] => {
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  return Array.isArray(response.data) ? response.data : [];
+};
 
 export const diaryBoardApi = {
   // 다이어리 모두 조회 (페이지네이션)
@@ -25,11 +37,14 @@ export const diaryBoardApi = {
   },
 
   // 다이어리 모두 조회 (전체)
-  getAllDiaries: async (): Promise<DiaryItem[]> =>
-    requestData<DiaryItem[]>(apiClient, {
+  getAllDiaries: async (): Promise<DiaryItem[]> => {
+    const response = await requestBody<AllDiariesApiResponse>(apiClient, {
       url: '/diaries/all',
       method: 'GET',
-    }),
+    });
+
+    return normalizeAllDiariesResponse(response);
+  },
 
   // 랜덤 다이어리 보여주기
   getRandomDiaries: async (

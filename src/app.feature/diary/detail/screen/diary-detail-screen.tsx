@@ -13,12 +13,109 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 
-import type { DiaryDetailData } from '../consts/diary-detail-data';
+import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
+import { DiaryDetail, Feeling } from '../../board/type/diary';
 
-export function DiaryDetailScreen({
+interface ChecklistItem {
+  id: string;
+  label: string;
+}
+
+interface DiaryDetailViewData {
+  id: number;
+  title: string;
+  dateLabel: string;
+  weekdayLabel: string;
+  feelingEmoji: string;
+  connectedChallengeTitle: string;
+  checklistItems: ChecklistItem[];
+  checkedChecklistIds: string[];
+  contentParagraphs: string[];
+  imageUrl: string;
+  tags: string[];
+}
+
+function feelingToEmoji(feeling: Feeling): string {
+  switch (feeling) {
+    case 'HAPPY':
+      return '🙂';
+    case 'SAD':
+      return '🙁';
+    case 'NORMAL':
+      return '😐';
+    case 'NONE':
+    default:
+      return '📝';
+  }
+}
+
+function formatDate(
+  dateValue: string
+): { dateLabel: string; weekdayLabel: string } {
+  if (!dateValue) {
+    return { dateLabel: '-', weekdayLabel: '-' };
+  }
+
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) {
+    return { dateLabel: '-', weekdayLabel: '-' };
+  }
+
+  const dateLabel = new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+    .format(date)
+    .replace(/\.\s/g, '.')
+    .replace(/\.$/, '');
+
+  const weekdayLabel = new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+  }).format(date);
+
+  return { dateLabel, weekdayLabel };
+}
+
+function mapDiaryToViewData(diary: DiaryDetail): DiaryDetailViewData {
+  const baseDate =
+    diary.diaryInfoDto?.challengedDate || diary.diaryInfoDto?.createdAt || '';
+  const { dateLabel, weekdayLabel } = formatDate(baseDate);
+
+  const checklistItems = (diary.diaryInfoDto?.achievement ?? []).map(
+    (goalId) => ({
+      id: String(goalId),
+      label: `목표 ${goalId}`,
+    })
+  );
+
+  const contentParagraphs = diary.content
+    .split('\n')
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+
+  return {
+    id: diary.id,
+    title: diary.title || '제목 없는 일지',
+    dateLabel,
+    weekdayLabel,
+    feelingEmoji: feelingToEmoji(diary.diaryInfoDto?.feeling ?? 'NONE'),
+    connectedChallengeTitle: diary.challenge?.title ?? '연동된 챌린지가 없습니다.',
+    checklistItems,
+    checkedChecklistIds: checklistItems.map((item) => item.id),
+    contentParagraphs:
+      contentParagraphs.length > 0 ? contentParagraphs : ['작성된 내용이 없습니다.'],
+    imageUrl: diary.imgUrl?.[0] ?? '/images/default-card.png',
+    tags: [diary.challenge?.category, diary.diaryInfoDto?.feeling].filter(
+      (tag): tag is string => Boolean(tag)
+    ),
+  };
+}
+
+function DiaryDetailView({
   diaryData,
 }: {
-  diaryData: DiaryDetailData;
+  diaryData: DiaryDetailViewData;
 }): React.ReactElement {
   const router = useRouter();
   const [checkedIds, setCheckedIds] = useState<string[]>(
@@ -75,7 +172,7 @@ export function DiaryDetailScreen({
                 {diaryData.title}
               </Text>
               <span className="bg-main-200 flex h-7 w-7 items-center justify-center rounded-full">
-                🙂
+                {diaryData.feelingEmoji}
               </span>
             </div>
 
@@ -99,7 +196,7 @@ export function DiaryDetailScreen({
             <Button
               variant="default"
               size="medium"
-              onClick={() => router.push('/diary/create')}
+              onClick={() => router.push(`/diary/create?diaryId=${diaryData.id}`)}
             >
               <Edit3 className="mr-1 h-4 w-4" />
               일지 수정
@@ -143,18 +240,24 @@ export function DiaryDetailScreen({
             </Text>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <CheckList
-              options={leftChecklistOptions}
-              value={checkedIds}
-              onValueChange={setCheckedIds}
-            />
-            <CheckList
-              options={rightChecklistOptions}
-              value={checkedIds}
-              onValueChange={setCheckedIds}
-            />
-          </div>
+          {diaryData.checklistItems.length > 0 ? (
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <CheckList
+                options={leftChecklistOptions}
+                value={checkedIds}
+                onValueChange={setCheckedIds}
+              />
+              <CheckList
+                options={rightChecklistOptions}
+                value={checkedIds}
+                onValueChange={setCheckedIds}
+              />
+            </div>
+          ) : (
+            <Text size="body2" weight="regular" className="text-gray-500">
+              달성 목표 데이터가 없습니다.
+            </Text>
+          )}
         </section>
 
         <section className="mt-8">
@@ -190,16 +293,59 @@ export function DiaryDetailScreen({
               />
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              {diaryData.tags.map((tag) => (
-                <Tag key={tag} size="caption3" weight="medium">
-                  #{tag}
-                </Tag>
-              ))}
-            </div>
+            {diaryData.tags.length > 0 ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {diaryData.tags.map((tag) => (
+                  <Tag key={tag} size="caption3" weight="medium">
+                    #{tag}
+                  </Tag>
+                ))}
+              </div>
+            ) : null}
           </div>
         </section>
       </div>
     </div>
   );
+}
+
+export function DiaryDetailScreen({
+  id,
+}: {
+  id: number;
+}): React.ReactElement {
+  const safeDiaryId = Number.isFinite(id) && id > 0 ? id : 0;
+  const { data, isLoading, isError } = useDiaryDetail(safeDiaryId);
+
+  if (!safeDiaryId) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center p-4">
+        <Text size="body1" weight="medium" className="text-red-600">
+          유효하지 않은 일지 ID입니다.
+        </Text>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center p-4">
+        <Text size="body1" weight="medium" className="text-gray-500">
+          일지 상세를 불러오는 중입니다.
+        </Text>
+      </div>
+    );
+  }
+
+  if (isError || !data) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center p-4">
+        <Text size="body1" weight="medium" className="text-red-600">
+          일지 상세를 불러오지 못했습니다.
+        </Text>
+      </div>
+    );
+  }
+
+  return <DiaryDetailView diaryData={mapDiaryToViewData(data)} />;
 }
