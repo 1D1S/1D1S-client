@@ -5,8 +5,9 @@ import {
   RightSidebar,
   type RightSidebarProps,
 } from '@1d1s/design-system';
+import { authStorage } from '@module/utils/auth';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { AppLayoutProvider } from './app-layout-context';
 
@@ -85,6 +86,11 @@ export default function AppLayoutShell({
   const pathname = usePathname();
   const router = useRouter();
   const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(authStorage.hasTokens());
+  }, [pathname]);
   const showHeader = !matchesRoute(pathname, HEADER_HIDDEN_ROUTES);
   const showRightSidebar =
     !matchesRoute(pathname, RIGHT_SIDEBAR_HIDDEN_ROUTES) &&
@@ -108,6 +114,7 @@ export default function AppLayoutShell({
             <AppHeader
               navItems={[...APP_HEADER_NAV_ITEMS]}
               activeKey={activeNavKey}
+              showProfile={isLoggedIn && !showRightSidebar}
               onLogoClick={() => router.push('/')}
               onNavChange={(key) => {
                 const route = APP_HEADER_ROUTE_BY_KEY[key];
@@ -130,12 +137,14 @@ export default function AppLayoutShell({
             >
               <RightSidebar
                 {...DEFAULT_RIGHT_SIDEBAR_PROPS}
+                isLoggedIn={isLoggedIn}
                 fixed={false}
                 onCollapseClick={() =>
                   setIsRightSidebarCollapsed((prev) => !prev)
                 }
                 onWriteDiary={() => router.push('/diary/create')}
                 onGoMyPage={() => router.push('/mypage')}
+                onLogin={() => router.push('/login')}
               />
             </aside>
           </div>
