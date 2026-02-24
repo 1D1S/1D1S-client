@@ -27,7 +27,7 @@ jobs:
             const roleId = process.env.ROLE_ID;
 
             const pr = context.payload.pull_request || context.payload.issue;
-            const isPr = !!pr.pull_request_url || !!pr.html_url.includes('/pull/');
+            const isPr = !!context.payload.pull_request || (pr && pr.html_url && pr.html_url.includes('/pull/'));
 
             if (!isPr) { console.log('Not a PR event.'); return; }
 
@@ -43,7 +43,7 @@ jobs:
             let threadName = `💬 ${prTitle.slice(0, 50)}`;
 
             // 1. PR 생성
-            if (eventName === 'pull_request' && (action === 'opened' || action === 'reopened')) {
+            if (eventName === 'pull_request_target' && (action === 'opened' || action === 'reopened')) {
               isNew = action === 'opened';
               content = `<@&${roleId}>`;
               embeds = [{
@@ -60,7 +60,7 @@ jobs:
               }];
             } 
             // 2. PR 닫힘/병합
-            else if (eventName === 'pull_request' && action === 'closed') {
+            else if (eventName === 'pull_request_target' && action === 'closed') {
               const merged = context.payload.pull_request.merged;
               embeds = [{
                 title: merged ? `✅ PR 병합됨: ${prTitle}` : `⛔ PR 닫힘: ${prTitle}`,
@@ -115,7 +115,7 @@ jobs:
                }];
             }
             // 5. 기타 (수정, 동기화 등)
-            else if (eventName === 'pull_request' && action === 'edited') {
+            else if (eventName === 'pull_request_target' && action === 'edited') {
                embeds = [{
                 description: `✏️ **PR 내용이 수정되었습니다.**`,
                 title: prTitle,
@@ -124,7 +124,7 @@ jobs:
                 author: { name: sender.login, icon_url: sender.avatar_url }
                }];
             }
-            else if (eventName === 'pull_request' && action === 'synchronize') {
+            else if (eventName === 'pull_request_target' && action === 'synchronize') {
                const commitMsg = context.payload.after ? `Commit: ${context.payload.after.slice(0, 7)}` : 'New commits pushed';
                embeds = [{
                 description: `🛠️ **새로운 커밋이 푸시되었습니다.**\n${commitMsg}`,
