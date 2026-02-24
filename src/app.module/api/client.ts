@@ -14,7 +14,7 @@ interface ClientOptions {
 }
 
 let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+let refreshSubscribers: Array<(token: string) => void> = [];
 
 const onTokenRefreshed = (token: string): void => {
   refreshSubscribers.forEach((callback) => callback(token));

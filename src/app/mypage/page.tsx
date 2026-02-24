@@ -3,8 +3,6 @@
 
 import { CircleAvatar, Streak, Text } from '@1d1s/design-system';
 import type { MyPageStatIconType } from '@constants/consts/mypage-data';
-import { useLogout } from '@feature/auth/hooks/use-auth-mutations';
-import { authStorage } from '@module/utils/auth';
 import {
   buildMyPageStreakData,
   MY_PAGE_CHALLENGE_PROGRESS_ITEMS,
@@ -13,6 +11,8 @@ import {
   MY_PAGE_PROFILE_DATA,
   MY_PAGE_STAT_ITEMS,
 } from '@constants/consts/mypage-data';
+import { useLogout } from '@feature/auth/hooks/use-auth-mutations';
+import { authStorage } from '@module/utils/auth';
 import {
   Check,
   CheckCircle2,
@@ -50,7 +50,7 @@ export default function MyPage(): React.ReactElement {
           <Text size="body2" weight="bold" className="mb-2 text-yellow-800">
             [DEV] Token Info
           </Text>
-          <div className="space-y-1 break-all font-mono text-xs text-yellow-700">
+          <div className="space-y-1 font-mono text-xs break-all text-yellow-700">
             <p>
               <span className="font-bold">Access:</span>{' '}
               {authStorage.getAccessToken() ?? 'none'}

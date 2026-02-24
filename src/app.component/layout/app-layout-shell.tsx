@@ -7,7 +7,7 @@ import {
 } from '@1d1s/design-system';
 import { authStorage } from '@module/utils/auth';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { AppLayoutProvider } from './app-layout-context';
 
@@ -85,12 +85,13 @@ export default function AppLayoutShell({
 }): React.ReactElement {
   const pathname = usePathname();
   const router = useRouter();
-  const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    setIsLoggedIn(authStorage.hasTokens());
-  }, [pathname]);
+  const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] =
+    useState(false);
+  const isLoggedIn = useMemo(
+    () => authStorage.hasTokens(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pathname]
+  );
   const showHeader = !matchesRoute(pathname, HEADER_HIDDEN_ROUTES);
   const showRightSidebar =
     !matchesRoute(pathname, RIGHT_SIDEBAR_HIDDEN_ROUTES) &&

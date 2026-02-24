@@ -19,7 +19,9 @@ function OAuthCallbackContent(): React.ReactElement {
   const { data, error } = useSocialLogin(provider, code, state);
 
   useEffect(() => {
-    if (processed.current) return;
+    if (processed.current) {
+      return;
+    }
 
     if (error) {
       processed.current = true;

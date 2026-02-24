@@ -494,7 +494,12 @@ export function SignUpScreen(): React.ReactElement {
                       <FormItem>
                         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                           {SIGN_UP_TOPIC_OPTIONS.map((option) => {
-                            const checked = Array.isArray(field.value) && field.value.includes(option.value);
+                            const values = Array.isArray(field.value)
+                              ? field.value
+                              : [];
+                            const checked = values.includes(
+                              option.value
+                            );
 
                             return (
                               <CheckContainer
@@ -502,9 +507,7 @@ export function SignUpScreen(): React.ReactElement {
                                 type="button"
                                 checked={checked}
                                 onCheckedChange={(nextChecked) => {
-                                  const currentTopics = Array.isArray(field.value)
-                                    ? field.value
-                                    : [];
+                                  const currentTopics = values;
                                   const nextTopics = nextChecked
                                     ? [...currentTopics, option.value]
                                     : currentTopics.filter(
