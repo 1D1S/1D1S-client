@@ -198,9 +198,29 @@ jobs:
                   });
                 }
               } else {
-                await request('POST', `/channels/${channelId}/messages`, { 
-                  content: `[PR Link](${prUrl})`, embeds 
+                // 원본 메시지가 없으면 PR 정보 메시지를 만들고 스레드 생성
+                const anchor = await request('POST', `/channels/${channelId}/messages`, {
+                  content: `<@&${roleId}>`,
+                  embeds: [{
+                    title: `🔗 ${prTitle}`,
+                    url: prUrl,
+                    color: 3447003,
+                    author: { name: pr.user ? pr.user.login : sender.login, icon_url: pr.user ? pr.user.avatar_url : sender.avatar_url },
+                    fields: [
+                      { name: 'Repository', value: context.repo.repo, inline: true }
+                    ],
+                    timestamp: new Date().toISOString()
+                  }]
                 });
+                if (anchor.id) {
+                  const thread = await request('POST', `/channels/${channelId}/messages/${anchor.id}/threads`, {
+                    name: threadName,
+                    auto_archive_duration: 1440
+                  });
+                  if (thread.id) {
+                    await request('POST', `/channels/${thread.id}/messages`, { embeds });
+                  }
+                }
               }
             }
 
