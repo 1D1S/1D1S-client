@@ -4,9 +4,12 @@ const resolveApiBaseUrl = (): string => {
   const envBaseUrl = process.env.NEXT_PUBLIC_ODOS_API_URL;
 
   if (!envBaseUrl) {
-    throw new Error(
-      'Missing API URL env. Set NEXT_PUBLIC_ODOS_API_URL.'
-    );
+    if (typeof window !== 'undefined') {
+      throw new Error(
+        'Missing API URL env. Set NEXT_PUBLIC_ODOS_API_URL.'
+      );
+    }
+    return '';
   }
 
   return normalizeBaseUrl(envBaseUrl);

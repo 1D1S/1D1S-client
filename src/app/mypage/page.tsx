@@ -11,6 +11,8 @@ import {
   MY_PAGE_PROFILE_DATA,
   MY_PAGE_STAT_ITEMS,
 } from '@constants/consts/mypage-data';
+import { useLogout } from '@feature/auth/hooks/use-auth-mutations';
+import { authStorage } from '@module/utils/auth';
 import {
   Check,
   CheckCircle2,
@@ -18,6 +20,7 @@ import {
   Flag,
   Flame,
   Gauge,
+  LogOut,
   Plus,
   Target,
   Trophy,
@@ -29,10 +32,36 @@ import React from 'react';
 
 export default function MyPage(): React.ReactElement {
   const router = useRouter();
+  const logout = useLogout();
   const streakData = buildMyPageStreakData();
+
+  const handleLogout = (): void => {
+    logout.mutate(undefined, {
+      onSettled: () => {
+        router.replace('/login');
+      },
+    });
+  };
 
   return (
     <div className="min-h-screen w-full bg-white p-4">
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mx-auto mb-4 max-w-[1440px] rounded-lg border border-yellow-300 bg-yellow-50 p-4">
+          <Text size="body2" weight="bold" className="mb-2 text-yellow-800">
+            [DEV] Token Info
+          </Text>
+          <div className="space-y-1 font-mono text-xs break-all text-yellow-700">
+            <p>
+              <span className="font-bold">Access:</span>{' '}
+              {authStorage.getAccessToken() ?? 'none'}
+            </p>
+            <p>
+              <span className="font-bold">Refresh:</span>{' '}
+              {authStorage.getRefreshToken() ?? 'none'}
+            </p>
+          </div>
+        </div>
+      )}
       <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)_320px]">
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
@@ -244,6 +273,18 @@ export default function MyPage(): React.ReactElement {
               />
             </div>
           </section>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={logout.isPending}
+            className="rounded-4 flex w-full items-center justify-center gap-2 border border-red-200 bg-white px-4 py-3 text-red-500 transition hover:bg-red-50"
+          >
+            <LogOut className="h-4 w-4" />
+            <Text size="body1" weight="bold">
+              {logout.isPending ? '로그아웃 중...' : '로그아웃'}
+            </Text>
+          </button>
         </aside>
       </div>
     </div>
