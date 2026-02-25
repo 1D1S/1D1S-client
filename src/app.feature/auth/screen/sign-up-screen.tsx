@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Button,
   CheckContainer,
@@ -20,9 +22,12 @@ import {
   FormItem,
   FormMessage,
 } from '@component/ui/form';
+import { authStorage } from '@module/utils/auth';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+import { toast } from 'sonner';
 
+import { authApi } from '../api/auth-api';
 import {
   SIGN_UP_GENDER_OPTIONS,
   SIGN_UP_OCCUPATION_OPTIONS,
@@ -30,6 +35,7 @@ import {
   SignUpGenderValue,
 } from '../consts/sign-up-options';
 import { SignupFormValues, useSignUpForm } from '../hooks/use-sign-up-form';
+import { CategoryType, GenderType, JobType } from '../type/auth';
 
 type Step = 1 | 2;
 
@@ -75,14 +81,44 @@ export function SignUpScreen(): React.ReactElement {
   const router = useRouter();
   const form = useSignUpForm();
   const [step, setStep] = React.useState<Step>(1);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const totalSteps = 2;
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 100 }, (_, i) => currentYear - i);
   const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1);
   const dayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
 
-  const onSubmit = (values: SignupFormValues): void => {
-    console.log('Form submitted with values:', values);
+  const onSubmit = async (values: SignupFormValues): Promise<void> => {
+    const accessToken = authStorage.getAccessToken();
+    if (!accessToken) {
+      toast.error('로그인이 필요합니다.');
+      router.replace('/login');
+      return;
+    }
+
+    const birth = `${values.year}-${values.month.padStart(2, '0')}-${values.day.padStart(2, '0')}`;
+
+    setIsSubmitting(true);
+    try {
+      await authApi.completeSignUpInfo(
+        {
+          nickname: values.nickname,
+          job: values.job as JobType,
+          birth,
+          gender: values.gender as GenderType,
+          isPublic: values.isPublic,
+          category: values.topics as CategoryType[],
+        },
+        accessToken
+      );
+
+      toast.success('가입이 완료되었습니다!');
+      router.replace('/');
+    } catch {
+      toast.error('가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = (): void => {
@@ -96,7 +132,7 @@ export function SignUpScreen(): React.ReactElement {
 
   const handleNextStep = async (): Promise<void> => {
     const stepOneValid = await form.trigger([
-      'fullName',
+      'nickname',
       'year',
       'month',
       'day',
@@ -129,17 +165,17 @@ export function SignUpScreen(): React.ReactElement {
                     weight="medium"
                     className="text-gray-600"
                   >
-                    Step 1 : Personal Profile
+                    Step 1 : 프로필 설정
                   </Text>
                   <Text
                     size="display1"
                     weight="bold"
                     className="mt-4 text-gray-900"
                   >
-                    Tell us about
+                    나에 대해
                   </Text>
                   <Text size="display1" weight="bold" className="text-main-600">
-                    yourself.
+                    알려주세요.
                   </Text>
                   <Text
                     size="body2"
@@ -173,14 +209,14 @@ export function SignUpScreen(): React.ReactElement {
                 <section className="rounded-4 border border-gray-200 bg-white p-6 shadow-[0_8px_20px_rgba(34,34,34,0.04)] lg:p-8">
                   <FormField
                     control={form.control}
-                    name="fullName"
+                    name="nickname"
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
                           <TextField
-                            label="이름"
-                            placeholder="예: Alex Morgan"
-                            id="fullName"
+                            label="닉네임"
+                            placeholder="예: 챌린저123"
+                            id="nickname"
                             className="w-full"
                             value={field.value ?? ''}
                             onChange={field.onChange}
@@ -365,6 +401,49 @@ export function SignUpScreen(): React.ReactElement {
                     />
                   </div>
 
+                  <div className="mt-5">
+                    <Text
+                      size="body2"
+                      weight="bold"
+                      className="mb-1 text-gray-800"
+                    >
+                      프로필 공개
+                    </Text>
+                    <FormField
+                      control={form.control}
+                      name="isPublic"
+                      render={({ field }) => (
+                        <FormItem>
+                          <ToggleGroup
+                            type="single"
+                            value={field.value ? 'public' : 'private'}
+                            onValueChange={(value) => {
+                              if (value) {
+                                field.onChange(value === 'public');
+                              }
+                            }}
+                            className="grid grid-cols-2 gap-2"
+                          >
+                            <ToggleGroupItem
+                              value="public"
+                              shape="square"
+                              className="h-10 w-full justify-center px-0"
+                            >
+                              공개
+                            </ToggleGroupItem>
+                            <ToggleGroupItem
+                              value="private"
+                              shape="square"
+                              className="h-10 w-full justify-center px-0"
+                            >
+                              비공개
+                            </ToggleGroupItem>
+                          </ToggleGroup>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
                   <div className="mt-8 flex justify-end">
                     <Button
                       type="button"
@@ -386,17 +465,17 @@ export function SignUpScreen(): React.ReactElement {
                     weight="medium"
                     className="text-gray-600"
                   >
-                    Step 2 : Interests
+                    Step 2 : 관심 주제
                   </Text>
                   <Text
                     size="display1"
                     weight="bold"
                     className="mt-4 text-gray-900"
                   >
-                    What are you
+                    어떤 주제에
                   </Text>
                   <Text size="display1" weight="bold" className="text-main-600">
-                    passionate about?
+                    관심이 있나요?
                   </Text>
                   <Text
                     size="body2"
@@ -415,7 +494,12 @@ export function SignUpScreen(): React.ReactElement {
                       <FormItem>
                         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                           {SIGN_UP_TOPIC_OPTIONS.map((option) => {
-                            const checked = field.value.includes(option.value);
+                            const values = Array.isArray(field.value)
+                              ? field.value
+                              : [];
+                            const checked = values.includes(
+                              option.value
+                            );
 
                             return (
                               <CheckContainer
@@ -423,7 +507,7 @@ export function SignUpScreen(): React.ReactElement {
                                 type="button"
                                 checked={checked}
                                 onCheckedChange={(nextChecked) => {
-                                  const currentTopics = field.value;
+                                  const currentTopics = values;
                                   const nextTopics = nextChecked
                                     ? [...currentTopics, option.value]
                                     : currentTopics.filter(
@@ -461,8 +545,26 @@ export function SignUpScreen(): React.ReactElement {
                   />
 
                   <div className="mt-8 flex justify-end">
-                    <Button type="submit" size="medium">
-                      가입 완료
+                    <Button
+                      type="button"
+                      size="medium"
+                      disabled={isSubmitting}
+                      onClick={() => {
+                        const errors = form.formState.errors;
+                        console.log('form values:', form.getValues());
+                        console.log('form errors:', errors);
+                        form.handleSubmit(
+                          (values) => {
+                            console.log('onSubmit called:', values);
+                            onSubmit(values);
+                          },
+                          (validationErrors) => {
+                            console.log('validation failed:', validationErrors);
+                          }
+                        )();
+                      }}
+                    >
+                      {isSubmitting ? '처리 중...' : '가입 완료'}
                     </Button>
                   </div>
                 </section>

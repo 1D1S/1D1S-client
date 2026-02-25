@@ -22,6 +22,7 @@ export function headersMiddleware(res: NextResponse): void {
   }
 
   // const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  const apiDomain = process.env.NEXT_PUBLIC_ODOS_API_URL ?? '';
   const cspHeader = `
     default-src 'self';
     ${connectSrc}
@@ -29,6 +30,7 @@ export function headersMiddleware(res: NextResponse): void {
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data:;
     font-src 'self';
+    connect-src 'self' ${apiDomain};
     object-src 'none';
     base-uri 'self';
     form-action 'self';

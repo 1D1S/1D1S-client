@@ -12,7 +12,7 @@ export type OAuthProvider = 'google' | 'kakao' | 'naver';
 
 export interface TokenData {
   accessToken: string;
-  responseToken: string;
+  refreshToken: string;
 }
 
 export interface RefreshTokenResponse {
@@ -23,12 +23,13 @@ export interface RefreshTokenResponse {
 export interface SocialLoginResponse {
   message: string;
   data: TokenData & {
-    isProfileComplete: boolean;
+    profileComplete: boolean;
   };
 }
 
 export interface SignUpInfoRequest {
   nickname: string;
+  profileUrl?: string;
   job: JobType;
   birth: string; // yyyy-MM-dd format
   gender: GenderType;
@@ -42,14 +43,4 @@ export interface SignUpInfoResponse {
 
 export interface LogoutResponse {
   message: string;
-}
-
-export interface SignUpInfoWithFileRequest {
-  nickname: string;
-  job: JobType;
-  birth: string;
-  gender: GenderType;
-  isPublic: boolean;
-  category: CategoryType[];
-  profileImage?: File;
 }

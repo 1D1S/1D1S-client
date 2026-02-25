@@ -80,3 +80,5 @@ jobs:
 
       - name: Build
         run: pnpm build
+        env:
+          NEXT_PUBLIC_ODOS_API_URL: https://dev.api.1day1streak.com/
