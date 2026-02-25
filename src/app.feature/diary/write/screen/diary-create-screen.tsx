@@ -1,19 +1,9 @@
 'use client';
 
 import { Button, DatePicker, Text, TextField } from '@1d1s/design-system';
-import {
-  Bold,
-  ChevronRight,
-  Flame,
-  ImagePlus,
-  Italic,
-  List,
-  ListOrdered,
-  Underline,
-  X,
-} from 'lucide-react';
+import { ChevronRight, Flame } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 
 import { useChallengeDetail } from '../../../challenge/board/hooks/use-challenge-queries';
 import type { ChallengeListItem } from '../../../challenge/board/type/challenge';
@@ -21,6 +11,7 @@ import type { Feeling } from '../../board/type/diary';
 import { useCreateDiary } from '../../detail/hooks/use-diary-mutations';
 import { ChallengeGoalToggle } from '../components/challenge-goal-toggle';
 import { ChallengePicker } from '../components/challenge-picker';
+import { DiaryContentEditor } from '../components/diary-content-editor';
 import type { MoodOption } from '../consts/diary-create-data';
 import { DIARY_CREATE_MOOD_OPTIONS } from '../consts/diary-create-data';
 
@@ -74,13 +65,10 @@ export default function DiaryCreateScreen(): React.ReactElement {
     new Date()
   );
   const [isPublic, setIsPublic] = useState(true);
-  const [images, setImages] = useState<File[]>([]);
 
   const [selectedChallenge, setSelectedChallenge] =
     useState<ChallengeListItem | null>(null);
   const [achievedGoalIds, setAchievedGoalIds] = useState<number[]>([]);
-
-  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const { data: challengeDetail } = useChallengeDetail(
     selectedChallenge?.challengeId ?? 0
@@ -91,47 +79,6 @@ export default function DiaryCreateScreen(): React.ReactElement {
     setAchievedGoalIds((prev) =>
       checked ? [...prev, goalId] : prev.filter((id) => id !== goalId)
     );
-  };
-
-  // --- 텍스트 에디터 스텁 메서드 (추후 리치 텍스트 에디터 연동) ---
-  const handleBold = (): void => {
-    // TODO: 볼드 서식 적용
-  };
-
-  const handleItalic = (): void => {
-    // TODO: 이탤릭 서식 적용
-  };
-
-  const handleUnderline = (): void => {
-    // TODO: 밑줄 서식 적용
-  };
-
-  const handleBulletList = (): void => {
-    // TODO: 불릿 리스트 적용
-  };
-
-  const handleOrderedList = (): void => {
-    // TODO: 번호 리스트 적용
-  };
-
-  // --- 이미지 업로드 스텁 메서드 (추후 API 연동) ---
-  const handleImageSelect = (): void => {
-    imageInputRef.current?.click();
-  };
-
-  const handleImageChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void => {
-    const files = event.target.files;
-    if (!files) {
-      return;
-    }
-    setImages((prev) => [...prev, ...Array.from(files)]);
-    event.target.value = '';
-  };
-
-  const handleImageRemove = (index: number): void => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = (): void => {
@@ -263,98 +210,9 @@ export default function DiaryCreateScreen(): React.ReactElement {
             <Text size="heading2" weight="bold" className="mb-6 text-gray-900">
               상세 내용
             </Text>
-            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-              <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 p-3">
-                <button
-                  type="button"
-                  aria-label="굵게"
-                  className="rounded-lg border border-gray-200 p-2 text-gray-600 transition hover:bg-gray-100"
-                  onClick={handleBold}
-                >
-                  <Bold className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="기울임"
-                  className="rounded-lg border border-gray-200 p-2 text-gray-600 transition hover:bg-gray-100"
-                  onClick={handleItalic}
-                >
-                  <Italic className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="밑줄"
-                  className="rounded-lg border border-gray-200 p-2 text-gray-600 transition hover:bg-gray-100"
-                  onClick={handleUnderline}
-                >
-                  <Underline className="h-4 w-4" />
-                </button>
-
-                <div className="mx-2 h-7 w-px bg-gray-200" />
-
-                <button
-                  type="button"
-                  aria-label="불릿 리스트"
-                  className="rounded-lg border border-gray-200 p-2 text-gray-600 transition hover:bg-gray-100"
-                  onClick={handleBulletList}
-                >
-                  <List className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="번호 리스트"
-                  className="rounded-lg border border-gray-200 p-2 text-gray-600 transition hover:bg-gray-100"
-                  onClick={handleOrderedList}
-                >
-                  <ListOrdered className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="이미지 삽입"
-                  className="rounded-lg border border-gray-200 p-2 text-gray-600 transition hover:bg-gray-100"
-                  onClick={handleImageSelect}
-                >
-                  <ImagePlus className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="min-h-[420px] p-4">
-                <textarea
-                  className="text-body1 h-[380px] w-full resize-none border-0 p-0 text-gray-700 outline-none"
-                  value={content}
-                  onChange={(event) => setContent(event.target.value)}
-                  placeholder="오늘 챌린지를 진행하며 느낀 점이나 있었던 일을 자유롭게 기록해보세요."
-                />
-              </div>
-
-              {images.length > 0 && (
-                <div className="flex flex-wrap gap-3 border-t border-gray-200 p-4">
-                  {images.map((file, index) => (
-                    <div key={`${file.name}-${index}`} className="group relative">
-                      <img
-                        src={URL.createObjectURL(file)}
-                        alt={file.name}
-                        className="h-24 w-24 rounded-lg object-cover"
-                      />
-                      <button
-                        type="button"
-                        className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800 text-white opacity-0 transition group-hover:opacity-100"
-                        onClick={() => handleImageRemove(index)}
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={handleImageChange}
+            <DiaryContentEditor
+              content={content}
+              onChange={setContent}
             />
           </section>
 
