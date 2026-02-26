@@ -12,7 +12,6 @@ import {
   RefreshTokenResponse,
   SignUpInfoRequest,
   SignUpInfoResponse,
-  SignUpInfoWithFileRequest,
 } from '../type/auth';
 
 // 토큰 갱신
@@ -25,7 +24,7 @@ export function useRefreshToken(): UseMutationResult<
     mutationFn: (refreshToken: string) => authApi.refreshToken(refreshToken),
     onSuccess: (data) => {
       authStorage.setAccessToken(data.data.accessToken);
-      authStorage.setRefreshToken(data.data.responseToken);
+      authStorage.setRefreshToken(data.data.refreshToken);
     },
     onError: () => {
       authStorage.clearTokens();
@@ -57,36 +56,12 @@ export function useCompleteSignUpInfo(): UseMutationResult<
   });
 }
 
-// 추가 정보 입력 (프로필 이미지 포함)
-export function useCompleteSignUpInfoWithFile(): UseMutationResult<
-  SignUpInfoResponse,
-  Error,
-  { data: SignUpInfoWithFileRequest; accessToken: string }
-> {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      data,
-      accessToken,
-    }: {
-      data: SignUpInfoWithFileRequest;
-      accessToken: string;
-    }) => authApi.completeSignUpInfoWithFile(data, accessToken),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: AUTH_QUERY_KEYS.all,
-      });
-    },
-  });
-}
-
 // 로그아웃
-export function useLogout(): UseMutationResult<LogoutResponse, Error, string> {
+export function useLogout(): UseMutationResult<LogoutResponse, Error, void> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (accessToken: string) => authApi.logout(accessToken),
+    mutationFn: () => authApi.logout(),
     onSuccess: () => {
       authStorage.clearTokens();
       queryClient.clear();

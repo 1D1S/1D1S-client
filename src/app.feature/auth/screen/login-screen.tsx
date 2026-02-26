@@ -1,7 +1,14 @@
 'use client';
 
 import { Icon, Text } from '@1d1s/design-system';
+import { API_BASE_URL } from '@module/api/config';
 import Image from 'next/image';
+
+import { OAuthProvider } from '../type/auth';
+
+const handleSocialLogin = (provider: OAuthProvider): void => {
+  window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
+};
 
 export function LoginScreen(): React.ReactElement {
   return (
@@ -54,6 +61,7 @@ export function LoginScreen(): React.ReactElement {
           <div className="mt-10 flex flex-col gap-4">
             <button
               type="button"
+              onClick={() => handleSocialLogin('kakao')}
               className="rounded-4 relative flex h-14 w-full items-center justify-center bg-[#FEE500] px-5 font-semibold text-black transition hover:brightness-95"
             >
               <span className="absolute left-5">
@@ -69,6 +77,7 @@ export function LoginScreen(): React.ReactElement {
 
             <button
               type="button"
+              onClick={() => handleSocialLogin('naver')}
               className="rounded-4 relative flex h-14 w-full items-center justify-center bg-[#03C75A] px-5 font-semibold text-white transition hover:brightness-95"
             >
               <span className="absolute left-5">
