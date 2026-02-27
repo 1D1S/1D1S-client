@@ -9,7 +9,11 @@ import {
 import { useSidebar } from '@feature/member/hooks/use-member-queries';
 import { authStorage } from '@module/utils/auth';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, {
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import { AppLayoutProvider } from './app-layout-context';
 
@@ -80,6 +84,16 @@ function isChallengeDetailRoute(pathname: string): boolean {
   return segments[1] !== 'create';
 }
 
+const NOOP_SUBSCRIBE = (): (() => void) => () => {};
+
+let mountTimestamp = 0;
+function getMountTimestamp(): number {
+  if (mountTimestamp === 0) {
+    mountTimestamp = Date.now();
+  }
+  return mountTimestamp;
+}
+
 export default function AppLayoutShell({
   children,
 }: {
@@ -89,11 +103,17 @@ export default function AppLayoutShell({
   const router = useRouter();
   const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] =
     useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
 
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
+  const hasMounted = useSyncExternalStore(
+    NOOP_SUBSCRIBE,
+    () => true,
+    () => false
+  );
+  const now = useSyncExternalStore(
+    NOOP_SUBSCRIBE,
+    getMountTimestamp,
+    () => 0
+  );
 
   const isLoggedIn = hasMounted && authStorage.hasTokens();
   const { data: sidebarData } = useSidebar();
@@ -103,14 +123,16 @@ export default function AppLayoutShell({
       return DEFAULT_RIGHT_SIDEBAR_PROPS;
     }
 
-    const now = Date.now();
     const msPerDay = 1000 * 60 * 60 * 24;
     const challenges: RightSidebarChallenge[] = sidebarData.challengeList.map(
       (ch) => {
         const start = new Date(ch.startDate).getTime();
         const end = new Date(ch.endDate).getTime();
         const total = Math.max(1, Math.ceil((end - start) / msPerDay));
-        const elapsed = Math.max(0, Math.ceil((now - start) / msPerDay));
+        const elapsed = Math.max(
+          0,
+          Math.ceil((now - start) / msPerDay)
+        );
         return {
           id: String(ch.challengeId),
           title: ch.title,
@@ -126,7 +148,7 @@ export default function AppLayoutShell({
       streakDays: sidebarData.streakCount,
       challenges,
     };
-  }, [sidebarData]);
+  }, [sidebarData, now]);
   const showHeader = !matchesRoute(pathname, HEADER_HIDDEN_ROUTES);
   const showRightSidebar =
     !matchesRoute(pathname, RIGHT_SIDEBAR_HIDDEN_ROUTES) &&
