@@ -1,15 +1,20 @@
 /* eslint-disable no-use-before-define */
 'use client';
 
-import { CircleAvatar, Streak, Text } from '@1d1s/design-system';
+import {
+  ChallengeCard as DSChallengeCard,
+  CircleAvatar,
+  Streak,
+  Text,
+} from '@1d1s/design-system';
 import { useLogout } from '@feature/auth/hooks/use-auth-mutations';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
+import type { StreakCalendarItem } from '@feature/member/type/member';
 import { authStorage } from '@module/utils/auth';
 import {
   CheckCircle2,
   FileText,
   Flame,
-  Gauge,
   LogOut,
   PencilLine,
   Plus,
@@ -18,6 +23,30 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+
+function buildYearStreak(
+  calendar: StreakCalendarItem[]
+): StreakCalendarItem[] {
+  const year = new Date().getFullYear();
+  const today = new Date();
+  const calendarMap = new Map(
+    calendar.map((item) => [item.date, item.count])
+  );
+
+  const result: StreakCalendarItem[] = [];
+  const cursor = new Date(year, 0, 1);
+
+  while (cursor <= today) {
+    const dateStr = cursor.toISOString().slice(0, 10);
+    result.push({
+      date: dateStr,
+      count: calendarMap.get(dateStr) ?? 0,
+    });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return result;
+}
 
 export default function MyPage(): React.ReactElement {
   const router = useRouter();
@@ -78,38 +107,46 @@ export default function MyPage(): React.ReactElement {
               </Text>
             </div>
           ) : (
-            challengeList.map((ch) => (
-              <ChallengeCard
-                key={ch.challengeId}
-                title={ch.title}
-                category={ch.category}
-                participantCnt={ch.participantCnt}
-                maxParticipantCnt={ch.maxParticipantCnt}
-                startDate={ch.startDate}
-                endDate={ch.endDate}
-              />
-            ))
+            challengeList.map((ch) => {
+              const now = new Date();
+              const start = new Date(ch.startDate);
+              const end = new Date(ch.endDate);
+              return (
+                <DSChallengeCard
+                  key={ch.challengeId}
+                  challengeTitle={ch.title}
+                  challengeType={ch.challengeType}
+                  challengeCategory={ch.category}
+                  currentUserCount={ch.participantCnt}
+                  maxUserCount={ch.maxParticipantCnt}
+                  startDate={ch.startDate}
+                  endDate={ch.endDate}
+                  isOngoing={now >= start && now <= end}
+                  isEnded={now > end}
+                  onClick={() =>
+                    router.push(
+                      `/challenge/${ch.challengeId}`
+                    )
+                  }
+                />
+              );
+            })
           )}
         </div>
 
         <main className="space-y-4">
           <section className="rounded-4 border border-gray-200 bg-white p-5">
-            <div className="flex items-start gap-2">
-              <div className="rounded-1.5 bg-main-200 text-main-800 mt-1 p-1">
-                <Gauge className="h-4 w-4" />
-              </div>
-              <div>
-                <Text size="display1" weight="bold" className="text-gray-900">
-                  User Statistics
-                </Text>
-                <Text
-                  size="body1"
-                  weight="regular"
-                  className="mt-1 text-gray-600"
-                >
-                  나의 활동 기록과 성장 지표를 한눈에 확인하세요.
-                </Text>
-              </div>
+            <div>
+              <Text size="display2" weight="bold" className="text-gray-900">
+                활동 통계
+              </Text>
+              <Text
+                size="caption1"
+                weight="regular"
+                className="mt-2 block text-gray-500"
+              >
+                나의 활동 기록과 성장 지표를 한눈에 확인하세요.
+              </Text>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -164,14 +201,15 @@ export default function MyPage(): React.ReactElement {
           </section>
 
           <section className="rounded-4 border border-gray-200 bg-white p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Gauge className="text-main-800 h-5 w-5" />
-              <Text size="display2" weight="bold" className="text-gray-900">
-                활동 기록
-              </Text>
-            </div>
+            <Text
+              size="display2"
+              weight="bold"
+              className="mb-4 text-gray-900"
+            >
+              활동 기록
+            </Text>
 
-            <Streak data={streak.calendar} size={14} gap={6} />
+            <Streak data={buildYearStreak(streak.calendar)} size={14} gap={6} />
           </section>
 
           {diaryList.length > 0 && (
@@ -213,8 +251,8 @@ export default function MyPage(): React.ReactElement {
 
         <aside className="space-y-4">
           <section className="rounded-4 border border-gray-200 bg-white p-5 text-center">
-            <div className="border-main-800/20 bg-main-200 mx-auto mb-3 flex h-[120px] w-[120px] items-center justify-center rounded-full border-4">
-              <CircleAvatar imageUrl={profileUrl} size="xl" />
+            <div className="border-main-800/20 bg-main-200 mx-auto mb-3 flex h-[80px] w-[80px] items-center justify-center rounded-full border-4">
+              <CircleAvatar imageUrl={profileUrl} size="lg" />
             </div>
             <Text size="display2" weight="bold" className="text-gray-900">
               {nickname}
@@ -266,78 +304,6 @@ export default function MyPage(): React.ReactElement {
   );
 }
 
-function ChallengeCard({
-  title,
-  category,
-  participantCnt,
-  maxParticipantCnt,
-  startDate,
-  endDate,
-}: {
-  title: string;
-  category: string;
-  participantCnt: number;
-  maxParticipantCnt: number;
-  startDate: string;
-  endDate: string;
-}): React.ReactElement {
-  const today = new Date();
-  const end = new Date(endDate);
-  const diffDays = Math.ceil(
-    (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  const dday = diffDays > 0 ? `D-${diffDays}` : diffDays === 0 ? 'D-Day' : '종료됨';
-
-  const start = new Date(startDate);
-  const totalDays = Math.ceil(
-    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  const elapsedDays = Math.ceil(
-    (today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  const progress =
-    totalDays > 0
-      ? Math.min(100, Math.round((elapsedDays / totalDays) * 100))
-      : 0;
-
-  return (
-    <article className="rounded-4 border border-gray-200 bg-white p-4">
-      <div className="flex items-start gap-3">
-        <div className="bg-main-200 text-main-800 flex h-14 w-14 items-center justify-center rounded-2xl">
-          <Flame className="h-6 w-6" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <Text size="heading1" weight="bold" className="text-gray-900">
-            {title}
-          </Text>
-          <div className="mt-1 flex items-center gap-2">
-            <span className="rounded-lg bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-              {category}
-            </span>
-            <Text size="body2" weight="medium" className="text-gray-500">
-              {dday}
-            </Text>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 h-2 rounded-full bg-gray-200">
-        <div
-          className="bg-main-700 h-full rounded-full"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-      <div className="mt-2 flex items-center justify-between">
-        <Text size="body2" weight="medium" className="text-gray-500">
-          {participantCnt}/{maxParticipantCnt}명 참여
-        </Text>
-        <Text size="body2" weight="bold" className="text-main-800">
-          {progress}%
-        </Text>
-      </div>
-    </article>
-  );
-}
 
 function StatCard({
   icon,

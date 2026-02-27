@@ -103,12 +103,20 @@ export default function AppLayoutShell({
       return DEFAULT_RIGHT_SIDEBAR_PROPS;
     }
 
+    const now = Date.now();
+    const msPerDay = 1000 * 60 * 60 * 24;
     const challenges: RightSidebarChallenge[] = sidebarData.challengeList.map(
-      (ch) => ({
-        id: String(ch.challengeId),
-        title: ch.title,
-        progress: 0,
-      })
+      (ch) => {
+        const start = new Date(ch.startDate).getTime();
+        const end = new Date(ch.endDate).getTime();
+        const total = Math.max(1, Math.ceil((end - start) / msPerDay));
+        const elapsed = Math.max(0, Math.ceil((now - start) / msPerDay));
+        return {
+          id: String(ch.challengeId),
+          title: ch.title,
+          progress: Math.min(100, Math.round((elapsed / total) * 100)),
+        };
+      }
     );
 
     return {
