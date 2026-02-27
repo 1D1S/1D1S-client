@@ -11,8 +11,10 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
+import { useChallengeDetail } from '../../../challenge/board/hooks/use-challenge-queries';
+import { ChallengeGoal } from '../../../challenge/board/type/challenge';
 import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
 import { DiaryDetail, Feeling } from '../../board/type/diary';
 
@@ -70,24 +72,48 @@ function formatDate(
     .replace(/\.\s/g, '.')
     .replace(/\.$/, '');
 
-  const weekdayLabel = new Intl.DateTimeFormat('en-US', {
+  const weekdayLabel = new Intl.DateTimeFormat('ko-KR', {
     weekday: 'long',
   }).format(date);
 
   return { dateLabel, weekdayLabel };
 }
 
-function mapDiaryToViewData(diary: DiaryDetail): DiaryDetailViewData {
+function mapDiaryToViewData(
+  diary: DiaryDetail,
+  challengeGoals: ChallengeGoal[] = []
+): DiaryDetailViewData {
   const baseDate =
     diary.diaryInfoDto?.challengedDate || diary.diaryInfoDto?.createdAt || '';
   const { dateLabel, weekdayLabel } = formatDate(baseDate);
 
-  const checklistItems = (diary.diaryInfoDto?.achievement ?? []).map(
-    (goalId) => ({
-      id: String(goalId),
-      label: `목표 ${goalId}`,
-    })
+  const achievedGoalIds = (diary.diaryInfoDto?.achievement ?? []).map(
+    (goalId) => String(goalId)
   );
+  const achievedGoalIdSet = new Set(achievedGoalIds);
+
+  const checklistItemsFromChallenge = challengeGoals.map((goal) => ({
+    id: String(goal.challengeGoalId),
+    label: goal.content,
+  }));
+
+  const checklistItemIdSet = new Set(
+    checklistItemsFromChallenge.map((item) => item.id)
+  );
+  const missingAchievedItems = achievedGoalIds
+    .filter((goalId) => !checklistItemIdSet.has(goalId))
+    .map((goalId) => ({
+      id: goalId,
+      label: `목표 ${goalId}`,
+    }));
+
+  const checklistItems =
+    checklistItemsFromChallenge.length > 0
+      ? [...checklistItemsFromChallenge, ...missingAchievedItems]
+      : achievedGoalIds.map((goalId) => ({
+          id: goalId,
+          label: `목표 ${goalId}`,
+        }));
 
   const contentParagraphs = diary.content
     .split('\n')
@@ -102,7 +128,9 @@ function mapDiaryToViewData(diary: DiaryDetail): DiaryDetailViewData {
     feelingEmoji: feelingToEmoji(diary.diaryInfoDto?.feeling ?? 'NONE'),
     connectedChallengeTitle: diary.challenge?.title ?? '연동된 챌린지가 없습니다.',
     checklistItems,
-    checkedChecklistIds: checklistItems.map((item) => item.id),
+    checkedChecklistIds: checklistItems
+      .map((item) => item.id)
+      .filter((itemId) => achievedGoalIdSet.has(itemId)),
     contentParagraphs:
       contentParagraphs.length > 0 ? contentParagraphs : ['작성된 내용이 없습니다.'],
     imageUrl: diary.imgUrl?.[0] ?? '/images/default-card.png',
@@ -118,9 +146,7 @@ function DiaryDetailView({
   diaryData: DiaryDetailViewData;
 }): React.ReactElement {
   const router = useRouter();
-  const [checkedIds, setCheckedIds] = useState<string[]>(
-    diaryData.checkedChecklistIds
-  );
+  const checkedIds = diaryData.checkedChecklistIds;
 
   const leftChecklistOptions = useMemo(
     () =>
@@ -152,16 +178,18 @@ function DiaryDetailView({
     await navigator.clipboard.writeText(shareUrl);
   };
 
+  const handleReadOnlyChecklistChange = (): void => {};
+
   return (
     <div className="min-h-screen w-full bg-white">
       <div className="mx-auto w-full max-w-[1080px] px-4 pt-8 pb-12">
         <div className="flex items-center gap-1 text-gray-500">
           <Text size="caption2" weight="medium" className="text-gray-500">
-            Logs
+            일지
           </Text>
           <ChevronRight className="h-3 w-3" />
           <Text size="caption2" weight="medium" className="text-gray-500">
-            Daily Log Detail
+            일지 상세
           </Text>
         </div>
 
@@ -214,9 +242,13 @@ function DiaryDetailView({
               </div>
               <div>
                 <Text size="caption2" weight="bold" className="text-gray-500">
-                  CONNECTED CHALLENGE
+                  연결된 챌린지
                 </Text>
-                <Text size="heading2" weight="bold" className="text-gray-900">
+                <Text
+                  size="heading2"
+                  weight="bold"
+                  className="line-clamp-2 max-w-[560px] break-words text-gray-900"
+                >
                   {diaryData.connectedChallengeTitle}
                 </Text>
               </div>
@@ -236,7 +268,7 @@ function DiaryDetailView({
           <div className="mb-3 flex items-center gap-2">
             <ListChecks className="text-main-800 h-5 w-5" />
             <Text size="heading1" weight="bold" className="text-gray-900">
-              Today&apos;s Checklist
+              오늘의 체크리스트
             </Text>
           </div>
 
@@ -245,12 +277,14 @@ function DiaryDetailView({
               <CheckList
                 options={leftChecklistOptions}
                 value={checkedIds}
-                onValueChange={setCheckedIds}
+                onValueChange={handleReadOnlyChecklistChange}
+                disabled
               />
               <CheckList
                 options={rightChecklistOptions}
                 value={checkedIds}
-                onValueChange={setCheckedIds}
+                onValueChange={handleReadOnlyChecklistChange}
+                disabled
               />
             </div>
           ) : (
@@ -264,7 +298,7 @@ function DiaryDetailView({
           <div className="mb-3 flex items-center gap-2">
             <NotebookPen className="text-main-800 h-5 w-5" />
             <Text size="heading1" weight="bold" className="text-gray-900">
-              Log Content
+              일지 내용
             </Text>
           </div>
 
@@ -316,6 +350,8 @@ export function DiaryDetailScreen({
 }): React.ReactElement {
   const safeDiaryId = Number.isFinite(id) && id > 0 ? id : 0;
   const { data, isLoading, isError } = useDiaryDetail(safeDiaryId);
+  const challengeId = data?.challenge?.challengeId ?? 0;
+  const { data: challengeDetailData } = useChallengeDetail(challengeId);
 
   if (!safeDiaryId) {
     return (
@@ -347,5 +383,9 @@ export function DiaryDetailScreen({
     );
   }
 
-  return <DiaryDetailView diaryData={mapDiaryToViewData(data)} />;
+  return (
+    <DiaryDetailView
+      diaryData={mapDiaryToViewData(data, challengeDetailData?.challengeGoals)}
+    />
+  );
 }
