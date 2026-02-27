@@ -81,9 +81,16 @@ export const normalizeApiError = (error: unknown): NormalizedApiError => {
   };
 };
 
+const isRedirectError = (error: unknown): boolean =>
+  axios.isAxiosError(error) && error.response?.status === 302;
+
 const shouldSkipToast = (error: unknown): boolean => {
   if (!error || typeof error !== 'object') {
     return false;
+  }
+
+  if (isRedirectError(error)) {
+    return true;
   }
 
   if (TOASTED_ERRORS.has(error)) {

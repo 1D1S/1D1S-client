@@ -1,0 +1,61 @@
+import { authStorage } from '@module/utils/auth';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
+
+import { memberApi } from '../api/member-api';
+import { MEMBER_QUERY_KEYS } from '../consts/query-keys';
+import type { MyPageData, SidebarData } from '../type/member';
+
+const SIDEBAR_CACHE_KEY = '1d1s:sidebar';
+
+function getCachedSidebar(): SidebarData | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+  try {
+    const raw = localStorage.getItem(SIDEBAR_CACHE_KEY);
+    return raw ? (JSON.parse(raw) as SidebarData) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function setCachedSidebar(data: SidebarData): void {
+  try {
+    localStorage.setItem(
+      SIDEBAR_CACHE_KEY,
+      JSON.stringify(data)
+    );
+  } catch {
+    // ignore
+  }
+}
+
+export function useSidebar(): UseQueryResult<
+  SidebarData,
+  Error
+> {
+  return useQuery({
+    queryKey: MEMBER_QUERY_KEYS.sidebar(),
+    queryFn: async () => {
+      const data = await memberApi.getSidebar();
+      setCachedSidebar(data);
+      return data;
+    },
+    enabled: authStorage.hasTokens(),
+    initialData: getCachedSidebar,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+  });
+}
+
+export function useMyPage(): UseQueryResult<
+  MyPageData,
+  Error
+> {
+  return useQuery({
+    queryKey: MEMBER_QUERY_KEYS.myPage(),
+    queryFn: () => memberApi.getMyPage(),
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 30,
+  });
+}
