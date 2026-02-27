@@ -3,11 +3,13 @@
 import {
   AppHeader,
   RightSidebar,
+  type RightSidebarChallenge,
   type RightSidebarProps,
 } from '@1d1s/design-system';
+import { useSidebar } from '@feature/member/hooks/use-member-queries';
 import { authStorage } from '@module/utils/auth';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { AppLayoutProvider } from './app-layout-context';
 
@@ -87,11 +89,36 @@ export default function AppLayoutShell({
   const router = useRouter();
   const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] =
     useState(false);
-  const isLoggedIn = useMemo(
-    () => authStorage.hasTokens(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pathname]
-  );
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  const isLoggedIn = hasMounted && authStorage.hasTokens();
+  const { data: sidebarData } = useSidebar();
+
+  const sidebarProps: RightSidebarProps = useMemo(() => {
+    if (!sidebarData) {
+      return DEFAULT_RIGHT_SIDEBAR_PROPS;
+    }
+
+    const challenges: RightSidebarChallenge[] = sidebarData.challengeList.map(
+      (ch) => ({
+        id: String(ch.challengeId),
+        title: ch.title,
+        progress: 0,
+      })
+    );
+
+    return {
+      userName: sidebarData.nickname,
+      userHandle: `오늘의 목표 ${sidebarData.todayGoalCount}개`,
+      userImage: sidebarData.profileUrl,
+      streakDays: sidebarData.streakCount,
+      challenges,
+    };
+  }, [sidebarData]);
   const showHeader = !matchesRoute(pathname, HEADER_HIDDEN_ROUTES);
   const showRightSidebar =
     !matchesRoute(pathname, RIGHT_SIDEBAR_HIDDEN_ROUTES) &&
@@ -115,7 +142,7 @@ export default function AppLayoutShell({
             <AppHeader
               navItems={[...APP_HEADER_NAV_ITEMS]}
               activeKey={activeNavKey}
-              showProfile={isLoggedIn && !showRightSidebar}
+              showProfile={isLoggedIn && !showRightSidebar && pathname !== '/mypage'}
               onLogoClick={() => router.push('/')}
               onNavChange={(key) => {
                 const route = APP_HEADER_ROUTE_BY_KEY[key];
@@ -136,17 +163,21 @@ export default function AppLayoutShell({
             <aside
               className={`sticky ${sidebarStickyTopClass} h-fit min-h-0 shrink-0 self-start pt-3 pr-3`}
             >
-              <RightSidebar
-                {...DEFAULT_RIGHT_SIDEBAR_PROPS}
-                isLoggedIn={isLoggedIn}
-                fixed={false}
-                onCollapseClick={() =>
-                  setIsRightSidebarCollapsed((prev) => !prev)
-                }
-                onWriteDiary={() => router.push('/diary/create')}
-                onGoMyPage={() => router.push('/mypage')}
-                onLogin={() => router.push('/login')}
-              />
+              {hasMounted ? (
+                <RightSidebar
+                  {...sidebarProps}
+                  isLoggedIn={isLoggedIn}
+                  fixed={false}
+                  onCollapseClick={() =>
+                    setIsRightSidebarCollapsed((prev) => !prev)
+                  }
+                  onWriteDiary={() => router.push('/diary/create')}
+                  onGoMyPage={() => router.push('/mypage')}
+                  onLogin={() => router.push('/login')}
+                />
+              ) : (
+                <div className="w-69" />
+              )}
             </aside>
           </div>
         ) : (
