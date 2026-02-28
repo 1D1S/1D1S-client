@@ -20,9 +20,10 @@ import {
   Settings,
   UserRound,
 } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 
+import { useChallengeDetail } from '../../board/hooks/use-challenge-queries';
 import {
   CHALLENGE_DETAIL_PARTICIPANTS,
   CHALLENGE_DETAIL_PENDING_MEMBERS,
@@ -187,12 +188,21 @@ function PendingMemberItem({
 export function ChallengeDetailScreen({
   id,
 }: ChallengeDetailScreenProps): React.ReactElement {
+  // 현재 유저 상태를 searchParams로 가져오고 있음
   const searchParams = useSearchParams();
   const roleParam = searchParams.get('role');
   const userRole: UserRole =
     roleParam === 'participant' ? 'participant' : 'host';
   const isHost = userRole === 'host';
 
+  // 챌린지 상세 정보 호출
+  const { data, isLoading, isError, error } = useChallengeDetail(Number(id));
+
+  const fetchedChallengeData = useMemo(() => {
+    console.log(data);
+  }, [data]);
+
+  // 날짜 계산 함수들
   const [calendarMonth, setCalendarMonth] = useState<Date>(
     () => new Date(2025, 1, 1)
   );
