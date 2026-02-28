@@ -3,7 +3,7 @@ import { ChallengeCreateDialog } from '@feature/challenge/write/components/chall
 import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/components/challenge-create-success-dialog';
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
 import { useStepValidation } from '@feature/challenge/write/hooks/use-step-validation';
-import { add } from 'date-fns';
+import { add, format } from 'date-fns';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
@@ -68,26 +68,35 @@ export function ChallengeCreateFormScreen({
 
   const formatFormValues = (
     values: ChallengeCreateFormValues
-  ): CreateChallengeRequest => ({
-    title: values.title,
-    // 'BOOK' 카테고리 싱크가 맞지 않음
-    category: values.category as ChallengeCategory,
-    description: values.description!,
-    startDate: values.startDate!.toISOString(),
-    // periodType === 'ENDLESS'일 때는 어떻게 대응해야 하는가
-    // period 값이 있는 지를 확인하고, periodNumber로 대응되도록 해야 함
-    endDate: add(values.startDate!, {
-      days: Number(values.periodNumber),
-    }).toISOString(),
-    maxParticipantCnt: Number(
-      values.memberCount === 'etc'
-        ? values.memberCountNumber
-        : values.memberCount
-    ),
-    // 싱크가 맞지 않는 부분 존재
-    challengeType: values.goalType,
-    goals: values.goals.map((goal) => goal.value),
-  });
+  ): CreateChallengeRequest => {
+    const safeStartDate = values.startDate
+      ? new Date(values.startDate)
+      : new Date();
+
+    return {
+      title: values.title,
+      // 'BOOK' 카테고리 싱크가 맞지 않음
+      category: values.category as ChallengeCategory,
+      description: values.description!,
+      startDate: format(safeStartDate, 'yyyy-MM-dd'),
+      // periodType === 'ENDLESS'일 때는 어떻게 대응해야 하는가
+      // period 값이 있는 지를 확인하고, periodNumber로 대응되도록 해야 함
+      endDate: format(
+        add(safeStartDate, {
+          days: Number(values.periodNumber || 0),
+        }),
+        'yyyy-MM-dd'
+      ),
+      maxParticipantCnt: Number(
+        values.memberCount === 'etc'
+          ? values.memberCountNumber
+          : values.memberCount
+      ),
+      // 싱크가 맞지 않는 부분 존재
+      challengeType: values.goalType,
+      goals: values.goals.map((goal) => goal.value),
+    };
+  };
 
   const onSubmit = (values: ChallengeCreateFormValues): void => {
     console.log('폼 값:', values);
