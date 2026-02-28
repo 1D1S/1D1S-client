@@ -20,7 +20,7 @@ import {
   Heart,
   UserRound,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -141,7 +141,10 @@ function buildCalendarRows(
 
   const challengeStart = new Date(startDate);
   const challengeEnd = new Date(endDate);
-  if (Number.isNaN(challengeStart.getTime()) || Number.isNaN(challengeEnd.getTime())) {
+  if (
+    Number.isNaN(challengeStart.getTime()) ||
+    Number.isNaN(challengeEnd.getTime())
+  ) {
     return [];
   }
   challengeStart.setHours(0, 0, 0, 0);
@@ -184,10 +187,13 @@ function buildCalendarRows(
 
     calendarCells.push({
       day: currentDay,
-      title: isInChallengePeriod ? '진행' : undefined,
       subtitle: isToday && isInChallengePeriod ? '오늘' : undefined,
       highlighted: isToday && isInChallengePeriod,
       muted: !isInChallengePeriod,
+      bars:
+        isInChallengePeriod && currentDate <= today
+          ? [{ tone: 'main', width: '100%' }]
+          : undefined,
     });
   }
 
@@ -281,7 +287,6 @@ function PendingMemberItem({
 export function ChallengeDetailScreen({
   id,
 }: ChallengeDetailScreenProps): React.ReactElement {
-  const router = useRouter();
   const challengeId = Number(id);
 
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
@@ -293,9 +298,7 @@ export function ChallengeDetailScreen({
   const acceptParticipant = useAcceptParticipant();
   const rejectParticipant = useRejectParticipant();
 
-  const [calendarMonth, setCalendarMonth] = useState<Date>(
-    () => new Date()
-  );
+  const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [isGoalSelectionTouched, setIsGoalSelectionTouched] = useState(false);
 
@@ -304,8 +307,18 @@ export function ChallengeDetailScreen({
   const goals = data?.challengeGoals ?? EMPTY_GOALS;
   const participants = data?.participants ?? EMPTY_PARTICIPANTS;
 
+  const participationRate = Math.min(
+    100,
+    Math.max(0, detail?.participationRate ?? 0)
+  );
+  const goalCompletionRate = Math.min(
+    100,
+    Math.max(0, detail?.goalCompletionRate ?? 0)
+  );
+
   const pendingParticipants = useMemo(
-    () => participants.filter((participant) => participant.status === 'PENDING'),
+    () =>
+      participants.filter((participant) => participant.status === 'PENDING'),
     [participants]
   );
 
@@ -426,7 +439,7 @@ export function ChallengeDetailScreen({
     if (summary.likeInfo.likedByMe) {
       unlikeChallenge.mutate(challengeId, {
         onSuccess: () => {
-          toast.success('좋아요를 취소했습니다.');
+          toast.success('챌린지 좋아요 취소 성공했습니다.');
         },
         onError: () => {
           toast.error('좋아요 취소에 실패했습니다.');
@@ -437,7 +450,7 @@ export function ChallengeDetailScreen({
 
     likeChallenge.mutate(challengeId, {
       onSuccess: () => {
-        toast.success('좋아요를 눌렀습니다.');
+        toast.success('챌린지 좋아요 성공했습니다.');
       },
       onError: () => {
         toast.error('좋아요 요청에 실패했습니다.');
@@ -507,12 +520,24 @@ export function ChallengeDetailScreen({
             </Text>
           </div>
 
-          <Text size="display1" weight="bold" className="mt-3 text-gray-900">
-            {summary.title}
-          </Text>
-          <Text size="body1" weight="regular" className="mt-2 text-gray-600">
-            {detail.description}
-          </Text>
+          <div className="mt-4 flex flex-col gap-3">
+            <Text
+              as="h1"
+              size="display1"
+              weight="bold"
+              className="break-keep whitespace-pre-wrap text-gray-900"
+            >
+              {summary.title}
+            </Text>
+            <Text
+              as="p"
+              size="body1"
+              weight="regular"
+              className="break-keep whitespace-pre-wrap text-gray-600"
+            >
+              {detail.description}
+            </Text>
+          </div>
         </section>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
@@ -550,7 +575,11 @@ export function ChallengeDetailScreen({
                     ))}
                   </div>
                 ) : (
-                  <Text size="body2" weight="regular" className="mt-3 text-gray-500">
+                  <Text
+                    size="body2"
+                    weight="regular"
+                    className="mt-3 text-gray-500"
+                  >
                     현재 대기 중인 참여 신청이 없습니다.
                   </Text>
                 )}
@@ -562,11 +591,11 @@ export function ChallengeDetailScreen({
                 <StatHeader
                   icon={<span className="text-main-800">◔</span>}
                   title={isHost ? '내 진척도' : '나의 참여 진척도'}
-                  rightText={`${detail.participationRate}%`}
+                  rightText={`${participationRate}%`}
                 />
                 <div className="mt-4 flex items-center gap-4">
                   <CircularProgress
-                    value={detail.participationRate}
+                    value={participationRate}
                     size="lg"
                     showPercentage
                   />
@@ -579,14 +608,18 @@ export function ChallengeDetailScreen({
                       >
                         참여율
                       </Text>
-                      <Text size="body2" weight="bold" className="text-gray-900">
-                        {detail.participationRate}%
+                      <Text
+                        size="body2"
+                        weight="bold"
+                        className="text-gray-900"
+                      >
+                        {participationRate}%
                       </Text>
                     </div>
                     <div className="mt-2 h-2 rounded-full bg-gray-200">
                       <div
                         className="bg-main-700 h-full rounded-full"
-                        style={{ width: `${detail.participationRate}%` }}
+                        style={{ width: `${participationRate}%` }}
                       />
                     </div>
                     <Text
@@ -604,21 +637,25 @@ export function ChallengeDetailScreen({
                 <StatHeader
                   icon={<Flame className="text-main-800 h-5 w-5" />}
                   title="목표 달성률"
-                  rightText={`${detail.goalCompletionRate}%`}
+                  rightText={`${goalCompletionRate}%`}
                 />
                 <div className="mt-4">
                   <div className="mb-1 flex items-center justify-between">
-                    <Text size="body2" weight="medium" className="text-gray-700">
+                    <Text
+                      size="body2"
+                      weight="medium"
+                      className="text-gray-700"
+                    >
                       전체 목표 달성률
                     </Text>
                     <Text size="body2" weight="bold" className="text-main-800">
-                      {detail.goalCompletionRate}%
+                      {goalCompletionRate}%
                     </Text>
                   </div>
                   <div className="h-2 rounded-full bg-gray-200">
                     <div
                       className="bg-main-700 h-full rounded-full"
-                      style={{ width: `${detail.goalCompletionRate}%` }}
+                      style={{ width: `${goalCompletionRate}%` }}
                     />
                   </div>
                 </div>
@@ -697,7 +734,7 @@ export function ChallengeDetailScreen({
                       <div className="bg-main-200 text-main-800 mt-1 flex h-10 w-10 items-center justify-center rounded-full">
                         <Check className="h-5 w-5" />
                       </div>
-                      <div>
+                      <div className="flex min-w-0 flex-1 flex-col justify-center">
                         <Text
                           size="heading2"
                           weight="bold"
@@ -705,13 +742,15 @@ export function ChallengeDetailScreen({
                         >
                           {log.title}
                         </Text>
-                        <Text
-                          size="body2"
-                          weight="regular"
-                          className="mt-1 text-gray-600"
-                        >
-                          {log.description}
-                        </Text>
+                        <div className="mt-1">
+                          <Text
+                            size="body2"
+                            weight="regular"
+                            className="whitespace-pre-wrap text-gray-600"
+                          >
+                            {log.description}
+                          </Text>
+                        </div>
                       </div>
                     </div>
                     <Text
@@ -733,24 +772,24 @@ export function ChallengeDetailScreen({
                 ACTIONS
               </Text>
               <div className="mt-3 flex flex-col gap-2.5">
-                <Button
-                  size="large"
-                  className="w-full"
-                  onClick={() => router.push(`/diary/create?challengeId=${id}`)}
-                >
-                  로그 작성하기
+                <Button size="large" className="w-full" asChild>
+                  <Link href={`/diary/create?challengeId=${id}`}>
+                    로그 작성하기
+                  </Link>
                 </Button>
 
                 <Button
                   variant={summary.likeInfo.likedByMe ? 'default' : 'outlined'}
                   size="large"
                   className="w-full"
-                  onClick={handleToggleLike}
                   disabled={isActionLoading}
+                  asChild
                 >
-                  <Heart className="h-4 w-4" />
-                  {summary.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'} (
-                  {summary.likeInfo.likeCnt})
+                  <button type="button" onClick={handleToggleLike}>
+                    <Heart className="h-4 w-4" />
+                    {summary.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'} (
+                    {summary.likeInfo.likeCnt})
+                  </button>
                 </Button>
 
                 {!isHost && canJoin ? (
@@ -769,7 +808,12 @@ export function ChallengeDetailScreen({
                 ) : null}
 
                 {!isHost && isPending ? (
-                  <Button variant="outlined" size="large" className="w-full" disabled>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    className="w-full"
+                    disabled
+                  >
                     참여 승인 대기중
                   </Button>
                 ) : null}
@@ -863,7 +907,9 @@ export function ChallengeDetailScreen({
                       <Text
                         size="caption3"
                         weight="regular"
-                        className={highlighted ? 'text-main-800' : 'text-gray-500'}
+                        className={
+                          highlighted ? 'text-main-800' : 'text-gray-500'
+                        }
                       >
                         {participant.status}
                       </Text>
@@ -894,7 +940,11 @@ export function ChallengeDetailScreen({
                         <div className="text-main-800 mt-1">
                           <Check className="h-4 w-4" />
                         </div>
-                        <Text size="body2" weight="bold" className="text-gray-900">
+                        <Text
+                          size="body2"
+                          weight="bold"
+                          className="text-gray-900"
+                        >
                           {goal.content}
                         </Text>
                       </div>
