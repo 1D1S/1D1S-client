@@ -4,36 +4,69 @@ import {
   Button,
   ChallengeCard,
   Icon,
-  Pagination,
   Text,
   TextField,
   Toggle,
 } from '@1d1s/design-system';
 import { useRouter } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
 
-import {
-  CHALLENGE_BOARD_CATEGORY_FILTERS,
-  CHALLENGE_BOARD_ITEMS_PER_PAGE,
-  CHALLENGE_BOARD_LIST,
-  type ChallengeCategory,
-  getChallengeCategoryLabel,
-} from '../consts/challenge-board-data';
+import { useChallengeList } from '../hooks/use-challenge-queries';
+import { ChallengeCategory } from '../type/challenge';
+
+const CHALLENGE_BOARD_CATEGORY_FILTERS: Array<{
+  key: ChallengeCategory;
+  label: string;
+  icon?: string;
+}> = [
+  { key: 'ALL', label: '전체' },
+  { key: 'DEV', label: '개발', icon: '💻' },
+  { key: 'EXERCISE', label: '운동', icon: '💪' },
+  { key: 'STUDY', label: '공부', icon: '📚' },
+  { key: 'HEALTH', label: '건강', icon: '🥗' },
+  { key: 'HOBBY', label: '취미', icon: '🎨' },
+  { key: 'OTHER', label: '기타' },
+];
+
+// async function fetchChallengeList() {
+//   const response = await apiClient('/')
+// }
 
 export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] =
-    useState<ChallengeCategory>('all');
-  const [currentPage, setCurrentPage] = useState(1);
+    useState<ChallengeCategory>('ALL');
+  // const [currentPage, setCurrentPage] = useState(1);
 
+  // useChallengeList 무한 스크롤 데이터
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useChallengeList({
+      limit: 10,
+      keyword: query || undefined,
+    });
+
+  const { ref, inView } = useInView();
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // InfiniteQuery로 가져온 pages 배열을 flatten하여 일반 Challenge 리스트로 만듦;
+  // ChallengeItem[]에서 keyword 기반 필터링
   const filteredChallenges = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
+    console.log(data);
+    const flattenChallenges =
+      data?.pages?.flatMap((page) => page?.data?.items ?? []) ?? [];
 
-    return CHALLENGE_BOARD_LIST.filter((challenge) => {
+    return flattenChallenges.filter((challenge) => {
       const categoryMatched =
-        selectedCategory === 'all' || challenge.category === selectedCategory;
-
+        selectedCategory === 'ALL' || challenge.category === selectedCategory;
+      // others 카테고리 분기 처리 필요함.
       if (!categoryMatched) {
         return false;
       }
@@ -41,31 +74,36 @@ export default function ChallengeBoardScreen(): React.ReactElement {
       if (!normalizedQuery) {
         return true;
       }
-
       return (
         challenge.title.toLowerCase().includes(normalizedQuery) ||
-        challenge.description.toLowerCase().includes(normalizedQuery) ||
+        // 개별 챌린지의 description에 대한 검색이 필요하면 추가해야 함.
+        // challenge.description.toLowerCase().includes(normalizedQuery) ||
         challenge.challengeType.toLowerCase().includes(normalizedQuery) ||
-        getChallengeCategoryLabel(challenge.category)
-          .toLowerCase()
-          .includes(normalizedQuery)
+        challenge.category.toLowerCase().includes(normalizedQuery)
       );
     });
-  }, [query, selectedCategory]);
+  }, [query, selectedCategory, data]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredChallenges.length / CHALLENGE_BOARD_ITEMS_PER_PAGE)
-  );
-  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const formatChallengeType = (challengeTypeResponse: string): string =>
+    ({ FIXED: '고정 목표', FLEXIBLE: '개인 목표' })[
+      String(challengeTypeResponse)
+    ] ?? '기타';
 
-  const paginatedChallenges = useMemo(() => {
-    const start = (safeCurrentPage - 1) * CHALLENGE_BOARD_ITEMS_PER_PAGE;
-    return filteredChallenges.slice(
-      start,
-      start + CHALLENGE_BOARD_ITEMS_PER_PAGE
-    );
-  }, [filteredChallenges, safeCurrentPage]);
+  // 페이지네이션 우선 제거
+
+  // const totalPages = Math.max(
+  //   1,
+  //   Math.ceil(filteredChallenges.length / CHALLENGE_BOARD_ITEMS_PER_PAGE)
+  // );
+  // const safeCurrentPage = Math.min(currentPage, totalPages);
+
+  // const paginatedChallenges = useMemo(() => {
+  //   const start = (safeCurrentPage - 1) * CHALLENGE_BOARD_ITEMS_PER_PAGE;
+  //   return filteredChallenges.slice(
+  //     start,
+  //     start + CHALLENGE_BOARD_ITEMS_PER_PAGE
+  //   );
+  // }, [filteredChallenges, safeCurrentPage]);
 
   return (
     <div className="flex min-h-screen w-full flex-col p-4">
@@ -88,7 +126,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               value={query}
               onChange={(event) => {
                 setQuery(event.target.value);
-                setCurrentPage(1);
+                // setCurrentPage(1);
               }}
             />
           </div>
@@ -113,7 +151,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               onPressedChange={(pressed) => {
                 if (pressed) {
                   setSelectedCategory(filter.key);
-                  setCurrentPage(1);
+                  // setCurrentPage(1);
                 }
               }}
               className="h-10 px-4"
@@ -125,29 +163,46 @@ export default function ChallengeBoardScreen(): React.ReactElement {
 
         <div className="challenge-grid-container mt-8">
           <div className="challenge-card-grid grid grid-cols-1 gap-4">
-            {paginatedChallenges.map((challenge) => (
-              <div key={challenge.id} className="min-w-0">
+            {filteredChallenges.map((challenge) => (
+              <div key={challenge.challengeId} className="min-w-0">
                 <ChallengeCard
                   challengeTitle={challenge.title}
-                  challengeType={challenge.challengeType}
-                  challengeCategory={getChallengeCategoryLabel(
-                    challenge.category
-                  )}
-                  currentUserCount={challenge.currentParticipants}
-                  maxUserCount={challenge.maxParticipants}
+                  challengeType={formatChallengeType(challenge.challengeType)}
+                  challengeCategory={challenge.category}
+                  currentUserCount={challenge.participantCnt}
+                  maxUserCount={challenge.maxParticipantCnt}
                   startDate={challenge.startDate}
                   endDate={challenge.endDate}
-                  isOngoing={challenge.status === 'closingSoon'}
-                  isEnded={challenge.status === 'ended'}
+                  isOngoing={/*challenge.status === 'closingSoon'*/ true}
+                  isEnded={/*challenge.status === 'ended'*/ false}
                   className="h-full"
-                  onClick={() => router.push(`/challenge/${challenge.id}`)}
+                  onClick={() =>
+                    router.push(`/challenge/${challenge.challengeId}`)
+                  }
                 />
               </div>
             ))}
           </div>
         </div>
 
-        {paginatedChallenges.length === 0 ? (
+        <div
+          ref={ref}
+          className="mt-4 flex h-10 w-full items-center justify-center"
+        >
+          {isFetchingNextPage ? (
+            <Text size="body2" className="text-gray-400">
+              데이터를 불러오는 중...
+            </Text>
+          ) : hasNextPage ? (
+            <div />
+          ) : filteredChallenges.length > 0 ? (
+            <Text size="body2" className="text-gray-400">
+              마지막 챌린지입니다.
+            </Text>
+          ) : null}
+        </div>
+
+        {filteredChallenges.length === 0 ? (
           <div className="mt-8 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-gray-500">
               조건에 맞는 챌린지가 없습니다.
@@ -155,13 +210,14 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           </div>
         ) : null}
 
-        <div className="mt-10 flex items-center justify-center">
+        {/* 페이지네이션 우선 제거 */}
+        {/* <div className="mt-10 flex items-center justify-center">
           <Pagination
             currentPage={safeCurrentPage}
             totalPages={totalPages}
             onPageChange={(page) => setCurrentPage(page)}
           />
-        </div>
+        </div> */}
       </section>
     </div>
   );

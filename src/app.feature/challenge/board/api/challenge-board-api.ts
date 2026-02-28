@@ -1,5 +1,9 @@
 import { apiClient } from '@module/api/client';
-import { buildQueryString, requestData } from '@module/api/request';
+import {
+  buildQueryString,
+  requestBody,
+  requestData,
+} from '@module/api/request';
 
 import {
   ChallengeListItem,
@@ -26,17 +30,20 @@ export const challengeBoardApi = {
   // 챌린지 리스트 불러오기
   getChallengeList: async (
     params: ChallengeListParams = {}
-  ): Promise<ChallengeListResponse> => {
+  ): Promise<{ data: ChallengeListResponse; message: string }> => {
     const query = buildQueryString({
       limit: params.limit,
       cursor: params.cursor,
       keyword: params.keyword,
     });
 
-    return requestData<ChallengeListResponse>(apiClient, {
-      url: query ? `/challenges?${query}` : '/challenges',
-      method: 'GET',
-    });
+    return requestBody<{ data: ChallengeListResponse; message: string }>(
+      apiClient,
+      {
+        url: query ? `/challenges?${query}` : '/challenges',
+        method: 'GET',
+      }
+    );
   },
 
   // 특정 멤버가 진행중인 챌린지 보기

@@ -1,4 +1,5 @@
 export type ChallengeCategory =
+  | 'ALL'
   | 'DEV'
   | 'HEALTH'
   | 'STUDY'
@@ -38,7 +39,7 @@ export interface ChallengeListItem {
   startDate: string;
   endDate: string;
   maxParticipantCnt: number;
-  goalType: ChallengeType;
+  challengeType: ChallengeType;
   participantCnt: number;
   liked: boolean;
   likeCnt: number;
