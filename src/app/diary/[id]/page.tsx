@@ -1,4 +1,3 @@
-import { createMockDiaryDetail } from '@feature/diary/detail/consts/diary-detail-data';
 import { DiaryDetailScreen } from '@feature/diary/detail/screen/diary-detail-screen';
 import React from 'react';
 
@@ -10,7 +9,6 @@ export default async function DiaryDetail({
   params,
 }: DiaryDetailProps): Promise<React.ReactElement> {
   const { id } = await params;
-  const diaryData = createMockDiaryDetail(id);
 
-  return <DiaryDetailScreen diaryData={diaryData} />;
+  return <DiaryDetailScreen diaryId={Number(id)} />;
 }

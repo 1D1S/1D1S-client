@@ -95,9 +95,7 @@ export interface CreateChallengeResponse {
   likeInfo: LikeInfo;
 }
 
-export interface JoinChallengeRequest {
-  goals?: string[];
-}
+export type JoinChallengeRequest = string[];
 
 export interface JoinChallengeResponse {
   memberId: number;
