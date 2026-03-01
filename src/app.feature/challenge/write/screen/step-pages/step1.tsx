@@ -1,21 +1,22 @@
-import { CheckContainer, Text, TextField } from '@1d1s/design-system';
+import { CheckContainer, cn, Text, TextField } from '@1d1s/design-system';
+import { useFormContext } from 'react-hook-form';
+
 import {
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from '@component/ui/form';
-import { CATEGORY_OPTIONS } from '@constants/categories';
-import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
-import { cn } from '@module/utils/cn';
-import { useFormContext } from 'react-hook-form';
+} from '@/app.component/ui/form';
+import { CATEGORY_OPTIONS } from '@/app.constants/categories';
+
+import { ChallengeCreateFormValues } from '../../hooks/use-challenge-create-form';
 
 export function Step1(): React.ReactElement {
   const { control } = useFormContext<ChallengeCreateFormValues>();
 
   return (
-    <div className="mx-auto w-full max-w-[980px] space-y-8">
-      <div className="space-y-2">
+    <div className="mx-auto w-full max-w-[980px] space-y-12">
+      <div className="flex flex-col gap-2 space-y-2">
         <Text size="heading1" weight="bold" className="text-gray-900">
           챌린지 제목 <span className="text-main-800">*</span>
         </Text>
@@ -38,7 +39,7 @@ export function Step1(): React.ReactElement {
         />
       </div>
 
-      <div className="space-y-3">
+      <div className="flex flex-col gap-2 space-y-3">
         <Text size="heading1" weight="bold" className="text-gray-900">
           카테고리
         </Text>
@@ -93,7 +94,7 @@ export function Step1(): React.ReactElement {
         />
       </div>
 
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2 space-y-2">
         <Text size="heading1" weight="bold" className="text-gray-900">
           설명 <span className="text-gray-500">(선택)</span>
         </Text>

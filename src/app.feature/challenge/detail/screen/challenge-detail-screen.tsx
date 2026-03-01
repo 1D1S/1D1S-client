@@ -7,6 +7,7 @@ import {
   type ScheduleCalendarCell,
   Text,
 } from '@1d1s/design-system';
+import { ChallengeGoalToggle } from '@feature/challenge/detail/components/challenge-goal-toggle';
 import {
   CalendarDays,
   Check,
@@ -16,25 +17,40 @@ import {
   CircleUserRound,
   Clock3,
   Flame,
-  PencilLine,
-  Settings,
+  Heart,
   UserRound,
 } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import React, { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
+import { useChallengeDetail } from '../../board/hooks/use-challenge-queries';
 import {
-  CHALLENGE_DETAIL_PARTICIPANTS,
-  CHALLENGE_DETAIL_PENDING_MEMBERS,
-  CHALLENGE_DETAIL_RECENT_LOGS,
-  CHALLENGE_DETAIL_WEEK_LABELS,
-} from '../consts/challenge-detail-data';
+  ChallengeGoal,
+  Participant,
+  ParticipantStatus,
+} from '../../board/type/challenge';
+import { CHALLENGE_DETAIL_WEEK_LABELS } from '../consts/challenge-detail-data';
+import {
+  useAcceptParticipant,
+  useJoinChallenge,
+  useLeaveChallenge,
+  useLikeChallenge,
+  useRejectParticipant,
+  useUnlikeChallenge,
+} from '../hooks/use-challenge-mutations';
 
 interface ChallengeDetailScreenProps {
   id: string;
 }
 
-type UserRole = 'host' | 'participant';
+const PARTICIPATING_STATUS: ParticipantStatus[] = [
+  'HOST',
+  'PARTICIPANT',
+  'ACCEPTED',
+];
+const EMPTY_GOALS: ChallengeGoal[] = [];
+const EMPTY_PARTICIPANTS: Participant[] = [];
 
 function getMonthLabel(monthDate: Date): string {
   return new Intl.DateTimeFormat('ko-KR', {
@@ -43,28 +59,99 @@ function getMonthLabel(monthDate: Date): string {
   }).format(monthDate);
 }
 
-function getActivityBars(
-  dayOfMonth: number
-): Array<{ width: string; tone: 'main' | 'soft' }> {
-  if (dayOfMonth % 6 === 0) {
-    return [{ width: '82%', tone: 'main' }];
+function getChallengeTypeLabel(challengeType: string): string {
+  return challengeType === 'FIXED' ? '고정 목표' : '개인 목표';
+}
+
+function getCategoryLabel(category: string): string {
+  const labels: Record<string, string> = {
+    DEV: '개발',
+    HEALTH: '건강',
+    STUDY: '공부',
+    EXERCISE: '운동',
+    HOBBY: '취미',
+    OTHER: '기타',
+    ALL: '전체',
+  };
+
+  return labels[category] ?? category;
+}
+
+function formatDateRange(startDate: string, endDate: string): string {
+  const format = (date: string): string => date.replaceAll('-', '.');
+  return `${format(startDate)} ~ ${format(endDate)}`;
+}
+
+function getDdayLabel(endDate: string): string {
+  const today = new Date();
+  const end = new Date(endDate);
+  today.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+
+  const dayDiff = Math.ceil((end.getTime() - today.getTime()) / 86400000);
+
+  if (dayDiff > 0) {
+    return `D-${dayDiff}`;
   }
-  if (dayOfMonth % 4 === 0) {
-    return [
-      { width: '72%', tone: 'main' },
-      { width: '54%', tone: 'soft' },
-    ];
+  if (dayDiff === 0) {
+    return 'D-DAY';
   }
-  if (dayOfMonth % 3 === 0) {
-    return [{ width: '68%', tone: 'soft' }];
+  return `D+${Math.abs(dayDiff)}`;
+}
+
+function formatRelativeJoinedText(status: ParticipantStatus): string {
+  switch (status) {
+    case 'PENDING':
+      return '참여 승인 대기 중';
+    case 'REJECTED':
+      return '신청 거절됨';
+    default:
+      return '참여 중';
   }
-  return [];
+}
+
+function isSameDate(firstDate: Date, secondDate: Date): boolean {
+  return (
+    firstDate.getFullYear() === secondDate.getFullYear() &&
+    firstDate.getMonth() === secondDate.getMonth() &&
+    firstDate.getDate() === secondDate.getDate()
+  );
+}
+
+function getParticipantStatusLabel(status: ParticipantStatus): string {
+  const labels: Record<ParticipantStatus, string> = {
+    NONE: '미참여',
+    PENDING: '승인 대기',
+    REJECTED: '참여 거절',
+    ACCEPTED: '참여 중',
+    HOST: '호스트',
+    PARTICIPANT: '참여자',
+  };
+  return labels[status] ?? status;
 }
 
 function buildCalendarRows(
   baseMonth: Date,
-  userRole: UserRole
+  startDate: string,
+  endDate: string
 ): ScheduleCalendarCell[][] {
+  if (!startDate || !endDate) {
+    return [];
+  }
+
+  const challengeStart = new Date(startDate);
+  const challengeEnd = new Date(endDate);
+  if (
+    Number.isNaN(challengeStart.getTime()) ||
+    Number.isNaN(challengeEnd.getTime())
+  ) {
+    return [];
+  }
+  challengeStart.setHours(0, 0, 0, 0);
+  challengeEnd.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const year = baseMonth.getFullYear();
   const month = baseMonth.getMonth();
   const firstWeekday = new Date(year, month, 1).getDay();
@@ -92,18 +179,21 @@ function buildCalendarRows(
       continue;
     }
 
-    const bars = getActivityBars(currentDay);
-    const highlighted = userRole === 'host' && currentDay % 5 === 0;
-    const subtitle =
-      currentDay % 7 === 0 ? `${(currentDay % 3) + 1}건` : undefined;
-    const title = currentDay % 9 === 0 ? '인증' : undefined;
+    const currentDate = new Date(year, month, currentDay);
+    currentDate.setHours(0, 0, 0, 0);
+    const isInChallengePeriod =
+      currentDate >= challengeStart && currentDate <= challengeEnd;
+    const isToday = isSameDate(currentDate, today);
 
     calendarCells.push({
       day: currentDay,
-      title,
-      subtitle,
-      bars,
-      highlighted,
+      subtitle: isToday && isInChallengePeriod ? '오늘' : undefined,
+      highlighted: isToday && isInChallengePeriod,
+      muted: !isInChallengePeriod,
+      bars:
+        isInChallengePeriod && currentDate <= today
+          ? [{ tone: 'main', width: '100%' }]
+          : undefined,
     });
   }
 
@@ -144,9 +234,15 @@ function StatHeader({
 function PendingMemberItem({
   name,
   joinedAt,
+  onAccept,
+  onReject,
+  isLoading,
 }: {
   name: string;
   joinedAt: string;
+  onAccept(): void;
+  onReject(): void;
+  isLoading: boolean;
 }): React.ReactElement {
   return (
     <div className="rounded-2 flex items-center justify-between border border-gray-200 bg-gray-100 px-3 py-2.5">
@@ -169,6 +265,8 @@ function PendingMemberItem({
           type="button"
           className="bg-main-200 text-main-800 flex h-8 w-8 items-center justify-center rounded-xl"
           aria-label="참여 승인"
+          onClick={onAccept}
+          disabled={isLoading}
         >
           <Check className="h-4 w-4" />
         </button>
@@ -176,6 +274,8 @@ function PendingMemberItem({
           type="button"
           className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-200 text-gray-500"
           aria-label="참여 거절"
+          onClick={onReject}
+          disabled={isLoading}
         >
           ×
         </button>
@@ -187,90 +287,315 @@ function PendingMemberItem({
 export function ChallengeDetailScreen({
   id,
 }: ChallengeDetailScreenProps): React.ReactElement {
-  const searchParams = useSearchParams();
-  const roleParam = searchParams.get('role');
-  const userRole: UserRole =
-    roleParam === 'participant' ? 'participant' : 'host';
-  const isHost = userRole === 'host';
+  const challengeId = Number(id);
 
-  const [calendarMonth, setCalendarMonth] = useState<Date>(
-    () => new Date(2025, 1, 1)
+  const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
+
+  const joinChallenge = useJoinChallenge();
+  const leaveChallenge = useLeaveChallenge();
+  const likeChallenge = useLikeChallenge();
+  const unlikeChallenge = useUnlikeChallenge();
+  const acceptParticipant = useAcceptParticipant();
+  const rejectParticipant = useRejectParticipant();
+
+  const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
+  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [isGoalSelectionTouched, setIsGoalSelectionTouched] = useState(false);
+
+  const summary = data?.challengeSummary;
+  const detail = data?.challengeDetail;
+  const goals = data?.challengeGoals ?? EMPTY_GOALS;
+  const participants = data?.participants ?? EMPTY_PARTICIPANTS;
+
+  const participationRate = Math.min(
+    100,
+    Math.max(0, detail?.participationRate ?? 0)
   );
+  const goalCompletionRate = Math.min(
+    100,
+    Math.max(0, detail?.goalCompletionRate ?? 0)
+  );
+
+  const pendingParticipants = useMemo(
+    () =>
+      participants.filter((participant) => participant.status === 'PENDING'),
+    [participants]
+  );
+
+  const activeParticipants = useMemo(
+    () =>
+      participants.filter((participant) =>
+        PARTICIPATING_STATUS.includes(participant.status)
+      ),
+    [participants]
+  );
+
+  const myStatus = detail?.myStatus ?? 'NONE';
+  const isHost = myStatus === 'HOST';
+  const isPending = myStatus === 'PENDING';
+  const isParticipating = PARTICIPATING_STATUS.includes(myStatus);
+  const canJoin = myStatus === 'NONE' || myStatus === 'REJECTED';
 
   const monthLabel = useMemo(
     () => getMonthLabel(calendarMonth),
     [calendarMonth]
   );
   const calendarRows = useMemo(
-    () => buildCalendarRows(calendarMonth, userRole),
-    [calendarMonth, userRole]
+    () =>
+      buildCalendarRows(
+        calendarMonth,
+        summary?.startDate ?? '',
+        summary?.endDate ?? ''
+      ),
+    [calendarMonth, summary?.startDate, summary?.endDate]
   );
+  const recentActivityLogs = useMemo(() => {
+    const summaryLogs = [
+      {
+        key: 'participants-total',
+        title: `현재 참여자 ${summary?.participantCnt ?? 0}명`,
+        description: `최대 ${summary?.maxParticipantCnt ?? 0}명 중 ${summary?.participantCnt ?? 0}명이 참여 중입니다.`,
+        status: '참여 현황',
+      },
+      {
+        key: 'participants-pending',
+        title: `승인 대기 ${pendingParticipants.length}건`,
+        description:
+          pendingParticipants.length > 0
+            ? '호스트가 참여 승인/거절을 처리할 수 있습니다.'
+            : '현재 처리할 참여 신청이 없습니다.',
+        status: '신청 상태',
+      },
+    ];
+
+    const participantLogs = participants.slice(0, 6).map((participant) => ({
+      key: `participant-${participant.participantId}`,
+      title: participant.nickname,
+      description: `참여 상태: ${getParticipantStatusLabel(participant.status)}`,
+      status: getParticipantStatusLabel(participant.status),
+    }));
+
+    return [...summaryLogs, ...participantLogs];
+  }, [
+    participants,
+    pendingParticipants.length,
+    summary?.maxParticipantCnt,
+    summary?.participantCnt,
+  ]);
+
+  const isActionLoading =
+    joinChallenge.isPending ||
+    leaveChallenge.isPending ||
+    likeChallenge.isPending ||
+    unlikeChallenge.isPending;
+  const effectiveSelectedGoals = isGoalSelectionTouched
+    ? selectedGoals
+    : goals.map((goal) => goal.content);
+
+  const toggleGoal = (goal: string): void => {
+    setIsGoalSelectionTouched(true);
+    setSelectedGoals(() =>
+      effectiveSelectedGoals.includes(goal)
+        ? effectiveSelectedGoals.filter((prevGoal) => prevGoal !== goal)
+        : [...effectiveSelectedGoals, goal]
+    );
+  };
+
+  const handleJoinChallenge = (): void => {
+    if (effectiveSelectedGoals.length === 0) {
+      toast.error('최소 1개 이상의 목표를 선택해 주세요.');
+      return;
+    }
+
+    joinChallenge.mutate(
+      { challengeId, data: effectiveSelectedGoals },
+      {
+        onSuccess: () => {
+          toast.success('챌린지 참여 신청이 완료되었습니다.');
+        },
+        onError: () => {
+          toast.error('챌린지 참여 신청에 실패했습니다.');
+        },
+      }
+    );
+  };
+
+  const handleLeaveChallenge = (): void => {
+    leaveChallenge.mutate(challengeId, {
+      onSuccess: () => {
+        toast.success('챌린지에서 탈퇴했습니다.');
+      },
+      onError: () => {
+        toast.error('챌린지 탈퇴에 실패했습니다.');
+      },
+    });
+  };
+
+  const handleToggleLike = (): void => {
+    if (!summary) {
+      return;
+    }
+
+    if (summary.likeInfo.likedByMe) {
+      unlikeChallenge.mutate(challengeId, {
+        onSuccess: () => {
+          toast.success('챌린지 좋아요 취소 성공했습니다.');
+        },
+        onError: () => {
+          toast.error('좋아요 취소에 실패했습니다.');
+        },
+      });
+      return;
+    }
+
+    likeChallenge.mutate(challengeId, {
+      onSuccess: () => {
+        toast.success('챌린지 좋아요 성공했습니다.');
+      },
+      onError: () => {
+        toast.error('좋아요 요청에 실패했습니다.');
+      },
+    });
+  };
+
+  const handleAcceptParticipant = (participantId: number): void => {
+    acceptParticipant.mutate(participantId, {
+      onSuccess: () => {
+        toast.success('참여 신청을 수락했습니다.');
+      },
+      onError: () => {
+        toast.error('참여 신청 수락에 실패했습니다.');
+      },
+    });
+  };
+
+  const handleRejectParticipant = (participantId: number): void => {
+    rejectParticipant.mutate(participantId, {
+      onSuccess: () => {
+        toast.success('참여 신청을 거절했습니다.');
+      },
+      onError: () => {
+        toast.error('참여 신청 거절에 실패했습니다.');
+      },
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-white">
+        <Text size="body1" weight="medium" className="text-gray-500">
+          상세 정보를 불러오는 중입니다...
+        </Text>
+      </div>
+    );
+  }
+
+  if (isError || !summary || !detail) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-white px-4">
+        <Text size="body1" weight="medium" className="text-red-600">
+          {error?.message ?? '챌린지 상세 정보를 불러오지 못했습니다.'}
+        </Text>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen w-full bg-white px-4 py-4">
-      <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-4">
-        <section className="rounded-4 border border-gray-200 bg-white p-5">
+    <div className="min-h-screen w-full bg-white px-4 py-6 md:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6">
+        <section className="rounded-4 border border-gray-200 bg-white p-6 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="rounded-1.5 bg-main-200 text-caption1 text-main-800 px-2.5 py-1 font-bold">
                 {isHost ? 'HOST VIEW' : 'PARTICIPANT VIEW'}
               </span>
               <span className="rounded-1.5 text-caption1 bg-gray-100 px-2.5 py-1 font-medium text-gray-600">
-                {'<>'} 개발 챌린지
+                {getCategoryLabel(summary.category)} ·{' '}
+                {getChallengeTypeLabel(summary.challengeType)}
               </span>
             </div>
             <Text size="body2" weight="medium" className="text-gray-600">
-              2025.01.25 ~ 2025.02.22 (D-21)
+              {formatDateRange(summary.startDate, summary.endDate)} ({' '}
+              {getDdayLabel(summary.endDate)} )
             </Text>
           </div>
 
-          <Text size="display1" weight="bold" className="mt-3 text-gray-900">
-            [고라니 밥주기] {id}
-          </Text>
-          <Text size="body1" weight="regular" className="mt-2 text-gray-600">
-            매일 아침 고라니에게 밥을 주고 기록하는 챌린지입니다.{' '}
-            {isHost
-              ? '호스트로서 챌린지를 꾸준히 운영하고 참여자를 관리해보세요.'
-              : '참여자로서 목표를 달성하고 기록을 쌓아보세요.'}
-          </Text>
+          <div className="mt-4 flex flex-col gap-3">
+            <Text
+              as="h1"
+              size="display1"
+              weight="bold"
+              className="break-keep whitespace-pre-wrap text-gray-900"
+            >
+              {summary.title}
+            </Text>
+            <Text
+              as="p"
+              size="body1"
+              weight="regular"
+              className="break-keep whitespace-pre-wrap text-gray-600"
+            >
+              {detail.description}
+            </Text>
+          </div>
         </section>
 
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="flex min-w-0 flex-col gap-4">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <div className="flex min-w-0 flex-col gap-6">
             {isHost ? (
-              <section className="rounded-4 border-main-300 border bg-white p-4">
+              <section className="rounded-4 border-main-300 border bg-white p-5">
                 <div className="flex items-center gap-2">
                   <CircleAlert className="text-main-800 h-5 w-5" />
                   <Text size="heading2" weight="bold" className="text-gray-900">
                     참여 인원 대기
                   </Text>
                   <span className="bg-main-200 text-caption1 text-main-800 rounded-full px-2 py-0.5 font-bold">
-                    {CHALLENGE_DETAIL_PENDING_MEMBERS.length}명
+                    {pendingParticipants.length}명
                   </span>
                 </div>
 
-                <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  {CHALLENGE_DETAIL_PENDING_MEMBERS.map((member) => (
-                    <PendingMemberItem
-                      key={member.name}
-                      name={member.name}
-                      joinedAt={member.joinedAt}
-                    />
-                  ))}
-                </div>
+                {pendingParticipants.length > 0 ? (
+                  <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    {pendingParticipants.map((participant) => (
+                      <PendingMemberItem
+                        key={participant.participantId}
+                        name={participant.nickname}
+                        joinedAt={formatRelativeJoinedText(participant.status)}
+                        onAccept={() =>
+                          handleAcceptParticipant(participant.participantId)
+                        }
+                        onReject={() =>
+                          handleRejectParticipant(participant.participantId)
+                        }
+                        isLoading={
+                          acceptParticipant.isPending ||
+                          rejectParticipant.isPending
+                        }
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <Text
+                    size="body2"
+                    weight="regular"
+                    className="mt-3 text-gray-500"
+                  >
+                    현재 대기 중인 참여 신청이 없습니다.
+                  </Text>
+                )}
               </section>
             ) : null}
 
-            <div className="grid gap-4 lg:grid-cols-2">
-              <section className="rounded-4 border border-gray-200 bg-white p-4">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <section className="rounded-4 border border-gray-200 bg-white p-5">
                 <StatHeader
                   icon={<span className="text-main-800">◔</span>}
                   title={isHost ? '내 진척도' : '나의 참여 진척도'}
-                  rightText={isHost ? 'Rank #1 (Host)' : 'Rank #7'}
+                  rightText={`${participationRate}%`}
                 />
                 <div className="mt-4 flex items-center gap-4">
                   <CircularProgress
-                    value={isHost ? 95 : 78}
+                    value={participationRate}
                     size="lg"
                     showPercentage
                   />
@@ -281,19 +606,20 @@ export function ChallengeDetailScreen({
                         weight="medium"
                         className="text-gray-600"
                       >
-                        평균 달성률
+                        참여율
                       </Text>
                       <Text
                         size="body2"
                         weight="bold"
                         className="text-gray-900"
                       >
-                        {isHost ? '92M' : '79M'}
+                        {participationRate}%
                       </Text>
                     </div>
                     <div className="mt-2 h-2 rounded-full bg-gray-200">
                       <div
-                        className={`bg-main-700 h-full rounded-full ${isHost ? 'w-[95%]' : 'w-[78%]'}`}
+                        className="bg-main-700 h-full rounded-full"
+                        style={{ width: `${participationRate}%` }}
                       />
                     </div>
                     <Text
@@ -301,73 +627,42 @@ export function ChallengeDetailScreen({
                       weight="regular"
                       className="mt-3 text-gray-600"
                     >
-                      {isHost
-                        ? '호스트로서 모범을 보이고 계시네요. 계속 힘내세요.'
-                        : '꾸준히 목표를 수행하고 있어요. 지금처럼 유지해보세요.'}
+                      개인 참여율 지표입니다.
                     </Text>
                   </div>
                 </div>
               </section>
 
-              <section className="rounded-4 border border-gray-200 bg-white p-4">
+              <section className="rounded-4 border border-gray-200 bg-white p-5">
                 <StatHeader
                   icon={<Flame className="text-main-800 h-5 w-5" />}
-                  title="스트릭 & 목표"
-                  rightText={isHost ? '30 Days' : '12 Days'}
+                  title="목표 달성률"
+                  rightText={`${goalCompletionRate}%`}
                 />
-                <div className="mt-4 flex flex-col gap-4">
-                  <div>
-                    <div className="mb-1 flex items-center justify-between">
-                      <Text
-                        size="body2"
-                        weight="medium"
-                        className="text-gray-700"
-                      >
-                        아침 밥주기
-                      </Text>
-                      <Text
-                        size="body2"
-                        weight="bold"
-                        className="text-main-800"
-                      >
-                        {isHost ? '100%' : '82%'}
-                      </Text>
-                    </div>
-                    <div className="h-2 rounded-full bg-gray-200">
-                      <div
-                        className={`bg-main-700 h-full rounded-full ${isHost ? 'w-full' : 'w-[82%]'}`}
-                      />
-                    </div>
+                <div className="mt-4">
+                  <div className="mb-1 flex items-center justify-between">
+                    <Text
+                      size="body2"
+                      weight="medium"
+                      className="text-gray-700"
+                    >
+                      전체 목표 달성률
+                    </Text>
+                    <Text size="body2" weight="bold" className="text-main-800">
+                      {goalCompletionRate}%
+                    </Text>
                   </div>
-
-                  <div>
-                    <div className="mb-1 flex items-center justify-between">
-                      <Text
-                        size="body2"
-                        weight="medium"
-                        className="text-gray-700"
-                      >
-                        물통 확인하기
-                      </Text>
-                      <Text
-                        size="body2"
-                        weight="bold"
-                        className="text-gray-600"
-                      >
-                        {isHost ? '98%' : '64%'}
-                      </Text>
-                    </div>
-                    <div className="h-2 rounded-full bg-gray-200">
-                      <div
-                        className={`bg-main-600/70 h-full rounded-full ${isHost ? 'w-[98%]' : 'w-[64%]'}`}
-                      />
-                    </div>
+                  <div className="h-2 rounded-full bg-gray-200">
+                    <div
+                      className="bg-main-700 h-full rounded-full"
+                      style={{ width: `${goalCompletionRate}%` }}
+                    />
                   </div>
                 </div>
               </section>
             </div>
 
-            <section className="rounded-4 border border-gray-200 bg-white p-4">
+            <section className="rounded-4 border border-gray-200 bg-white p-5">
               <div className="mb-3 flex items-center justify-between">
                 <StatHeader
                   icon={<CalendarDays className="text-main-800 h-5 w-5" />}
@@ -424,22 +719,22 @@ export function ChallengeDetailScreen({
               />
             </section>
 
-            <section className="rounded-4 border border-gray-200 bg-white p-4">
+            <section className="rounded-4 border border-gray-200 bg-white p-5">
               <StatHeader
                 icon={<Clock3 className="text-main-800 h-5 w-5" />}
-                title="최근 활동 로그"
+                title="참여 활동 요약"
               />
               <div className="mt-3 divide-y divide-gray-200">
-                {CHALLENGE_DETAIL_RECENT_LOGS.map((log) => (
+                {recentActivityLogs.map((log) => (
                   <div
-                    key={log.title}
-                    className="flex items-start justify-between gap-3 py-4"
+                    key={log.key}
+                    className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3"
                   >
                     <div className="flex items-start gap-3">
                       <div className="bg-main-200 text-main-800 mt-1 flex h-10 w-10 items-center justify-center rounded-full">
                         <Check className="h-5 w-5" />
                       </div>
-                      <div>
+                      <div className="flex min-w-0 flex-1 flex-col justify-center">
                         <Text
                           size="heading2"
                           weight="bold"
@@ -447,18 +742,15 @@ export function ChallengeDetailScreen({
                         >
                           {log.title}
                         </Text>
-                        <Text
-                          size="body2"
-                          weight="regular"
-                          className="mt-1 text-gray-600"
-                        >
-                          {log.description}
-                        </Text>
-                        {log.badge ? (
-                          <span className="rounded-1.5 text-caption1 mt-2 inline-flex bg-gray-100 px-2.5 py-1 font-medium text-gray-600">
-                            {log.badge}
-                          </span>
-                        ) : null}
+                        <div className="mt-1">
+                          <Text
+                            size="body2"
+                            weight="regular"
+                            className="whitespace-pre-wrap text-gray-600"
+                          >
+                            {log.description}
+                          </Text>
+                        </div>
                       </div>
                     </div>
                     <Text
@@ -466,7 +758,7 @@ export function ChallengeDetailScreen({
                       weight="medium"
                       className="text-gray-500"
                     >
-                      {log.time}
+                      {log.status}
                     </Text>
                   </div>
                 ))}
@@ -474,177 +766,191 @@ export function ChallengeDetailScreen({
             </section>
           </div>
 
-          <aside className="flex min-w-0 flex-col gap-4">
-            <section className="rounded-4 border border-gray-200 bg-white p-4">
+          <aside className="flex min-w-0 flex-col gap-6">
+            <section className="rounded-4 border border-gray-200 bg-white p-5">
               <Text size="caption1" weight="bold" className="text-gray-500">
-                {isHost ? 'HOST ACTIONS' : 'PARTICIPANT ACTIONS'}
+                ACTIONS
               </Text>
               <div className="mt-3 flex flex-col gap-2.5">
-                <Button size="large" className="w-full">
-                  <PencilLine className="h-4 w-4" />
-                  로그 작성하기
+                <Button size="large" className="w-full" asChild>
+                  <Link href={`/diary/create?challengeId=${id}`}>
+                    로그 작성하기
+                  </Link>
                 </Button>
 
-                {isHost ? (
-                  <>
-                    <Button variant="outlined" size="large" className="w-full">
-                      <Settings className="h-4 w-4" />
-                      정보 수정하기
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="large"
-                      className="w-full text-gray-600"
-                    >
-                      챌린지 삭제
-                    </Button>
-                  </>
-                ) : (
-                  <Button variant="outlined" size="large" className="w-full">
+                <Button
+                  variant={summary.likeInfo.likedByMe ? 'default' : 'outlined'}
+                  size="large"
+                  className="w-full"
+                  disabled={isActionLoading}
+                  asChild
+                >
+                  <button type="button" onClick={handleToggleLike}>
+                    <Heart className="h-4 w-4" />
+                    {summary.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'} (
+                    {summary.likeInfo.likeCnt})
+                  </button>
+                </Button>
+
+                {!isHost && canJoin ? (
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    className="w-full"
+                    onClick={handleJoinChallenge}
+                    disabled={
+                      joinChallenge.isPending ||
+                      effectiveSelectedGoals.length === 0
+                    }
+                  >
+                    챌린지 참여 신청
+                  </Button>
+                ) : null}
+
+                {!isHost && isPending ? (
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    className="w-full"
+                    disabled
+                  >
+                    참여 승인 대기중
+                  </Button>
+                ) : null}
+
+                {!isHost && isParticipating ? (
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    className="w-full"
+                    onClick={handleLeaveChallenge}
+                    disabled={leaveChallenge.isPending}
+                  >
                     챌린지 나가기
                   </Button>
-                )}
+                ) : null}
               </div>
             </section>
 
-            <section className="rounded-4 border border-gray-200 bg-white p-4">
+            <section className="rounded-4 border border-gray-200 bg-white p-5">
               <Text size="heading2" weight="bold" className="text-gray-900">
                 참여 현황
               </Text>
               <div className="mt-3">
                 <div className="mb-2 flex items-center justify-between">
                   <Text size="body2" weight="medium" className="text-gray-600">
-                    참여율
+                    참여자
                   </Text>
                   <Text size="body1" weight="bold" className="text-gray-900">
-                    12 / 20
+                    {summary.participantCnt} / {summary.maxParticipantCnt}
                   </Text>
                 </div>
                 <div className="h-2 rounded-full bg-gray-200">
-                  <div className="bg-mint-800 h-full w-[60%] rounded-full" />
+                  <div
+                    className="bg-mint-800 h-full rounded-full"
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        summary.maxParticipantCnt > 0
+                          ? (summary.participantCnt /
+                              summary.maxParticipantCnt) *
+                              100
+                          : 0
+                      )}%`,
+                    }}
+                  />
                 </div>
                 <div className="mt-3 flex items-center gap-2 text-gray-600">
                   <CalendarDays className="h-4 w-4" />
                   <Text size="body2" weight="medium">
-                    D-21 남음
+                    {getDdayLabel(summary.endDate)} 남음
                   </Text>
                 </div>
               </div>
             </section>
 
-            <section className="rounded-4 border border-gray-200 bg-white p-4">
-              <div className="flex items-center justify-between">
-                <Text size="heading2" weight="bold" className="text-gray-900">
-                  참여자 목록
-                </Text>
-                {isHost ? (
-                  <Text size="caption1" weight="bold" className="text-main-800">
-                    +초대
-                  </Text>
-                ) : null}
-              </div>
-              <div className="mt-3 grid grid-cols-4 gap-3">
-                {CHALLENGE_DETAIL_PARTICIPANTS.map((member) => (
-                  <div
-                    key={member.name}
-                    className="flex flex-col items-center gap-1.5"
-                  >
-                    <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-full border ${
-                        member.highlighted
-                          ? 'border-main-700 bg-main-800 text-white'
-                          : 'border-gray-200 bg-gray-100 text-gray-500'
-                      }`}
-                    >
-                      {member.highlighted ? (
-                        <Text size="caption1" weight="bold">
-                          ME
-                        </Text>
-                      ) : (
-                        <CircleUserRound className="h-5 w-5" />
-                      )}
-                    </div>
-                    <Text
-                      size="caption2"
-                      weight="medium"
-                      className="text-gray-700"
-                    >
-                      {member.name}
-                    </Text>
-                    <Text
-                      size="caption3"
-                      weight="regular"
-                      className={
-                        member.highlighted ? 'text-main-800' : 'text-gray-500'
-                      }
-                    >
-                      {member.role}
-                    </Text>
-                  </div>
-                ))}
+            <section className="rounded-4 border border-gray-200 bg-white p-5">
+              <Text size="heading2" weight="bold" className="text-gray-900">
+                참여자 목록
+              </Text>
+              <div className="mt-3 grid grid-cols-3 gap-4 sm:grid-cols-4">
+                {activeParticipants.map((participant) => {
+                  const highlighted = participant.status === 'HOST';
 
-                {isHost ? (
-                  <button
-                    type="button"
-                    className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 text-gray-400"
-                    aria-label="참여자 초대"
-                  >
-                    +5
-                  </button>
-                ) : null}
+                  return (
+                    <div
+                      key={participant.participantId}
+                      className="flex flex-col items-center gap-2.5"
+                    >
+                      <div
+                        className={`flex h-12 w-12 items-center justify-center rounded-full border ${
+                          highlighted
+                            ? 'border-main-700 bg-main-800 text-white'
+                            : 'border-gray-200 bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {highlighted ? (
+                          <Text size="caption1" weight="bold">
+                            HOST
+                          </Text>
+                        ) : (
+                          <CircleUserRound className="h-5 w-5" />
+                        )}
+                      </div>
+                      <Text
+                        size="caption2"
+                        weight="medium"
+                        className="text-gray-700"
+                      >
+                        {participant.nickname}
+                      </Text>
+                      <Text
+                        size="caption3"
+                        weight="regular"
+                        className={
+                          highlighted ? 'text-main-800' : 'text-gray-500'
+                        }
+                      >
+                        {participant.status}
+                      </Text>
+                    </div>
+                  );
+                })}
               </div>
             </section>
 
-            <section className="rounded-4 border border-gray-200 bg-white p-4">
+            <section className="rounded-4 border border-gray-200 bg-white p-5">
               <Text size="heading2" weight="bold" className="text-gray-900">
-                {isHost ? '나의 목표 리스트' : '내가 선택한 목표'}
+                {canJoin ? '신청할 목표 선택' : '챌린지 목표'}
               </Text>
               <div className="mt-3 flex flex-col gap-2">
-                <div className="rounded-2 border-main-200 bg-main-100 border p-3">
-                  <div className="flex items-start gap-2">
-                    <div className="text-main-800 mt-1">
-                      <Check className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <Text
-                        size="body2"
-                        weight="bold"
-                        className="text-gray-900"
-                      >
-                        매일 아침 7시 특식 인증
-                      </Text>
-                      <Text
-                        size="caption2"
-                        weight="regular"
-                        className="text-gray-600"
-                      >
-                        고정목표
-                      </Text>
-                    </div>
+                {goals.map((goal) => (
+                  <div
+                    key={goal.challengeGoalId}
+                    className="rounded-2 border border-gray-200 bg-gray-100 p-3"
+                  >
+                    {canJoin ? (
+                      <ChallengeGoalToggle
+                        checked={effectiveSelectedGoals.includes(goal.content)}
+                        onCheckedChange={() => toggleGoal(goal.content)}
+                        label={goal.content}
+                      />
+                    ) : (
+                      <div className="flex items-start gap-2">
+                        <div className="text-main-800 mt-1">
+                          <Check className="h-4 w-4" />
+                        </div>
+                        <Text
+                          size="body2"
+                          weight="bold"
+                          className="text-gray-900"
+                        >
+                          {goal.content}
+                        </Text>
+                      </div>
+                    )}
                   </div>
-                </div>
-
-                <div className="rounded-2 border border-gray-200 bg-gray-100 p-3">
-                  <div className="flex items-start gap-2">
-                    <div className="mt-1 text-gray-500">○</div>
-                    <div>
-                      <Text
-                        size="body2"
-                        weight="bold"
-                        className="text-gray-900"
-                      >
-                        물 2L 마시기
-                      </Text>
-                      <Text
-                        size="caption2"
-                        weight="regular"
-                        className="text-gray-600"
-                      >
-                        개인목표
-                      </Text>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </section>
           </aside>
