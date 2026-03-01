@@ -4,7 +4,6 @@ import { Button, Text, TextField } from '@1d1s/design-system';
 import {
   Bold,
   CalendarDays,
-  Camera,
   ChevronRight,
   Flame,
   ImagePlus,
@@ -14,18 +13,65 @@ import {
   ListOrdered,
   Underline,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
-import type { GoalItem, MoodOption } from '../consts/diary-create-data';
+import { useChallengeDetail } from '../../../challenge/board/hooks/use-challenge-queries';
+import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
+import { Feeling } from '../../board/type/diary';
+import {
+  useCreateDiary,
+  useUpdateDiary,
+} from '../../detail/hooks/use-diary-mutations';
+import type { MoodOption } from '../consts/diary-create-data';
 import {
   DIARY_CREATE_INITIAL_CONTENT,
-  DIARY_CREATE_INITIAL_GOALS,
   DIARY_CREATE_MOOD_OPTIONS,
 } from '../consts/diary-create-data';
 
-function GoalRow({ goal }: { goal: GoalItem }): React.ReactElement {
+interface GoalItem {
+  id: number;
+  label: string;
+  done: boolean;
+}
+
+interface ChallengeGoalItem {
+  challengeGoalId: number;
+  content: string;
+}
+
+interface DisplayChallenge {
+  challengeId: number;
+  title: string;
+  category: string;
+  startDate: string;
+}
+
+interface DiaryCreateInitialValues {
+  title: string;
+  selectedMood: string;
+  content: string;
+  achievedDate: string;
+  selectedGoalIds: number[];
+}
+
+type CreateDiaryMutation = ReturnType<typeof useCreateDiary>;
+type UpdateDiaryMutation = ReturnType<typeof useUpdateDiary>;
+
+function GoalRow({
+  goal,
+  onToggle,
+}: {
+  goal: GoalItem;
+  onToggle(id: number): void;
+}): React.ReactElement {
   return (
-    <div className="flex items-center gap-3 border-b border-gray-200 px-4 py-3 last:border-b-0">
+    <button
+      type="button"
+      onClick={() => onToggle(goal.id)}
+      className="flex w-full items-center gap-3 border-b border-gray-200 px-4 py-3 text-left last:border-b-0"
+    >
       <span
         className={`flex h-6 w-6 items-center justify-center rounded-full text-sm ${
           goal.done
@@ -42,7 +88,7 @@ function GoalRow({ goal }: { goal: GoalItem }): React.ReactElement {
       >
         {goal.label}
       </Text>
-    </div>
+    </button>
   );
 }
 
@@ -78,30 +124,149 @@ function MoodButton({
   );
 }
 
-export default function DiaryCreateScreen(): React.ReactElement {
-  const [selectedMood, setSelectedMood] = useState<string>('good');
-  const [content, setContent] = useState<string>(DIARY_CREATE_INITIAL_CONTENT);
+function moodToFeeling(moodId: string): Feeling {
+  if (moodId === 'hard') {
+    return 'SAD';
+  }
+  if (moodId === 'normal') {
+    return 'NORMAL';
+  }
+  return 'HAPPY';
+}
+
+function feelingToMood(feeling: Feeling): string {
+  if (feeling === 'SAD') {
+    return 'hard';
+  }
+  if (feeling === 'NORMAL') {
+    return 'normal';
+  }
+  return 'good';
+}
+
+function getToday(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function DiaryCreateContent({
+  isEditMode,
+  diaryIdParam,
+  displayChallenge,
+  challengeGoals,
+  createDiary,
+  updateDiary,
+  initialValues,
+}: {
+  isEditMode: boolean;
+  diaryIdParam: number;
+  displayChallenge?: DisplayChallenge;
+  challengeGoals: ChallengeGoalItem[];
+  createDiary: CreateDiaryMutation;
+  updateDiary: UpdateDiaryMutation;
+  initialValues: DiaryCreateInitialValues;
+}): React.ReactElement {
+  const router = useRouter();
+  const [title, setTitle] = useState<string>(initialValues.title);
+  const [selectedMood, setSelectedMood] = useState<string>(
+    initialValues.selectedMood
+  );
+  const [content, setContent] = useState<string>(initialValues.content);
+  const [achievedDate, setAchievedDate] = useState<string>(
+    initialValues.achievedDate
+  );
+  const [selectedGoalIds, setSelectedGoalIds] = useState<number[]>(
+    initialValues.selectedGoalIds
+  );
+
+  const goalItems = useMemo<GoalItem[]>(() => challengeGoals.map((goal) => ({
+      id: goal.challengeGoalId,
+      label: goal.content,
+      done: selectedGoalIds.includes(goal.challengeGoalId),
+    })), [challengeGoals, selectedGoalIds]);
+
+  const toggleGoal = (goalId: number): void => {
+    setSelectedGoalIds((prev) =>
+      prev.includes(goalId)
+        ? prev.filter((id) => id !== goalId)
+        : [...prev, goalId]
+    );
+  };
+
+  const handleSubmit = (): void => {
+    const effectiveChallengeId = displayChallenge?.challengeId;
+    if (!effectiveChallengeId) {
+      toast.error('챌린지를 먼저 선택해 주세요.');
+      return;
+    }
+
+    if (!title.trim()) {
+      toast.error('일지 제목을 입력해 주세요.');
+      return;
+    }
+
+    if (!content.trim()) {
+      toast.error('일지 내용을 입력해 주세요.');
+      return;
+    }
+
+    const payload = {
+      challengeId: effectiveChallengeId,
+      title: title.trim(),
+      content: content.trim(),
+      feeling: moodToFeeling(selectedMood),
+      isPublic: true,
+      achievedDate,
+      achievedGoalIds: selectedGoalIds,
+    };
+
+    if (isEditMode) {
+      updateDiary.mutate(
+        { id: diaryIdParam, data: payload },
+        {
+          onSuccess: () => {
+            toast.success('일지를 수정했습니다.');
+            router.push(`/diary/${diaryIdParam}`);
+          },
+          onError: () => {
+            toast.error('일지 수정에 실패했습니다.');
+          },
+        }
+      );
+      return;
+    }
+
+    createDiary.mutate(payload, {
+      onSuccess: (createdDiary) => {
+        toast.success('일지를 작성했습니다.');
+        router.push(`/diary/${createdDiary.id}`);
+      },
+      onError: () => {
+        toast.error('일지 작성에 실패했습니다.');
+      },
+    });
+  };
 
   return (
     <div className="min-h-screen w-full bg-white">
-      <div className="mx-auto w-full max-w-[1080px] px-4 py-6 pb-28">
+      <div className="mx-auto w-full max-w-[1240px] px-4 py-8 pb-32 md:px-6 lg:px-8">
         <div className="flex flex-col gap-1">
           <Text size="display2" weight="bold" className="text-gray-900">
-            일지 작성
+            {isEditMode ? '일지 수정' : '일지 작성'}
           </Text>
           <Text size="body1" weight="regular" className="text-gray-600">
             오늘 하루의 도전을 기록하고 마무리하세요.
           </Text>
         </div>
 
-        <div className="mt-8 flex flex-col gap-8">
+        <div className="mt-10 flex flex-col gap-10">
           <section>
             <Text size="heading2" weight="bold" className="mb-3 text-gray-900">
               일지 제목
             </Text>
             <TextField
-              value="고라니 밥주기 3일차 성공!"
-              readOnly
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="일지 제목을 입력하세요"
               className="w-full"
             />
           </section>
@@ -117,27 +282,32 @@ export default function DiaryCreateScreen(): React.ReactElement {
                 </div>
                 <div>
                   <Text size="heading1" weight="bold" className="text-gray-900">
-                    고라니 밥주기 챌린지
+                    {displayChallenge?.title ?? '선택된 챌린지가 없습니다'}
                   </Text>
                   <div className="mt-1 flex items-center gap-2">
                     <span className="text-caption1 rounded-lg bg-gray-100 px-2 py-0.5 font-medium text-gray-600">
-                      습관 형성
+                      {displayChallenge?.category ?? '-'}
                     </span>
                     <span className="bg-main-100 text-caption1 text-main-800 rounded-lg px-2 py-0.5 font-bold">
-                      Day 3
+                      {displayChallenge?.startDate ?? '-'}
                     </span>
                   </div>
                 </div>
               </div>
-              <button
-                type="button"
-                className="flex items-center gap-1 text-gray-600 transition hover:text-gray-800"
-              >
-                <Text size="body2" weight="medium">
-                  변경
-                </Text>
-                <ChevronRight className="h-4 w-4" />
-              </button>
+              {displayChallenge?.challengeId ? (
+                <button
+                  type="button"
+                  className="flex items-center gap-1 text-gray-600 transition hover:text-gray-800"
+                  onClick={() =>
+                    router.push(`/challenge/${displayChallenge.challengeId}`)
+                  }
+                >
+                  <Text size="body2" weight="medium">
+                    보기
+                  </Text>
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              ) : null}
             </div>
           </section>
 
@@ -146,9 +316,17 @@ export default function DiaryCreateScreen(): React.ReactElement {
               오늘의 달성 목표
             </Text>
             <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-              {DIARY_CREATE_INITIAL_GOALS.map((goal) => (
-                <GoalRow key={goal.id} goal={goal} />
-              ))}
+              {goalItems.length > 0 ? (
+                goalItems.map((goal) => (
+                  <GoalRow key={goal.id} goal={goal} onToggle={toggleGoal} />
+                ))
+              ) : (
+                <div className="px-4 py-6 text-gray-500">
+                  <Text size="body2" weight="regular">
+                    챌린지 목표 정보를 불러오지 못했습니다.
+                  </Text>
+                </div>
+              )}
             </div>
           </section>
 
@@ -210,24 +388,18 @@ export default function DiaryCreateScreen(): React.ReactElement {
                   className="text-body1 h-[380px] w-full resize-none border-0 p-0 text-gray-700 outline-none"
                   value={content}
                   onChange={(event) => setContent(event.target.value)}
+                  placeholder="오늘 챌린지를 진행하며 느낀 점을 기록해보세요."
                 />
-                <button
-                  type="button"
-                  aria-label="카메라 열기"
-                  className="absolute right-5 bottom-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-gray-200 bg-white text-gray-500 shadow-sm transition hover:bg-gray-100"
-                >
-                  <Camera className="h-6 w-6" />
-                </button>
               </div>
             </div>
           </section>
 
-          <section className="border-t border-gray-200 pt-6">
+          <section className="border-t border-gray-200 pt-8">
             <Text size="heading1" weight="bold" className="text-gray-900">
               일지 마무리
             </Text>
 
-            <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <div>
                 <Text
                   size="body1"
@@ -236,11 +408,14 @@ export default function DiaryCreateScreen(): React.ReactElement {
                 >
                   언제의 기록인가요?
                 </Text>
-                <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3">
-                  <Text size="heading2" weight="bold" className="text-gray-800">
-                    10/27/2023
-                  </Text>
+                <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3">
                   <CalendarDays className="h-5 w-5 text-gray-500" />
+                  <input
+                    type="date"
+                    value={achievedDate}
+                    onChange={(event) => setAchievedDate(event.target.value)}
+                    className="w-full border-0 bg-transparent text-gray-800 outline-none"
+                  />
                 </div>
               </div>
 
@@ -269,21 +444,100 @@ export default function DiaryCreateScreen(): React.ReactElement {
       </div>
 
       <div className="sticky bottom-0 z-20 border-t border-gray-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-[1080px] items-center justify-between px-4 py-4">
+        <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-4 py-4 md:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-gray-500">
             <Info className="h-4 w-4" />
             <Text size="body2" weight="medium">
-              작성 중인 내용은 자동 저장됩니다.
+              API와 연동되어 실제 데이터가 저장됩니다.
             </Text>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outlined" size="large">
-              임시 저장
+            <Button variant="outlined" size="large" onClick={() => router.back()}>
+              취소
             </Button>
-            <Button size="large">작성 완료</Button>
+            <Button
+              size="large"
+              onClick={handleSubmit}
+              disabled={createDiary.isPending || updateDiary.isPending}
+            >
+              {isEditMode ? '수정 완료' : '작성 완료'}
+            </Button>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DiaryCreateScreen(): React.ReactElement {
+  const searchParams = useSearchParams();
+
+  const diaryIdParam = Number(
+    searchParams.get('diaryId') ?? searchParams.get('id') ?? 0
+  );
+  const challengeIdParam = Number(searchParams.get('challengeId') ?? 0);
+  const isEditMode = Number.isFinite(diaryIdParam) && diaryIdParam > 0;
+
+  const {
+    data: existingDiary,
+    isLoading: isExistingDiaryLoading,
+    isError: isExistingDiaryError,
+    error: existingDiaryError,
+  } = useDiaryDetail(diaryIdParam);
+  const challengeIdForGoals =
+    challengeIdParam > 0
+      ? challengeIdParam
+      : existingDiary?.challenge.challengeId ?? 0;
+  const { data: challengeData } = useChallengeDetail(challengeIdForGoals);
+
+  const createDiary = useCreateDiary();
+  const updateDiary = useUpdateDiary();
+
+  const displayChallenge =
+    challengeData?.challengeSummary ?? existingDiary?.challenge;
+  const initialValues = useMemo<DiaryCreateInitialValues>(
+    () => ({
+      title: existingDiary?.title ?? '',
+      selectedMood: existingDiary
+        ? feelingToMood(existingDiary.diaryInfo.feeling)
+        : 'good',
+      content: existingDiary ? existingDiary.content || '' : DIARY_CREATE_INITIAL_CONTENT,
+      achievedDate: existingDiary?.diaryInfo.challengedDate || getToday(),
+      selectedGoalIds: existingDiary?.diaryInfo.achievement ?? [],
+    }),
+    [existingDiary]
+  );
+
+  if (isEditMode && isExistingDiaryLoading) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-white">
+        <Text size="body1" weight="medium" className="text-gray-500">
+          일지 정보를 불러오는 중입니다...
+        </Text>
+      </div>
+    );
+  }
+
+  if (isEditMode && (isExistingDiaryError || !existingDiary)) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-white px-4">
+        <Text size="body1" weight="medium" className="text-red-600">
+          {existingDiaryError?.message ?? '일지 정보를 불러오지 못했습니다.'}
+        </Text>
+      </div>
+    );
+  }
+
+  return (
+    <DiaryCreateContent
+      key={isEditMode ? `edit-${diaryIdParam}` : 'create'}
+      isEditMode={isEditMode}
+      diaryIdParam={diaryIdParam}
+      displayChallenge={displayChallenge}
+      challengeGoals={challengeData?.challengeGoals ?? []}
+      createDiary={createDiary}
+      updateDiary={updateDiary}
+      initialValues={initialValues}
+    />
   );
 }

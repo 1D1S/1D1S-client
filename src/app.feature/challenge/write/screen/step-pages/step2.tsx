@@ -1,19 +1,21 @@
 import {
   CheckContainer,
+  cn,
   DatePicker,
   Text,
   TextField,
 } from '@1d1s/design-system';
+import { CalendarDays, Infinity, Timer } from 'lucide-react';
+import { useFormContext } from 'react-hook-form';
+
 import {
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from '@component/ui/form';
-import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
-import { cn } from '@module/utils/cn';
-import { CalendarDays, Infinity, Timer } from 'lucide-react';
-import { useFormContext } from 'react-hook-form';
+} from '@/app.component/ui/form';
+
+import { ChallengeCreateFormValues } from '../../hooks/use-challenge-create-form';
 
 const PERIOD_OPTIONS: Array<{
   value: '7' | '14' | '30' | '60' | '365' | 'etc';
@@ -34,7 +36,7 @@ export function Step2(): React.ReactElement {
 
   return (
     <div className="mx-auto w-full max-w-[980px] space-y-8">
-      <div className="space-y-3">
+      <div className="flex flex-col gap-2 space-y-3">
         <Text size="heading1" weight="bold" className="text-gray-900">
           기간 유형
         </Text>
@@ -65,7 +67,7 @@ export function Step2(): React.ReactElement {
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                       <Infinity className="h-5 w-5" />
                     </span>
-                    <div>
+                    <div className="flex flex-col">
                       <Text
                         size="heading1"
                         weight="bold"
@@ -74,7 +76,7 @@ export function Step2(): React.ReactElement {
                         무기한 챌린지
                       </Text>
                       <Text
-                        size="body2"
+                        size="caption1"
                         weight="regular"
                         className="mt-2 text-gray-600"
                       >
@@ -105,7 +107,7 @@ export function Step2(): React.ReactElement {
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                       <Timer className="h-5 w-5" />
                     </span>
-                    <div>
+                    <div className="flex flex-col">
                       <Text
                         size="heading1"
                         weight="bold"
@@ -114,7 +116,7 @@ export function Step2(): React.ReactElement {
                         기간 챌린지
                       </Text>
                       <Text
-                        size="body2"
+                        size="caption1"
                         weight="regular"
                         className="mt-2 text-gray-600"
                       >
@@ -132,7 +134,7 @@ export function Step2(): React.ReactElement {
 
       {periodType === 'LIMITED' ? (
         <>
-          <div className="space-y-3">
+          <div className="flex flex-col space-y-3">
             <Text size="heading1" weight="bold" className="text-gray-900">
               챌린지 기간
             </Text>
@@ -184,7 +186,7 @@ export function Step2(): React.ReactElement {
           </div>
 
           {period === 'etc' ? (
-            <div className="space-y-2">
+            <div className="flex flex-col space-y-2">
               <Text size="body1" weight="medium" className="text-gray-700">
                 직접 입력 (최대 730일)
               </Text>
@@ -208,7 +210,7 @@ export function Step2(): React.ReactElement {
             </div>
           ) : null}
 
-          <div className="space-y-3">
+          <div className="flex flex-col space-y-3">
             <Text size="heading1" weight="bold" className="text-gray-900">
               시작일
             </Text>

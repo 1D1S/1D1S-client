@@ -1,4 +1,5 @@
 import {
+  InfiniteData,
   useInfiniteQuery,
   UseInfiniteQueryResult,
   useQuery,
@@ -41,7 +42,10 @@ export function useRandomChallenges(
 // 챌린지 리스트 불러오기 (무한 스크롤)
 export function useChallengeList(
   params: ChallengeListParams = {}
-): UseInfiniteQueryResult<ChallengeListResponse, Error> {
+): UseInfiniteQueryResult<
+  InfiniteData<{ data: ChallengeListResponse; message: string }>,
+  Error
+> {
   return useInfiniteQuery({
     queryKey: CHALLENGE_QUERY_KEYS.list(params),
     queryFn: ({ pageParam }) =>
@@ -50,8 +54,10 @@ export function useChallengeList(
         cursor: pageParam,
       }),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) =>
-      lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.nextCursor : undefined,
+    getNextPageParam: (lastPage) => {
+      const pageInfo = lastPage?.data?.pageInfo;
+      return pageInfo?.hasNextPage ? pageInfo.nextCursor : undefined;
+    },
   });
 }
 

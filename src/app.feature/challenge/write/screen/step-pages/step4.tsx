@@ -1,21 +1,22 @@
-import { CheckContainer, GoalAddList, Text } from '@1d1s/design-system';
+import { CheckContainer, cn, GoalAddList, Text } from '@1d1s/design-system';
+import { Flag, Target } from 'lucide-react';
+import { useFormContext } from 'react-hook-form';
+
 import {
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from '@component/ui/form';
-import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
-import { cn } from '@module/utils/cn';
-import { Flag, Target } from 'lucide-react';
-import { useFormContext } from 'react-hook-form';
+} from '@/app.component/ui/form';
+
+import { ChallengeCreateFormValues } from '../../hooks/use-challenge-create-form';
 
 export function Step4(): React.ReactElement {
   const { control } = useFormContext<ChallengeCreateFormValues>();
 
   return (
     <div className="mx-auto w-full max-w-[980px] space-y-8">
-      <div className="space-y-3">
+      <div className="flex flex-col space-y-3">
         <Text size="heading1" weight="bold" className="text-gray-900">
           목표 방식
         </Text>
@@ -46,7 +47,7 @@ export function Step4(): React.ReactElement {
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                       <Flag className="h-5 w-5" />
                     </span>
-                    <div>
+                    <div className="flex flex-col">
                       <Text
                         size="heading1"
                         weight="bold"
@@ -55,7 +56,7 @@ export function Step4(): React.ReactElement {
                         고정 목표
                       </Text>
                       <Text
-                        size="body2"
+                        size="caption1"
                         weight="regular"
                         className="mt-2 text-gray-600"
                       >
@@ -86,7 +87,7 @@ export function Step4(): React.ReactElement {
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
                       <Target className="h-5 w-5" />
                     </span>
-                    <div>
+                    <div className="flex flex-col">
                       <Text
                         size="heading1"
                         weight="bold"
@@ -95,7 +96,7 @@ export function Step4(): React.ReactElement {
                         자유 목표
                       </Text>
                       <Text
-                        size="body2"
+                        size="caption1"
                         weight="regular"
                         className="mt-2 text-gray-600"
                       >
@@ -111,7 +112,7 @@ export function Step4(): React.ReactElement {
         />
       </div>
 
-      <div className="space-y-3">
+      <div className="flex flex-col space-y-3">
         <Text size="heading1" weight="bold" className="text-gray-900">
           목표 목록
         </Text>

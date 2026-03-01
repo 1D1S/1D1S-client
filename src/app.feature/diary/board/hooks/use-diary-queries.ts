@@ -1,4 +1,5 @@
 import {
+  InfiniteData,
   useInfiniteQuery,
   UseInfiniteQueryResult,
   useQuery,
@@ -40,7 +41,7 @@ export function useRandomDiaries(
 // 다이어리 리스트 조회 (무한 스크롤)
 export function useDiaryList(
   params: DiaryListParams = {}
-): UseInfiniteQueryResult<DiaryListResponse, Error> {
+): UseInfiniteQueryResult<InfiniteData<DiaryListResponse>, Error> {
   return useInfiniteQuery({
     queryKey: DIARY_QUERY_KEYS.list(params),
     queryFn: ({ pageParam }) =>

@@ -18,7 +18,7 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
   );
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="my-6 flex flex-col gap-10">
       {/* 챌린지 제목과 설명 */}
       <div className="flex flex-col gap-2">
         <div className="flex gap-2">
