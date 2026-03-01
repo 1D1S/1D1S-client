@@ -2,13 +2,17 @@
 
 import { Button, DatePicker, Text, TextField } from '@1d1s/design-system';
 import { ChevronRight, Flame } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useChallengeDetail } from '../../../challenge/board/hooks/use-challenge-queries';
 import type { ChallengeListItem } from '../../../challenge/board/type/challenge';
 import type { Feeling } from '../../board/type/diary';
-import { useCreateDiary } from '../../detail/hooks/use-diary-mutations';
+import {
+  useCreateDiary,
+  useUploadDiaryImage,
+} from '../../detail/hooks/use-diary-mutations';
 import { ChallengeGoalToggle } from '../components/challenge-goal-toggle';
 import { ChallengePicker } from '../components/challenge-picker';
 import { DiaryContentEditor } from '../components/diary-content-editor';
@@ -57,6 +61,7 @@ function formatDate(date: Date): string {
 export default function DiaryCreateScreen(): React.ReactElement {
   const router = useRouter();
   const createDiary = useCreateDiary();
+  const uploadDiaryImage = useUploadDiaryImage();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -69,11 +74,23 @@ export default function DiaryCreateScreen(): React.ReactElement {
   const [selectedChallenge, setSelectedChallenge] =
     useState<ChallengeListItem | null>(null);
   const [achievedGoalIds, setAchievedGoalIds] = useState<number[]>([]);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState('');
 
   const { data: challengeDetail } = useChallengeDetail(
     selectedChallenge?.challengeId ?? 0
   );
   const goals = challengeDetail?.challengeGoals ?? [];
+  const isSubmitting = createDiary.isPending || uploadDiaryImage.isPending;
+
+  useEffect(
+    () => () => {
+      if (thumbnailPreviewUrl) {
+        URL.revokeObjectURL(thumbnailPreviewUrl);
+      }
+    },
+    [thumbnailPreviewUrl]
+  );
 
   const handleGoalToggle = (goalId: number, checked: boolean): void => {
     setAchievedGoalIds((prev) =>
@@ -81,13 +98,26 @@ export default function DiaryCreateScreen(): React.ReactElement {
     );
   };
 
-  const handleSubmit = (): void => {
-    if (!selectedChallenge) {
+  const handleThumbnailChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ): void => {
+    const file = event.target.files?.[0] ?? null;
+    setThumbnailFile(file);
+    setThumbnailPreviewUrl(file ? URL.createObjectURL(file) : '');
+  };
+
+  const clearThumbnail = (): void => {
+    setThumbnailFile(null);
+    setThumbnailPreviewUrl('');
+  };
+
+  const handleSubmit = async (): Promise<void> => {
+    if (!selectedChallenge || isSubmitting) {
       return;
     }
 
-    createDiary.mutate(
-      {
+    try {
+      const createdDiary = await createDiary.mutateAsync({
         challengeId: selectedChallenge.challengeId,
         title,
         content,
@@ -95,14 +125,26 @@ export default function DiaryCreateScreen(): React.ReactElement {
         isPublic,
         achievedDate: achievedDate ? formatDate(achievedDate) : '',
         achievedGoalIds,
-      },
-      {
-        onSuccess: () => {
-          router.push('/diary');
-        },
+      });
+
+      if (thumbnailFile) {
+        await uploadDiaryImage.mutateAsync({
+          id: createdDiary.id,
+          file: thumbnailFile,
+        });
       }
-    );
+
+      router.push('/diary');
+    } catch (error) {
+      console.error('일지 작성/썸네일 업로드 중 오류가 발생했습니다.', error);
+    }
   };
+
+  const submitButtonLabel = createDiary.isPending
+    ? '작성 중...'
+    : uploadDiaryImage.isPending
+      ? '썸네일 업로드 중...'
+      : '작성 완료';
 
   return (
     <div className="min-h-screen w-full bg-white">
@@ -129,82 +171,133 @@ export default function DiaryCreateScreen(): React.ReactElement {
             />
           </section>
 
-          <section>
-            <Text size="heading2" weight="bold" className="mb-6 text-gray-900">
-              연동된 챌린지
-            </Text>
-            {selectedChallenge ? (
-              <div className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-5">
-                <div className="flex items-center gap-4">
-                  <div className="bg-main-200 text-main-800 flex h-14 w-14 items-center justify-center rounded-xl">
-                    <Flame className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <Text
-                      size="heading1"
-                      weight="bold"
-                      className="text-gray-900"
-                    >
-                      {selectedChallenge.title}
-                    </Text>
-                    <div className="mt-1 flex items-center gap-2">
-                      <span className="text-caption1 rounded-lg bg-gray-100 px-2 py-0.5 font-medium text-gray-600">
-                        {selectedChallenge.category}
-                      </span>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-stretch">
+            <div className="flex min-w-0 flex-col gap-6">
+              <section>
+                <Text size="heading2" weight="bold" className="mb-6 text-gray-900">
+                  연동된 챌린지
+                </Text>
+                {selectedChallenge ? (
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-5">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-main-200 text-main-800 flex h-14 w-14 items-center justify-center rounded-xl">
+                        <Flame className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <Text
+                          size="heading1"
+                          weight="bold"
+                          className="text-gray-900"
+                        >
+                          {selectedChallenge.title}
+                        </Text>
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className="text-caption1 rounded-lg bg-gray-100 px-2 py-0.5 font-medium text-gray-600">
+                            {selectedChallenge.category}
+                          </span>
+                        </div>
+                      </div>
                     </div>
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 text-gray-600 transition hover:text-gray-800"
+                      onClick={() => {
+                        setSelectedChallenge(null);
+                        setAchievedGoalIds([]);
+                      }}
+                    >
+                      <Text size="body2" weight="medium">
+                        변경
+                      </Text>
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
                   </div>
-                </div>
-                <button
-                  type="button"
-                  className="flex items-center gap-1 text-gray-600 transition hover:text-gray-800"
-                  onClick={() => {
-                    setSelectedChallenge(null);
-                    setAchievedGoalIds([]);
-                  }}
-                >
-                  <Text size="body2" weight="medium">
-                    변경
-                  </Text>
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            ) : (
-              <ChallengePicker
-                onSelect={(challenge) => {
-                  setSelectedChallenge(challenge);
-                  setAchievedGoalIds([]);
-                }}
-              />
-            )}
-          </section>
+                ) : (
+                  <ChallengePicker
+                    onSelect={(challenge) => {
+                      setSelectedChallenge(challenge);
+                      setAchievedGoalIds([]);
+                    }}
+                  />
+                )}
+              </section>
 
-          {goals.length > 0 && (
-            <section>
-              <Text
-                size="heading2"
-                weight="bold"
-                className="mb-6 text-gray-900"
-              >
-                오늘의 달성 목표
-              </Text>
-              <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-                {goals.map((goal) => (
-                  <div
-                    key={goal.challengeGoalId}
-                    className="border-b border-gray-200 px-4 py-3 last:border-b-0"
-                  >
-                    <ChallengeGoalToggle
-                      checked={achievedGoalIds.includes(goal.challengeGoalId)}
-                      onCheckedChange={(checked) =>
-                        handleGoalToggle(goal.challengeGoalId, checked)
-                      }
-                      label={goal.content}
-                    />
+              <section>
+                <Text size="heading2" weight="bold" className="mb-6 text-gray-900">
+                  목표 리스트
+                </Text>
+                {goals.length > 0 ? (
+                  <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+                    {goals.map((goal) => (
+                      <div
+                        key={goal.challengeGoalId}
+                        className="border-b border-gray-200 px-4 py-3 last:border-b-0"
+                      >
+                        <ChallengeGoalToggle
+                          checked={achievedGoalIds.includes(
+                            goal.challengeGoalId
+                          )}
+                          onCheckedChange={(checked) =>
+                            handleGoalToggle(goal.challengeGoalId, checked)
+                          }
+                          label={goal.content}
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <div className="rounded-2xl border border-gray-200 bg-white px-4 py-5">
+                    <Text size="body2" weight="regular" className="text-gray-500">
+                      연동된 챌린지를 선택하면 목표 리스트가 표시됩니다.
+                    </Text>
+                  </div>
+                )}
+              </section>
+            </div>
+
+            <section className="lg:h-full">
+              <Text size="heading2" weight="bold" className="mb-6 text-gray-900">
+                썸네일 이미지
+              </Text>
+              <div className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-4">
+                <div className="flex min-h-[240px] flex-1 overflow-hidden rounded-xl border border-gray-200 bg-gray-100 lg:min-h-[520px]">
+                  {thumbnailPreviewUrl ? (
+                    <Image
+                      src={thumbnailPreviewUrl}
+                      alt="썸네일 미리보기"
+                      width={1200}
+                      height={672}
+                      className="h-full w-full object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center px-4 text-center text-sm text-gray-500">
+                      대표 썸네일 이미지를 선택해주세요.
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleThumbnailChange}
+                    className="w-full text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-gray-200 file:px-3 file:py-2 file:font-medium file:text-gray-700 hover:file:bg-gray-300"
+                  />
+                  {thumbnailFile ? (
+                    <Button
+                      type="button"
+                      variant="outlined"
+                      size="small"
+                      onClick={clearThumbnail}
+                    >
+                      선택 해제
+                    </Button>
+                  ) : null}
+                </div>
               </div>
             </section>
-          )}
+          </div>
 
           <section>
             <Text size="heading2" weight="bold" className="mb-6 text-gray-900">
@@ -280,10 +373,10 @@ export default function DiaryCreateScreen(): React.ReactElement {
         <div className="mx-auto flex w-full max-w-[1080px] items-center justify-end px-4 py-4">
           <Button
             size="large"
-            onClick={handleSubmit}
-            disabled={!selectedChallenge || !title || createDiary.isPending}
+            onClick={() => void handleSubmit()}
+            disabled={!selectedChallenge || !title || isSubmitting}
           >
-            {createDiary.isPending ? '작성 중...' : '작성 완료'}
+            {submitButtonLabel}
           </Button>
         </div>
       </div>

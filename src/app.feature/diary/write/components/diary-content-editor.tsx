@@ -1,18 +1,10 @@
 'use client';
 
-import TiptapImage from '@tiptap/extension-image';
 import TiptapUnderline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import {
-  Bold,
-  ImagePlus,
-  Italic,
-  List,
-  ListOrdered,
-  Underline,
-} from 'lucide-react';
-import React, { useRef } from 'react';
+import { Bold, Italic, List, ListOrdered, Underline } from 'lucide-react';
+import React from 'react';
 
 interface DiaryContentEditorProps {
   content: string;
@@ -59,34 +51,18 @@ export function DiaryContentEditor({
   content,
   onChange,
 }: DiaryContentEditorProps): React.ReactElement {
-  const imageInputRef = useRef<HTMLInputElement>(null);
-
   const editor = useEditor({
-    extensions: [StarterKit, TiptapUnderline, TiptapImage],
+    extensions: [
+      StarterKit,
+      TiptapUnderline,
+      // TiptapImage, // 본문 이미지 삽입 기능은 임시 비활성화
+    ],
     content,
     immediatelyRender: false,
     onUpdate: ({ editor: instance }) => {
       onChange(instance.getHTML());
     },
   });
-
-  const handleImageSelect = (): void => {
-    imageInputRef.current?.click();
-  };
-
-  const handleImageChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void => {
-    const files = event.target.files;
-    if (!files || !editor) {
-      return;
-    }
-    Array.from(files).forEach((file) => {
-      const src = URL.createObjectURL(file);
-      editor.chain().focus().setImage({ src }).run();
-    });
-    event.target.value = '';
-  };
 
   return (
     <div className="overflow-visible rounded-2xl border border-gray-200 bg-white">
@@ -134,12 +110,12 @@ export function DiaryContentEditor({
         >
           <ListOrdered className="h-4 w-4" />
         </ToolbarButton>
-        <ToolbarButton
+        {/* <ToolbarButton
           ariaLabel="이미지 삽입"
           onClick={handleImageSelect}
         >
           <ImagePlus className="h-4 w-4" />
-        </ToolbarButton>
+        </ToolbarButton> */}
       </div>
 
       <div className="min-h-[420px] p-4">
@@ -149,14 +125,14 @@ export function DiaryContentEditor({
         />
       </div>
 
-      <input
+      {/* <input
         ref={imageInputRef}
         type="file"
         accept="image/*"
         multiple
         className="hidden"
         onChange={handleImageChange}
-      />
+      /> */}
     </div>
   );
 }
