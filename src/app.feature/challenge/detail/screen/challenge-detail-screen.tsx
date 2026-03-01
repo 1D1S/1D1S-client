@@ -110,11 +110,11 @@ function formatRelativeJoinedText(status: ParticipantStatus): string {
   }
 }
 
-function isSameDate(a: Date, b: Date): boolean {
+function isSameDate(firstDate: Date, secondDate: Date): boolean {
   return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
+    firstDate.getFullYear() === secondDate.getFullYear() &&
+    firstDate.getMonth() === secondDate.getMonth() &&
+    firstDate.getDate() === secondDate.getDate()
   );
 }
 

@@ -14,16 +14,16 @@ import {
   Underline,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useChallengeDetail } from '../../../challenge/board/hooks/use-challenge-queries';
+import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
 import { Feeling } from '../../board/type/diary';
 import {
   useCreateDiary,
   useUpdateDiary,
 } from '../../detail/hooks/use-diary-mutations';
-import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
 import type { MoodOption } from '../consts/diary-create-data';
 import {
   DIARY_CREATE_INITIAL_CONTENT,
@@ -35,6 +35,29 @@ interface GoalItem {
   label: string;
   done: boolean;
 }
+
+interface ChallengeGoalItem {
+  challengeGoalId: number;
+  content: string;
+}
+
+interface DisplayChallenge {
+  challengeId: number;
+  title: string;
+  category: string;
+  startDate: string;
+}
+
+interface DiaryCreateInitialValues {
+  title: string;
+  selectedMood: string;
+  content: string;
+  achievedDate: string;
+  selectedGoalIds: number[];
+}
+
+type CreateDiaryMutation = ReturnType<typeof useCreateDiary>;
+type UpdateDiaryMutation = ReturnType<typeof useUpdateDiary>;
 
 function GoalRow({
   goal,
@@ -125,52 +148,41 @@ function getToday(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function DiaryCreateScreen(): React.ReactElement {
+function DiaryCreateContent({
+  isEditMode,
+  diaryIdParam,
+  displayChallenge,
+  challengeGoals,
+  createDiary,
+  updateDiary,
+  initialValues,
+}: {
+  isEditMode: boolean;
+  diaryIdParam: number;
+  displayChallenge?: DisplayChallenge;
+  challengeGoals: ChallengeGoalItem[];
+  createDiary: CreateDiaryMutation;
+  updateDiary: UpdateDiaryMutation;
+  initialValues: DiaryCreateInitialValues;
+}): React.ReactElement {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [title, setTitle] = useState<string>(initialValues.title);
+  const [selectedMood, setSelectedMood] = useState<string>(
+    initialValues.selectedMood
+  );
+  const [content, setContent] = useState<string>(initialValues.content);
+  const [achievedDate, setAchievedDate] = useState<string>(
+    initialValues.achievedDate
+  );
+  const [selectedGoalIds, setSelectedGoalIds] = useState<number[]>(
+    initialValues.selectedGoalIds
+  );
 
-  const diaryIdParam = Number(searchParams.get('diaryId') ?? searchParams.get('id') ?? 0);
-  const challengeIdParam = Number(searchParams.get('challengeId') ?? 0);
-  const isEditMode = Number.isFinite(diaryIdParam) && diaryIdParam > 0;
-
-  const { data: existingDiary } = useDiaryDetail(diaryIdParam);
-  const challengeIdForGoals =
-    challengeIdParam > 0
-      ? challengeIdParam
-      : existingDiary?.challenge.challengeId ?? 0;
-  const { data: challengeData } = useChallengeDetail(challengeIdForGoals);
-
-  const createDiary = useCreateDiary();
-  const updateDiary = useUpdateDiary();
-
-  const [title, setTitle] = useState<string>('');
-  const [selectedMood, setSelectedMood] = useState<string>('good');
-  const [content, setContent] = useState<string>(DIARY_CREATE_INITIAL_CONTENT);
-  const [achievedDate, setAchievedDate] = useState<string>(getToday());
-  const [selectedGoalIds, setSelectedGoalIds] = useState<number[]>([]);
-
-  useEffect(() => {
-    if (!existingDiary) {
-      return;
-    }
-
-    setTitle(existingDiary.title);
-    setContent(existingDiary.content || '');
-    setSelectedMood(feelingToMood(existingDiary.diaryInfo.feeling));
-    setAchievedDate(existingDiary.diaryInfo.challengedDate || getToday());
-    setSelectedGoalIds(existingDiary.diaryInfo.achievement ?? []);
-  }, [existingDiary]);
-
-  const displayChallenge = challengeData?.challengeSummary ?? existingDiary?.challenge;
-  const goalItems = useMemo<GoalItem[]>(() => {
-    const goals = challengeData?.challengeGoals ?? [];
-
-    return goals.map((goal) => ({
+  const goalItems = useMemo<GoalItem[]>(() => challengeGoals.map((goal) => ({
       id: goal.challengeGoalId,
       label: goal.content,
       done: selectedGoalIds.includes(goal.challengeGoalId),
-    }));
-  }, [challengeData?.challengeGoals, selectedGoalIds]);
+    })), [challengeGoals, selectedGoalIds]);
 
   const toggleGoal = (goalId: number): void => {
     setSelectedGoalIds((prev) =>
@@ -454,5 +466,78 @@ export default function DiaryCreateScreen(): React.ReactElement {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DiaryCreateScreen(): React.ReactElement {
+  const searchParams = useSearchParams();
+
+  const diaryIdParam = Number(
+    searchParams.get('diaryId') ?? searchParams.get('id') ?? 0
+  );
+  const challengeIdParam = Number(searchParams.get('challengeId') ?? 0);
+  const isEditMode = Number.isFinite(diaryIdParam) && diaryIdParam > 0;
+
+  const {
+    data: existingDiary,
+    isLoading: isExistingDiaryLoading,
+    isError: isExistingDiaryError,
+    error: existingDiaryError,
+  } = useDiaryDetail(diaryIdParam);
+  const challengeIdForGoals =
+    challengeIdParam > 0
+      ? challengeIdParam
+      : existingDiary?.challenge.challengeId ?? 0;
+  const { data: challengeData } = useChallengeDetail(challengeIdForGoals);
+
+  const createDiary = useCreateDiary();
+  const updateDiary = useUpdateDiary();
+
+  const displayChallenge =
+    challengeData?.challengeSummary ?? existingDiary?.challenge;
+  const initialValues = useMemo<DiaryCreateInitialValues>(
+    () => ({
+      title: existingDiary?.title ?? '',
+      selectedMood: existingDiary
+        ? feelingToMood(existingDiary.diaryInfo.feeling)
+        : 'good',
+      content: existingDiary ? existingDiary.content || '' : DIARY_CREATE_INITIAL_CONTENT,
+      achievedDate: existingDiary?.diaryInfo.challengedDate || getToday(),
+      selectedGoalIds: existingDiary?.diaryInfo.achievement ?? [],
+    }),
+    [existingDiary]
+  );
+
+  if (isEditMode && isExistingDiaryLoading) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-white">
+        <Text size="body1" weight="medium" className="text-gray-500">
+          일지 정보를 불러오는 중입니다...
+        </Text>
+      </div>
+    );
+  }
+
+  if (isEditMode && (isExistingDiaryError || !existingDiary)) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-white px-4">
+        <Text size="body1" weight="medium" className="text-red-600">
+          {existingDiaryError?.message ?? '일지 정보를 불러오지 못했습니다.'}
+        </Text>
+      </div>
+    );
+  }
+
+  return (
+    <DiaryCreateContent
+      key={isEditMode ? `edit-${diaryIdParam}` : 'create'}
+      isEditMode={isEditMode}
+      diaryIdParam={diaryIdParam}
+      displayChallenge={displayChallenge}
+      challengeGoals={challengeData?.challengeGoals ?? []}
+      createDiary={createDiary}
+      updateDiary={updateDiary}
+      initialValues={initialValues}
+    />
   );
 }

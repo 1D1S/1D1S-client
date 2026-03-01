@@ -50,8 +50,14 @@ export default function DiaryListScreen(): React.ReactElement {
   const router = useRouter();
   const [sortMode, setSortMode] = useState<SortMode>('latest');
   const { ref, inView } = useInView();
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
-    useDiaryList({ size: 20 });
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = useDiaryList({ size: 20 });
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
@@ -62,13 +68,13 @@ export default function DiaryListScreen(): React.ReactElement {
   const diaries = useMemo(() => {
     const items = data?.pages.flatMap((page) => page.items ?? []) ?? [];
 
-    return [...items].sort((a, b) => {
+    return [...items].sort((firstDiary, secondDiary) => {
       if (sortMode === 'likes') {
-        return b.likeInfo.likeCnt - a.likeInfo.likeCnt;
+        return secondDiary.likeInfo.likeCnt - firstDiary.likeInfo.likeCnt;
       }
       return (
-        new Date(b.diaryInfo.createdAt).getTime() -
-        new Date(a.diaryInfo.createdAt).getTime()
+        new Date(secondDiary.diaryInfo.createdAt).getTime() -
+        new Date(firstDiary.diaryInfo.createdAt).getTime()
       );
     });
   }, [data, sortMode]);

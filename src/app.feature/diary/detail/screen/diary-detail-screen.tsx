@@ -4,25 +4,57 @@ import { Button, CheckList, Tag, Text } from '@1d1s/design-system';
 import {
   CalendarDays,
   ChevronRight,
-  Heart,
-  Trash2,
   Edit3,
+  Heart,
   ListChecks,
   NotebookPen,
   Share2,
+  Trash2,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
 import {
+  useCreateDiaryReport,
   useDeleteDiary,
   useLikeDiary,
-  useCreateDiaryReport,
   useUnlikeDiary,
 } from '../hooks/use-diary-mutations';
+
+interface ChecklistOption {
+  id: string;
+  label: string;
+}
+
+function AchievementChecklist({
+  leftOptions,
+  rightOptions,
+  initialCheckedIds,
+}: {
+  leftOptions: ChecklistOption[];
+  rightOptions: ChecklistOption[];
+  initialCheckedIds: string[];
+}): React.ReactElement {
+  const [checkedIds, setCheckedIds] = useState<string[]>(initialCheckedIds);
+
+  return (
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <CheckList
+        options={leftOptions}
+        value={checkedIds}
+        onValueChange={setCheckedIds}
+      />
+      <CheckList
+        options={rightOptions}
+        value={checkedIds}
+        onValueChange={setCheckedIds}
+      />
+    </div>
+  );
+}
 
 export function DiaryDetailScreen({
   diaryId,
@@ -30,13 +62,12 @@ export function DiaryDetailScreen({
   diaryId: number;
 }): React.ReactElement {
   const router = useRouter();
-  const { data: diaryData, isLoading, isError, error } = useDiaryDetail(diaryId);
+  const { data: diaryData, isLoading, isError, error } =
+    useDiaryDetail(diaryId);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
   const deleteDiary = useDeleteDiary();
   const createDiaryReport = useCreateDiaryReport();
-
-  const [checkedIds, setCheckedIds] = useState<string[]>([]);
 
   const feelingEmoji = useMemo(() => {
     if (!diaryData) {
@@ -81,13 +112,6 @@ export function DiaryDetailScreen({
     }));
   }, [diaryData]);
 
-  useEffect(() => {
-    if (!checklistItems.length) {
-      return;
-    }
-    setCheckedIds(checklistItems.map((item) => item.id));
-  }, [checklistItems]);
-
   const leftChecklistOptions = useMemo(
     () =>
       checklistItems
@@ -100,6 +124,10 @@ export function DiaryDetailScreen({
       checklistItems
         .filter((_, index) => index % 2 === 1)
         .map((item) => ({ id: item.id, label: item.label })),
+    [checklistItems]
+  );
+  const initialCheckedIds = useMemo(
+    () => checklistItems.map((item) => item.id),
     [checklistItems]
   );
 
@@ -357,18 +385,12 @@ export function DiaryDetailScreen({
           </div>
 
           {checklistItems.length > 0 ? (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <CheckList
-                options={leftChecklistOptions}
-                value={checkedIds}
-                onValueChange={setCheckedIds}
-              />
-              <CheckList
-                options={rightChecklistOptions}
-                value={checkedIds}
-                onValueChange={setCheckedIds}
-              />
-            </div>
+            <AchievementChecklist
+              key={diaryId}
+              leftOptions={leftChecklistOptions}
+              rightOptions={rightChecklistOptions}
+              initialCheckedIds={initialCheckedIds}
+            />
           ) : (
             <div className="rounded-3 border border-gray-200 bg-white p-5">
               <Text size="body2" weight="regular" className="text-gray-600">

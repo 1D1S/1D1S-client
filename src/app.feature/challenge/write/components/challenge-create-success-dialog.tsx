@@ -21,7 +21,7 @@ export function ChallengeCreateSuccessDialog({
   return (
     <Dialog {...props}>
       <DialogContent className="flex min-w-120 flex-col items-center gap-16">
-        <DialogHeader className="items-center mt-8">
+        <DialogHeader className="mt-8 items-center">
           <DialogTitle>
             <DialogDescription>
               <Text size="display2" weight="bold" className="text-black">
@@ -40,7 +40,7 @@ export function ChallengeCreateSuccessDialog({
             />
           </div>
         </div>
-        <DialogFooter className="justify-center mb-8">
+        <DialogFooter className="mb-8 justify-center">
           <DialogClose asChild>
             <Button variant="default" type="button" className="w-37.5">
               확인
