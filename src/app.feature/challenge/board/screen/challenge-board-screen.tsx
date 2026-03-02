@@ -37,7 +37,9 @@ function useInViewObserver(): {
   inView: boolean;
 } {
   const ref = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(false);
+  const [observedInView, setObservedInView] = useState(false);
+  const isIntersectionObserverUnsupported =
+    typeof window !== 'undefined' && typeof IntersectionObserver === 'undefined';
 
   useEffect(() => {
     const target = ref.current;
@@ -47,12 +49,11 @@ function useInViewObserver(): {
     }
 
     if (typeof IntersectionObserver === 'undefined') {
-      setInView(true);
       return;
     }
 
     const observer = new IntersectionObserver(([entry]) => {
-      setInView(entry.isIntersecting);
+      setObservedInView(entry.isIntersecting);
     });
 
     observer.observe(target);
@@ -61,6 +62,8 @@ function useInViewObserver(): {
       observer.disconnect();
     };
   }, []);
+
+  const inView = isIntersectionObserverUnsupported ? true : observedInView;
 
   return { ref, inView };
 }
