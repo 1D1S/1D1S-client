@@ -8,16 +8,40 @@ import {
   RandomDiaryParams,
 } from '../type/diary';
 
-type AllDiariesApiResponse = DiaryItem[] | { data?: DiaryItem[] };
+type DiaryItemApi = Omit<DiaryItem, 'authorInfoDto' | 'diaryInfoDto'> & {
+  authorInfoDto?: DiaryItem['authorInfoDto'] | null;
+  diaryInfoDto?: DiaryItem['diaryInfoDto'] | null;
+  author?: DiaryItem['authorInfoDto'] | null;
+  diaryInfo?: DiaryItem['diaryInfoDto'] | null;
+};
+
+type DiaryListApiResponse = Omit<DiaryListResponse, 'items'> & {
+  items: DiaryItemApi[];
+};
+
+type AllDiariesApiResponse = DiaryItemApi[] | { data?: DiaryItemApi[] };
+
+const normalizeDiaryItem = (item: DiaryItemApi): DiaryItem => {
+  const { author, diaryInfo, authorInfoDto, diaryInfoDto, ...rest } = item;
+
+  return {
+    ...rest,
+    authorInfoDto: authorInfoDto ?? author ?? null,
+    diaryInfoDto: diaryInfoDto ?? diaryInfo ?? null,
+  };
+};
+
+const normalizeDiaryItems = (items: DiaryItemApi[]): DiaryItem[] =>
+  items.map(normalizeDiaryItem);
 
 const normalizeAllDiariesResponse = (
   response: AllDiariesApiResponse
 ): DiaryItem[] => {
   if (Array.isArray(response)) {
-    return response;
+    return normalizeDiaryItems(response);
   }
 
-  return Array.isArray(response.data) ? response.data : [];
+  return Array.isArray(response.data) ? normalizeDiaryItems(response.data) : [];
 };
 
 export const diaryBoardApi = {
@@ -30,10 +54,15 @@ export const diaryBoardApi = {
       cursor: params.cursor,
     });
 
-    return requestData<DiaryListResponse>(apiClient, {
+    const response = await requestData<DiaryListApiResponse>(apiClient, {
       url: query ? `/diaries?${query}` : '/diaries',
       method: 'GET',
     });
+
+    return {
+      ...response,
+      items: normalizeDiaryItems(response.items),
+    };
   },
 
   // 다이어리 모두 조회 (전체)
@@ -53,9 +82,11 @@ export const diaryBoardApi = {
     const { size = 10 } = params;
     const query = buildQueryString({ size });
 
-    return requestData<DiaryItem[]>(apiClient, {
+    const response = await requestData<DiaryItemApi[]>(apiClient, {
       url: `/diaries/random?${query}`,
       method: 'GET',
     });
+
+    return normalizeDiaryItems(response);
   },
 };

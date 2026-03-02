@@ -4,24 +4,22 @@ import { Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { useEffect, useState } from 'react';
 
-import { useMemberChallenges } from '../../../challenge/board/hooks/use-challenge-queries';
 import type { ChallengeListItem } from '../../../challenge/board/type/challenge';
 
 interface ChallengePickerProps {
+  challenges: ChallengeListItem[];
+  isLoading?: boolean;
   onSelect?(challenge: ChallengeListItem): void;
   className?: string;
 }
 
 export function ChallengePicker({
+  challenges,
+  isLoading = false,
   onSelect,
   className = '',
 }: ChallengePickerProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
-
-  // TODO: 실제 로그인된 사용자의 memberId로 교체
-  const { data: challenges = [], isLoading } = useMemberChallenges({
-    memberId: 1,
-  });
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {

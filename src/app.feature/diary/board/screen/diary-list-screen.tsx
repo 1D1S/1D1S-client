@@ -6,11 +6,16 @@ import { ArrowUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 
+import { useLikeDiary, useUnlikeDiary } from '../../detail/hooks/use-diary-mutations';
 import { useAllDiaries } from '../hooks/use-diary-queries';
 import { type DiaryItem, Feeling } from '../type/diary';
 
 type SortMode = 'latest' | 'likes';
 type DiaryEmotion = 'happy' | 'soso' | 'sad';
+type DiaryItemWithAliases = DiaryItem & {
+  author?: DiaryItem['authorInfoDto'] | null;
+  diaryInfo?: DiaryItem['diaryInfoDto'] | null;
+};
 
 const relativeTimeFormatter = new Intl.RelativeTimeFormat('ko', {
   numeric: 'auto',
@@ -67,15 +72,21 @@ function sortDiaries(items: DiaryItem[], sortMode: SortMode): DiaryItem[] {
   }
 
   sorted.sort((leftDiary, rightDiary) => {
+    const leftDiaryWithAliases = leftDiary as DiaryItemWithAliases;
+    const rightDiaryWithAliases = rightDiary as DiaryItemWithAliases;
+    const leftDiaryInfo =
+      leftDiaryWithAliases.diaryInfoDto ??
+      leftDiaryWithAliases.diaryInfo ??
+      null;
+    const rightDiaryInfo =
+      rightDiaryWithAliases.diaryInfoDto ??
+      rightDiaryWithAliases.diaryInfo ??
+      null;
     const leftDiaryTime = new Date(
-      leftDiary.diaryInfoDto?.createdAt ||
-        leftDiary.diaryInfoDto?.challengedDate ||
-        ''
+      leftDiaryInfo?.createdAt || leftDiaryInfo?.challengedDate || ''
     ).getTime();
     const rightDiaryTime = new Date(
-      rightDiary.diaryInfoDto?.createdAt ||
-        rightDiary.diaryInfoDto?.challengedDate ||
-        ''
+      rightDiaryInfo?.createdAt || rightDiaryInfo?.challengedDate || ''
     ).getTime();
 
     return rightDiaryTime - leftDiaryTime;
@@ -84,15 +95,49 @@ function sortDiaries(items: DiaryItem[], sortMode: SortMode): DiaryItem[] {
   return sorted;
 }
 
+function getDiaryAuthorInfo(diary: DiaryItem): DiaryItem['authorInfoDto'] {
+  const diaryWithAliases = diary as DiaryItemWithAliases;
+  return diaryWithAliases.authorInfoDto ?? diaryWithAliases.author ?? null;
+}
+
+function getDiaryInfo(diary: DiaryItem): DiaryItem['diaryInfoDto'] {
+  const diaryWithAliases = diary as DiaryItemWithAliases;
+  return diaryWithAliases.diaryInfoDto ?? diaryWithAliases.diaryInfo ?? null;
+}
+
+function getDiaryAchievementRate(diary: DiaryItem): number {
+  const diaryInfo = getDiaryInfo(diary);
+  const rawAchievementRate =
+    diary.achievementRate ?? diaryInfo?.achievementRate ?? 0;
+
+  return Math.min(100, Math.max(0, rawAchievementRate));
+}
+
 export default function DiaryListScreen(): React.ReactElement {
   const router = useRouter();
   const [sortMode, setSortMode] = useState<SortMode>('latest');
+  const likeDiary = useLikeDiary();
+  const unlikeDiary = useUnlikeDiary();
   const { data: diaries = [], isLoading, isError } = useAllDiaries();
+  const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
 
   const sortedDiaries = useMemo(
     () => sortDiaries(diaries, sortMode),
     [diaries, sortMode]
   );
+
+  const handleLikeToggle = (diary: DiaryItem): void => {
+    if (isLikePending) {
+      return;
+    }
+
+    if (diary.likeInfo.likedByMe) {
+      unlikeDiary.mutate(diary.id);
+      return;
+    }
+
+    likeDiary.mutate(diary.id);
+  };
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-white p-4">
@@ -140,36 +185,44 @@ export default function DiaryListScreen(): React.ReactElement {
         {!isLoading && !isError ? (
           <div className="diary-grid-container mt-6">
             <div className="diary-card-grid grid grid-cols-2 gap-4">
-              {sortedDiaries.map((item) => (
-                <motion.div
-                  key={item.id}
-                  layout
-                  transition={{ type: 'spring', stiffness: 280, damping: 30 }}
-                >
-                  <DiaryCard
-                    imageUrl={item.imgUrl?.[0] ?? '/images/default-card.png'}
-                    percent={item.diaryInfoDto?.achievementRate ?? 0}
-                    likes={item.likeInfo.likeCnt}
-                    title={item.title}
-                    user={item.authorInfoDto?.nickname ?? '익명'}
-                    userImage={
-                      item.authorInfoDto?.profileImage ??
-                      '/images/default-profile.png'
-                    }
-                    challengeLabel={
-                      item.challenge?.title ?? item.challenge?.category ?? '챌린지'
-                    }
-                    challengeUrl={
-                      item.challenge
-                        ? `/challenge/${item.challenge.challengeId}`
-                        : '/challenge'
-                    }
-                    date={toRelativeDateLabel(item.diaryInfoDto?.createdAt ?? '')}
-                    emotion={mapFeelingToEmotion(item.diaryInfoDto?.feeling ?? 'NONE')}
-                    onClick={() => router.push(`/diary/${item.id}`)}
-                  />
-                </motion.div>
-              ))}
+              {sortedDiaries.map((item) => {
+                const diaryInfo = getDiaryInfo(item);
+                const authorInfo = getDiaryAuthorInfo(item);
+
+                return (
+                  <motion.div
+                    key={item.id}
+                    layout
+                    transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+                  >
+                    <DiaryCard
+                      imageUrl={item.imgUrl?.[0] ?? '/images/default-card.png'}
+                      percent={getDiaryAchievementRate(item)}
+                      isLiked={item.likeInfo.likedByMe}
+                      likes={item.likeInfo.likeCnt}
+                      title={item.title}
+                      user={authorInfo?.nickname ?? '익명'}
+                      userImage={
+                        authorInfo?.profileImage ?? '/images/default-profile.png'
+                      }
+                      challengeLabel={
+                        item.challenge?.title ?? item.challenge?.category ?? '챌린지'
+                      }
+                      onChallengeClick={() =>
+                        router.push(
+                          item.challenge
+                            ? `/challenge/${item.challenge.challengeId}`
+                            : '/challenge'
+                        )
+                      }
+                      date={toRelativeDateLabel(diaryInfo?.createdAt ?? '')}
+                      emotion={mapFeelingToEmotion(diaryInfo?.feeling ?? 'NONE')}
+                      onLikeToggle={() => handleLikeToggle(item)}
+                      onClick={() => router.push(`/diary/${item.id}`)}
+                    />
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         ) : null}

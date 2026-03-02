@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@1d1s/design-system':
-        specifier: ^0.2.3
-        version: 0.2.3(@types/react-dom@19.1.5(@types/react@19.0.12))(@types/react@19.0.12)(next@16.1.5(@babel/core@7.27.4)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        specifier: ^0.2.4
+        version: 0.2.4(@types/react-dom@19.1.5(@types/react@19.0.12))(@types/react@19.0.12)(next@16.1.5(@babel/core@7.27.4)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@hookform/resolvers':
         specifier: ^5.0.1
         version: 5.0.1(react-hook-form@7.55.0(react@19.2.4))
@@ -131,6 +131,9 @@ importers:
       react-hook-form:
         specifier: ^7.55.0
         version: 7.55.0(react@19.2.4)
+      react-intersection-observer:
+        specifier: ^10.0.3
+        version: 10.0.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react-resizable-panels:
         specifier: ^2.1.7
         version: 2.1.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -237,8 +240,8 @@ importers:
 
 packages:
 
-  '@1d1s/design-system@0.2.3':
-    resolution: {integrity: sha512-t3JnsZVzd4Mn2PPrxqld1UjYjY/2Qm4kYVBm+/AKBuIzFvl4gIJh7277EOlLOhX6V0tYjGO6Kj+eZe5RH5jf/A==}
+  '@1d1s/design-system@0.2.4':
+    resolution: {integrity: sha512-Z6kHICxEZOiEBx9n/HWkGpYtiMzuR2Wk9SpA9vqKalBv64rxW1tPbjpacEXPCJmf8QVi2fcj/ikk9cumhU/bYA==}
     peerDependencies:
       next: ^14.0.0 || ^15.0.0
       react: ^19.0.0
@@ -3651,6 +3654,15 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
 
+  react-intersection-observer@10.0.3:
+    resolution: {integrity: sha512-luICLMbs0zxTO/70Zy7K5jOXkABPEVSAF8T3FdZUlctsrIaPLmx8TZe2SSA+CY2HGWfz2INyNTnp82pxNNsShA==}
+    peerDependencies:
+      react: ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
+
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -4256,7 +4268,7 @@ packages:
 
 snapshots:
 
-  '@1d1s/design-system@0.2.3(@types/react-dom@19.1.5(@types/react@19.0.12))(@types/react@19.0.12)(next@16.1.5(@babel/core@7.27.4)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@1d1s/design-system@0.2.4(@types/react-dom@19.1.5(@types/react@19.0.12))(@types/react@19.0.12)(next@16.1.5(@babel/core@7.27.4)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@radix-ui/react-accordion': 1.2.12(@types/react-dom@19.1.5(@types/react@19.0.12))(@types/react@19.0.12)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@radix-ui/react-alert-dialog': 1.1.7(@types/react-dom@19.1.5(@types/react@19.0.12))(@types/react@19.0.12)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -7862,6 +7874,12 @@ snapshots:
   react-hook-form@7.71.1(react@19.2.4):
     dependencies:
       react: 19.2.4
+
+  react-intersection-observer@10.0.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+    dependencies:
+      react: 19.2.4
+    optionalDependencies:
+      react-dom: 19.2.4(react@19.2.4)
 
   react-is@16.13.1: {}
 

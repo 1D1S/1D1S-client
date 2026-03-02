@@ -56,9 +56,12 @@ export function useDiaryList(
 }
 
 // 모든 다이어리 조회 (페이지네이션 없음)
-export function useAllDiaries(): UseQueryResult<DiaryItem[], Error> {
+export function useAllDiaries(options?: {
+  enabled?: boolean;
+}): UseQueryResult<DiaryItem[], Error> {
   return useQuery({
     queryKey: DIARY_QUERY_KEYS.allDiaries(),
     queryFn: () => diaryBoardApi.getAllDiaries(),
+    enabled: options?.enabled ?? true,
   });
 }
