@@ -13,7 +13,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 import { useChallengeList } from '../hooks/use-challenge-queries';
-import { ChallengeCategory } from '../type/challenge';
+import { ChallengeCategory, ChallengeListItem } from '../type/challenge';
 
 const CHALLENGE_BOARD_CATEGORY_FILTERS: Array<{
   key: ChallengeCategory;
@@ -54,6 +54,15 @@ export default function ChallengeBoardScreen(): React.ReactElement {
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const isOngoingChallenge = (challenge: ChallengeListItem): boolean =>
+    challenge.participantCnt >= challenge.maxParticipantCnt;
+
+  const isEndedChallenge = (challenge: ChallengeListItem): boolean => {
+    const today = new Date();
+    const endDate = new Date(challenge.endDate);
+    return today > endDate;
+  };
 
   // InfiniteQuery로 가져온 pages 배열을 flatten하여 일반 Challenge 리스트로 만듦;
   // ChallengeItem[]에서 keyword 기반 필터링
@@ -173,8 +182,8 @@ export default function ChallengeBoardScreen(): React.ReactElement {
                   maxUserCount={challenge.maxParticipantCnt}
                   startDate={challenge.startDate}
                   endDate={challenge.endDate}
-                  isOngoing={/*challenge.status === 'closingSoon'*/ true}
-                  isEnded={/*challenge.status === 'ended'*/ false}
+                  isOngoing={isOngoingChallenge(challenge)}
+                  isEnded={isEndedChallenge(challenge)}
                   className="h-full"
                   onClick={() =>
                     router.push(`/challenge/${challenge.challengeId}`)
