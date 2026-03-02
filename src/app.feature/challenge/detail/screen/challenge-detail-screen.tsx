@@ -589,7 +589,7 @@ export function ChallengeDetailScreen({
             <div className="grid gap-6 lg:grid-cols-2">
               <section className="rounded-4 border border-gray-200 bg-white p-5">
                 <StatHeader
-                  icon={<span className="text-main-800">◔</span>}
+                  icon={<span className="text-main-800 pb-1.5 text-4xl">◔</span>}
                   title={isHost ? '내 진척도' : '나의 참여 진척도'}
                   rightText={`${participationRate}%`}
                 />
