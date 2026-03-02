@@ -9,10 +9,23 @@ import { NextResponse } from 'next/server';
  * @param res NextResponse
  */
 export function headersMiddleware(res: NextResponse): void {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_ODOS_API_URL;
+  let connectSrc = "connect-src 'self';";
+
+  if (apiBaseUrl) {
+    try {
+      const apiOrigin = new URL(apiBaseUrl).origin;
+      connectSrc = `connect-src 'self' ${apiOrigin};`;
+    } catch {
+      connectSrc = "connect-src 'self';";
+    }
+  }
+
   // const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const apiDomain = process.env.NEXT_PUBLIC_ODOS_API_URL ?? '';
   const cspHeader = `
     default-src 'self';
+    ${connectSrc}
     script-src 'self' 'unsafe-eval' 'unsafe-inline';
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data:;

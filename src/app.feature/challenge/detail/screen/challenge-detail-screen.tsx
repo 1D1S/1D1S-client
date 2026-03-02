@@ -340,21 +340,20 @@ export function ChallengeDetailScreen({
     () => getMonthLabel(calendarMonth),
     [calendarMonth]
   );
+  const summaryStartDate = summary?.startDate ?? '';
+  const summaryEndDate = summary?.endDate ?? '';
+  const summaryParticipantCnt = summary?.participantCnt ?? 0;
+  const summaryMaxParticipantCnt = summary?.maxParticipantCnt ?? 0;
   const calendarRows = useMemo(
-    () =>
-      buildCalendarRows(
-        calendarMonth,
-        summary?.startDate ?? '',
-        summary?.endDate ?? ''
-      ),
-    [calendarMonth, summary?.startDate, summary?.endDate]
+    () => buildCalendarRows(calendarMonth, summaryStartDate, summaryEndDate),
+    [calendarMonth, summaryEndDate, summaryStartDate]
   );
   const recentActivityLogs = useMemo(() => {
     const summaryLogs = [
       {
         key: 'participants-total',
-        title: `현재 참여자 ${summary?.participantCnt ?? 0}명`,
-        description: `최대 ${summary?.maxParticipantCnt ?? 0}명 중 ${summary?.participantCnt ?? 0}명이 참여 중입니다.`,
+        title: `현재 참여자 ${summaryParticipantCnt}명`,
+        description: `최대 ${summaryMaxParticipantCnt}명 중 ${summaryParticipantCnt}명이 참여 중입니다.`,
         status: '참여 현황',
       },
       {
@@ -379,8 +378,8 @@ export function ChallengeDetailScreen({
   }, [
     participants,
     pendingParticipants.length,
-    summary?.maxParticipantCnt,
-    summary?.participantCnt,
+    summaryMaxParticipantCnt,
+    summaryParticipantCnt,
   ]);
 
   const isActionLoading =
@@ -479,6 +478,104 @@ export function ChallengeDetailScreen({
       },
     });
   };
+
+  const renderActionsSection = (): React.ReactElement => (
+    <section className="rounded-4 border border-gray-200 bg-white p-5">
+      <Text size="caption1" weight="bold" className="text-gray-500">
+        ACTIONS
+      </Text>
+      <div className="mt-3 flex flex-col gap-2.5">
+        {isParticipating ? (
+          <Button size="large" className="w-full" asChild>
+            <Link href={`/diary/create?challengeId=${id}`}>일지 작성하기</Link>
+          </Button>
+        ) : null}
+
+        <Button
+          variant={summary!.likeInfo.likedByMe ? 'default' : 'outlined'}
+          size="large"
+          className="w-full"
+          disabled={isActionLoading}
+          asChild
+        >
+          <button type="button" onClick={handleToggleLike}>
+            <Heart className="h-4 w-4" />
+            {summary!.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'} (
+            {summary!.likeInfo.likeCnt})
+          </button>
+        </Button>
+
+        {!isHost && canJoin ? (
+          <Button
+            variant="outlined"
+            size="large"
+            className="w-full"
+            onClick={handleJoinChallenge}
+            disabled={
+              joinChallenge.isPending || effectiveSelectedGoals.length === 0
+            }
+          >
+            챌린지 참여 신청
+          </Button>
+        ) : null}
+
+        {!isHost && isPending ? (
+          <Button variant="outlined" size="large" className="w-full" disabled>
+            참여 승인 대기중
+          </Button>
+        ) : null}
+
+        {!isHost && isParticipating ? (
+          <Button
+            variant="outlined"
+            size="large"
+            className="w-full"
+            onClick={handleLeaveChallenge}
+            disabled={leaveChallenge.isPending}
+          >
+            챌린지 나가기
+          </Button>
+        ) : null}
+      </div>
+    </section>
+  );
+
+  const renderParticipationStatusSection = (): React.ReactElement => (
+    <section className="rounded-4 border border-gray-200 bg-white p-5">
+      <Text size="heading2" weight="bold" className="text-gray-900">
+        참여 현황
+      </Text>
+      <div className="mt-3">
+        <div className="mb-2 flex items-center justify-between">
+          <Text size="body2" weight="medium" className="text-gray-600">
+            참여자
+          </Text>
+          <Text size="body1" weight="bold" className="text-gray-900">
+            {summary!.participantCnt} / {summary!.maxParticipantCnt}
+          </Text>
+        </div>
+        <div className="h-2 rounded-full bg-gray-200">
+          <div
+            className="bg-mint-800 h-full rounded-full"
+            style={{
+              width: `${Math.min(
+                100,
+                summary!.maxParticipantCnt > 0
+                  ? (summary!.participantCnt / summary!.maxParticipantCnt) * 100
+                  : 0
+              )}%`,
+            }}
+          />
+        </div>
+        <div className="mt-3 flex items-center gap-2 text-gray-600">
+          <CalendarDays className="h-4 w-4" />
+          <Text size="body2" weight="medium">
+            {getDdayLabel(summary!.endDate)} 남음
+          </Text>
+        </div>
+      </div>
+    </section>
+  );
 
   if (isLoading) {
     return (
@@ -662,6 +759,11 @@ export function ChallengeDetailScreen({
               </section>
             </div>
 
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:hidden">
+              {renderActionsSection()}
+              {renderParticipationStatusSection()}
+            </div>
+
             <section className="rounded-4 border border-gray-200 bg-white p-5">
               <div className="mb-3 flex items-center justify-between">
                 <StatHeader
@@ -767,107 +869,10 @@ export function ChallengeDetailScreen({
           </div>
 
           <aside className="flex min-w-0 flex-col gap-6">
-            <section className="rounded-4 border border-gray-200 bg-white p-5">
-              <Text size="caption1" weight="bold" className="text-gray-500">
-                ACTIONS
-              </Text>
-              <div className="mt-3 flex flex-col gap-2.5">
-                <Button size="large" className="w-full" asChild>
-                  <Link href={`/diary/create?challengeId=${id}`}>
-                    로그 작성하기
-                  </Link>
-                </Button>
-
-                <Button
-                  variant={summary.likeInfo.likedByMe ? 'default' : 'outlined'}
-                  size="large"
-                  className="w-full"
-                  disabled={isActionLoading}
-                  asChild
-                >
-                  <button type="button" onClick={handleToggleLike}>
-                    <Heart className="h-4 w-4" />
-                    {summary.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'} (
-                    {summary.likeInfo.likeCnt})
-                  </button>
-                </Button>
-
-                {!isHost && canJoin ? (
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    className="w-full"
-                    onClick={handleJoinChallenge}
-                    disabled={
-                      joinChallenge.isPending ||
-                      effectiveSelectedGoals.length === 0
-                    }
-                  >
-                    챌린지 참여 신청
-                  </Button>
-                ) : null}
-
-                {!isHost && isPending ? (
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    className="w-full"
-                    disabled
-                  >
-                    참여 승인 대기중
-                  </Button>
-                ) : null}
-
-                {!isHost && isParticipating ? (
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    className="w-full"
-                    onClick={handleLeaveChallenge}
-                    disabled={leaveChallenge.isPending}
-                  >
-                    챌린지 나가기
-                  </Button>
-                ) : null}
-              </div>
-            </section>
-
-            <section className="rounded-4 border border-gray-200 bg-white p-5">
-              <Text size="heading2" weight="bold" className="text-gray-900">
-                참여 현황
-              </Text>
-              <div className="mt-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <Text size="body2" weight="medium" className="text-gray-600">
-                    참여자
-                  </Text>
-                  <Text size="body1" weight="bold" className="text-gray-900">
-                    {summary.participantCnt} / {summary.maxParticipantCnt}
-                  </Text>
-                </div>
-                <div className="h-2 rounded-full bg-gray-200">
-                  <div
-                    className="bg-mint-800 h-full rounded-full"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        summary.maxParticipantCnt > 0
-                          ? (summary.participantCnt /
-                              summary.maxParticipantCnt) *
-                              100
-                          : 0
-                      )}%`,
-                    }}
-                  />
-                </div>
-                <div className="mt-3 flex items-center gap-2 text-gray-600">
-                  <CalendarDays className="h-4 w-4" />
-                  <Text size="body2" weight="medium">
-                    {getDdayLabel(summary.endDate)} 남음
-                  </Text>
-                </div>
-              </div>
-            </section>
+            <div className="hidden xl:block">{renderActionsSection()}</div>
+            <div className="hidden xl:block">
+              {renderParticipationStatusSection()}
+            </div>
 
             <section className="rounded-4 border border-gray-200 bg-white p-5">
               <Text size="heading2" weight="bold" className="text-gray-900">

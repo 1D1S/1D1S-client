@@ -154,7 +154,7 @@ export default function MainPage(): React.ReactElement {
                   user={item.user}
                   userImage={item.userImage}
                   challengeLabel={item.challengeLabel}
-                  challengeUrl={item.challengeUrl}
+                  onChallengeClick={() => router.push(item.challengeUrl)}
                   date={item.date}
                   emotion={item.emotion}
                 />

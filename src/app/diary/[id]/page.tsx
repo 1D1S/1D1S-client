@@ -5,10 +5,12 @@ interface DiaryDetailProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function DiaryDetail({
+export default async function DiaryDetailPage({
   params,
 }: DiaryDetailProps): Promise<React.ReactElement> {
   const { id } = await params;
+  const diaryId = Number(id);
 
-  return <DiaryDetailScreen diaryId={Number(id)} />;
+  return <DiaryDetailScreen id={diaryId} />;
 }
+

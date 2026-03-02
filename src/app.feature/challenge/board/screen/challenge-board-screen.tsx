@@ -9,8 +9,7 @@ import {
   Toggle,
 } from '@1d1s/design-system';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react';
-import { useInView } from 'react-intersection-observer';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useChallengeList } from '../hooks/use-challenge-queries';
 import { ChallengeCategory } from '../type/challenge';
@@ -33,6 +32,42 @@ const CHALLENGE_BOARD_CATEGORY_FILTERS: Array<{
 //   const response = await apiClient('/')
 // }
 
+function useInViewObserver(): {
+  ref: React.RefObject<HTMLDivElement | null>;
+  inView: boolean;
+} {
+  const ref = useRef<HTMLDivElement>(null);
+  const [observedInView, setObservedInView] = useState(false);
+  const isIntersectionObserverUnsupported =
+    typeof window !== 'undefined' && typeof IntersectionObserver === 'undefined';
+
+  useEffect(() => {
+    const target = ref.current;
+
+    if (!target || typeof window === 'undefined') {
+      return;
+    }
+
+    if (typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setObservedInView(entry.isIntersecting);
+    });
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const inView = isIntersectionObserverUnsupported ? true : observedInView;
+
+  return { ref, inView };
+}
+
 export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
   const [query, setQuery] = useState('');
@@ -47,7 +82,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
       keyword: query || undefined,
     });
 
-  const { ref, inView } = useInView();
+  const { ref, inView } = useInViewObserver();
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {

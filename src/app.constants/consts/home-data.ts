@@ -62,7 +62,7 @@ export const HOME_RANDOM_DIARY_ITEMS: HomeRandomDiaryItem[] = Array.from({
     '아침 운동 챌린지',
     '독서 루틴 챌린지',
   ][index % 6],
-  challengeUrl: '/diary',
+  challengeUrl: '/challenge',
   date: '2025.03.05',
   emotion: (['happy', 'happy', 'soso', 'happy', 'happy', 'soso'] as const)[
     index % 6

@@ -1,5 +1,5 @@
 import { apiClient } from '@module/api/client';
-import { requestBody, requestData } from '@module/api/request';
+import { requestData } from '@module/api/request';
 
 import { DiaryDetail } from '../../board/type/diary';
 
@@ -12,12 +12,11 @@ export const diaryDetailApi = {
     }),
 
   // 다이어리 삭제
-  deleteDiary: async (id: number): Promise<void> => {
-    await requestBody(apiClient, {
+  deleteDiary: async (id: number): Promise<boolean> =>
+    requestData<boolean>(apiClient, {
       url: `/diaries/${id}`,
       method: 'DELETE',
-    });
-  },
+    }),
 
   // 다이어리 좋아요 누르기
   likeDiary: async (id: number): Promise<number> =>

@@ -4,80 +4,140 @@ import { DiaryCard, Text } from '@1d1s/design-system';
 import { motion } from 'framer-motion';
 import { ArrowUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react';
-import { useInView } from 'react-intersection-observer';
+import React, { useMemo, useState } from 'react';
 
-import { useDiaryList } from '../hooks/use-diary-queries';
-import { DiaryItem } from '../type/diary';
+import { useLikeDiary, useUnlikeDiary } from '../../detail/hooks/use-diary-mutations';
+import { useAllDiaries } from '../hooks/use-diary-queries';
+import { type DiaryItem, Feeling } from '../type/diary';
 
 type SortMode = 'latest' | 'likes';
+type DiaryEmotion = 'happy' | 'soso' | 'sad';
+type DiaryItemWithAliases = DiaryItem & {
+  author?: DiaryItem['authorInfoDto'] | null;
+  diaryInfo?: DiaryItem['diaryInfoDto'] | null;
+};
 
-function getRelativeTimeLabel(dateTime: string): string {
-  const createdAt = new Date(dateTime).getTime();
-  const now = Date.now();
-  const diffMs = Math.max(0, now - createdAt);
-  const minuteMs = 60_000;
-  const hourMs = 60 * minuteMs;
-  const dayMs = 24 * hourMs;
+const relativeTimeFormatter = new Intl.RelativeTimeFormat('ko', {
+  numeric: 'auto',
+});
 
-  if (diffMs < hourMs) {
-    const minutes = Math.max(1, Math.floor(diffMs / minuteMs));
-    return `${minutes}분 전`;
+function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
+  switch (feeling) {
+    case 'HAPPY':
+      return 'happy';
+    case 'SAD':
+      return 'sad';
+    case 'NORMAL':
+    case 'NONE':
+    default:
+      return 'soso';
   }
-
-  if (diffMs < dayMs) {
-    const hours = Math.floor(diffMs / hourMs);
-    return `${hours}시간 전`;
-  }
-
-  const days = Math.floor(diffMs / dayMs);
-  return `${days}일 전`;
 }
 
-function mapFeelingToEmotion(
-  feeling: DiaryItem['diaryInfo']['feeling']
-): 'happy' | 'soso' | 'sad' {
-  if (feeling === 'HAPPY') {
-    return 'happy';
+function toRelativeDateLabel(createdAt: string): string {
+  if (!createdAt) {
+    return '방금 전';
   }
-  if (feeling === 'SAD') {
-    return 'sad';
+
+  const targetDate = new Date(createdAt);
+  if (Number.isNaN(targetDate.getTime())) {
+    return '방금 전';
   }
-  return 'soso';
+
+  const diffMinutes = Math.round((targetDate.getTime() - Date.now()) / 60000);
+  const absMinutes = Math.abs(diffMinutes);
+
+  if (absMinutes < 60) {
+    return relativeTimeFormatter.format(diffMinutes, 'minute');
+  }
+
+  const diffHours = Math.round(diffMinutes / 60);
+  if (Math.abs(diffHours) < 24) {
+    return relativeTimeFormatter.format(diffHours, 'hour');
+  }
+
+  const diffDays = Math.round(diffHours / 24);
+  return relativeTimeFormatter.format(diffDays, 'day');
+}
+
+function sortDiaries(items: DiaryItem[], sortMode: SortMode): DiaryItem[] {
+  const sorted = [...items];
+
+  if (sortMode === 'likes') {
+    sorted.sort(
+      (leftDiary, rightDiary) =>
+        rightDiary.likeInfo.likeCnt - leftDiary.likeInfo.likeCnt
+    );
+    return sorted;
+  }
+
+  sorted.sort((leftDiary, rightDiary) => {
+    const leftDiaryWithAliases = leftDiary as DiaryItemWithAliases;
+    const rightDiaryWithAliases = rightDiary as DiaryItemWithAliases;
+    const leftDiaryInfo =
+      leftDiaryWithAliases.diaryInfoDto ??
+      leftDiaryWithAliases.diaryInfo ??
+      null;
+    const rightDiaryInfo =
+      rightDiaryWithAliases.diaryInfoDto ??
+      rightDiaryWithAliases.diaryInfo ??
+      null;
+    const leftDiaryTime = new Date(
+      leftDiaryInfo?.createdAt || leftDiaryInfo?.challengedDate || ''
+    ).getTime();
+    const rightDiaryTime = new Date(
+      rightDiaryInfo?.createdAt || rightDiaryInfo?.challengedDate || ''
+    ).getTime();
+
+    return rightDiaryTime - leftDiaryTime;
+  });
+
+  return sorted;
+}
+
+function getDiaryAuthorInfo(diary: DiaryItem): DiaryItem['authorInfoDto'] {
+  const diaryWithAliases = diary as DiaryItemWithAliases;
+  return diaryWithAliases.authorInfoDto ?? diaryWithAliases.author ?? null;
+}
+
+function getDiaryInfo(diary: DiaryItem): DiaryItem['diaryInfoDto'] {
+  const diaryWithAliases = diary as DiaryItemWithAliases;
+  return diaryWithAliases.diaryInfoDto ?? diaryWithAliases.diaryInfo ?? null;
+}
+
+function getDiaryAchievementRate(diary: DiaryItem): number {
+  const diaryInfo = getDiaryInfo(diary);
+  const rawAchievementRate =
+    diary.achievementRate ?? diaryInfo?.achievementRate ?? 0;
+
+  return Math.min(100, Math.max(0, rawAchievementRate));
 }
 
 export default function DiaryListScreen(): React.ReactElement {
   const router = useRouter();
   const [sortMode, setSortMode] = useState<SortMode>('latest');
-  const { ref, inView } = useInView();
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isError,
-  } = useDiaryList({ size: 20 });
+  const likeDiary = useLikeDiary();
+  const unlikeDiary = useUnlikeDiary();
+  const { data: diaries = [], isLoading, isError } = useAllDiaries();
+  const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
 
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
+  const sortedDiaries = useMemo(
+    () => sortDiaries(diaries, sortMode),
+    [diaries, sortMode]
+  );
+
+  const handleLikeToggle = (diary: DiaryItem): void => {
+    if (isLikePending) {
+      return;
     }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const diaries = useMemo(() => {
-    const items = data?.pages.flatMap((page) => page.items ?? []) ?? [];
+    if (diary.likeInfo.likedByMe) {
+      unlikeDiary.mutate(diary.id);
+      return;
+    }
 
-    return [...items].sort((firstDiary, secondDiary) => {
-      if (sortMode === 'likes') {
-        return secondDiary.likeInfo.likeCnt - firstDiary.likeInfo.likeCnt;
-      }
-      return (
-        new Date(secondDiary.diaryInfo.createdAt).getTime() -
-        new Date(firstDiary.diaryInfo.createdAt).getTime()
-      );
-    });
-  }, [data, sortMode]);
+    likeDiary.mutate(diary.id);
+  };
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-white p-4">
@@ -106,53 +166,71 @@ export default function DiaryListScreen(): React.ReactElement {
           </button>
         </div>
 
-        <div className="diary-grid-container mt-6">
-          <div className="diary-card-grid grid grid-cols-2 gap-4">
-            {diaries.map((item) => (
-              <motion.div
-                key={item.id}
-                layout
-                transition={{ type: 'spring', stiffness: 280, damping: 30 }}
-              >
-                <DiaryCard
-                  imageUrl={item.imgUrl ?? '/images/default-card.png'}
-                  percent={item.diaryInfo.achievementRate ?? 0}
-                  likes={item.likeInfo.likeCnt}
-                  title={item.title}
-                  user={item.authorInfo.nickname ?? '익명'}
-                  userImage={item.authorInfo.profileImage ?? '/images/default-profile.png'}
-                  challengeLabel={item.challenge?.title ?? '챌린지 미연결'}
-                  challengeUrl={'/challenge'}
-                  date={getRelativeTimeLabel(item.diaryInfo.createdAt)}
-                  emotion={mapFeelingToEmotion(item.diaryInfo.feeling)}
-                  onClick={() => router.push(`/diary/${item.id}`)}
-                />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
         {isLoading ? (
-          <div className="mt-6 py-8 text-center">
-            <Text size="body2" weight="medium" className="text-gray-500">
-              일지를 불러오는 중입니다...
+          <div className="mt-10 flex w-full justify-center py-10">
+            <Text size="body1" weight="medium" className="text-gray-500">
+              일지를 불러오는 중입니다.
             </Text>
           </div>
         ) : null}
 
         {isError ? (
-          <div className="mt-6 py-8 text-center">
-            <Text size="body2" weight="medium" className="text-red-600">
-              일지 목록을 불러오지 못했습니다.
+          <div className="mt-10 flex w-full justify-center py-10">
+            <Text size="body1" weight="medium" className="text-red-600">
+              일지를 불러오지 못했습니다.
             </Text>
           </div>
         ) : null}
 
-        <div ref={ref} className="h-8" />
-        {isFetchingNextPage ? (
-          <div className="pb-4 text-center">
-            <Text size="body2" weight="medium" className="text-gray-500">
-              추가 일지를 불러오는 중...
+        {!isLoading && !isError ? (
+          <div className="diary-grid-container mt-6">
+            <div className="diary-card-grid grid grid-cols-2 gap-4">
+              {sortedDiaries.map((item) => {
+                const diaryInfo = getDiaryInfo(item);
+                const authorInfo = getDiaryAuthorInfo(item);
+
+                return (
+                  <motion.div
+                    key={item.id}
+                    layout
+                    transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+                  >
+                    <DiaryCard
+                      imageUrl={item.imgUrl?.[0] ?? '/images/default-card.png'}
+                      percent={getDiaryAchievementRate(item)}
+                      isLiked={item.likeInfo.likedByMe}
+                      likes={item.likeInfo.likeCnt}
+                      title={item.title}
+                      user={authorInfo?.nickname ?? '익명'}
+                      userImage={
+                        authorInfo?.profileImage ?? '/images/default-profile.png'
+                      }
+                      challengeLabel={
+                        item.challenge?.title ?? item.challenge?.category ?? '챌린지'
+                      }
+                      onChallengeClick={() =>
+                        router.push(
+                          item.challenge
+                            ? `/challenge/${item.challenge.challengeId}`
+                            : '/challenge'
+                        )
+                      }
+                      date={toRelativeDateLabel(diaryInfo?.createdAt ?? '')}
+                      emotion={mapFeelingToEmotion(diaryInfo?.feeling ?? 'NONE')}
+                      onLikeToggle={() => handleLikeToggle(item)}
+                      onClick={() => router.push(`/diary/${item.id}`)}
+                    />
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
+        {!isLoading && !isError && sortedDiaries.length === 0 ? (
+          <div className="mt-10 flex w-full justify-center py-10">
+            <Text size="body1" weight="medium" className="text-gray-500">
+              아직 등록된 일지가 없습니다.
             </Text>
           </div>
         ) : null}
