@@ -21,6 +21,10 @@ import {
 } from '../../../challenge/board/type/challenge';
 import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
 import { DiaryDetail, Feeling } from '../../board/type/diary';
+import {
+  resolveDiaryImageList,
+  resolveDiaryImageUrl,
+} from '../../shared/utils/diary-image-url';
 import { useLikeDiary, useUnlikeDiary } from '../hooks/use-diary-mutations';
 
 interface ChecklistItem {
@@ -54,6 +58,7 @@ interface DiaryDetailViewData {
   checkedChecklistIds: string[];
   contentHtml: string;
   hasContentHtml: boolean;
+  contentThumbnailUrl: string | null;
   tags: string[];
 }
 
@@ -138,30 +143,39 @@ function getChallengeImageUrl(
 
   const summaryImg = challengeSummary?.imgUrl;
   if (Array.isArray(summaryImg) && summaryImg[0]) {
-    return summaryImg[0];
+    return resolveDiaryImageUrl(summaryImg[0]) ?? '/images/default-card.png';
   }
   if (typeof summaryImg === 'string' && summaryImg) {
-    return summaryImg;
+    return resolveDiaryImageUrl(summaryImg) ?? '/images/default-card.png';
   }
   if (challengeSummary?.imageUrl) {
-    return challengeSummary.imageUrl;
+    return (
+      resolveDiaryImageUrl(challengeSummary.imageUrl) ??
+      '/images/default-card.png'
+    );
   }
   if (challengeSummary?.thumbnailUrl) {
-    return challengeSummary.thumbnailUrl;
+    return (
+      resolveDiaryImageUrl(challengeSummary.thumbnailUrl) ??
+      '/images/default-card.png'
+    );
   }
 
   const diaryImg = diaryChallenge?.imgUrl;
   if (Array.isArray(diaryImg) && diaryImg[0]) {
-    return diaryImg[0];
+    return resolveDiaryImageUrl(diaryImg[0]) ?? '/images/default-card.png';
   }
   if (typeof diaryImg === 'string' && diaryImg) {
-    return diaryImg;
+    return resolveDiaryImageUrl(diaryImg) ?? '/images/default-card.png';
   }
   if (diaryChallenge?.imageUrl) {
-    return diaryChallenge.imageUrl;
+    return resolveDiaryImageUrl(diaryChallenge.imageUrl) ?? '/images/default-card.png';
   }
   if (diaryChallenge?.thumbnailUrl) {
-    return diaryChallenge.thumbnailUrl;
+    return (
+      resolveDiaryImageUrl(diaryChallenge.thumbnailUrl) ??
+      '/images/default-card.png'
+    );
   }
 
   return '/images/default-card.png';
@@ -221,6 +235,10 @@ function mapDiaryToViewData(
     typeof participantCnt === 'number' && typeof maxParticipantCnt === 'number'
       ? `${participantCnt}/${maxParticipantCnt}명`
       : '-';
+  const contentThumbnailUrl =
+    resolveDiaryImageList(
+      diary.imgUrl as string[] | string | null | undefined
+    )?.[0] ?? null;
 
   return {
     id: diary.id,
@@ -254,6 +272,7 @@ function mapDiaryToViewData(
       .filter((itemId) => achievedGoalIdSet.has(itemId)),
     contentHtml: diary.content ?? '',
     hasContentHtml: hasVisibleHtmlContent(diary.content ?? ''),
+    contentThumbnailUrl,
     tags: [diary.challenge?.category, diary.diaryInfoDto?.feeling].filter(
       (tag): tag is string => Boolean(tag)
     ),
@@ -393,7 +412,6 @@ function DiaryDetailView({
                 alt={`${diaryData.connectedChallengeTitle} 썸네일`}
                 fill
                 className="object-cover"
-                unoptimized
               />
             </div>
 
@@ -471,17 +489,36 @@ function DiaryDetailView({
           </div>
 
           <div className="rounded-3 border border-gray-200 bg-white p-5">
-            {diaryData.hasContentHtml ? (
-              <div
-                className="prose prose-sm max-w-none text-gray-700
-                  [&_img]:max-h-80 [&_img]:rounded-lg"
-                dangerouslySetInnerHTML={{ __html: diaryData.contentHtml }}
-              />
-            ) : (
-              <Text size="body2" weight="regular" className="text-gray-500">
-                작성된 내용이 없습니다.
-              </Text>
-            )}
+            <div
+              className={`gap-5 ${
+                diaryData.contentThumbnailUrl
+                  ? 'grid grid-cols-1 items-start md:grid-cols-[minmax(0,1fr)_220px]'
+                  : ''
+              }`}
+            >
+              {diaryData.hasContentHtml ? (
+                <div
+                  className="prose prose-sm max-w-none text-gray-700
+                    [&_img]:max-h-80 [&_img]:rounded-lg"
+                  dangerouslySetInnerHTML={{ __html: diaryData.contentHtml }}
+                />
+              ) : (
+                <Text size="body2" weight="regular" className="text-gray-500">
+                  작성된 내용이 없습니다.
+                </Text>
+              )}
+
+              {diaryData.contentThumbnailUrl ? (
+                <div className="relative h-48 w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-100 md:h-56">
+                  <Image
+                    src={diaryData.contentThumbnailUrl}
+                    alt="일지 썸네일"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : null}
+            </div>
 
             {diaryData.tags.length > 0 ? (
               <div className="mt-4 flex flex-wrap gap-2">
