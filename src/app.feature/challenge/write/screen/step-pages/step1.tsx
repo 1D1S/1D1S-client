@@ -65,7 +65,7 @@ export function Step1(): React.ReactElement {
                       width="auto"
                       height={48}
                       className={cn(
-                        '!min-w-[128px] !rounded-full !border px-4',
+                        '!min-w-[128px] !rounded-full !border px-4 hover:cursor-pointer',
                         isSelected
                           ? '!border-main-800 !bg-main-800 !text-white'
                           : '!border-gray-300 !bg-white !text-gray-700'
