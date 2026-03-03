@@ -1,5 +1,5 @@
 export type Feeling = 'SAD' | 'NORMAL' | 'HAPPY' | 'NONE';
-export type ReportType = 'ETC';
+export type ReportType = 'BAD_TITLE_CONTENT' | 'BAD_IMAGE' | 'ETC';
 
 export interface LikeInfo {
   likedByMe: boolean;
@@ -34,20 +34,18 @@ export interface DiaryInfo {
 
 export interface DiaryItem {
   id: number;
-  challenge?: ChallengeSummary;
-  authorInfo: AuthorInfo;
+  challenge: ChallengeSummary | null;
+  authorInfoDto: AuthorInfo | null;
   title: string;
   content: string;
-  imgUrl: string | null;
+  imgUrl: string[] | null;
   isPublic: boolean;
   likeInfo: LikeInfo;
-  diaryInfo: DiaryInfo;
+  achievementRate?: number;
+  diaryInfoDto: DiaryInfo | null;
 }
 
-export interface DiaryDetail extends DiaryItem {
-  challenge: ChallengeSummary;
-  img?: Array<{ url: string }>;
-}
+export type DiaryDetail = DiaryItem;
 
 export interface CreateDiaryRequest {
   challengeId: number;
@@ -98,11 +96,9 @@ export interface CreateDiaryReportRequest {
 }
 
 export interface UploadImageResponse {
-  message: string;
-  data: string;
+  imageUrl: string;
 }
 
 export interface UploadImagesResponse {
-  message: string;
-  data: string[];
+  imageUrls: string[];
 }
