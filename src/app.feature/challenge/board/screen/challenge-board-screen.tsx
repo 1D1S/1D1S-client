@@ -39,7 +39,8 @@ function useInViewObserver(): {
   const ref = useRef<HTMLDivElement>(null);
   const [observedInView, setObservedInView] = useState(false);
   const isIntersectionObserverUnsupported =
-    typeof window !== 'undefined' && typeof IntersectionObserver === 'undefined';
+    typeof window !== 'undefined' &&
+    typeof IntersectionObserver === 'undefined';
 
   useEffect(() => {
     const target = ref.current;
@@ -76,7 +77,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   // const [currentPage, setCurrentPage] = useState(1);
 
   // useChallengeList 무한 스크롤 데이터
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useChallengeList({
       limit: 10,
       keyword: query || undefined,
@@ -205,6 +206,14 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           ))}
         </div>
 
+        {isLoading && (
+          <div className="mt-8 flex w-full justify-center py-10">
+            <Text size="body1" weight="medium" className="text-gray-500">
+              데이터를 불러오는 중...
+            </Text>
+          </div>
+        )}
+
         <div className="challenge-grid-container mt-8">
           <div className="challenge-card-grid grid grid-cols-1 gap-4">
             {filteredChallenges.map((challenge) => (
@@ -246,7 +255,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           ) : null}
         </div>
 
-        {filteredChallenges.length === 0 ? (
+        {filteredChallenges.length === 0 && !isLoading ? (
           <div className="mt-8 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-gray-500">
               조건에 맞는 챌린지가 없습니다.
