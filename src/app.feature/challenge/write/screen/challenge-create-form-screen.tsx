@@ -4,6 +4,7 @@ import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/component
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
 import { useStepValidation } from '@feature/challenge/write/hooks/use-step-validation';
 import { add, format } from 'date-fns';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
@@ -29,6 +30,8 @@ export function ChallengeCreateFormScreen({
   previousStep(): void;
 }): React.ReactElement {
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const router = useRouter();
+
   const renderStep = (): React.ReactElement => {
     switch (step) {
       case 1:
@@ -104,6 +107,7 @@ export function ChallengeCreateFormScreen({
     createChallenge.mutate(formatFormValues(values), {
       onSuccess: (data) => {
         console.log('createChallenge 성공:', data);
+        router.push(`/challenge/${data.challengeId}`);
       },
       onError: (error) => {
         console.error('createChallenge 실패:', error);
