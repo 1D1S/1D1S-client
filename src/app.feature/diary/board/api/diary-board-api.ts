@@ -1,6 +1,7 @@
 import { apiClient } from '@module/api/client';
 import { buildQueryString, requestBody, requestData } from '@module/api/request';
 
+import { resolveDiaryImageList } from '../../shared/utils/diary-image-url';
 import {
   DiaryItem,
   DiaryListParams,
@@ -13,6 +14,7 @@ type DiaryItemApi = Omit<DiaryItem, 'authorInfoDto' | 'diaryInfoDto'> & {
   diaryInfoDto?: DiaryItem['diaryInfoDto'] | null;
   author?: DiaryItem['authorInfoDto'] | null;
   diaryInfo?: DiaryItem['diaryInfoDto'] | null;
+  imgUrl?: string[] | string | null;
 };
 
 type DiaryListApiResponse = Omit<DiaryListResponse, 'items'> & {
@@ -26,6 +28,7 @@ const normalizeDiaryItem = (item: DiaryItemApi): DiaryItem => {
 
   return {
     ...rest,
+    imgUrl: resolveDiaryImageList(item.imgUrl),
     authorInfoDto: authorInfoDto ?? author ?? null,
     diaryInfoDto: diaryInfoDto ?? diaryInfo ?? null,
   };

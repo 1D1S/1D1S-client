@@ -1,8 +1,7 @@
-import { Text } from '@1d1s/design-system';
+import { CheckList, Text } from '@1d1s/design-system';
 import React from 'react';
 
 import type { ChallengeGoal } from '../../../challenge/board/type/challenge';
-import { ChallengeGoalToggle } from './challenge-goal-toggle';
 
 interface DiaryCreateGoalsSectionProps {
   goals: ChallengeGoal[];
@@ -15,6 +14,29 @@ export function DiaryCreateGoalsSection({
   achievedGoalIds,
   onGoalToggle,
 }: DiaryCreateGoalsSectionProps): React.ReactElement {
+  const options = goals.map((goal) => ({
+    id: String(goal.challengeGoalId),
+    label: goal.content,
+  }));
+
+  const selectedValues = achievedGoalIds.map((goalId) => String(goalId));
+
+  const handleValueChange = (nextValues: string[]): void => {
+    const previousSet = new Set(selectedValues);
+    const nextSet = new Set(nextValues);
+
+    goals.forEach((goal) => {
+      const goalId = goal.challengeGoalId;
+      const goalKey = String(goalId);
+      const wasChecked = previousSet.has(goalKey);
+      const isChecked = nextSet.has(goalKey);
+
+      if (wasChecked !== isChecked) {
+        onGoalToggle(goalId, isChecked);
+      }
+    });
+  };
+
   return (
     <section>
       <Text size="heading2" weight="bold" className="mb-6 text-gray-900">
@@ -22,22 +44,11 @@ export function DiaryCreateGoalsSection({
       </Text>
 
       {goals.length > 0 ? (
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-          {goals.map((goal) => (
-            <div
-              key={goal.challengeGoalId}
-              className="border-b border-gray-200 px-4 py-3 last:border-b-0"
-            >
-              <ChallengeGoalToggle
-                checked={achievedGoalIds.includes(goal.challengeGoalId)}
-                onCheckedChange={(checked) =>
-                  onGoalToggle(goal.challengeGoalId, checked)
-                }
-                label={goal.content}
-              />
-            </div>
-          ))}
-        </div>
+        <CheckList
+          options={options}
+          value={selectedValues}
+          onValueChange={handleValueChange}
+        />
       ) : (
         <div className="rounded-2xl border border-gray-200 bg-white px-4 py-5">
           <Text size="body2" weight="regular" className="text-gray-500">
