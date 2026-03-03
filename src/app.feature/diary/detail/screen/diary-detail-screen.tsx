@@ -32,10 +32,38 @@ interface ChecklistItem {
   label: string;
 }
 
+interface DiaryGoalStatus {
+  goalId: number;
+  goalName: string;
+  isAchieved: boolean;
+}
+
+interface DiaryInfoWithAliases {
+  createdAt?: string;
+  challengedDate?: string;
+  feeling?: Feeling;
+  achievement?: number[] | null;
+  diaryGoal?: DiaryGoalStatus[] | null;
+}
+
+type DiaryDetailWithAliases = DiaryDetail & {
+  diaryInfoDto?: DiaryInfoWithAliases | null;
+  diaryInfo?: DiaryInfoWithAliases | null;
+};
+
 interface ChallengeImageFields {
-  imgUrl?: string | string[] | null;
-  imageUrl?: string | null;
-  thumbnailUrl?: string | null;
+  imgUrl?: unknown;
+  imageUrl?: unknown;
+  thumbnailUrl?: unknown;
+}
+
+interface DiaryImageFields {
+  imgUrl?: unknown;
+  img?: unknown;
+  imageUrl?: unknown;
+  thumbnailUrl?: unknown;
+  images?: unknown;
+  thumbnail?: unknown;
 }
 
 interface DiaryDetailViewData {
@@ -129,6 +157,27 @@ function formatPercent(value?: number): string {
   return `${Math.round(value)}%`;
 }
 
+function resolveFirstImage(...rawSources: unknown[]): string | null {
+  for (const rawSource of rawSources) {
+    const resolvedImage = resolveDiaryImageList(rawSource)?.[0];
+    if (resolvedImage) {
+      return resolvedImage;
+    }
+
+    const resolvedSingleImage = resolveDiaryImageUrl(rawSource);
+    if (resolvedSingleImage) {
+      return resolvedSingleImage;
+    }
+  }
+
+  return null;
+}
+
+function getDiaryInfo(diary: DiaryDetail): DiaryInfoWithAliases | null {
+  const diaryWithAliases = diary as DiaryDetailWithAliases;
+  return diaryWithAliases.diaryInfoDto ?? diaryWithAliases.diaryInfo ?? null;
+}
+
 function getChallengeImageUrl(
   challengeDetailData?: ChallengeDetailResponse,
   diary?: DiaryDetail
@@ -141,41 +190,22 @@ function getChallengeImageUrl(
     | null
     | undefined;
 
-  const summaryImg = challengeSummary?.imgUrl;
-  if (Array.isArray(summaryImg) && summaryImg[0]) {
-    return resolveDiaryImageUrl(summaryImg[0]) ?? '/images/default-card.png';
-  }
-  if (typeof summaryImg === 'string' && summaryImg) {
-    return resolveDiaryImageUrl(summaryImg) ?? '/images/default-card.png';
-  }
-  if (challengeSummary?.imageUrl) {
-    return (
-      resolveDiaryImageUrl(challengeSummary.imageUrl) ??
-      '/images/default-card.png'
-    );
-  }
-  if (challengeSummary?.thumbnailUrl) {
-    return (
-      resolveDiaryImageUrl(challengeSummary.thumbnailUrl) ??
-      '/images/default-card.png'
-    );
+  const challengeSummaryImage = resolveFirstImage(
+    challengeSummary?.imgUrl,
+    challengeSummary?.imageUrl,
+    challengeSummary?.thumbnailUrl
+  );
+  if (challengeSummaryImage) {
+    return challengeSummaryImage;
   }
 
-  const diaryImg = diaryChallenge?.imgUrl;
-  if (Array.isArray(diaryImg) && diaryImg[0]) {
-    return resolveDiaryImageUrl(diaryImg[0]) ?? '/images/default-card.png';
-  }
-  if (typeof diaryImg === 'string' && diaryImg) {
-    return resolveDiaryImageUrl(diaryImg) ?? '/images/default-card.png';
-  }
-  if (diaryChallenge?.imageUrl) {
-    return resolveDiaryImageUrl(diaryChallenge.imageUrl) ?? '/images/default-card.png';
-  }
-  if (diaryChallenge?.thumbnailUrl) {
-    return (
-      resolveDiaryImageUrl(diaryChallenge.thumbnailUrl) ??
-      '/images/default-card.png'
-    );
+  const diaryChallengeImage = resolveFirstImage(
+    diaryChallenge?.imgUrl,
+    diaryChallenge?.imageUrl,
+    diaryChallenge?.thumbnailUrl
+  );
+  if (diaryChallengeImage) {
+    return diaryChallengeImage;
   }
 
   return '/images/default-card.png';
@@ -185,39 +215,67 @@ function mapDiaryToViewData(
   diary: DiaryDetail,
   challengeDetailData?: ChallengeDetailResponse
 ): DiaryDetailViewData {
+  const diaryInfo = getDiaryInfo(diary);
   const baseDate =
-    diary.diaryInfoDto?.challengedDate || diary.diaryInfoDto?.createdAt || '';
+    diaryInfo?.createdAt ?? diaryInfo?.challengedDate ?? '';
   const { dateLabel, weekdayLabel } = formatDate(baseDate);
   const challengeGoals: ChallengeGoal[] =
     challengeDetailData?.challengeGoals ?? [];
-
-  const achievedGoalIds = (diary.diaryInfoDto?.achievement ?? []).map(
-    (goalId) => String(goalId)
+  const diaryGoals = diaryInfo?.diaryGoal ?? [];
+  const achievementIds = new Set(
+    (diaryInfo?.achievement ?? []).map((goalId) => String(goalId))
   );
-  const achievedGoalIdSet = new Set(achievedGoalIds);
-
   const checklistItemsFromChallenge = challengeGoals.map((goal) => ({
     id: String(goal.challengeGoalId),
     label: goal.content,
   }));
 
-  const checklistItemIdSet = new Set(
-    checklistItemsFromChallenge.map((item) => item.id)
-  );
-  const missingAchievedItems = achievedGoalIds
-    .filter((goalId) => !checklistItemIdSet.has(goalId))
-    .map((goalId) => ({
+  let checklistItems: ChecklistItem[] = [];
+  let checkedChecklistIds: string[] = [];
+
+  if (checklistItemsFromChallenge.length > 0) {
+    checklistItems = checklistItemsFromChallenge;
+
+    if (diaryGoals.length > 0) {
+      const achievedDiaryGoalIds = new Set(
+        diaryGoals
+          .filter((goal) => goal.isAchieved)
+          .map((goal) => String(goal.goalId))
+      );
+      const achievedDiaryGoalNames = new Set(
+        diaryGoals
+          .filter((goal) => goal.isAchieved && Boolean(goal.goalName))
+          .map((goal) => goal.goalName.trim())
+      );
+
+      checkedChecklistIds = checklistItems
+        .filter(
+          (item) =>
+            achievedDiaryGoalIds.has(item.id) ||
+            achievedDiaryGoalNames.has(item.label.trim())
+        )
+        .map((item) => item.id);
+    } else {
+      checkedChecklistIds = checklistItems
+        .filter((item) => achievementIds.has(item.id))
+        .map((item) => item.id);
+    }
+  } else if (diaryGoals.length > 0) {
+    checklistItems = diaryGoals.map((goal) => ({
+      id: String(goal.goalId),
+      label: goal.goalName || `목표 ${goal.goalId}`,
+    }));
+    checkedChecklistIds = diaryGoals
+      .filter((goal) => goal.isAchieved)
+      .map((goal) => String(goal.goalId));
+  } else {
+    const achievedGoalIds = Array.from(achievementIds);
+    checklistItems = achievedGoalIds.map((goalId) => ({
       id: goalId,
       label: `목표 ${goalId}`,
     }));
-
-  const checklistItems =
-    checklistItemsFromChallenge.length > 0
-      ? [...checklistItemsFromChallenge, ...missingAchievedItems]
-      : achievedGoalIds.map((goalId) => ({
-          id: goalId,
-          label: `목표 ${goalId}`,
-        }));
+    checkedChecklistIds = achievedGoalIds;
+  }
 
   const summary = challengeDetailData?.challengeSummary;
   const period =
@@ -235,17 +293,23 @@ function mapDiaryToViewData(
     typeof participantCnt === 'number' && typeof maxParticipantCnt === 'number'
       ? `${participantCnt}/${maxParticipantCnt}명`
       : '-';
+  const diaryWithImageAliases = diary as DiaryDetail & DiaryImageFields;
   const contentThumbnailUrl =
-    resolveDiaryImageList(
-      diary.imgUrl as string[] | string | null | undefined
-    )?.[0] ?? null;
+    resolveFirstImage(
+      diaryWithImageAliases.imgUrl,
+      diaryWithImageAliases.img,
+      diaryWithImageAliases.imageUrl,
+      diaryWithImageAliases.thumbnailUrl,
+      diaryWithImageAliases.images,
+      diaryWithImageAliases.thumbnail
+    ) ?? null;
 
   return {
     id: diary.id,
     title: diary.title || '제목 없는 일지',
     dateLabel,
     weekdayLabel,
-    feelingEmoji: feelingToEmoji(diary.diaryInfoDto?.feeling ?? 'NONE'),
+    feelingEmoji: feelingToEmoji(diaryInfo?.feeling ?? 'NONE'),
     connectedChallengeId:
       summary?.challengeId ?? diary.challenge?.challengeId ?? null,
     connectedChallengeTitle:
@@ -267,13 +331,11 @@ function mapDiaryToViewData(
     likedByMe: diary.likeInfo?.likedByMe ?? false,
     likeCount: diary.likeInfo?.likeCnt ?? 0,
     checklistItems,
-    checkedChecklistIds: checklistItems
-      .map((item) => item.id)
-      .filter((itemId) => achievedGoalIdSet.has(itemId)),
+    checkedChecklistIds,
     contentHtml: diary.content ?? '',
     hasContentHtml: hasVisibleHtmlContent(diary.content ?? ''),
     contentThumbnailUrl,
-    tags: [diary.challenge?.category, diary.diaryInfoDto?.feeling].filter(
+    tags: [diary.challenge?.category, diaryInfo?.feeling].filter(
       (tag): tag is string => Boolean(tag)
     ),
   };
@@ -350,7 +412,7 @@ function DiaryDetailView({
             <div className="mt-2 flex items-center gap-2 text-gray-500">
               <CalendarDays className="h-4 w-4" />
               <Text size="body2" weight="medium" className="text-gray-500">
-                {diaryData.dateLabel} | {diaryData.weekdayLabel}
+                작성일 {diaryData.dateLabel} | {diaryData.weekdayLabel}
               </Text>
             </div>
           </div>

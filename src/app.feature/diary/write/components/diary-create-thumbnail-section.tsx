@@ -9,7 +9,7 @@ interface DiaryCreateThumbnailSectionProps {
   onClearThumbnail(): void;
 }
 
-export function DiaryCreateThumbnailSection({
+function DiaryCreateThumbnailSectionComponent({
   thumbnailPreviewUrl,
   hasThumbnail,
   onSelectThumbnailFile,
@@ -17,6 +17,10 @@ export function DiaryCreateThumbnailSection({
 }: DiaryCreateThumbnailSectionProps): React.ReactElement {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [failedPreviewUrl, setFailedPreviewUrl] = useState<string | null>(null);
+  const hasPreviewImage =
+    Boolean(thumbnailPreviewUrl) && failedPreviewUrl !== thumbnailPreviewUrl;
+  const isLocalPreviewImage = /^(blob:|data:)/i.test(thumbnailPreviewUrl);
 
   const handlePickClick = (): void => {
     fileInputRef.current?.click();
@@ -27,6 +31,7 @@ export function DiaryCreateThumbnailSection({
       return;
     }
 
+    setFailedPreviewUrl(null);
     onSelectThumbnailFile(file);
   };
 
@@ -90,14 +95,15 @@ export function DiaryCreateThumbnailSection({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          {thumbnailPreviewUrl ? (
+          {hasPreviewImage ? (
             <Image
               src={thumbnailPreviewUrl}
               alt="썸네일 미리보기"
               width={1200}
               height={672}
               className="h-full w-full object-cover"
-              unoptimized
+              onError={() => setFailedPreviewUrl(thumbnailPreviewUrl)}
+              unoptimized={isLocalPreviewImage}
             />
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-center text-sm text-gray-500">
@@ -138,3 +144,7 @@ export function DiaryCreateThumbnailSection({
     </section>
   );
 }
+
+export const DiaryCreateThumbnailSection = React.memo(
+  DiaryCreateThumbnailSectionComponent
+);

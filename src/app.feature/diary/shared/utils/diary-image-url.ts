@@ -12,14 +12,45 @@ const IMAGE_BASE_URL = normalizeBaseUrl(
     process.env.NEXT_PUBLIC_ODOS_API_URL
 );
 
-export function resolveDiaryImageUrl(
-  rawImage: string | null | undefined
-): string | null {
-  if (!rawImage) {
+type RawImageRecord = Record<string, unknown>;
+
+function pickImageString(rawImage: unknown): string | null {
+  if (typeof rawImage === 'string') {
+    const trimmed = rawImage.trim();
+    return trimmed ? trimmed : null;
+  }
+
+  if (!rawImage || typeof rawImage !== 'object') {
     return null;
   }
 
-  const trimmed = rawImage.trim();
+  const imageRecord = rawImage as RawImageRecord;
+  const candidates = [
+    imageRecord.url,
+    imageRecord.imageUrl,
+    imageRecord.thumbnailUrl,
+    imageRecord.fileUrl,
+    imageRecord.src,
+    imageRecord.path,
+    imageRecord.key,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string') {
+      const trimmed = candidate.trim();
+      if (trimmed) {
+        return trimmed;
+      }
+    }
+  }
+
+  return null;
+}
+
+export function resolveDiaryImageUrl(
+  rawImage: unknown
+): string | null {
+  const trimmed = pickImageString(rawImage);
   if (!trimmed) {
     return null;
   }
@@ -28,15 +59,29 @@ export function resolveDiaryImageUrl(
     return trimmed;
   }
 
-  if (!IMAGE_BASE_URL) {
-    return null;
+  if (/^(blob:|data:)/i.test(trimmed)) {
+    return trimmed;
   }
 
-  return `${IMAGE_BASE_URL}/${trimmed.replace(/^\/+/, '')}`;
+  if (trimmed.startsWith('//')) {
+    return `https:${trimmed}`;
+  }
+
+  if (trimmed.startsWith('/images/') || trimmed.startsWith('/_next/')) {
+    return trimmed;
+  }
+
+  const normalizedPath = trimmed.replace(/^\/+/, '');
+
+  if (!IMAGE_BASE_URL) {
+    return trimmed.startsWith('/') ? trimmed : `/${normalizedPath}`;
+  }
+
+  return `${IMAGE_BASE_URL}/${normalizedPath}`;
 }
 
 export function resolveDiaryImageList(
-  rawImages: string[] | string | null | undefined
+  rawImages: unknown
 ): string[] | null {
   if (!rawImages) {
     return null;
@@ -49,4 +94,3 @@ export function resolveDiaryImageList(
 
   return resolved.length > 0 ? resolved : null;
 }
-

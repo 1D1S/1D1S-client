@@ -299,7 +299,7 @@ export function ChallengeDetailScreen({
   const rejectParticipant = useRejectParticipant();
 
   const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [selectedGoalIds, setSelectedGoalIds] = useState<number[]>([]);
   const [isGoalSelectionTouched, setIsGoalSelectionTouched] = useState(false);
 
   const summary = data?.challengeSummary;
@@ -387,27 +387,36 @@ export function ChallengeDetailScreen({
     leaveChallenge.isPending ||
     likeChallenge.isPending ||
     unlikeChallenge.isPending;
-  const effectiveSelectedGoals = isGoalSelectionTouched
-    ? selectedGoals
-    : goals.map((goal) => goal.content);
+  const effectiveSelectedGoalIds = isGoalSelectionTouched
+    ? selectedGoalIds
+    : goals.map((goal) => goal.challengeGoalId);
 
-  const toggleGoal = (goal: string): void => {
+  const toggleGoal = (goalId: number): void => {
     setIsGoalSelectionTouched(true);
-    setSelectedGoals(() =>
-      effectiveSelectedGoals.includes(goal)
-        ? effectiveSelectedGoals.filter((prevGoal) => prevGoal !== goal)
-        : [...effectiveSelectedGoals, goal]
+    setSelectedGoalIds(() =>
+      effectiveSelectedGoalIds.includes(goalId)
+        ? effectiveSelectedGoalIds.filter((prevGoalId) => prevGoalId !== goalId)
+        : [...effectiveSelectedGoalIds, goalId]
     );
   };
 
   const handleJoinChallenge = (): void => {
-    if (effectiveSelectedGoals.length === 0) {
+    if (effectiveSelectedGoalIds.length === 0) {
       toast.error('최소 1개 이상의 목표를 선택해 주세요.');
       return;
     }
 
+    const selectedGoalContents = goals
+      .filter((goal) => effectiveSelectedGoalIds.includes(goal.challengeGoalId))
+      .map((goal) => goal.content);
+
+    if (selectedGoalContents.length === 0) {
+      toast.error('선택한 목표를 찾을 수 없습니다. 다시 선택해 주세요.');
+      return;
+    }
+
     joinChallenge.mutate(
-      { challengeId, data: effectiveSelectedGoals },
+      { challengeId, data: selectedGoalContents },
       {
         onSuccess: () => {
           toast.success('챌린지 참여 신청이 완료되었습니다.');
@@ -512,7 +521,7 @@ export function ChallengeDetailScreen({
             className="w-full"
             onClick={handleJoinChallenge}
             disabled={
-              joinChallenge.isPending || effectiveSelectedGoals.length === 0
+              joinChallenge.isPending || effectiveSelectedGoalIds.length === 0
             }
           >
             챌린지 참여 신청
@@ -936,8 +945,10 @@ export function ChallengeDetailScreen({
                   >
                     {canJoin ? (
                       <ChallengeGoalToggle
-                        checked={effectiveSelectedGoals.includes(goal.content)}
-                        onCheckedChange={() => toggleGoal(goal.content)}
+                        checked={effectiveSelectedGoalIds.includes(
+                          goal.challengeGoalId
+                        )}
+                        onCheckedChange={() => toggleGoal(goal.challengeGoalId)}
                         label={goal.content}
                       />
                     ) : (

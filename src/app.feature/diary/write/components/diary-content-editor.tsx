@@ -4,7 +4,7 @@ import TiptapUnderline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Bold, Italic, List, ListOrdered, Underline } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface DiaryContentEditorProps {
   content: string;
@@ -51,18 +51,42 @@ export function DiaryContentEditor({
   content,
   onChange,
 }: DiaryContentEditorProps): React.ReactElement {
+  const lastSyncedHtmlRef = useRef('');
   const editor = useEditor({
     extensions: [
       StarterKit,
       TiptapUnderline,
       // TiptapImage, // 본문 이미지 삽입 기능은 임시 비활성화
     ],
-    content,
+    // Editor content is hydrated via effect to avoid frequent re-initialization.
+    content: '',
     immediatelyRender: false,
     onUpdate: ({ editor: instance }) => {
-      onChange(instance.getHTML());
+      const currentHtml = instance.getHTML();
+      lastSyncedHtmlRef.current = currentHtml;
+      onChange(currentHtml);
     },
   });
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+
+    const nextContent = content || '';
+
+    // Skip re-applying HTML that was just emitted by this editor instance.
+    if (lastSyncedHtmlRef.current === nextContent) {
+      return;
+    }
+
+    const currentHtml = editor.getHTML();
+
+    if (currentHtml !== nextContent) {
+      editor.commands.setContent(nextContent, { emitUpdate: false });
+      lastSyncedHtmlRef.current = nextContent;
+    }
+  }, [content, editor]);
 
   return (
     <div className="overflow-visible rounded-2xl border border-gray-200 bg-white">

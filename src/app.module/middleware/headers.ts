@@ -9,28 +9,42 @@ import { NextResponse } from 'next/server';
  * @param res NextResponse
  */
 export function headersMiddleware(res: NextResponse): void {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_ODOS_API_URL;
-  let connectSrc = "connect-src 'self';";
+  const envUrls = [
+    process.env.NEXT_PUBLIC_ODOS_API_URL,
+    process.env.NEXT_PUBLIC_ODOS_IMAGE_URL,
+    process.env.NEXT_PUBLIC_ODOS_IMAGE_BASE_URL,
+  ];
+  const allowedOrigins = Array.from(
+    new Set(
+      envUrls
+        .map((url) => {
+          if (!url) {
+            return null;
+          }
 
-  if (apiBaseUrl) {
-    try {
-      const apiOrigin = new URL(apiBaseUrl).origin;
-      connectSrc = `connect-src 'self' ${apiOrigin};`;
-    } catch {
-      connectSrc = "connect-src 'self';";
-    }
-  }
+          try {
+            return new URL(url).origin;
+          } catch {
+            return null;
+          }
+        })
+        .filter((origin): origin is string => Boolean(origin))
+    )
+  );
+  const connectSrcValue =
+    allowedOrigins.length > 0
+      ? `connect-src 'self' ${allowedOrigins.join(' ')};`
+      : "connect-src 'self';";
+  const imgSrcValue = "img-src 'self' blob: data: https: http:;";
 
   // const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
-  const apiDomain = process.env.NEXT_PUBLIC_ODOS_API_URL ?? '';
   const cspHeader = `
     default-src 'self';
-    ${connectSrc}
+    ${connectSrcValue}
     script-src 'self' 'unsafe-eval' 'unsafe-inline';
     style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data:;
+    ${imgSrcValue}
     font-src 'self';
-    connect-src 'self' ${apiDomain};
     object-src 'none';
     base-uri 'self';
     form-action 'self';
