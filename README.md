@@ -14,15 +14,45 @@ pnpm dev
 bun dev
 ```
 
-## CodeGen
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Run Graphql codegen with:
+## Local Alias (CORS)
+
+If backend CORS requires a fixed local origin, run the app with a local alias
+domain and HTTPS.
+
+`pnpm dev` now bootstraps everything automatically:
+
+1. add host entry to `/etc/hosts` (`local.1day1streak.com`)
+2. create local HTTPS cert with `mkcert`
+3. start server at `https://local.1day1streak.com`
+4. open browser automatically
+
+Prerequisite: `mkcert` must be installed on your machine.
 
 ```bash
-pnpm run codegen
+pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Set values in `.env` for local development.
+For Vercel, set the same keys in Project Settings > Environment Variables
+per environment (Development / Preview / Production).
+Do not use `.env.local` in this project.
+`LOCAL_ALIAS_*` and local cert file names are hardcoded in
+`scripts/dev-local-start.sh`.
+
+Manual shortcuts:
+
+```bash
+pnpm run init:local-dns -- local.1day1streak.com
+pnpm run init-local-cert -- local.1day1streak.com
+```
+
+Optional env vars:
+
+- `LOCAL_ALLOW_INSECURE_TLS=true` (optional, allow insecure backend TLS in dev)
+- `LOCAL_BIND_HOST` (optional bind host override)
+- `LOCAL_ALIAS_OPEN_BROWSER=false` (optional, disable auto-open)
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

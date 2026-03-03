@@ -47,5 +47,6 @@ export const authStorage = {
   },
 
   // 토큰 존재 여부 확인
-  hasTokens: (): boolean => Boolean(Cookies.get(ACCESS_TOKEN_KEY) && Cookies.get(REFRESH_TOKEN_KEY)),
+  hasTokens: (): boolean =>
+    Boolean(Cookies.get(ACCESS_TOKEN_KEY) && Cookies.get(REFRESH_TOKEN_KEY)),
 };

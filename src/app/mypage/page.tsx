@@ -1,153 +1,376 @@
+/* eslint-disable no-use-before-define */
 'use client';
 
-import React from 'react';
-import { ScrollArea, ScrollBar } from '@component/ui/scroll-area';
 import {
-  DiaryCard,
-  PageTitle,
-  Spacing,
-  PageWatermark,
-  Text,
-  ChallengeListItem,
-  ProfileCard,
+  ChallengeCard as DSChallengeCard,
+  CircleAvatar,
   Streak,
-  Checkbox,
+  Text,
 } from '@1d1s/design-system';
-import { useDiaryItems } from '@feature/diary/presentation/hooks/diary-items';
+import { useLogout } from '@feature/auth/hooks/use-auth-mutations';
+import { useMyPage } from '@feature/member/hooks/use-member-queries';
+import type { StreakCalendarItem } from '@feature/member/type/member';
+import { authStorage } from '@module/utils/auth';
+import {
+  CheckCircle2,
+  FileText,
+  Flame,
+  LogOut,
+  PencilLine,
+  Plus,
+  Target,
+  Trophy,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import React from 'react';
+
+function buildYearStreak(
+  calendar: StreakCalendarItem[]
+): StreakCalendarItem[] {
+  const year = new Date().getFullYear();
+  const today = new Date();
+  const calendarMap = new Map(
+    calendar.map((item) => [item.date, item.count])
+  );
+
+  const result: StreakCalendarItem[] = [];
+  const cursor = new Date(year, 0, 1);
+
+  while (cursor <= today) {
+    const dateStr = cursor.toISOString().slice(0, 10);
+    result.push({
+      date: dateStr,
+      count: calendarMap.get(dateStr) ?? 0,
+    });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return result;
+}
 
 export default function MyPage(): React.ReactElement {
-  const { items, loading } = useDiaryItems(12, 12);
-  const countings = [
-    { title: '작성한 일지', count: 10 },
-    { title: '달성한 목표', count: 35 },
-    { title: '5월의 일지', count: 10 },
-    { title: '5월의 목표', count: 35 },
-    { title: '최장 스트릭', count: 180 },
-    { title: '현재 스트릭', count: 10 },
-  ];
+  const router = useRouter();
+  const logout = useLogout();
+  const { data, isLoading } = useMyPage();
 
-  // 스트릭 데이터 생성 (최근 90일)
-  const streakData = Array.from({ length: 90 }).map((_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (89 - i));
-    return {
-      date: date.toISOString().split('T')[0],
-      count: (i * 7 + 3) % 5, // 0-4 활동 레벨 (고정 패턴)
-    };
-  });
+  const handleLogout = (): void => {
+    logout.mutate(undefined, {
+      onSettled: () => {
+        router.replace('/login');
+      },
+    });
+  };
+
+  if (isLoading || !data) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Text size="body1" weight="medium" className="text-gray-500">
+          불러오는 중...
+        </Text>
+      </div>
+    );
+  }
+
+  const { nickname, profileUrl, streak, challengeList, diaryList } = data;
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white">
-      {/* 메인 콘텐츠 */}
-      <div className="flex w-full flex-col px-4 pt-16">
-        <Spacing className="h-8" />
-        <div className="flex w-full justify-center">
-          <PageTitle title="나의 1D1S" />
-        </div>
-        <Spacing className="h-8" />
-
-        <div className="flex w-full flex-col">
-          {/* 프로필 */}
-          <ProfileCard initialMode="expanded" />
-
-          <Spacing className="h-6" />
-
-          {/* 포인트 안내 */}
-          <div className="bg-main-200 rounded-odos-2 flex h-24 w-full flex-col items-center justify-center p-4">
-            <Text size="body1" weight="medium" className="text-center text-gray-500">
-              포인트와 티켓, 등급은 추후 개발될 예정입니다!
-            </Text>
-          </div>
-
-          <Spacing className="h-8" />
-
-          {/* 카운팅 및 스트릭 */}
-          <Text size="heading1" weight="bold">
-            카운팅과 스트릭
+    <div className="min-h-screen w-full bg-white p-4">
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mx-auto mb-4 max-w-[1440px] rounded-lg border border-yellow-300 bg-yellow-50 p-4">
+          <Text size="body2" weight="bold" className="mb-2 text-yellow-800">
+            [DEV] Token Info
           </Text>
-          <Spacing className="h-4" />
-          <div className="bg-main-200 grid w-full grid-cols-2 gap-4 rounded-lg p-4">
-            {countings.map((item, index) => (
-              <div className="flex flex-col items-center gap-1" key={index}>
-                <Text size="heading1" weight="bold" className="text-main-900">
-                  {item.count}
-                </Text>
-                <Text size="caption1" weight="medium" className="text-black">
-                  {item.title}
-                </Text>
-              </div>
-            ))}
+          <div className="space-y-1 font-mono text-xs break-all text-yellow-700">
+            <p>
+              <span className="font-bold">Access:</span>{' '}
+              {authStorage.getAccessToken() ?? 'none'}
+            </p>
+            <p>
+              <span className="font-bold">Refresh:</span>{' '}
+              {authStorage.getRefreshToken() ?? 'none'}
+            </p>
           </div>
-
-          <Spacing className="h-4" />
-
-          <Streak data={streakData} />
-
-          {/* 챌린지 목록 */}
-          <div className="flex items-center gap-2">
-            <Text size="heading1" weight="bold">
+        </div>
+      )}
+      <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)_320px]">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <Text size="heading2" weight="bold" className="text-gray-700">
               진행 중인 챌린지
             </Text>
-            <Checkbox label="진행 중인 것만 보기" />
-          </div>
-          <Spacing className="h-4" />
-          <div className="flex w-full flex-col gap-3">
-            {Array.from({ length: 4 }).map((_, idx) => (
-              <ChallengeListItem
-                key={idx}
-                challengeName={`고라니 밥주기 챌린지 ${idx + 1}`}
-                startDate={'2025.04.05'}
-                endDate={'2025.04.10'}
-                maxParticipants={20}
-                currentParticipants={idx + 1}
-              />
-            ))}
           </div>
 
-          <Spacing className="h-8" />
-
-          {/* 일지 목록 */}
-          <Text size="heading1" weight="bold">
-            나의 일지
-          </Text>
-          <Spacing className="h-4" />
-          <ScrollArea className="w-full">
-            <div className="flex gap-3 pb-4">
-              {items.map((item) => (
-                <div key={item.id} className="w-[240px] shrink-0">
-                  <DiaryCard
-                    imageUrl={item.imageUrl}
-                    percent={item.percent}
-                    likes={item.likes}
-                    title={item.title}
-                    user={item.user}
-                    userImage={item.userImage}
-                    challengeLabel={item.challengeLabel}
-                    challengeUrl={item.challengeUrl}
-                    date={item.date}
-                    emotion={item.emotion}
-                  />
-                </div>
-              ))}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-
-          {loading && (
-            <div className="flex w-full flex-col items-center justify-center py-4">
-              <Text size="body1" weight="regular">
-                로딩 중...
+          {challengeList.length === 0 ? (
+            <div className="rounded-4 border border-gray-200 bg-white p-6 text-center">
+              <Text size="body1" weight="medium" className="text-gray-500">
+                진행 중인 챌린지가 없습니다.
               </Text>
             </div>
+          ) : (
+            challengeList.map((ch) => {
+              const now = new Date();
+              const start = new Date(ch.startDate);
+              const end = new Date(ch.endDate);
+              return (
+                <DSChallengeCard
+                  key={ch.challengeId}
+                  challengeTitle={ch.title}
+                  challengeType={ch.challengeType}
+                  challengeCategory={ch.category}
+                  currentUserCount={ch.participantCnt}
+                  maxUserCount={ch.maxParticipantCnt}
+                  startDate={ch.startDate}
+                  endDate={ch.endDate}
+                  isOngoing={now >= start && now <= end}
+                  isEnded={now > end}
+                  onClick={() =>
+                    router.push(
+                      `/challenge/${ch.challengeId}`
+                    )
+                  }
+                />
+              );
+            })
           )}
         </div>
 
-        <Spacing className="h-8" />
-        <div className="flex w-full justify-center">
-          <PageWatermark />
-        </div>
-        <Spacing className="h-8" />
+        <main className="space-y-4">
+          <section className="rounded-4 border border-gray-200 bg-white p-5">
+            <div>
+              <Text size="display2" weight="bold" className="text-gray-900">
+                활동 통계
+              </Text>
+              <Text
+                size="caption1"
+                weight="regular"
+                className="mt-2 block text-gray-500"
+              >
+                나의 활동 기록과 성장 지표를 한눈에 확인하세요.
+              </Text>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <StatCard
+                icon={<Flame className="h-4 w-4" />}
+                title="현재 스트릭"
+                value={String(streak.currentStreak)}
+                unit="일"
+              />
+              <StatCard
+                icon={<Trophy className="h-4 w-4" />}
+                title="최장 스트릭"
+                value={String(streak.maxStreak)}
+                unit="일"
+              />
+              <StatCard
+                icon={<FileText className="h-4 w-4" />}
+                title="전체 일지"
+                value={String(streak.totalDiaryCount)}
+                unit="개"
+                iconTone="text-purple-600"
+              />
+              <StatCard
+                icon={<Target className="h-4 w-4" />}
+                title="전체 목표"
+                value={String(streak.totalGoalCount)}
+                unit="개"
+                iconTone="text-pink-600"
+              />
+              <StatCard
+                icon={<CheckCircle2 className="h-4 w-4" />}
+                title="이번 달 일지"
+                value={String(streak.currentMonthDiaryCount)}
+                unit="개"
+                iconTone="text-emerald-600"
+              />
+              <StatCard
+                icon={<CheckCircle2 className="h-4 w-4" />}
+                title="이번 달 목표"
+                value={String(streak.currentMonthGoalCount)}
+                unit="개"
+                iconTone="text-blue-600"
+              />
+              <StatCard
+                icon={<Target className="h-4 w-4" />}
+                title="오늘의 목표"
+                value={String(streak.todayGoalCount)}
+                unit="개"
+                iconTone="text-main-800"
+              />
+            </div>
+          </section>
+
+          <section className="rounded-4 border border-gray-200 bg-white p-5">
+            <Text
+              size="display2"
+              weight="bold"
+              className="mb-4 text-gray-900"
+            >
+              활동 기록
+            </Text>
+
+            <Streak data={buildYearStreak(streak.calendar)} size={14} gap={6} />
+          </section>
+
+          {diaryList.length > 0 && (
+            <section className="space-y-4">
+              <Text size="display2" weight="bold" className="text-gray-900">
+                최근 일지
+              </Text>
+              {diaryList.map((diary) => (
+                <article
+                  key={diary.id}
+                  className="rounded-4 border border-gray-200 bg-white p-4"
+                >
+                  <div className="flex items-start justify-between">
+                    <Text
+                      size="heading1"
+                      weight="bold"
+                      className="text-gray-900"
+                    >
+                      {diary.title}
+                    </Text>
+                    <div className="flex items-center gap-1 text-gray-500">
+                      <Text size="body2" weight="medium">
+                        {diary.isPublic ? '공개' : '비공개'}
+                      </Text>
+                    </div>
+                  </div>
+                  <Text
+                    size="body1"
+                    weight="regular"
+                    className="mt-2 line-clamp-2 text-gray-600"
+                  >
+                    {diary.content}
+                  </Text>
+                </article>
+              ))}
+            </section>
+          )}
+        </main>
+
+        <aside className="space-y-4">
+          <section className="rounded-4 border border-gray-200 bg-white p-5 text-center">
+            <div className="border-main-800/20 bg-main-200 mx-auto mb-3 flex h-[80px] w-[80px] items-center justify-center rounded-full border-4">
+              <CircleAvatar imageUrl={profileUrl} size="lg" />
+            </div>
+            <Text size="display2" weight="bold" className="text-gray-900">
+              {nickname}
+            </Text>
+            <button
+              type="button"
+              className="mt-5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-800 transition hover:bg-gray-100"
+            >
+              <Text size="body1" weight="bold">
+                프로필 편집
+              </Text>
+            </button>
+          </section>
+
+          <section className="rounded-4 border border-gray-200 bg-white p-5">
+            <Text size="body1" weight="medium" className="text-gray-600">
+              빠른 실행
+            </Text>
+
+            <div className="mt-4 space-y-2">
+              <QuickActionItem
+                icon={<PencilLine className="h-4 w-4" />}
+                title="일지 작성하기"
+                onClick={() => router.push('/diary/create')}
+              />
+              <QuickActionItem
+                icon={<Plus className="h-4 w-4" />}
+                title="챌린지 만들기"
+                onClick={() => router.push('/challenge/create')}
+                tone="blue"
+              />
+            </div>
+          </section>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={logout.isPending}
+            className="rounded-4 flex w-full items-center justify-center gap-2 border border-red-200 bg-white px-4 py-3 text-red-500 transition hover:bg-red-50"
+          >
+            <LogOut className="h-4 w-4" />
+            <Text size="body1" weight="bold">
+              {logout.isPending ? '로그아웃 중...' : '로그아웃'}
+            </Text>
+          </button>
+        </aside>
       </div>
     </div>
+  );
+}
+
+
+function StatCard({
+  icon,
+  title,
+  value,
+  unit,
+  iconTone = 'text-main-800',
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  unit: string;
+  iconTone?: string;
+}): React.ReactElement {
+  return (
+    <article className="rounded-3 border border-gray-200 bg-white p-4">
+      <div className="flex items-start gap-2">
+        <span className={`mt-0.5 ${iconTone}`}>{icon}</span>
+        <Text size="body1" weight="medium" className="text-gray-600">
+          {title}
+        </Text>
+      </div>
+      <div className="mt-3 flex items-end gap-1">
+        <Text size="display2" weight="bold" className="text-gray-900">
+          {value}
+        </Text>
+        <Text size="body1" weight="medium" className="pb-1 text-gray-500">
+          {unit}
+        </Text>
+      </div>
+    </article>
+  );
+}
+
+function QuickActionItem({
+  icon,
+  title,
+  onClick,
+  tone = 'main',
+}: {
+  icon: React.ReactNode;
+  title: string;
+  onClick(): void;
+  tone?: 'main' | 'blue';
+}): React.ReactElement {
+  const iconClass =
+    tone === 'main' ? 'bg-main-200 text-main-800' : 'bg-blue-100 text-blue-600';
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-3 py-3 transition hover:bg-gray-100"
+    >
+      <div className="flex items-center gap-3">
+        <span
+          className={`flex h-9 w-9 items-center justify-center rounded-full ${iconClass}`}
+        >
+          {icon}
+        </span>
+        <Text size="heading2" weight="medium" className="text-gray-800">
+          {title}
+        </Text>
+      </div>
+      <Text size="heading2" weight="medium" className="text-gray-400">
+        ›
+      </Text>
+    </button>
   );
 }

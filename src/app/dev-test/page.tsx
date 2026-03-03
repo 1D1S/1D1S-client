@@ -2,17 +2,16 @@
 
 // import { Button } from '@/components/odos-ui/button';
 import {
-  Text,
-  PageTitle,
-  SelectSeparator,
   Select,
-  SelectItem,
-  SelectGroup,
-  SelectTrigger,
   SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
   SelectValue,
-  Toggle,
+  Text,
   TextField,
+  Toggle,
 } from '@1d1s/design-system';
 // import { Tag } from '@/components/odos-ui/tag';
 // import { ChallengeCard } from '@/shared/components/odos-ui/challenge-card';
@@ -21,8 +20,12 @@ export default function DevTest(): React.ReactElement {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2 p-24">
       <h1 className="font-suite text-2xl font-bold">Dev Test 수트</h1>
-      <p className="text-main-700 font-pretendard">This is a test page for development purposes.</p>
-      <p className="text-main-700">This is a test page for development purposes.</p>
+      <p className="text-main-700 font-pretendard">
+        This is a test page for development purposes.
+      </p>
+      <p className="text-main-700">
+        This is a test page for development purposes.
+      </p>
 
       {/* Labels */}
       <Text size="heading1" weight={'bold'}>
@@ -36,8 +39,17 @@ export default function DevTest(): React.ReactElement {
       </Text>
 
       {/* Page Title */}
-      <PageTitle title="페이지 타이틀" variant="noSubtitle" />
-      <PageTitle title="페이지 타이틀" variant="withSubtitle" subtitle="페이지 타이틀" />
+      <Text size="display1" weight="bold">
+        페이지 타이틀
+      </Text>
+      <div className="flex flex-col items-center gap-1">
+        <Text size="display1" weight="bold">
+          페이지 타이틀
+        </Text>
+        <Text size="body1" weight="medium" className="text-gray-600">
+          페이지 타이틀
+        </Text>
+      </div>
 
       {/* Buttons */}
       {/*

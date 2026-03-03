@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { loggingMiddleware } from './logging';
+
 import { authMiddleware } from './auth';
-import { securityMiddleware } from './security';
-import { redirectMiddleware } from './redirect';
 import { headersMiddleware } from './headers';
+import { loggingMiddleware } from './logging';
+import { redirectMiddleware } from './redirect';
+import { securityMiddleware } from './security';
 
 export function middleware(req: NextRequest): NextResponse {
   // 1. 로깅 시작

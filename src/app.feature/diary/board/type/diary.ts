@@ -1,0 +1,104 @@
+export type Feeling = 'SAD' | 'NORMAL' | 'HAPPY' | 'NONE';
+export type ReportType = 'BAD_TITLE_CONTENT' | 'BAD_IMAGE' | 'ETC';
+
+export interface LikeInfo {
+  likedByMe: boolean;
+  likeCnt: number;
+}
+
+export interface AuthorInfo {
+  id: number;
+  nickname: string | null;
+  profileImage: string | null;
+}
+
+export interface ChallengeSummary {
+  challengeId: number;
+  title: string;
+  category: string;
+  startDate: string;
+  endDate: string;
+  maxParticipantCnt: number;
+  challengeType: string;
+  participantCnt: number;
+  likeInfo: LikeInfo;
+}
+
+export interface DiaryInfo {
+  createdAt: string;
+  challengedDate: string;
+  feeling: Feeling;
+  achievement: number[] | null;
+  achievementRate: number;
+}
+
+export interface DiaryItem {
+  id: number;
+  challenge: ChallengeSummary | null;
+  authorInfoDto: AuthorInfo | null;
+  title: string;
+  content: string;
+  imgUrl: string[] | null;
+  isPublic: boolean;
+  likeInfo: LikeInfo;
+  achievementRate?: number;
+  diaryInfoDto: DiaryInfo | null;
+}
+
+export type DiaryDetail = DiaryItem;
+
+export interface CreateDiaryRequest {
+  challengeId: number;
+  title: string;
+  content: string;
+  feeling: Feeling;
+  isPublic: boolean;
+  achievedDate: string;
+  achievedGoalIds: number[];
+}
+
+export type CreateDiaryResponse = DiaryItem;
+
+export interface UpdateDiaryRequest {
+  challengeId: number;
+  title: string;
+  content: string;
+  feeling: Feeling;
+  isPublic: boolean;
+  achievedGoalIds: number[];
+  achievedDate: string;
+}
+
+export type UpdateDiaryResponse = DiaryDetail;
+
+export interface DiaryListResponse {
+  items: DiaryItem[];
+  pageInfo: {
+    limit: number;
+    hasNextPage: boolean;
+    nextCursor?: string;
+  };
+}
+
+export interface DiaryListParams {
+  size?: number;
+  cursor?: string;
+}
+
+export interface RandomDiaryParams {
+  size?: number;
+}
+
+export interface CreateDiaryReportRequest {
+  diaryId: number;
+  content: string;
+  reportType: ReportType;
+}
+
+export interface UploadImageResponse {
+  imageUrl: string;
+}
+
+export interface UploadImagesResponse {
+  imageUrls: string[];
+}

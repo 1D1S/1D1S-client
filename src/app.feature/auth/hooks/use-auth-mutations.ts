@@ -1,22 +1,30 @@
-import { useMutation, useQueryClient, UseMutationResult } from '@tanstack/react-query';
-import { authApi } from '../data/api';
+import { authStorage } from '@module/utils/auth';
 import {
+  useMutation,
+  UseMutationResult,
+  useQueryClient,
+} from '@tanstack/react-query';
+
+import { authApi } from '../api/auth-api';
+import { AUTH_QUERY_KEYS } from '../consts/query-keys';
+import {
+  LogoutResponse,
   RefreshTokenResponse,
   SignUpInfoRequest,
   SignUpInfoResponse,
-  SignUpInfoWithFileRequest,
-  LogoutResponse,
-} from '../data/types';
-import { AUTH_QUERY_KEYS } from './use-auth-queries';
-import { authStorage } from '@module/utils/auth';
+} from '../type/auth';
 
 // 토큰 갱신
-export function useRefreshToken(): UseMutationResult<RefreshTokenResponse, Error, string> {
+export function useRefreshToken(): UseMutationResult<
+  RefreshTokenResponse,
+  Error,
+  string
+> {
   return useMutation({
     mutationFn: (refreshToken: string) => authApi.refreshToken(refreshToken),
     onSuccess: (data) => {
       authStorage.setAccessToken(data.data.accessToken);
-      authStorage.setRefreshToken(data.data.responseToken);
+      authStorage.setRefreshToken(data.data.refreshToken);
     },
     onError: () => {
       authStorage.clearTokens();
@@ -33,27 +41,13 @@ export function useCompleteSignUpInfo(): UseMutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ data, accessToken }: { data: SignUpInfoRequest; accessToken: string }) =>
-      authApi.completeSignUpInfo(data, accessToken),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: AUTH_QUERY_KEYS.all,
-      });
-    },
-  });
-}
-
-// 추가 정보 입력 (프로필 이미지 포함)
-export function useCompleteSignUpInfoWithFile(): UseMutationResult<
-  SignUpInfoResponse,
-  Error,
-  { data: SignUpInfoWithFileRequest; accessToken: string }
-> {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ data, accessToken }: { data: SignUpInfoWithFileRequest; accessToken: string }) =>
-      authApi.completeSignUpInfoWithFile(data, accessToken),
+    mutationFn: ({
+      data,
+      accessToken,
+    }: {
+      data: SignUpInfoRequest;
+      accessToken: string;
+    }) => authApi.completeSignUpInfo(data, accessToken),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: AUTH_QUERY_KEYS.all,
@@ -63,11 +57,11 @@ export function useCompleteSignUpInfoWithFile(): UseMutationResult<
 }
 
 // 로그아웃
-export function useLogout(): UseMutationResult<LogoutResponse, Error, string> {
+export function useLogout(): UseMutationResult<LogoutResponse, Error, void> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (accessToken: string) => authApi.logout(accessToken),
+    mutationFn: () => authApi.logout(),
     onSuccess: () => {
       authStorage.clearTokens();
       queryClient.clear();
