@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, CheckList, Tag, Text } from '@1d1s/design-system';
+import { normalizeApiError } from '@module/api/error';
 import {
   CalendarDays,
   ChevronRight,
@@ -604,7 +605,7 @@ export function DiaryDetailScreen({
   id: number;
 }): React.ReactElement {
   const safeDiaryId = Number.isFinite(id) && id > 0 ? id : 0;
-  const { data, isLoading, isError } = useDiaryDetail(safeDiaryId);
+  const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
   const challengeId = data?.challenge?.challengeId ?? 0;
@@ -648,7 +649,9 @@ export function DiaryDetailScreen({
     return (
       <div className="flex min-h-[40vh] items-center justify-center p-4">
         <Text size="body1" weight="medium" className="text-red-600">
-          일지 상세를 불러오지 못했습니다.
+          {error
+            ? normalizeApiError(error).message
+            : '일지 상세를 불러오지 못했습니다.'}
         </Text>
       </div>
     );

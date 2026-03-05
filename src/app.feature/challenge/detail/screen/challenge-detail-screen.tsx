@@ -8,6 +8,7 @@ import {
   Text,
 } from '@1d1s/design-system';
 import { ChallengeGoalToggle } from '@feature/challenge/detail/components/challenge-goal-toggle';
+import { normalizeApiError, notifyApiError } from '@module/api/error';
 import {
   CalendarDays,
   Check,
@@ -51,6 +52,7 @@ const PARTICIPATING_STATUS: ParticipantStatus[] = [
 ];
 const EMPTY_GOALS: ChallengeGoal[] = [];
 const EMPTY_PARTICIPANTS: Participant[] = [];
+const ENDLESS_MIN_YEAR = 2090;
 
 function getMonthLabel(monthDate: Date): string {
   return new Intl.DateTimeFormat('ko-KR', {
@@ -77,12 +79,33 @@ function getCategoryLabel(category: string): string {
   return labels[category] ?? category;
 }
 
+function isEndlessChallengeEndDate(endDate: string): boolean {
+  if (!endDate) {
+    return false;
+  }
+
+  const parsedEndDate = new Date(endDate);
+  if (Number.isNaN(parsedEndDate.getTime())) {
+    return false;
+  }
+
+  return parsedEndDate.getUTCFullYear() >= ENDLESS_MIN_YEAR;
+}
+
 function formatDateRange(startDate: string, endDate: string): string {
   const format = (date: string): string => date.replaceAll('-', '.');
+  if (isEndlessChallengeEndDate(endDate)) {
+    return `${format(startDate)} ~ 무기한`;
+  }
+
   return `${format(startDate)} ~ ${format(endDate)}`;
 }
 
 function getDdayLabel(endDate: string): string {
+  if (isEndlessChallengeEndDate(endDate)) {
+    return '무기한';
+  }
+
   const today = new Date();
   const end = new Date(endDate);
   today.setHours(0, 0, 0, 0);
@@ -342,6 +365,7 @@ export function ChallengeDetailScreen({
   );
   const summaryStartDate = summary?.startDate ?? '';
   const summaryEndDate = summary?.endDate ?? '';
+  const summaryDdayLabel = getDdayLabel(summaryEndDate);
   const summaryParticipantCnt = summary?.participantCnt ?? 0;
   const summaryMaxParticipantCnt = summary?.maxParticipantCnt ?? 0;
   const calendarRows = useMemo(
@@ -421,8 +445,8 @@ export function ChallengeDetailScreen({
         onSuccess: () => {
           toast.success('챌린지 참여 신청이 완료되었습니다.');
         },
-        onError: () => {
-          toast.error('챌린지 참여 신청에 실패했습니다.');
+        onError: (error) => {
+          notifyApiError(error);
         },
       }
     );
@@ -433,8 +457,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('챌린지에서 탈퇴했습니다.');
       },
-      onError: () => {
-        toast.error('챌린지 탈퇴에 실패했습니다.');
+      onError: (error) => {
+        notifyApiError(error);
       },
     });
   };
@@ -449,8 +473,8 @@ export function ChallengeDetailScreen({
         onSuccess: () => {
           toast.success('챌린지 좋아요 취소 성공했습니다.');
         },
-        onError: () => {
-          toast.error('좋아요 취소에 실패했습니다.');
+        onError: (error) => {
+          notifyApiError(error);
         },
       });
       return;
@@ -460,8 +484,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('챌린지 좋아요 성공했습니다.');
       },
-      onError: () => {
-        toast.error('좋아요 요청에 실패했습니다.');
+      onError: (error) => {
+        notifyApiError(error);
       },
     });
   };
@@ -471,8 +495,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('참여 신청을 수락했습니다.');
       },
-      onError: () => {
-        toast.error('참여 신청 수락에 실패했습니다.');
+      onError: (error) => {
+        notifyApiError(error);
       },
     });
   };
@@ -482,8 +506,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('참여 신청을 거절했습니다.');
       },
-      onError: () => {
-        toast.error('참여 신청 거절에 실패했습니다.');
+      onError: (error) => {
+        notifyApiError(error);
       },
     });
   };
@@ -579,7 +603,9 @@ export function ChallengeDetailScreen({
         <div className="mt-3 flex items-center gap-2 text-gray-600">
           <CalendarDays className="h-4 w-4" />
           <Text size="body2" weight="medium">
-            {getDdayLabel(summary!.endDate)} 남음
+            {summaryDdayLabel === '무기한'
+              ? summaryDdayLabel
+              : `${summaryDdayLabel} 남음`}
           </Text>
         </div>
       </div>
@@ -600,7 +626,9 @@ export function ChallengeDetailScreen({
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-white px-4">
         <Text size="body1" weight="medium" className="text-red-600">
-          {error?.message ?? '챌린지 상세 정보를 불러오지 못했습니다.'}
+          {error
+            ? normalizeApiError(error).message
+            : '챌린지 상세 정보를 불러오지 못했습니다.'}
         </Text>
       </div>
     );
@@ -622,7 +650,7 @@ export function ChallengeDetailScreen({
             </div>
             <Text size="body2" weight="medium" className="text-gray-600">
               {formatDateRange(summary.startDate, summary.endDate)} ({' '}
-              {getDdayLabel(summary.endDate)} )
+              {summaryDdayLabel} )
             </Text>
           </div>
 

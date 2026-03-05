@@ -17,6 +17,24 @@ import { Step2 } from './step-pages/step2';
 import { Step3 } from './step-pages/step3';
 import { Step4 } from './step-pages/step4';
 
+const ENDLESS_CHALLENGE_END_DATE = '9999-12-31';
+
+function resolveChallengeDurationDays(
+  values: ChallengeCreateFormValues
+): number {
+  if (values.periodType !== 'LIMITED') {
+    return 0;
+  }
+
+  const rawDays = values.period === 'etc' ? values.periodNumber : values.period;
+  const parsedDays = Number(rawDays);
+  if (Number.isNaN(parsedDays)) {
+    return 7;
+  }
+
+  return Math.max(1, parsedDays);
+}
+
 export function ChallengeCreateFormScreen({
   step,
   totalSteps,
@@ -72,6 +90,16 @@ export function ChallengeCreateFormScreen({
     const safeStartDate = values.startDate
       ? new Date(values.startDate)
       : new Date();
+    const challengeDurationDays = resolveChallengeDurationDays(values);
+    const endDate =
+      values.periodType === 'ENDLESS'
+        ? ENDLESS_CHALLENGE_END_DATE
+        : format(
+            add(safeStartDate, {
+              days: challengeDurationDays,
+            }),
+            'yyyy-MM-dd'
+          );
 
     return {
       title: values.title,
@@ -79,14 +107,7 @@ export function ChallengeCreateFormScreen({
       category: values.category as ChallengeCategory,
       description: values.description!,
       startDate: format(safeStartDate, 'yyyy-MM-dd'),
-      // periodType === 'ENDLESS'일 때는 어떻게 대응해야 하는가
-      // period 값이 있는 지를 확인하고, periodNumber로 대응되도록 해야 함
-      endDate: format(
-        add(safeStartDate, {
-          days: Number(values.periodNumber || 0),
-        }),
-        'yyyy-MM-dd'
-      ),
+      endDate,
       maxParticipantCnt: Number(
         values.memberCount === 'etc'
           ? values.memberCountNumber
