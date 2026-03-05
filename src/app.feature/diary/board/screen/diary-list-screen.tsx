@@ -1,13 +1,14 @@
 'use client';
 
 import { DiaryCard, Text } from '@1d1s/design-system';
+import { normalizeApiError } from '@module/api/error';
 import { motion } from 'framer-motion';
 import { ArrowUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useLikeDiary, useUnlikeDiary } from '../../detail/hooks/use-diary-mutations';
-import { useAllDiaries } from '../hooks/use-diary-queries';
+import { useDiaryList } from '../hooks/use-diary-queries';
 import { type DiaryItem, Feeling } from '../type/diary';
 
 type SortMode = 'latest' | 'likes';
@@ -113,18 +114,81 @@ function getDiaryAchievementRate(diary: DiaryItem): number {
   return Math.min(100, Math.max(0, rawAchievementRate));
 }
 
+function useInViewObserver(): {
+  ref: React.RefObject<HTMLDivElement | null>;
+  inView: boolean;
+} {
+  const ref = useRef<HTMLDivElement>(null);
+  const [observedInView, setObservedInView] = useState(false);
+  const isIntersectionObserverUnsupported =
+    typeof window !== 'undefined' && typeof IntersectionObserver === 'undefined';
+
+  useEffect(() => {
+    const target = ref.current;
+
+    if (!target || typeof window === 'undefined') {
+      return;
+    }
+
+    if (typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setObservedInView(entry.isIntersecting);
+    });
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const inView = isIntersectionObserverUnsupported ? true : observedInView;
+
+  return { ref, inView };
+}
+
 export default function DiaryListScreen(): React.ReactElement {
   const router = useRouter();
   const [sortMode, setSortMode] = useState<SortMode>('latest');
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
-  const { data: diaries = [], isLoading, isError } = useAllDiaries();
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useDiaryList({ size: 12 });
+  const { ref, inView } = useInViewObserver();
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
+  const diaries = useMemo(() => {
+    const flattenedDiaries =
+      data?.pages?.flatMap((page) => page?.items ?? []) ?? [];
+    const diaryMap = new Map<number, DiaryItem>();
+
+    flattenedDiaries.forEach((diary) => {
+      diaryMap.set(diary.id, diary);
+    });
+
+    return Array.from(diaryMap.values());
+  }, [data]);
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const sortedDiaries = useMemo(
     () => sortDiaries(diaries, sortMode),
     [diaries, sortMode]
   );
+  const hasLoadedDiaries = sortedDiaries.length > 0;
 
   const handleLikeToggle = (diary: DiaryItem): void => {
     if (isLikePending) {
@@ -174,15 +238,17 @@ export default function DiaryListScreen(): React.ReactElement {
           </div>
         ) : null}
 
-        {isError ? (
+        {isError && !hasLoadedDiaries ? (
           <div className="mt-10 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-red-600">
-              일지를 불러오지 못했습니다.
+              {error
+                ? normalizeApiError(error).message
+                : '일지를 불러오지 못했습니다.'}
             </Text>
           </div>
         ) : null}
 
-        {!isLoading && !isError ? (
+        {!isLoading && hasLoadedDiaries ? (
           <div className="diary-grid-container mt-6">
             <div className="diary-card-grid grid grid-cols-2 gap-4">
               {sortedDiaries.map((item) => {
@@ -227,13 +293,36 @@ export default function DiaryListScreen(): React.ReactElement {
           </div>
         ) : null}
 
-        {!isLoading && !isError && sortedDiaries.length === 0 ? (
+        {!isLoading && !isError && !hasLoadedDiaries ? (
           <div className="mt-10 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-gray-500">
               아직 등록된 일지가 없습니다.
             </Text>
           </div>
         ) : null}
+
+        <div
+          ref={ref}
+          className="mt-4 flex h-10 w-full items-center justify-center"
+        >
+          {isFetchingNextPage ? (
+            <Text size="body2" className="text-gray-400">
+              데이터를 불러오는 중...
+            </Text>
+          ) : isError && hasLoadedDiaries ? (
+            <Text size="body2" className="text-red-500">
+              {error
+                ? normalizeApiError(error).message
+                : '추가 일지를 불러오지 못했습니다.'}
+            </Text>
+          ) : hasNextPage ? (
+            <div />
+          ) : hasLoadedDiaries ? (
+            <Text size="body2" className="text-gray-400">
+              마지막 일지입니다.
+            </Text>
+          ) : null}
+        </div>
       </section>
     </div>
   );

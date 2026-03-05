@@ -11,7 +11,6 @@ import { authStorage } from '@module/utils/auth';
 import { usePathname, useRouter } from 'next/navigation';
 import React, {
   useMemo,
-  useState,
   useSyncExternalStore,
 } from 'react';
 
@@ -85,6 +84,27 @@ function isChallengeDetailRoute(pathname: string): boolean {
 }
 
 const NOOP_SUBSCRIBE = (): (() => void) => () => {};
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+const ENDLESS_MIN_YEAR = 2090;
+
+function isLikelyLegacyEndless(challenge: {
+  title?: string;
+  startDate?: string;
+  endDate?: string;
+}): boolean {
+  if (!challenge.title?.includes('무기한')) {
+    return false;
+  }
+
+  const start = new Date(challenge.startDate ?? '').getTime();
+  const end = new Date(challenge.endDate ?? '').getTime();
+  if (Number.isNaN(start) || Number.isNaN(end) || end <= start) {
+    return false;
+  }
+
+  const durationDays = Math.ceil((end - start) / MS_PER_DAY);
+  return durationDays === 7;
+}
 
 let mountTimestamp = 0;
 function getMountTimestamp(): number {
@@ -94,6 +114,55 @@ function getMountTimestamp(): number {
   return mountTimestamp;
 }
 
+function resolveHasDeadline(challenge: {
+  title?: string;
+  startDate?: string;
+  endDate?: string;
+  hasDeadline?: boolean;
+  periodType?: string;
+}): boolean {
+  if (typeof challenge.hasDeadline === 'boolean') {
+    return challenge.hasDeadline;
+  }
+
+  if (challenge.periodType === 'ENDLESS') {
+    return false;
+  }
+
+  if (isLikelyLegacyEndless(challenge)) {
+    return false;
+  }
+
+  const endDate = challenge.endDate?.trim();
+  if (!endDate) {
+    return false;
+  }
+
+  const parsedEnd = new Date(endDate);
+  if (Number.isNaN(parsedEnd.getTime())) {
+    return false;
+  }
+
+  return parsedEnd.getUTCFullYear() < ENDLESS_MIN_YEAR;
+}
+
+function calculateProgress(
+  startDate: string,
+  endDate: string,
+  now: number
+): number {
+  const start = new Date(startDate).getTime();
+  const end = new Date(endDate).getTime();
+
+  if (Number.isNaN(start) || Number.isNaN(end) || end <= start || now <= 0) {
+    return 0;
+  }
+
+  const total = Math.max(1, Math.ceil((end - start) / MS_PER_DAY));
+  const elapsed = Math.max(0, Math.ceil((now - start) / MS_PER_DAY));
+  return Math.min(100, Math.round((elapsed / total) * 100));
+}
+
 export default function AppLayoutShell({
   children,
 }: {
@@ -101,8 +170,6 @@ export default function AppLayoutShell({
 }): React.ReactElement {
   const pathname = usePathname();
   const router = useRouter();
-  const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] =
-    useState(false);
 
   const hasMounted = useSyncExternalStore(
     NOOP_SUBSCRIBE,
@@ -123,20 +190,16 @@ export default function AppLayoutShell({
       return DEFAULT_RIGHT_SIDEBAR_PROPS;
     }
 
-    const msPerDay = 1000 * 60 * 60 * 24;
     const challenges: RightSidebarChallenge[] = sidebarData.challengeList.map(
       (ch) => {
-        const start = new Date(ch.startDate).getTime();
-        const end = new Date(ch.endDate).getTime();
-        const total = Math.max(1, Math.ceil((end - start) / msPerDay));
-        const elapsed = Math.max(
-          0,
-          Math.ceil((now - start) / msPerDay)
-        );
+        const hasDeadline = resolveHasDeadline(ch);
         return {
           id: String(ch.challengeId),
           title: ch.title,
-          progress: Math.min(100, Math.round((elapsed / total) * 100)),
+          progress: hasDeadline
+            ? calculateProgress(ch.startDate, ch.endDate, now)
+            : 0,
+          hasDeadline,
         };
       }
     );
@@ -161,9 +224,7 @@ export default function AppLayoutShell({
     <AppLayoutProvider
       value={{
         hasRightSidebar: showRightSidebar,
-        isRightSidebarCollapsed: showRightSidebar
-          ? isRightSidebarCollapsed
-          : false,
+        isRightSidebarCollapsed: false,
       }}
     >
       <div className="flex min-h-screen w-screen flex-col bg-white">
@@ -198,9 +259,6 @@ export default function AppLayoutShell({
                   {...sidebarProps}
                   isLoggedIn={isLoggedIn}
                   fixed={false}
-                  onCollapseClick={() =>
-                    setIsRightSidebarCollapsed((prev) => !prev)
-                  }
                   onWriteDiary={() => router.push('/diary/create')}
                   onGoMyPage={() => router.push('/mypage')}
                   onLogin={() => router.push('/login')}

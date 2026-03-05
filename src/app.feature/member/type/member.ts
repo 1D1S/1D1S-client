@@ -4,6 +4,8 @@ export interface SidebarChallenge {
   category: string;
   startDate: string;
   endDate: string;
+  hasDeadline?: boolean;
+  periodType?: 'ENDLESS' | 'LIMITED';
   maxParticipantCnt: number;
   challengeType: string;
   participantCnt: number;
