@@ -3,11 +3,15 @@
 import {
   Button,
   CircularProgress,
+  DiaryCard,
   ScheduleCalendar,
   type ScheduleCalendarCell,
   Text,
 } from '@1d1s/design-system';
+import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { ChallengeGoalToggle } from '@feature/challenge/detail/components/challenge-goal-toggle';
+import { normalizeApiError, notifyApiError } from '@module/api/error';
+import { authStorage } from '@module/utils/auth';
 import {
   CalendarDays,
   Check,
@@ -15,13 +19,12 @@ import {
   ChevronRight,
   CircleAlert,
   CircleUserRound,
-  Clock3,
   Flame,
   Heart,
   UserRound,
 } from 'lucide-react';
 import Link from 'next/link';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useSyncExternalStore } from 'react';
 import { toast } from 'sonner';
 
 import { useChallengeDetail } from '../../board/hooks/use-challenge-queries';
@@ -30,7 +33,10 @@ import {
   Participant,
   ParticipantStatus,
 } from '../../board/type/challenge';
-import { CHALLENGE_DETAIL_WEEK_LABELS } from '../consts/challenge-detail-data';
+import {
+  CHALLENGE_DETAIL_DUMMY_DIARIES,
+  CHALLENGE_DETAIL_WEEK_LABELS,
+} from '../consts/challenge-detail-data';
 import {
   useAcceptParticipant,
   useJoinChallenge,
@@ -51,6 +57,7 @@ const PARTICIPATING_STATUS: ParticipantStatus[] = [
 ];
 const EMPTY_GOALS: ChallengeGoal[] = [];
 const EMPTY_PARTICIPANTS: Participant[] = [];
+const ENDLESS_MIN_YEAR = 2090;
 
 function getMonthLabel(monthDate: Date): string {
   return new Intl.DateTimeFormat('ko-KR', {
@@ -60,7 +67,7 @@ function getMonthLabel(monthDate: Date): string {
 }
 
 function getChallengeTypeLabel(challengeType: string): string {
-  return challengeType === 'FIXED' ? '고정 목표' : '개인 목표';
+  return challengeType === 'FIXED' ? '고정 목표' : '자유 목표';
 }
 
 function getCategoryLabel(category: string): string {
@@ -77,12 +84,33 @@ function getCategoryLabel(category: string): string {
   return labels[category] ?? category;
 }
 
+function isEndlessChallengeEndDate(endDate: string): boolean {
+  if (!endDate) {
+    return false;
+  }
+
+  const parsedEndDate = new Date(endDate);
+  if (Number.isNaN(parsedEndDate.getTime())) {
+    return false;
+  }
+
+  return parsedEndDate.getUTCFullYear() >= ENDLESS_MIN_YEAR;
+}
+
 function formatDateRange(startDate: string, endDate: string): string {
   const format = (date: string): string => date.replaceAll('-', '.');
+  if (isEndlessChallengeEndDate(endDate)) {
+    return `${format(startDate)} ~ 무기한`;
+  }
+
   return `${format(startDate)} ~ ${format(endDate)}`;
 }
 
 function getDdayLabel(endDate: string): string {
+  if (isEndlessChallengeEndDate(endDate)) {
+    return '무기한';
+  }
+
   const today = new Date();
   const end = new Date(endDate);
   today.setHours(0, 0, 0, 0);
@@ -118,18 +146,6 @@ function isSameDate(firstDate: Date, secondDate: Date): boolean {
   );
 }
 
-function getParticipantStatusLabel(status: ParticipantStatus): string {
-  const labels: Record<ParticipantStatus, string> = {
-    NONE: '미참여',
-    PENDING: '승인 대기',
-    REJECTED: '참여 거절',
-    ACCEPTED: '참여 중',
-    HOST: '호스트',
-    PARTICIPANT: '참여자',
-  };
-  return labels[status] ?? status;
-}
-
 function buildCalendarRows(
   baseMonth: Date,
   startDate: string,
@@ -157,9 +173,11 @@ function buildCalendarRows(
   const firstWeekday = new Date(year, month, 1).getDay();
   const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
   const daysInPreviousMonth = new Date(year, month, 0).getDate();
+  const totalVisibleCells =
+    Math.ceil((firstWeekday + daysInCurrentMonth) / 7) * 7;
   const calendarCells: ScheduleCalendarCell[] = [];
 
-  for (let cellIndex = 0; cellIndex < 42; cellIndex += 1) {
+  for (let cellIndex = 0; cellIndex < totalVisibleCells; cellIndex += 1) {
     if (cellIndex < firstWeekday) {
       const previousMonthDay =
         daysInPreviousMonth - firstWeekday + cellIndex + 1;
@@ -298,9 +316,19 @@ export function ChallengeDetailScreen({
   const acceptParticipant = useAcceptParticipant();
   const rejectParticipant = useRejectParticipant();
 
+  const hasMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const [dismissed, setDismissed] = useState(false);
+  const showAuthDialog = hasMounted && !authStorage.hasTokens() && !dismissed;
   const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [selectedGoalIds, setSelectedGoalIds] = useState<number[]>([]);
   const [isGoalSelectionTouched, setIsGoalSelectionTouched] = useState(false);
+  const [dummyDiaries, setDummyDiaries] = useState(
+    () => CHALLENGE_DETAIL_DUMMY_DIARIES
+  );
 
   const summary = data?.challengeSummary;
   const detail = data?.challengeDetail;
@@ -334,7 +362,7 @@ export function ChallengeDetailScreen({
   const isHost = myStatus === 'HOST';
   const isPending = myStatus === 'PENDING';
   const isParticipating = PARTICIPATING_STATUS.includes(myStatus);
-  const canJoin = myStatus === 'NONE' || myStatus === 'REJECTED';
+  const canJoinByStatus = myStatus === 'NONE' || myStatus === 'REJECTED';
 
   const monthLabel = useMemo(
     () => getMonthLabel(calendarMonth),
@@ -342,78 +370,64 @@ export function ChallengeDetailScreen({
   );
   const summaryStartDate = summary?.startDate ?? '';
   const summaryEndDate = summary?.endDate ?? '';
-  const summaryParticipantCnt = summary?.participantCnt ?? 0;
+  const summaryDdayLabel = getDdayLabel(summaryEndDate);
   const summaryMaxParticipantCnt = summary?.maxParticipantCnt ?? 0;
+  const canJoin = canJoinByStatus && summaryMaxParticipantCnt > 1;
   const calendarRows = useMemo(
     () => buildCalendarRows(calendarMonth, summaryStartDate, summaryEndDate),
     [calendarMonth, summaryEndDate, summaryStartDate]
   );
-  const recentActivityLogs = useMemo(() => {
-    const summaryLogs = [
-      {
-        key: 'participants-total',
-        title: `현재 참여자 ${summaryParticipantCnt}명`,
-        description: `최대 ${summaryMaxParticipantCnt}명 중 ${summaryParticipantCnt}명이 참여 중입니다.`,
-        status: '참여 현황',
-      },
-      {
-        key: 'participants-pending',
-        title: `승인 대기 ${pendingParticipants.length}건`,
-        description:
-          pendingParticipants.length > 0
-            ? '호스트가 참여 승인/거절을 처리할 수 있습니다.'
-            : '현재 처리할 참여 신청이 없습니다.',
-        status: '신청 상태',
-      },
-    ];
-
-    const participantLogs = participants.slice(0, 6).map((participant) => ({
-      key: `participant-${participant.participantId}`,
-      title: participant.nickname,
-      description: `참여 상태: ${getParticipantStatusLabel(participant.status)}`,
-      status: getParticipantStatusLabel(participant.status),
-    }));
-
-    return [...summaryLogs, ...participantLogs];
-  }, [
-    participants,
-    pendingParticipants.length,
-    summaryMaxParticipantCnt,
-    summaryParticipantCnt,
-  ]);
+  const previewDummyDiaries = useMemo(
+    () => dummyDiaries.slice(0, 10),
+    [dummyDiaries]
+  );
 
   const isActionLoading =
     joinChallenge.isPending ||
     leaveChallenge.isPending ||
     likeChallenge.isPending ||
     unlikeChallenge.isPending;
-  const effectiveSelectedGoals = isGoalSelectionTouched
-    ? selectedGoals
-    : goals.map((goal) => goal.content);
+  const effectiveSelectedGoalIds = isGoalSelectionTouched
+    ? selectedGoalIds
+    : goals.map((goal) => goal.challengeGoalId);
 
-  const toggleGoal = (goal: string): void => {
+  const toggleGoal = (goalId: number): void => {
     setIsGoalSelectionTouched(true);
-    setSelectedGoals(() =>
-      effectiveSelectedGoals.includes(goal)
-        ? effectiveSelectedGoals.filter((prevGoal) => prevGoal !== goal)
-        : [...effectiveSelectedGoals, goal]
+    setSelectedGoalIds(() =>
+      effectiveSelectedGoalIds.includes(goalId)
+        ? effectiveSelectedGoalIds.filter((prevGoalId) => prevGoalId !== goalId)
+        : [...effectiveSelectedGoalIds, goalId]
     );
   };
 
   const handleJoinChallenge = (): void => {
-    if (effectiveSelectedGoals.length === 0) {
+    if (summaryMaxParticipantCnt <= 1) {
+      toast.error('최대 참여 인원이 2명 이상인 챌린지만 신청할 수 있습니다.');
+      return;
+    }
+
+    if (effectiveSelectedGoalIds.length === 0) {
       toast.error('최소 1개 이상의 목표를 선택해 주세요.');
       return;
     }
 
+    const selectedGoalContents = goals
+      .filter((goal) => effectiveSelectedGoalIds.includes(goal.challengeGoalId))
+      .map((goal) => goal.content);
+
+    if (selectedGoalContents.length === 0) {
+      toast.error('선택한 목표를 찾을 수 없습니다. 다시 선택해 주세요.');
+      return;
+    }
+
     joinChallenge.mutate(
-      { challengeId, data: effectiveSelectedGoals },
+      { challengeId, data: selectedGoalContents },
       {
         onSuccess: () => {
           toast.success('챌린지 참여 신청이 완료되었습니다.');
         },
-        onError: () => {
-          toast.error('챌린지 참여 신청에 실패했습니다.');
+        onError: (error) => {
+          notifyApiError(error);
         },
       }
     );
@@ -424,8 +438,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('챌린지에서 탈퇴했습니다.');
       },
-      onError: () => {
-        toast.error('챌린지 탈퇴에 실패했습니다.');
+      onError: (error) => {
+        notifyApiError(error);
       },
     });
   };
@@ -440,8 +454,8 @@ export function ChallengeDetailScreen({
         onSuccess: () => {
           toast.success('챌린지 좋아요 취소 성공했습니다.');
         },
-        onError: () => {
-          toast.error('좋아요 취소에 실패했습니다.');
+        onError: (error) => {
+          notifyApiError(error);
         },
       });
       return;
@@ -451,8 +465,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('챌린지 좋아요 성공했습니다.');
       },
-      onError: () => {
-        toast.error('좋아요 요청에 실패했습니다.');
+      onError: (error) => {
+        notifyApiError(error);
       },
     });
   };
@@ -462,8 +476,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('참여 신청을 수락했습니다.');
       },
-      onError: () => {
-        toast.error('참여 신청 수락에 실패했습니다.');
+      onError: (error) => {
+        notifyApiError(error);
       },
     });
   };
@@ -473,10 +487,27 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('참여 신청을 거절했습니다.');
       },
-      onError: () => {
-        toast.error('참여 신청 거절에 실패했습니다.');
+      onError: (error) => {
+        notifyApiError(error);
       },
     });
+  };
+
+  const handleToggleDummyDiaryLike = (diaryId: number): void => {
+    setDummyDiaries((prevDiaries) =>
+      prevDiaries.map((diary) => {
+        if (diary.diaryId !== diaryId) {
+          return diary;
+        }
+
+        const nextLiked = !diary.isLiked;
+        return {
+          ...diary,
+          isLiked: nextLiked,
+          likes: Math.max(0, diary.likes + (nextLiked ? 1 : -1)),
+        };
+      })
+    );
   };
 
   const renderActionsSection = (): React.ReactElement => (
@@ -512,7 +543,7 @@ export function ChallengeDetailScreen({
             className="w-full"
             onClick={handleJoinChallenge}
             disabled={
-              joinChallenge.isPending || effectiveSelectedGoals.length === 0
+              joinChallenge.isPending || effectiveSelectedGoalIds.length === 0
             }
           >
             챌린지 참여 신청
@@ -570,7 +601,9 @@ export function ChallengeDetailScreen({
         <div className="mt-3 flex items-center gap-2 text-gray-600">
           <CalendarDays className="h-4 w-4" />
           <Text size="body2" weight="medium">
-            {getDdayLabel(summary!.endDate)} 남음
+            {summaryDdayLabel === '무기한'
+              ? summaryDdayLabel
+              : `${summaryDdayLabel} 남음`}
           </Text>
         </div>
       </div>
@@ -591,7 +624,9 @@ export function ChallengeDetailScreen({
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-white px-4">
         <Text size="body1" weight="medium" className="text-red-600">
-          {error?.message ?? '챌린지 상세 정보를 불러오지 못했습니다.'}
+          {error
+            ? normalizeApiError(error).message
+            : '챌린지 상세 정보를 불러오지 못했습니다.'}
         </Text>
       </div>
     );
@@ -599,21 +634,26 @@ export function ChallengeDetailScreen({
 
   return (
     <div className="min-h-screen w-full bg-white px-4 py-6 md:px-6 lg:px-8">
+      <LoginRequiredDialog
+        open={showAuthDialog}
+        onOpenChange={(open) => { if (!open) {setDismissed(true);} }}
+        title="간편 가입 후에 둘러보세요!"
+        description="챌린지 상세는 로그인 후 이용할 수 있습니다."
+      />
       <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6">
         <section className="rounded-4 border border-gray-200 bg-white p-6 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="rounded-1.5 bg-main-200 text-caption1 text-main-800 px-2.5 py-1 font-bold">
-                {isHost ? 'HOST VIEW' : 'PARTICIPANT VIEW'}
-              </span>
               <span className="rounded-1.5 text-caption1 bg-gray-100 px-2.5 py-1 font-medium text-gray-600">
-                {getCategoryLabel(summary.category)} ·{' '}
+                {getCategoryLabel(summary.category)}
+              </span>
+              <span className="rounded-1.5 bg-main-200 text-caption1 text-main-800 px-2.5 py-1 font-bold">
                 {getChallengeTypeLabel(summary.challengeType)}
               </span>
             </div>
             <Text size="body2" weight="medium" className="text-gray-600">
               {formatDateRange(summary.startDate, summary.endDate)} ({' '}
-              {getDdayLabel(summary.endDate)} )
+              {summaryDdayLabel} )
             </Text>
           </div>
 
@@ -688,7 +728,6 @@ export function ChallengeDetailScreen({
                 <StatHeader
                   icon={<span className="text-main-800 pb-1.5 text-4xl">◔</span>}
                   title={isHost ? '내 진척도' : '나의 참여 진척도'}
-                  rightText={`${participationRate}%`}
                 />
                 <div className="mt-4 flex items-center gap-4">
                   <CircularProgress
@@ -734,7 +773,6 @@ export function ChallengeDetailScreen({
                 <StatHeader
                   icon={<Flame className="text-main-800 h-5 w-5" />}
                   title="목표 달성률"
-                  rightText={`${goalCompletionRate}%`}
                 />
                 <div className="mt-4">
                   <div className="mb-1 flex items-center justify-between">
@@ -820,52 +858,6 @@ export function ChallengeDetailScreen({
                 cellMinHeight={110}
               />
             </section>
-
-            <section className="rounded-4 border border-gray-200 bg-white p-5">
-              <StatHeader
-                icon={<Clock3 className="text-main-800 h-5 w-5" />}
-                title="참여 활동 요약"
-              />
-              <div className="mt-3 divide-y divide-gray-200">
-                {recentActivityLogs.map((log) => (
-                  <div
-                    key={log.key}
-                    className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="bg-main-200 text-main-800 mt-1 flex h-10 w-10 items-center justify-center rounded-full">
-                        <Check className="h-5 w-5" />
-                      </div>
-                      <div className="flex min-w-0 flex-1 flex-col justify-center">
-                        <Text
-                          size="heading2"
-                          weight="bold"
-                          className="text-gray-900"
-                        >
-                          {log.title}
-                        </Text>
-                        <div className="mt-1">
-                          <Text
-                            size="body2"
-                            weight="regular"
-                            className="whitespace-pre-wrap text-gray-600"
-                          >
-                            {log.description}
-                          </Text>
-                        </div>
-                      </div>
-                    </div>
-                    <Text
-                      size="caption1"
-                      weight="medium"
-                      className="text-gray-500"
-                    >
-                      {log.status}
-                    </Text>
-                  </div>
-                ))}
-              </div>
-            </section>
           </div>
 
           <aside className="flex min-w-0 flex-col gap-6">
@@ -936,8 +928,10 @@ export function ChallengeDetailScreen({
                   >
                     {canJoin ? (
                       <ChallengeGoalToggle
-                        checked={effectiveSelectedGoals.includes(goal.content)}
-                        onCheckedChange={() => toggleGoal(goal.content)}
+                        checked={effectiveSelectedGoalIds.includes(
+                          goal.challengeGoalId
+                        )}
+                        onCheckedChange={() => toggleGoal(goal.challengeGoalId)}
                         label={goal.content}
                       />
                     ) : (
@@ -960,6 +954,55 @@ export function ChallengeDetailScreen({
             </section>
           </aside>
         </div>
+
+        <section className="rounded-4 border border-gray-200 bg-white p-5">
+          <div className="flex flex-col gap-2 border-b border-gray-200 pb-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-2">
+              <Text size="heading2" weight="bold" className="text-gray-900">
+                챌린지 일지 리스트
+              </Text>
+              <span className="text-caption2 rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-600">
+                DUMMY
+              </span>
+            </div>
+            <Link
+              href={`/challenge/${id}/diary`}
+              className="text-main-800 text-sm font-semibold hover:underline"
+            >
+              전체 보기
+            </Link>
+          </div>
+
+          <Text size="caption2" weight="regular" className="mt-3 text-gray-500">
+            {summary.title} 챌린지 일지 더미 데이터 미리보기(최대 10개)입니다.
+          </Text>
+
+          <div className="mt-4 overflow-x-auto">
+            <div className="flex w-max gap-3 pb-2">
+              {previewDummyDiaries.map((diary) => (
+                <div key={diary.diaryId} className="w-[200px] shrink-0">
+                  <DiaryCard
+                    imageUrl={diary.imageUrl}
+                    percent={diary.percent}
+                    isLiked={diary.isLiked}
+                    likes={diary.likes}
+                    title={diary.title}
+                    user={diary.user}
+                    userImage={diary.userImage}
+                    challengeLabel={diary.challengeLabel}
+                    onChallengeClick={() => undefined}
+                    date={diary.dateLabel}
+                    emotion={diary.emotion}
+                    onLikeToggle={() =>
+                      handleToggleDummyDiaryLike(diary.diaryId)
+                    }
+                    onClick={() => undefined}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

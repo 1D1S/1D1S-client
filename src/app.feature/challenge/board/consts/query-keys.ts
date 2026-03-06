@@ -15,4 +15,6 @@ export const CHALLENGE_QUERY_KEYS = {
     [...CHALLENGE_QUERY_KEYS.all, 'random', params] as const,
   memberChallenges: (params: MemberChallengesParams) =>
     [...CHALLENGE_QUERY_KEYS.all, 'member', params] as const,
+  diaries: (challengeId: number, params?: { size?: number }) =>
+    [...CHALLENGE_QUERY_KEYS.all, 'diaries', challengeId, params] as const,
 };

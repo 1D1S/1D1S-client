@@ -1,6 +1,6 @@
 // shared/hooks/useDiaryItems.ts
 
-import { useCallback,useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export interface DiaryItem {
   id: number;

@@ -35,6 +35,7 @@ export const challengeBoardApi = {
       limit: params.limit,
       cursor: params.cursor,
       keyword: params.keyword,
+      category: params.category,
     });
 
     return requestBody<{ data: ChallengeListResponse; message: string }>(

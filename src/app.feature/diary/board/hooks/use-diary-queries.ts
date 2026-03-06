@@ -65,3 +65,11 @@ export function useAllDiaries(options?: {
     enabled: options?.enabled ?? true,
   });
 }
+
+// 나의 다이어리 목록 조회
+export function useMyDiaries(): UseQueryResult<DiaryItem[], Error> {
+  return useQuery({
+    queryKey: DIARY_QUERY_KEYS.myDiaries(),
+    queryFn: () => diaryBoardApi.getMyDiaries(),
+  });
+}

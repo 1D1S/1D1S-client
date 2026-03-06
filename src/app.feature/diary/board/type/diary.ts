@@ -24,12 +24,20 @@ export interface ChallengeSummary {
   likeInfo: LikeInfo;
 }
 
+export interface DiaryGoalStatus {
+  goalId: number;
+  goalName: string;
+  isAchieved: boolean;
+}
+
 export interface DiaryInfo {
   createdAt: string;
   challengedDate: string;
   feeling: Feeling;
-  achievement: number[] | null;
+  diaryGoal: DiaryGoalStatus[] | null;
   achievementRate: number;
+  /** @deprecated 백엔드 응답이 diaryGoal로 변경됨. 하위호환용 */
+  achievement?: number[] | null;
 }
 
 export interface DiaryItem {

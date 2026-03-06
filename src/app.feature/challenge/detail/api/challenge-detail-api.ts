@@ -1,5 +1,10 @@
+import { DiaryListResponse } from '@feature/diary/board/type/diary';
 import { apiClient } from '@module/api/client';
-import { requestBody, requestData } from '@module/api/request';
+import {
+  buildQueryString,
+  requestBody,
+  requestData,
+} from '@module/api/request';
 
 import {
   ChallengeDetailResponse,
@@ -65,6 +70,24 @@ export const challengeDetailApi = {
     await requestBody(apiClient, {
       url: `/challenges/${challengeId}/likes`,
       method: 'DELETE',
+    });
+  },
+
+  // 챌린지 일지 목록 조회 (커서 기반 페이지네이션)
+  getChallengeDiaries: async (
+    challengeId: number,
+    params: { size?: number; cursor?: string } = {}
+  ): Promise<DiaryListResponse> => {
+    const query = buildQueryString({
+      size: params.size,
+      cursor: params.cursor,
+    });
+
+    return requestData<DiaryListResponse>(apiClient, {
+      url: query
+        ? `/challenges/${challengeId}/diaries?${query}`
+        : `/challenges/${challengeId}/diaries`,
+      method: 'GET',
     });
   },
 };

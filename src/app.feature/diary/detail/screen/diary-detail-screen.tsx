@@ -1,6 +1,9 @@
 'use client';
 
 import { Button, CheckList, Tag, Text } from '@1d1s/design-system';
+import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { normalizeApiError } from '@module/api/error';
+import { authStorage } from '@module/utils/auth';
 import {
   CalendarDays,
   ChevronRight,
@@ -12,7 +15,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useSyncExternalStore } from 'react';
 
 import { useChallengeDetail } from '../../../challenge/board/hooks/use-challenge-queries';
 import {
@@ -20,7 +23,11 @@ import {
   ChallengeGoal,
 } from '../../../challenge/board/type/challenge';
 import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
-import { DiaryDetail, Feeling } from '../../board/type/diary';
+import { DiaryDetail, DiaryGoalStatus, Feeling } from '../../board/type/diary';
+import {
+  resolveDiaryImageList,
+  resolveDiaryImageUrl,
+} from '../../shared/utils/diary-image-url';
 import { useLikeDiary, useUnlikeDiary } from '../hooks/use-diary-mutations';
 
 interface ChecklistItem {
@@ -28,10 +35,32 @@ interface ChecklistItem {
   label: string;
 }
 
+interface DiaryInfoWithAliases {
+  createdAt?: string;
+  challengedDate?: string;
+  feeling?: Feeling;
+  achievement?: number[] | null;
+  diaryGoal?: DiaryGoalStatus[] | null;
+}
+
+type DiaryDetailWithAliases = DiaryDetail & {
+  diaryInfoDto?: DiaryInfoWithAliases | null;
+  diaryInfo?: DiaryInfoWithAliases | null;
+};
+
 interface ChallengeImageFields {
-  imgUrl?: string | string[] | null;
-  imageUrl?: string | null;
-  thumbnailUrl?: string | null;
+  imgUrl?: unknown;
+  imageUrl?: unknown;
+  thumbnailUrl?: unknown;
+}
+
+interface DiaryImageFields {
+  imgUrl?: unknown;
+  img?: unknown;
+  imageUrl?: unknown;
+  thumbnailUrl?: unknown;
+  images?: unknown;
+  thumbnail?: unknown;
 }
 
 interface DiaryDetailViewData {
@@ -54,6 +83,7 @@ interface DiaryDetailViewData {
   checkedChecklistIds: string[];
   contentHtml: string;
   hasContentHtml: boolean;
+  contentThumbnailUrl: string | null;
   tags: string[];
 }
 
@@ -71,9 +101,10 @@ function feelingToEmoji(feeling: Feeling): string {
   }
 }
 
-function formatDate(
-  dateValue: string
-): { dateLabel: string; weekdayLabel: string } {
+function formatDate(dateValue: string): {
+  dateLabel: string;
+  weekdayLabel: string;
+} {
   if (!dateValue) {
     return { dateLabel: '-', weekdayLabel: '-' };
   }
@@ -124,6 +155,27 @@ function formatPercent(value?: number): string {
   return `${Math.round(value)}%`;
 }
 
+function resolveFirstImage(...rawSources: unknown[]): string | null {
+  for (const rawSource of rawSources) {
+    const resolvedImage = resolveDiaryImageList(rawSource)?.[0];
+    if (resolvedImage) {
+      return resolvedImage;
+    }
+
+    const resolvedSingleImage = resolveDiaryImageUrl(rawSource);
+    if (resolvedSingleImage) {
+      return resolvedSingleImage;
+    }
+  }
+
+  return null;
+}
+
+function getDiaryInfo(diary: DiaryDetail): DiaryInfoWithAliases | null {
+  const diaryWithAliases = diary as DiaryDetailWithAliases;
+  return diaryWithAliases.diaryInfoDto ?? diaryWithAliases.diaryInfo ?? null;
+}
+
 function getChallengeImageUrl(
   challengeDetailData?: ChallengeDetailResponse,
   diary?: DiaryDetail
@@ -136,32 +188,22 @@ function getChallengeImageUrl(
     | null
     | undefined;
 
-  const summaryImg = challengeSummary?.imgUrl;
-  if (Array.isArray(summaryImg) && summaryImg[0]) {
-    return summaryImg[0];
-  }
-  if (typeof summaryImg === 'string' && summaryImg) {
-    return summaryImg;
-  }
-  if (challengeSummary?.imageUrl) {
-    return challengeSummary.imageUrl;
-  }
-  if (challengeSummary?.thumbnailUrl) {
-    return challengeSummary.thumbnailUrl;
+  const challengeSummaryImage = resolveFirstImage(
+    challengeSummary?.imgUrl,
+    challengeSummary?.imageUrl,
+    challengeSummary?.thumbnailUrl
+  );
+  if (challengeSummaryImage) {
+    return challengeSummaryImage;
   }
 
-  const diaryImg = diaryChallenge?.imgUrl;
-  if (Array.isArray(diaryImg) && diaryImg[0]) {
-    return diaryImg[0];
-  }
-  if (typeof diaryImg === 'string' && diaryImg) {
-    return diaryImg;
-  }
-  if (diaryChallenge?.imageUrl) {
-    return diaryChallenge.imageUrl;
-  }
-  if (diaryChallenge?.thumbnailUrl) {
-    return diaryChallenge.thumbnailUrl;
+  const diaryChallengeImage = resolveFirstImage(
+    diaryChallenge?.imgUrl,
+    diaryChallenge?.imageUrl,
+    diaryChallenge?.thumbnailUrl
+  );
+  if (diaryChallengeImage) {
+    return diaryChallengeImage;
   }
 
   return '/images/default-card.png';
@@ -171,39 +213,66 @@ function mapDiaryToViewData(
   diary: DiaryDetail,
   challengeDetailData?: ChallengeDetailResponse
 ): DiaryDetailViewData {
-  const baseDate =
-    diary.diaryInfoDto?.challengedDate || diary.diaryInfoDto?.createdAt || '';
+  const diaryInfo = getDiaryInfo(diary);
+  const baseDate = diaryInfo?.createdAt ?? diaryInfo?.challengedDate ?? '';
   const { dateLabel, weekdayLabel } = formatDate(baseDate);
   const challengeGoals: ChallengeGoal[] =
     challengeDetailData?.challengeGoals ?? [];
-
-  const achievedGoalIds = (diary.diaryInfoDto?.achievement ?? []).map(
-    (goalId) => String(goalId)
+  const diaryGoals = diaryInfo?.diaryGoal ?? [];
+  const achievementIds = new Set(
+    (diaryInfo?.achievement ?? []).map((goalId) => String(goalId))
   );
-  const achievedGoalIdSet = new Set(achievedGoalIds);
-
   const checklistItemsFromChallenge = challengeGoals.map((goal) => ({
     id: String(goal.challengeGoalId),
     label: goal.content,
   }));
 
-  const checklistItemIdSet = new Set(
-    checklistItemsFromChallenge.map((item) => item.id)
-  );
-  const missingAchievedItems = achievedGoalIds
-    .filter((goalId) => !checklistItemIdSet.has(goalId))
-    .map((goalId) => ({
+  let checklistItems: ChecklistItem[] = [];
+  let checkedChecklistIds: string[] = [];
+
+  if (checklistItemsFromChallenge.length > 0) {
+    checklistItems = checklistItemsFromChallenge;
+
+    if (diaryGoals.length > 0) {
+      const achievedDiaryGoalIds = new Set(
+        diaryGoals
+          .filter((goal) => goal.isAchieved)
+          .map((goal) => String(goal.goalId))
+      );
+      const achievedDiaryGoalNames = new Set(
+        diaryGoals
+          .filter((goal) => goal.isAchieved && Boolean(goal.goalName))
+          .map((goal) => goal.goalName.trim())
+      );
+
+      checkedChecklistIds = checklistItems
+        .filter(
+          (item) =>
+            achievedDiaryGoalIds.has(item.id) ||
+            achievedDiaryGoalNames.has(item.label.trim())
+        )
+        .map((item) => item.id);
+    } else {
+      checkedChecklistIds = checklistItems
+        .filter((item) => achievementIds.has(item.id))
+        .map((item) => item.id);
+    }
+  } else if (diaryGoals.length > 0) {
+    checklistItems = diaryGoals.map((goal) => ({
+      id: String(goal.goalId),
+      label: goal.goalName || `목표 ${goal.goalId}`,
+    }));
+    checkedChecklistIds = diaryGoals
+      .filter((goal) => goal.isAchieved)
+      .map((goal) => String(goal.goalId));
+  } else {
+    const achievedGoalIds = Array.from(achievementIds);
+    checklistItems = achievedGoalIds.map((goalId) => ({
       id: goalId,
       label: `목표 ${goalId}`,
     }));
-
-  const checklistItems =
-    checklistItemsFromChallenge.length > 0
-      ? [...checklistItemsFromChallenge, ...missingAchievedItems]
-      : achievedGoalIds.map((goalId) => ({
-          id: goalId,
-          label: `목표 ${goalId}`,
-        }));
+    checkedChecklistIds = achievedGoalIds;
+  }
 
   const summary = challengeDetailData?.challengeSummary;
   const period =
@@ -221,13 +290,23 @@ function mapDiaryToViewData(
     typeof participantCnt === 'number' && typeof maxParticipantCnt === 'number'
       ? `${participantCnt}/${maxParticipantCnt}명`
       : '-';
+  const diaryWithImageAliases = diary as DiaryDetail & DiaryImageFields;
+  const contentThumbnailUrl =
+    resolveFirstImage(
+      diaryWithImageAliases.imgUrl,
+      diaryWithImageAliases.img,
+      diaryWithImageAliases.imageUrl,
+      diaryWithImageAliases.thumbnailUrl,
+      diaryWithImageAliases.images,
+      diaryWithImageAliases.thumbnail
+    ) ?? null;
 
   return {
     id: diary.id,
     title: diary.title || '제목 없는 일지',
     dateLabel,
     weekdayLabel,
-    feelingEmoji: feelingToEmoji(diary.diaryInfoDto?.feeling ?? 'NONE'),
+    feelingEmoji: feelingToEmoji(diaryInfo?.feeling ?? 'NONE'),
     connectedChallengeId:
       summary?.challengeId ?? diary.challenge?.challengeId ?? null,
     connectedChallengeTitle:
@@ -249,12 +328,11 @@ function mapDiaryToViewData(
     likedByMe: diary.likeInfo?.likedByMe ?? false,
     likeCount: diary.likeInfo?.likeCnt ?? 0,
     checklistItems,
-    checkedChecklistIds: checklistItems
-      .map((item) => item.id)
-      .filter((itemId) => achievedGoalIdSet.has(itemId)),
+    checkedChecklistIds,
     contentHtml: diary.content ?? '',
     hasContentHtml: hasVisibleHtmlContent(diary.content ?? ''),
-    tags: [diary.challenge?.category, diary.diaryInfoDto?.feeling].filter(
+    contentThumbnailUrl,
+    tags: [diary.challenge?.category, diaryInfo?.feeling].filter(
       (tag): tag is string => Boolean(tag)
     ),
   };
@@ -331,7 +409,7 @@ function DiaryDetailView({
             <div className="mt-2 flex items-center gap-2 text-gray-500">
               <CalendarDays className="h-4 w-4" />
               <Text size="body2" weight="medium" className="text-gray-500">
-                {diaryData.dateLabel} | {diaryData.weekdayLabel}
+                작성일 {diaryData.dateLabel} | {diaryData.weekdayLabel}
               </Text>
             </div>
           </div>
@@ -361,7 +439,9 @@ function DiaryDetailView({
             <Button
               variant="default"
               size="medium"
-              onClick={() => router.push(`/diary/create?diaryId=${diaryData.id}`)}
+              onClick={() =>
+                router.push(`/diary/create?diaryId=${diaryData.id}`)
+              }
             >
               <Edit3 className="mr-1 h-4 w-4" />
               일지 수정
@@ -393,7 +473,6 @@ function DiaryDetailView({
                 alt={`${diaryData.connectedChallengeTitle} 썸네일`}
                 fill
                 className="object-cover"
-                unoptimized
               />
             </div>
 
@@ -471,17 +550,35 @@ function DiaryDetailView({
           </div>
 
           <div className="rounded-3 border border-gray-200 bg-white p-5">
-            {diaryData.hasContentHtml ? (
-              <div
-                className="prose prose-sm max-w-none text-gray-700
-                  [&_img]:max-h-80 [&_img]:rounded-lg"
-                dangerouslySetInnerHTML={{ __html: diaryData.contentHtml }}
-              />
-            ) : (
-              <Text size="body2" weight="regular" className="text-gray-500">
-                작성된 내용이 없습니다.
-              </Text>
-            )}
+            <div
+              className={`gap-5 ${
+                diaryData.contentThumbnailUrl
+                  ? 'grid grid-cols-1 items-start md:grid-cols-[minmax(0,1fr)_220px]'
+                  : ''
+              }`}
+            >
+              {diaryData.hasContentHtml ? (
+                <div
+                  className="prose prose-sm max-w-none text-gray-700 [&_img]:max-h-80 [&_img]:rounded-lg"
+                  dangerouslySetInnerHTML={{ __html: diaryData.contentHtml }}
+                />
+              ) : (
+                <Text size="body2" weight="regular" className="text-gray-500">
+                  작성된 내용이 없습니다.
+                </Text>
+              )}
+
+              {diaryData.contentThumbnailUrl ? (
+                <div className="relative h-48 w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-100 md:h-56">
+                  <Image
+                    src={diaryData.contentThumbnailUrl}
+                    alt="일지 썸네일"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : null}
+            </div>
 
             {diaryData.tags.length > 0 ? (
               <div className="mt-4 flex flex-wrap gap-2">
@@ -499,13 +596,16 @@ function DiaryDetailView({
   );
 }
 
-export function DiaryDetailScreen({
-  id,
-}: {
-  id: number;
-}): React.ReactElement {
+export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
+  const hasMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const [dismissed, setDismissed] = useState(false);
+  const showAuthDialog = hasMounted && !authStorage.hasTokens() && !dismissed;
   const safeDiaryId = Number.isFinite(id) && id > 0 ? id : 0;
-  const { data, isLoading, isError } = useDiaryDetail(safeDiaryId);
+  const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
   const challengeId = data?.challenge?.challengeId ?? 0;
@@ -549,17 +649,27 @@ export function DiaryDetailScreen({
     return (
       <div className="flex min-h-[40vh] items-center justify-center p-4">
         <Text size="body1" weight="medium" className="text-red-600">
-          일지 상세를 불러오지 못했습니다.
+          {error
+            ? normalizeApiError(error).message
+            : '일지 상세를 불러오지 못했습니다.'}
         </Text>
       </div>
     );
   }
 
   return (
-    <DiaryDetailView
-      diaryData={mapDiaryToViewData(data, challengeDetailData)}
-      onLikeToggle={handleLikeToggle}
-      isLikePending={isLikePending}
-    />
+    <>
+      <LoginRequiredDialog
+        open={showAuthDialog}
+        onOpenChange={(open) => { if (!open) {setDismissed(true);} }}
+        title="간편 가입 후에 둘러보세요!"
+        description="일지 상세는 로그인 후 이용할 수 있습니다."
+      />
+      <DiaryDetailView
+        diaryData={mapDiaryToViewData(data, challengeDetailData)}
+        onLikeToggle={handleLikeToggle}
+        isLikePending={isLikePending}
+      />
+    </>
   );
 }

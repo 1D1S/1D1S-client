@@ -6,7 +6,6 @@ import {
   Icon,
   Text,
   TextField,
-  Toggle,
 } from '@1d1s/design-system';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -71,9 +70,13 @@ function useInViewObserver(): {
 
 export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
+  const [inputValue, setInputValue] = useState('');
   const [query, setQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] =
-    useState<ChallengeCategory>('ALL');
+  // const [selectedCategory, setSelectedCategory] = useState<ChallengeCategory>('ALL');
+
+  const handleSearch = (): void => {
+    setQuery(inputValue);
+  };
   // const [currentPage, setCurrentPage] = useState(1);
 
   // useChallengeList 무한 스크롤 데이터
@@ -81,6 +84,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     useChallengeList({
       limit: 10,
       keyword: query || undefined,
+      category: undefined,
     });
 
   const { ref, inView } = useInViewObserver();
@@ -163,17 +167,28 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="w-full max-w-[460px]">
+          <div className="flex w-full max-w-[560px] gap-2">
             <TextField
               variant="search"
               className="w-full"
               placeholder="챌린지 검색 (이름, 설명)"
-              value={query}
+              value={inputValue}
               onChange={(event) => {
-                setQuery(event.target.value);
-                // setCurrentPage(1);
+                setInputValue(event.target.value);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  handleSearch();
+                }
               }}
             />
+            <Button
+              size="medium"
+              onClick={handleSearch}
+              className="whitespace-nowrap"
+            >
+              검색
+            </Button>
           </div>
           <Button
             size="medium"
@@ -186,7 +201,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           </Button>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        {/* <div className="mt-4 flex flex-wrap gap-2">
           {CHALLENGE_BOARD_CATEGORY_FILTERS.map((filter) => (
             <Toggle
               key={filter.key}

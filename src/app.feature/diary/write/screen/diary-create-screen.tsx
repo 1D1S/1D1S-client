@@ -13,6 +13,7 @@ import { useDiaryCreateForm } from '../hooks/use-diary-create-form';
 
 export default function DiaryCreateScreen(): React.ReactElement {
   const {
+    isEditMode,
     title,
     setTitle,
     content,
@@ -36,7 +37,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
     isMissingChallengeDialogOpen,
     handleSelectChallenge,
     handleClearChallenge,
-    handleGoalToggle,
+    handleGoalIdsChange,
     handleThumbnailFileSelect,
     closeMissingChallengeDialog,
     clearThumbnail,
@@ -48,10 +49,12 @@ export default function DiaryCreateScreen(): React.ReactElement {
       <div className="mx-auto w-full max-w-[1080px] px-4 py-8 pb-28">
         <div className="flex flex-col gap-2">
           <Text size="display2" weight="bold" className="text-gray-900">
-            일지 작성
+            {isEditMode ? '일지 수정' : '일지 작성'}
           </Text>
           <Text size="body1" weight="regular" className="text-gray-600">
-            오늘 하루의 도전을 기록하고 마무리하세요.
+            {isEditMode
+              ? '기록을 최신 상태로 업데이트해보세요.'
+              : '오늘 하루의 도전을 기록하고 마무리하세요.'}
           </Text>
         </div>
 
@@ -82,7 +85,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
               <DiaryCreateGoalsSection
                 goals={goals}
                 achievedGoalIds={achievedGoalIds}
-                onGoalToggle={handleGoalToggle}
+                onGoalIdsChange={handleGoalIdsChange}
               />
             </div>
 

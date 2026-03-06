@@ -1,6 +1,11 @@
 import { apiClient } from '@module/api/client';
-import { buildQueryString, requestBody, requestData } from '@module/api/request';
+import {
+  buildQueryString,
+  requestBody,
+  requestData,
+} from '@module/api/request';
 
+import { resolveDiaryImageList } from '../../shared/utils/diary-image-url';
 import {
   DiaryItem,
   DiaryListParams,
@@ -13,6 +18,7 @@ type DiaryItemApi = Omit<DiaryItem, 'authorInfoDto' | 'diaryInfoDto'> & {
   diaryInfoDto?: DiaryItem['diaryInfoDto'] | null;
   author?: DiaryItem['authorInfoDto'] | null;
   diaryInfo?: DiaryItem['diaryInfoDto'] | null;
+  imgUrl?: string[] | string | null;
 };
 
 type DiaryListApiResponse = Omit<DiaryListResponse, 'items'> & {
@@ -26,6 +32,7 @@ const normalizeDiaryItem = (item: DiaryItemApi): DiaryItem => {
 
   return {
     ...rest,
+    imgUrl: resolveDiaryImageList(item.imgUrl),
     authorInfoDto: authorInfoDto ?? author ?? null,
     diaryInfoDto: diaryInfoDto ?? diaryInfo ?? null,
   };
@@ -69,6 +76,16 @@ export const diaryBoardApi = {
   getAllDiaries: async (): Promise<DiaryItem[]> => {
     const response = await requestBody<AllDiariesApiResponse>(apiClient, {
       url: '/diaries/all',
+      method: 'GET',
+    });
+
+    return normalizeAllDiariesResponse(response);
+  },
+
+  // 나의 다이어리 목록 조회 (전체)
+  getMyDiaries: async (): Promise<DiaryItem[]> => {
+    const response = await requestBody<AllDiariesApiResponse>(apiClient, {
+      url: '/diaries/my',
       method: 'GET',
     });
 
