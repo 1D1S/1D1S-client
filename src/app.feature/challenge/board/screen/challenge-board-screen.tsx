@@ -11,21 +11,6 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useChallengeList } from '../hooks/use-challenge-queries';
-import { ChallengeCategory, ChallengeListItem } from '../type/challenge';
-
-const CHALLENGE_BOARD_CATEGORY_FILTERS: Array<{
-  key: ChallengeCategory;
-  label: string;
-  icon?: string;
-}> = [
-  { key: 'ALL', label: '전체' },
-  { key: 'DEV', label: '개발', icon: '💻' },
-  { key: 'EXERCISE', label: '운동', icon: '💪' },
-  { key: 'STUDY', label: '공부', icon: '📚' },
-  { key: 'HEALTH', label: '건강', icon: '🥗' },
-  { key: 'HOBBY', label: '취미', icon: '🎨' },
-  { key: 'OTHER', label: '기타' },
-];
 
 // async function fetchChallengeList() {
 //   const response = await apiClient('/')
@@ -80,7 +65,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   // const [currentPage, setCurrentPage] = useState(1);
 
   // useChallengeList 무한 스크롤 데이터
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useChallengeList({
       limit: 10,
       keyword: query || undefined,
@@ -95,43 +80,11 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const isOngoingChallenge = (challenge: ChallengeListItem): boolean =>
-    challenge.participantCnt >= challenge.maxParticipantCnt;
-
-  const isEndedChallenge = (challenge: ChallengeListItem): boolean => {
-    const today = new Date();
-    const endDate = new Date(challenge.endDate);
-    return today > endDate;
-  };
-
-  // InfiniteQuery로 가져온 pages 배열을 flatten하여 일반 Challenge 리스트로 만듦;
-  // ChallengeItem[]에서 keyword 기반 필터링
-  const filteredChallenges = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    console.log(data);
-    const flattenChallenges =
-      data?.pages?.flatMap((page) => page?.data?.items ?? []) ?? [];
-
-    return flattenChallenges.filter((challenge) => {
-      const categoryMatched =
-        selectedCategory === 'ALL' || challenge.category === selectedCategory;
-      // others 카테고리 분기 처리 필요함.
-      if (!categoryMatched) {
-        return false;
-      }
-
-      if (!normalizedQuery) {
-        return true;
-      }
-      return (
-        challenge.title.toLowerCase().includes(normalizedQuery) ||
-        // 개별 챌린지의 description에 대한 검색이 필요하면 추가해야 함.
-        // challenge.description.toLowerCase().includes(normalizedQuery) ||
-        challenge.challengeType.toLowerCase().includes(normalizedQuery) ||
-        challenge.category.toLowerCase().includes(normalizedQuery)
-      );
-    });
-  }, [query, selectedCategory, data]);
+  // InfiniteQuery로 가져온 pages 배열을 flatten
+  const filteredChallenges = useMemo(
+    () => data?.pages?.flatMap((page) => page?.data?.items ?? []) ?? [],
+    [data]
+  );
 
   const formatChallengeType = (challengeTypeResponse: string): string =>
     ({ FIXED: '고정 목표', FLEXIBLE: '개인 목표' })[
@@ -219,15 +172,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               {filter.label}
             </Toggle>
           ))}
-        </div>
-
-        {isLoading && (
-          <div className="mt-8 flex w-full justify-center py-10">
-            <Text size="body1" weight="medium" className="text-gray-500">
-              데이터를 불러오는 중...
-            </Text>
-          </div>
-        )}
+        </div> */}
 
         <div className="challenge-grid-container mt-8">
           <div className="challenge-card-grid grid grid-cols-1 gap-4">
@@ -241,8 +186,8 @@ export default function ChallengeBoardScreen(): React.ReactElement {
                   maxUserCount={challenge.maxParticipantCnt}
                   startDate={challenge.startDate}
                   endDate={challenge.endDate}
-                  isOngoing={isOngoingChallenge(challenge)}
-                  isEnded={isEndedChallenge(challenge)}
+                  isOngoing={/*challenge.status === 'closingSoon'*/ true}
+                  isEnded={/*challenge.status === 'ended'*/ false}
                   className="h-full"
                   onClick={() =>
                     router.push(`/challenge/${challenge.challengeId}`)
@@ -270,7 +215,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           ) : null}
         </div>
 
-        {filteredChallenges.length === 0 && !isLoading ? (
+        {filteredChallenges.length === 0 ? (
           <div className="mt-8 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-gray-500">
               조건에 맞는 챌린지가 없습니다.
