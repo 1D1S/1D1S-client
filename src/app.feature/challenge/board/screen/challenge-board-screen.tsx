@@ -6,27 +6,11 @@ import {
   Icon,
   Text,
   TextField,
-  Toggle,
 } from '@1d1s/design-system';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useChallengeList } from '../hooks/use-challenge-queries';
-import { ChallengeCategory } from '../type/challenge';
-
-const CHALLENGE_BOARD_CATEGORY_FILTERS: Array<{
-  key: ChallengeCategory;
-  label: string;
-  icon?: string;
-}> = [
-  { key: 'ALL', label: '전체' },
-  { key: 'DEV', label: '개발', icon: '💻' },
-  { key: 'EXERCISE', label: '운동', icon: '💪' },
-  { key: 'STUDY', label: '공부', icon: '📚' },
-  { key: 'HEALTH', label: '건강', icon: '🥗' },
-  { key: 'HOBBY', label: '취미', icon: '🎨' },
-  { key: 'OTHER', label: '기타' },
-];
 
 // async function fetchChallengeList() {
 //   const response = await apiClient('/')
@@ -39,7 +23,8 @@ function useInViewObserver(): {
   const ref = useRef<HTMLDivElement>(null);
   const [observedInView, setObservedInView] = useState(false);
   const isIntersectionObserverUnsupported =
-    typeof window !== 'undefined' && typeof IntersectionObserver === 'undefined';
+    typeof window !== 'undefined' &&
+    typeof IntersectionObserver === 'undefined';
 
   useEffect(() => {
     const target = ref.current;
@@ -70,9 +55,13 @@ function useInViewObserver(): {
 
 export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
+  const [inputValue, setInputValue] = useState('');
   const [query, setQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] =
-    useState<ChallengeCategory>('ALL');
+  // const [selectedCategory, setSelectedCategory] = useState<ChallengeCategory>('ALL');
+
+  const handleSearch = (): void => {
+    setQuery(inputValue);
+  };
   // const [currentPage, setCurrentPage] = useState(1);
 
   // useChallengeList 무한 스크롤 데이터
@@ -80,6 +69,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     useChallengeList({
       limit: 10,
       keyword: query || undefined,
+      category: undefined,
     });
 
   const { ref, inView } = useInViewObserver();
@@ -90,34 +80,11 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // InfiniteQuery로 가져온 pages 배열을 flatten하여 일반 Challenge 리스트로 만듦;
-  // ChallengeItem[]에서 keyword 기반 필터링
-  const filteredChallenges = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    console.log(data);
-    const flattenChallenges =
-      data?.pages?.flatMap((page) => page?.data?.items ?? []) ?? [];
-
-    return flattenChallenges.filter((challenge) => {
-      const categoryMatched =
-        selectedCategory === 'ALL' || challenge.category === selectedCategory;
-      // others 카테고리 분기 처리 필요함.
-      if (!categoryMatched) {
-        return false;
-      }
-
-      if (!normalizedQuery) {
-        return true;
-      }
-      return (
-        challenge.title.toLowerCase().includes(normalizedQuery) ||
-        // 개별 챌린지의 description에 대한 검색이 필요하면 추가해야 함.
-        // challenge.description.toLowerCase().includes(normalizedQuery) ||
-        challenge.challengeType.toLowerCase().includes(normalizedQuery) ||
-        challenge.category.toLowerCase().includes(normalizedQuery)
-      );
-    });
-  }, [query, selectedCategory, data]);
+  // InfiniteQuery로 가져온 pages 배열을 flatten
+  const filteredChallenges = useMemo(
+    () => data?.pages?.flatMap((page) => page?.data?.items ?? []) ?? [],
+    [data]
+  );
 
   const formatChallengeType = (challengeTypeResponse: string): string =>
     ({ FIXED: '고정 목표', FLEXIBLE: '개인 목표' })[
@@ -153,17 +120,28 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="w-full max-w-[460px]">
+          <div className="flex w-full max-w-[560px] gap-2">
             <TextField
               variant="search"
               className="w-full"
               placeholder="챌린지 검색 (이름, 설명)"
-              value={query}
+              value={inputValue}
               onChange={(event) => {
-                setQuery(event.target.value);
-                // setCurrentPage(1);
+                setInputValue(event.target.value);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  handleSearch();
+                }
               }}
             />
+            <Button
+              size="medium"
+              onClick={handleSearch}
+              className="whitespace-nowrap"
+            >
+              검색
+            </Button>
           </div>
           <Button
             size="medium"
@@ -176,7 +154,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           </Button>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        {/* <div className="mt-4 flex flex-wrap gap-2">
           {CHALLENGE_BOARD_CATEGORY_FILTERS.map((filter) => (
             <Toggle
               key={filter.key}
@@ -194,7 +172,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               {filter.label}
             </Toggle>
           ))}
-        </div>
+        </div> */}
 
         <div className="challenge-grid-container mt-8">
           <div className="challenge-card-grid grid grid-cols-1 gap-4">

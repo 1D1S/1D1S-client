@@ -5,9 +5,7 @@ const resolveApiBaseUrl = (): string => {
 
   if (!envBaseUrl) {
     if (typeof window !== 'undefined') {
-      throw new Error(
-        'Missing API URL env. Set NEXT_PUBLIC_ODOS_API_URL.'
-      );
+      throw new Error('Missing API URL env. Set NEXT_PUBLIC_ODOS_API_URL.');
     }
     return '';
   }

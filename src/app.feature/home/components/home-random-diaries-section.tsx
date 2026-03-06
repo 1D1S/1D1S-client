@@ -74,13 +74,17 @@ export default function HomeRandomDiariesSection({
                     '/images/default-profile.png'
                   }
                   challengeLabel={
-                    item.challenge?.title ?? item.challenge?.category ?? '챌린지'
+                    item.challenge?.title ??
+                    item.challenge?.category ??
+                    '챌린지'
                   }
                   onChallengeClick={() =>
                     onChallengeClick(item.challenge?.challengeId)
                   }
                   date={toRelativeDateLabel(item.diaryInfoDto?.createdAt ?? '')}
-                  emotion={mapFeelingToEmotion(item.diaryInfoDto?.feeling ?? 'NONE')}
+                  emotion={mapFeelingToEmotion(
+                    item.diaryInfoDto?.feeling ?? 'NONE'
+                  )}
                   onLikeToggle={() => {
                     if (isLikePending) {
                       return;

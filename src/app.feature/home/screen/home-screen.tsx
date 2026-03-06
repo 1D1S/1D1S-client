@@ -1,6 +1,7 @@
 'use client';
 
 import { BannerCarousel, PageWatermark } from '@1d1s/design-system';
+import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { HOME_MAIN_BANNERS } from '@constants/consts/home-data';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -13,7 +14,8 @@ import { useHomeRandomDiaryLike } from '../hooks/use-home-random-diary-like';
 
 export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
-  const { isLikePending, onLikeToggle } = useHomeRandomDiaryLike();
+  const { isLikePending, showLoginDialog, setShowLoginDialog, onLikeToggle } =
+    useHomeRandomDiaryLike();
   const {
     randomChallenges,
     isChallengesLoading,
@@ -27,6 +29,10 @@ export default function HomeScreen(): React.ReactElement {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-white">
+      <LoginRequiredDialog
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+      />
       {/* 메인 콘텐츠 */}
       <div className="flex w-full flex-col pt-6">
         <div className="h-6" />
@@ -63,7 +69,9 @@ export default function HomeScreen(): React.ReactElement {
           isError={isChallengesError}
           errorMessage={challengesErrorMessage}
           onMoreClick={() => router.push('/challenge')}
-          onChallengeClick={(challengeId) => router.push(`/challenge/${challengeId}`)}
+          onChallengeClick={(challengeId) =>
+            router.push(`/challenge/${challengeId}`)
+          }
         />
 
         <div className="h-12" />
@@ -79,7 +87,9 @@ export default function HomeScreen(): React.ReactElement {
           onDiaryClick={(diaryId) => router.push(`/diary/${diaryId}`)}
           onLikeToggle={onLikeToggle}
           onChallengeClick={(challengeId) =>
-            router.push(challengeId ? `/challenge/${challengeId}` : '/challenge')
+            router.push(
+              challengeId ? `/challenge/${challengeId}` : '/challenge'
+            )
           }
         />
 

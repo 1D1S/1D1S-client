@@ -21,19 +21,13 @@ function getCachedSidebar(): SidebarData | undefined {
 
 function setCachedSidebar(data: SidebarData): void {
   try {
-    localStorage.setItem(
-      SIDEBAR_CACHE_KEY,
-      JSON.stringify(data)
-    );
+    localStorage.setItem(SIDEBAR_CACHE_KEY, JSON.stringify(data));
   } catch {
     // ignore
   }
 }
 
-export function useSidebar(): UseQueryResult<
-  SidebarData,
-  Error
-> {
+export function useSidebar(): UseQueryResult<SidebarData, Error> {
   const cachedSidebar = getCachedSidebar();
 
   return useQuery({
@@ -53,10 +47,7 @@ export function useSidebar(): UseQueryResult<
   });
 }
 
-export function useMyPage(): UseQueryResult<
-  MyPageData,
-  Error
-> {
+export function useMyPage(): UseQueryResult<MyPageData, Error> {
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.myPage(),
     queryFn: () => memberApi.getMyPage(),

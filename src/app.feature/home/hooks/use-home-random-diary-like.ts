@@ -1,11 +1,18 @@
 import { DIARY_QUERY_KEYS } from '@feature/diary/board/consts/query-keys';
-import { type DiaryDetail, type DiaryItem } from '@feature/diary/board/type/diary';
+import {
+  type DiaryDetail,
+  type DiaryItem,
+} from '@feature/diary/board/type/diary';
 import { diaryDetailApi } from '@feature/diary/detail/api/diary-detail-api';
 import { notifyApiError } from '@module/api/error';
+import { authStorage } from '@module/utils/auth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 
 interface UseHomeRandomDiaryLikeResult {
   isLikePending: boolean;
+  showLoginDialog: boolean;
+  setShowLoginDialog(open: boolean): void;
   onLikeToggle(diary: DiaryItem): void;
 }
 
@@ -14,7 +21,10 @@ function resolveNextLikeCount(
   likedByMe: boolean,
   likeCountFromServer?: number
 ): number {
-  if (typeof likeCountFromServer === 'number' && Number.isFinite(likeCountFromServer)) {
+  if (
+    typeof likeCountFromServer === 'number' &&
+    Number.isFinite(likeCountFromServer)
+  ) {
     return Math.max(0, likeCountFromServer);
   }
 
@@ -59,6 +69,7 @@ function updateDiaryListLikeInfo(
 
 export function useHomeRandomDiaryLike(): UseHomeRandomDiaryLikeResult {
   const queryClient = useQueryClient();
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   const updateCachedDiaryLikes = (
     diaryId: number,
@@ -125,6 +136,11 @@ export function useHomeRandomDiaryLike(): UseHomeRandomDiaryLikeResult {
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
 
   const onLikeToggle = (diary: DiaryItem): void => {
+    if (!authStorage.hasTokens()) {
+      setShowLoginDialog(true);
+      return;
+    }
+
     if (isLikePending) {
       return;
     }
@@ -139,6 +155,8 @@ export function useHomeRandomDiaryLike(): UseHomeRandomDiaryLikeResult {
 
   return {
     isLikePending,
+    showLoginDialog,
+    setShowLoginDialog,
     onLikeToggle,
   };
 }

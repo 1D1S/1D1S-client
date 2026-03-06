@@ -1,8 +1,5 @@
 import { useRouter, useSearchParams } from 'next/navigation';
-import type {
-  Dispatch,
-  SetStateAction,
-} from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
@@ -15,7 +12,10 @@ import type {
   ChallengeListItem,
   ChallengeType,
 } from '../../../challenge/board/type/challenge';
-import { useAllDiaries, useDiaryDetail } from '../../board/hooks/use-diary-queries';
+import {
+  useAllDiaries,
+  useDiaryDetail,
+} from '../../board/hooks/use-diary-queries';
 import type {
   ChallengeSummary as DiaryChallengeSummary,
   DiaryDetail,
@@ -73,14 +73,15 @@ function normalizeChallengeCategory(category: string): ChallengeCategory {
   const categoryMap: Record<string, ChallengeCategory> = {
     ALL: 'ALL',
     DEV: 'DEV',
-    HEALTH: 'HEALTH',
-    STUDY: 'STUDY',
     EXERCISE: 'EXERCISE',
-    HOBBY: 'HOBBY',
-    OTHER: 'OTHER',
+    BOOK: 'BOOK',
+    MUSIC: 'MUSIC',
+    STUDY: 'STUDY',
+    LEISURE: 'LEISURE',
+    ECONOMY: 'ECONOMY',
   };
 
-  return categoryMap[category] ?? 'OTHER';
+  return categoryMap[category] ?? 'DEV';
 }
 
 function normalizeChallengeType(challengeType: string): ChallengeType {
@@ -187,7 +188,7 @@ interface UseDiaryCreateFormResult {
   isMissingChallengeDialogOpen: boolean;
   handleSelectChallenge(challenge: ChallengeListItem): void;
   handleClearChallenge(): void;
-  handleGoalToggle(goalId: number, checked: boolean): void;
+  handleGoalIdsChange(goalIds: number[]): void;
   handleAchievedDateChange(date: Date | undefined): void;
   handleThumbnailFileSelect(file: File): void;
   closeMissingChallengeDialog(): void;
@@ -343,7 +344,13 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       setIsPublic(existingDiary.isPublic ?? true);
       setAchievedDate(nextAchievedDate);
       setSelectedChallengeId(existingDiary.challenge?.challengeId ?? null);
-      setAchievedGoalIds(diaryInfo?.achievement ?? []);
+      const achievedGoalIds =
+        diaryInfo?.diaryGoal
+          ?.filter((goal) => goal.isAchieved)
+          ?.map((goal) => goal.goalId) ??
+        diaryInfo?.achievement ??
+        [];
+      setAchievedGoalIds(achievedGoalIds);
       setThumbnailPreviewUrl(nextThumbnailPreviewUrl);
       setIsEditFormInitialized(true);
     }, 0);
@@ -363,18 +370,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     setAchievedGoalIds([]);
   }, []);
 
-  const handleGoalToggle = useCallback((goalId: number, checked: boolean) => {
-    setAchievedGoalIds((prev) => {
-      if (!checked) {
-        return prev.filter((id) => id !== goalId);
-      }
-
-      if (prev.includes(goalId)) {
-        return prev;
-      }
-
-      return [...prev, goalId];
-    });
+  const handleGoalIdsChange = useCallback((goalIds: number[]) => {
+    setAchievedGoalIds(goalIds);
   }, []);
 
   const handleAchievedDateChange = useCallback((date: Date | undefined) => {
@@ -489,11 +486,11 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     ? '작성 중...'
     : updateDiary.isPending
       ? '수정 중...'
-    : uploadDiaryImage.isPending
-      ? '썸네일 업로드 중...'
-      : isEditMode
-        ? '수정 완료'
-        : '작성 완료';
+      : uploadDiaryImage.isPending
+        ? '썸네일 업로드 중...'
+        : isEditMode
+          ? '수정 완료'
+          : '작성 완료';
 
   return {
     isEditMode,
@@ -520,7 +517,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     isMissingChallengeDialogOpen,
     handleSelectChallenge,
     handleClearChallenge,
-    handleGoalToggle,
+    handleGoalIdsChange,
     handleAchievedDateChange,
     handleThumbnailFileSelect,
     closeMissingChallengeDialog,

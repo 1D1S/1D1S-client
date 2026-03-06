@@ -4,10 +4,12 @@
 import {
   ChallengeCard as DSChallengeCard,
   CircleAvatar,
+  DiaryCard,
   Streak,
   Text,
 } from '@1d1s/design-system';
-import { useLogout } from '@feature/auth/hooks/use-auth-mutations';
+import { useMyDiaries } from '@feature/diary/board/hooks/use-diary-queries';
+import { DiaryItem } from '@feature/diary/board/type/diary';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
 import type { StreakCalendarItem } from '@feature/member/type/member';
 import { authStorage } from '@module/utils/auth';
@@ -15,7 +17,6 @@ import {
   CheckCircle2,
   FileText,
   Flame,
-  LogOut,
   PencilLine,
   Plus,
   Target,
@@ -24,14 +25,13 @@ import {
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-function buildYearStreak(
-  calendar: StreakCalendarItem[]
-): StreakCalendarItem[] {
+type DiaryEmotion = 'happy' | 'soso' | 'sad';
+type Feeling = 'HAPPY' | 'NORMAL' | 'SAD' | 'NONE';
+
+function buildYearStreak(calendar: StreakCalendarItem[]): StreakCalendarItem[] {
   const year = new Date().getFullYear();
   const today = new Date();
-  const calendarMap = new Map(
-    calendar.map((item) => [item.date, item.count])
-  );
+  const calendarMap = new Map(calendar.map((item) => [item.date, item.count]));
 
   const result: StreakCalendarItem[] = [];
   const cursor = new Date(year, 0, 1);
@@ -48,18 +48,56 @@ function buildYearStreak(
   return result;
 }
 
+function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
+  switch (feeling) {
+    case 'HAPPY':
+      return 'happy';
+    case 'SAD':
+      return 'sad';
+    case 'NORMAL':
+    case 'NONE':
+    default:
+      return 'soso';
+  }
+}
+
+function toRelativeDateLabel(createdAt: string | undefined): string {
+  if (!createdAt) {
+    return '최근';
+  }
+
+  const targetDate = new Date(createdAt);
+  if (Number.isNaN(targetDate.getTime())) {
+    return '최근';
+  }
+
+  const diffMinutes = Math.round((targetDate.getTime() - Date.now()) / 60000);
+  const absMinutes = Math.abs(diffMinutes);
+
+  if (absMinutes < 60) {
+    return `${absMinutes}분 전`;
+  }
+
+  const diffHours = Math.round(absMinutes / 60);
+  if (diffHours < 24) {
+    return `${diffHours}시간 전`;
+  }
+
+  const diffDays = Math.round(diffHours / 24);
+  return `${diffDays}일 전`;
+}
+
+function resolveDiaryImage(diary: DiaryItem): string {
+  if (Array.isArray(diary.imgUrl) && diary.imgUrl.length > 0) {
+    return diary.imgUrl[0] ?? '/images/default-card.png';
+  }
+  return '/images/default-card.png';
+}
+
 export default function MyPage(): React.ReactElement {
   const router = useRouter();
-  const logout = useLogout();
   const { data, isLoading } = useMyPage();
-
-  const handleLogout = (): void => {
-    logout.mutate(undefined, {
-      onSettled: () => {
-        router.replace('/login');
-      },
-    });
-  };
+  const { data: myDiaries = [] } = useMyDiaries();
 
   if (isLoading || !data) {
     return (
@@ -71,7 +109,28 @@ export default function MyPage(): React.ReactElement {
     );
   }
 
-  const { nickname, profileUrl, streak, challengeList, diaryList } = data;
+  const { nickname, profileUrl, streak, challengeList } = data;
+  const recentDiaryCards = myDiaries.map((diary) => {
+    const diaryInfo = diary.diaryInfoDto;
+    const achievementRate =
+      diary.achievementRate ?? diaryInfo?.achievementRate ?? 0;
+
+    return {
+      id: diary.id,
+      title: diary.title || '제목 없는 일지',
+      imageUrl: resolveDiaryImage(diary),
+      percent: Math.min(100, Math.max(0, achievementRate)),
+      isLiked: diary.likeInfo.likedByMe,
+      likes: diary.likeInfo.likeCnt,
+      user: nickname || '나',
+      userImage: profileUrl || '/images/default-profile.png',
+      challengeLabel:
+        diary.challenge?.title ?? diary.challenge?.category ?? '나의 일지',
+      challengeId: diary.challenge?.challengeId,
+      date: toRelativeDateLabel(diaryInfo?.createdAt),
+      emotion: mapFeelingToEmotion(diaryInfo?.feeling ?? 'NONE'),
+    };
+  });
 
   return (
     <div className="min-h-screen w-full bg-white p-4">
@@ -92,50 +151,51 @@ export default function MyPage(): React.ReactElement {
           </div>
         </div>
       )}
-      <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)_320px]">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <Text size="heading2" weight="bold" className="text-gray-700">
-              진행 중인 챌린지
-            </Text>
-          </div>
-
-          {challengeList.length === 0 ? (
-            <div className="rounded-4 border border-gray-200 bg-white p-6 text-center">
-              <Text size="body1" weight="medium" className="text-gray-500">
-                진행 중인 챌린지가 없습니다.
+      <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <aside className="space-y-4 xl:order-last">
+          <div className="grid grid-cols-2 gap-4 xl:grid-cols-1">
+            <section className="rounded-4 border border-gray-200 bg-white p-5 text-center">
+              <div className="border-main-800/20 bg-main-200 mx-auto mb-3 flex h-[80px] w-[80px] items-center justify-center rounded-full border-4">
+                <CircleAvatar imageUrl={profileUrl} size="lg" />
+              </div>
+              <Text size="display2" weight="bold" className="text-gray-900">
+                {nickname}
               </Text>
-            </div>
-          ) : (
-            challengeList.map((ch) => {
-              const now = new Date();
-              const start = new Date(ch.startDate);
-              const end = new Date(ch.endDate);
-              return (
-                <DSChallengeCard
-                  key={ch.challengeId}
-                  challengeTitle={ch.title}
-                  challengeType={ch.challengeType}
-                  challengeCategory={ch.category}
-                  currentUserCount={ch.participantCnt}
-                  maxUserCount={ch.maxParticipantCnt}
-                  startDate={ch.startDate}
-                  endDate={ch.endDate}
-                  isOngoing={now >= start && now <= end}
-                  isEnded={now > end}
-                  onClick={() =>
-                    router.push(
-                      `/challenge/${ch.challengeId}`
-                    )
-                  }
-                />
-              );
-            })
-          )}
-        </div>
+              <button
+                type="button"
+                onClick={() => router.push('/mypage/settings')}
+                className="mt-5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-800 transition hover:bg-gray-100"
+              >
+                <Text size="body1" weight="bold">
+                  계정 설정
+                </Text>
+              </button>
+            </section>
 
-        <main className="space-y-4">
-          <section className="rounded-4 border border-gray-200 bg-white p-5">
+            <section className="rounded-4 border border-gray-200 bg-white p-5">
+              <Text size="body1" weight="medium" className="text-gray-600">
+                빠른 실행
+              </Text>
+
+              <div className="mt-4 space-y-2">
+                <QuickActionItem
+                  icon={<PencilLine className="h-4 w-4" />}
+                  title="일지 작성하기"
+                  onClick={() => router.push('/diary/create')}
+                />
+                <QuickActionItem
+                  icon={<Plus className="h-4 w-4" />}
+                  title="챌린지 만들기"
+                  onClick={() => router.push('/challenge/create')}
+                  tone="blue"
+                />
+              </div>
+            </section>
+          </div>
+        </aside>
+
+        <main className="space-y-4 xl:order-first">
+          <section>
             <div>
               <Text size="display2" weight="bold" className="text-gray-900">
                 활동 통계
@@ -200,110 +260,105 @@ export default function MyPage(): React.ReactElement {
             </div>
           </section>
 
-          <section className="rounded-4 border border-gray-200 bg-white p-5">
-            <Text
-              size="display2"
-              weight="bold"
-              className="mb-4 text-gray-900"
-            >
+          <section>
+            <Text size="display2" weight="bold" className="mb-4 text-gray-900">
               활동 기록
             </Text>
 
             <Streak data={buildYearStreak(streak.calendar)} size={14} gap={6} />
           </section>
 
-          {diaryList.length > 0 && (
-            <section className="space-y-4">
-              <Text size="display2" weight="bold" className="text-gray-900">
-                최근 일지
-              </Text>
-              {diaryList.map((diary) => (
-                <article
-                  key={diary.id}
-                  className="rounded-4 border border-gray-200 bg-white p-4"
-                >
-                  <div className="flex items-start justify-between">
-                    <Text
-                      size="heading1"
-                      weight="bold"
-                      className="text-gray-900"
-                    >
-                      {diary.title}
-                    </Text>
-                    <div className="flex items-center gap-1 text-gray-500">
-                      <Text size="body2" weight="medium">
-                        {diary.isPublic ? '공개' : '비공개'}
-                      </Text>
-                    </div>
-                  </div>
-                  <Text
-                    size="body1"
-                    weight="regular"
-                    className="mt-2 line-clamp-2 text-gray-600"
-                  >
-                    {diary.content}
-                  </Text>
-                </article>
-              ))}
-            </section>
-          )}
-        </main>
-
-        <aside className="space-y-4">
-          <section className="rounded-4 border border-gray-200 bg-white p-5 text-center">
-            <div className="border-main-800/20 bg-main-200 mx-auto mb-3 flex h-[80px] w-[80px] items-center justify-center rounded-full border-4">
-              <CircleAvatar imageUrl={profileUrl} size="lg" />
-            </div>
+          <section>
             <Text size="display2" weight="bold" className="text-gray-900">
-              {nickname}
+              진행 중인 챌린지
             </Text>
-            <button
-              type="button"
-              className="mt-5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-800 transition hover:bg-gray-100"
-            >
-              <Text size="body1" weight="bold">
-                프로필 편집
-              </Text>
-            </button>
+
+            {challengeList.length === 0 ? (
+              <div className="rounded-3 mt-4 border border-gray-200 p-6 text-center">
+                <Text size="body1" weight="medium" className="text-gray-500">
+                  진행 중인 챌린지가 없습니다.
+                </Text>
+              </div>
+            ) : (
+              <div className="mt-4 overflow-x-auto">
+                <div className="flex w-max gap-3 pb-2">
+                  {challengeList.map((ch) => {
+                    const now = new Date();
+                    const start = new Date(ch.startDate);
+                    const end = new Date(ch.endDate);
+
+                    return (
+                      <div key={ch.challengeId} className="w-[320px] shrink-0">
+                        <DSChallengeCard
+                          challengeTitle={ch.title}
+                          challengeType={ch.challengeType}
+                          challengeCategory={ch.category}
+                          currentUserCount={ch.participantCnt}
+                          maxUserCount={ch.maxParticipantCnt}
+                          startDate={ch.startDate}
+                          endDate={ch.endDate}
+                          isOngoing={now >= start && now <= end}
+                          isEnded={now > end}
+                          onClick={() =>
+                            router.push(`/challenge/${ch.challengeId}`)
+                          }
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </section>
 
-          <section className="rounded-4 border border-gray-200 bg-white p-5">
-            <Text size="body1" weight="medium" className="text-gray-600">
-              빠른 실행
+          <section>
+            <Text size="display2" weight="bold" className="text-gray-900">
+              내 일지
             </Text>
 
-            <div className="mt-4 space-y-2">
-              <QuickActionItem
-                icon={<PencilLine className="h-4 w-4" />}
-                title="일지 작성하기"
-                onClick={() => router.push('/diary/create')}
-              />
-              <QuickActionItem
-                icon={<Plus className="h-4 w-4" />}
-                title="챌린지 만들기"
-                onClick={() => router.push('/challenge/create')}
-                tone="blue"
-              />
-            </div>
+            {recentDiaryCards.length === 0 ? (
+              <div className="rounded-3 mt-4 border border-gray-200 p-6 text-center">
+                <Text size="body1" weight="medium" className="text-gray-500">
+                  작성한 일지가 없습니다.
+                </Text>
+              </div>
+            ) : (
+              <div className="mt-4 overflow-x-auto">
+                <div className="flex w-max gap-3 pb-2">
+                  {recentDiaryCards.map((diary) => (
+                    <div key={diary.id} className="w-[240px] shrink-0">
+                      <DiaryCard
+                        imageUrl={diary.imageUrl}
+                        percent={diary.percent}
+                        isLiked={diary.isLiked}
+                        likes={diary.likes}
+                        title={diary.title}
+                        user={diary.user}
+                        userImage={diary.userImage}
+                        challengeLabel={diary.challengeLabel}
+                        onChallengeClick={() =>
+                          router.push(
+                            diary.challengeId
+                              ? `/challenge/${diary.challengeId}`
+                              : '/challenge'
+                          )
+                        }
+                        date={diary.date}
+                        emotion={diary.emotion}
+                        onLikeToggle={() => undefined}
+                        onClick={() => router.push(`/diary/${diary.id}`)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
-
-          <button
-            type="button"
-            onClick={handleLogout}
-            disabled={logout.isPending}
-            className="rounded-4 flex w-full items-center justify-center gap-2 border border-red-200 bg-white px-4 py-3 text-red-500 transition hover:bg-red-50"
-          >
-            <LogOut className="h-4 w-4" />
-            <Text size="body1" weight="bold">
-              {logout.isPending ? '로그아웃 중...' : '로그아웃'}
-            </Text>
-          </button>
-        </aside>
+        </main>
       </div>
     </div>
   );
 }
-
 
 function StatCard({
   icon,

@@ -498,9 +498,7 @@ export function SignUpScreen(): React.ReactElement {
                             const values = Array.isArray(field.value)
                               ? field.value
                               : [];
-                            const checked = values.includes(
-                              option.value
-                            );
+                            const checked = values.includes(option.value);
 
                             return (
                               <CheckContainer

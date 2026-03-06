@@ -9,10 +9,7 @@ import {
 import { useSidebar } from '@feature/member/hooks/use-member-queries';
 import { authStorage } from '@module/utils/auth';
 import { usePathname, useRouter } from 'next/navigation';
-import React, {
-  useMemo,
-  useSyncExternalStore,
-} from 'react';
+import React, { useMemo, useSyncExternalStore } from 'react';
 
 import { AppLayoutProvider } from './app-layout-context';
 
@@ -47,7 +44,7 @@ const APP_HEADER_ROUTE_BY_KEY: Record<string, string> = {
 
 const DEFAULT_RIGHT_SIDEBAR_PROPS: RightSidebarProps = {
   userName: '사용자',
-  userHandle: '@user',
+  userSubtitle: '로그인이 필요한 서비스입니다.',
   streakDays: 0,
   challenges: [],
 };
@@ -176,11 +173,7 @@ export default function AppLayoutShell({
     () => true,
     () => false
   );
-  const now = useSyncExternalStore(
-    NOOP_SUBSCRIBE,
-    getMountTimestamp,
-    () => 0
-  );
+  const now = useSyncExternalStore(NOOP_SUBSCRIBE, getMountTimestamp, () => 0);
 
   const isLoggedIn = hasMounted && authStorage.hasTokens();
   const { data: sidebarData } = useSidebar();
@@ -206,7 +199,7 @@ export default function AppLayoutShell({
 
     return {
       userName: sidebarData.nickname,
-      userHandle: `오늘의 목표 ${sidebarData.todayGoalCount}개`,
+      userSubtitle: `오늘의 목표 ${sidebarData.todayGoalCount}개`,
       userImage: sidebarData.profileUrl,
       streakDays: sidebarData.streakCount,
       challenges,
@@ -233,7 +226,9 @@ export default function AppLayoutShell({
             <AppHeader
               navItems={[...APP_HEADER_NAV_ITEMS]}
               activeKey={activeNavKey}
-              showProfile={isLoggedIn && !showRightSidebar && pathname !== '/mypage'}
+              showProfile={
+                isLoggedIn && !showRightSidebar && pathname !== '/mypage'
+              }
               onLogoClick={() => router.push('/')}
               onNavChange={(key) => {
                 const route = APP_HEADER_ROUTE_BY_KEY[key];
@@ -241,6 +236,7 @@ export default function AppLayoutShell({
                   router.push(route);
                 }
               }}
+              onNotificationClick={() => router.push('/notification')}
               onProfileClick={() => router.push('/mypage')}
             />
           </header>
@@ -261,6 +257,7 @@ export default function AppLayoutShell({
                   fixed={false}
                   onWriteDiary={() => router.push('/diary/create')}
                   onGoMyPage={() => router.push('/mypage')}
+                  onOpenSettings={() => router.push('/mypage/settings')}
                   onLogin={() => router.push('/login')}
                 />
               ) : (

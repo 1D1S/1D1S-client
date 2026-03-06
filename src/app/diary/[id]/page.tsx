@@ -13,4 +13,3 @@ export default async function DiaryDetailPage({
 
   return <DiaryDetailScreen id={diaryId} />;
 }
-

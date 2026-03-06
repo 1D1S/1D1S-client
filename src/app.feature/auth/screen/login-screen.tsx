@@ -1,6 +1,6 @@
 'use client';
 
-import { Icon, Text } from '@1d1s/design-system';
+import { Button, Icon, Text } from '@1d1s/design-system';
 import { API_BASE_URL } from '@module/api/config';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -34,8 +34,7 @@ export function LoginScreen(): React.ReactElement {
               weight="bold"
               className="leading-tight text-white"
             >
-              &quot;The only way to achieve the impossible is to believe it is
-              possible.&quot;
+              &quot;불가능을 이루는 단 하나의 방법은, 그것이 가능하다고 믿는 것입니다.&quot;
             </Text>
           </div>
         </div>
@@ -68,10 +67,10 @@ export function LoginScreen(): React.ReactElement {
           </Text>
 
           <div className="mt-10 flex flex-col gap-4">
-            <button
-              type="button"
+            <Button
+              size="large"
               onClick={() => handleSocialLogin('kakao')}
-              className="rounded-4 relative flex h-14 w-full items-center justify-center bg-[#FEE500] px-5 font-semibold text-black transition hover:brightness-95"
+              className="relative w-full bg-[#FEE500] text-black hover:bg-[#FEE500]/90"
             >
               <span className="absolute left-5">
                 <Image
@@ -82,12 +81,12 @@ export function LoginScreen(): React.ReactElement {
                 />
               </span>
               카카오 로그인
-            </button>
+            </Button>
 
-            <button
-              type="button"
+            <Button
+              size="large"
               onClick={() => handleSocialLogin('naver')}
-              className="rounded-4 relative flex h-14 w-full items-center justify-center bg-[#03C75A] px-5 font-semibold text-white transition hover:brightness-95"
+              className="relative w-full bg-[#03C75A] text-white hover:bg-[#03C75A]/90"
             >
               <span className="absolute left-5">
                 <Image
@@ -98,7 +97,7 @@ export function LoginScreen(): React.ReactElement {
                 />
               </span>
               네이버 로그인
-            </button>
+            </Button>
           </div>
         </div>
       </section>

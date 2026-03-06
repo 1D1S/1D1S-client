@@ -6,13 +6,13 @@ import type { ChallengeGoal } from '../../../challenge/board/type/challenge';
 interface DiaryCreateGoalsSectionProps {
   goals: ChallengeGoal[];
   achievedGoalIds: number[];
-  onGoalToggle(goalId: number, checked: boolean): void;
+  onGoalIdsChange(goalIds: number[]): void;
 }
 
 export function DiaryCreateGoalsSection({
   goals,
   achievedGoalIds,
-  onGoalToggle,
+  onGoalIdsChange,
 }: DiaryCreateGoalsSectionProps): React.ReactElement {
   const options = goals.map((goal) => ({
     id: String(goal.challengeGoalId),
@@ -22,19 +22,7 @@ export function DiaryCreateGoalsSection({
   const selectedValues = achievedGoalIds.map((goalId) => String(goalId));
 
   const handleValueChange = (nextValues: string[]): void => {
-    const previousSet = new Set(selectedValues);
-    const nextSet = new Set(nextValues);
-
-    goals.forEach((goal) => {
-      const goalId = goal.challengeGoalId;
-      const goalKey = String(goalId);
-      const wasChecked = previousSet.has(goalKey);
-      const isChecked = nextSet.has(goalKey);
-
-      if (wasChecked !== isChecked) {
-        onGoalToggle(goalId, isChecked);
-      }
-    });
+    onGoalIdsChange(nextValues.map((value) => Number(value)));
   };
 
   return (

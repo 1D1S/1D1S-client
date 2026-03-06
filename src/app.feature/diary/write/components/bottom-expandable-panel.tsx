@@ -1,7 +1,7 @@
-import { DatePicker,PageWatermark, Text } from '@1d1s/design-system';
+import { DatePicker, PageWatermark, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
-import { AnimatePresence,motion } from 'framer-motion';
-import { useEffect, useRef,useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 
 import { Mood, MoodToggle } from './mood-toggle';
 

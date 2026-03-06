@@ -1,7 +1,9 @@
 'use client';
 
 import { Button, CheckList, Tag, Text } from '@1d1s/design-system';
+import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { normalizeApiError } from '@module/api/error';
+import { authStorage } from '@module/utils/auth';
 import {
   CalendarDays,
   ChevronRight,
@@ -13,7 +15,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useSyncExternalStore } from 'react';
 
 import { useChallengeDetail } from '../../../challenge/board/hooks/use-challenge-queries';
 import {
@@ -21,7 +23,7 @@ import {
   ChallengeGoal,
 } from '../../../challenge/board/type/challenge';
 import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
-import { DiaryDetail, Feeling } from '../../board/type/diary';
+import { DiaryDetail, DiaryGoalStatus, Feeling } from '../../board/type/diary';
 import {
   resolveDiaryImageList,
   resolveDiaryImageUrl,
@@ -31,12 +33,6 @@ import { useLikeDiary, useUnlikeDiary } from '../hooks/use-diary-mutations';
 interface ChecklistItem {
   id: string;
   label: string;
-}
-
-interface DiaryGoalStatus {
-  goalId: number;
-  goalName: string;
-  isAchieved: boolean;
 }
 
 interface DiaryInfoWithAliases {
@@ -105,9 +101,10 @@ function feelingToEmoji(feeling: Feeling): string {
   }
 }
 
-function formatDate(
-  dateValue: string
-): { dateLabel: string; weekdayLabel: string } {
+function formatDate(dateValue: string): {
+  dateLabel: string;
+  weekdayLabel: string;
+} {
   if (!dateValue) {
     return { dateLabel: '-', weekdayLabel: '-' };
   }
@@ -217,8 +214,7 @@ function mapDiaryToViewData(
   challengeDetailData?: ChallengeDetailResponse
 ): DiaryDetailViewData {
   const diaryInfo = getDiaryInfo(diary);
-  const baseDate =
-    diaryInfo?.createdAt ?? diaryInfo?.challengedDate ?? '';
+  const baseDate = diaryInfo?.createdAt ?? diaryInfo?.challengedDate ?? '';
   const { dateLabel, weekdayLabel } = formatDate(baseDate);
   const challengeGoals: ChallengeGoal[] =
     challengeDetailData?.challengeGoals ?? [];
@@ -443,7 +439,9 @@ function DiaryDetailView({
             <Button
               variant="default"
               size="medium"
-              onClick={() => router.push(`/diary/create?diaryId=${diaryData.id}`)}
+              onClick={() =>
+                router.push(`/diary/create?diaryId=${diaryData.id}`)
+              }
             >
               <Edit3 className="mr-1 h-4 w-4" />
               일지 수정
@@ -561,8 +559,7 @@ function DiaryDetailView({
             >
               {diaryData.hasContentHtml ? (
                 <div
-                  className="prose prose-sm max-w-none text-gray-700
-                    [&_img]:max-h-80 [&_img]:rounded-lg"
+                  className="prose prose-sm max-w-none text-gray-700 [&_img]:max-h-80 [&_img]:rounded-lg"
                   dangerouslySetInnerHTML={{ __html: diaryData.contentHtml }}
                 />
               ) : (
@@ -599,11 +596,14 @@ function DiaryDetailView({
   );
 }
 
-export function DiaryDetailScreen({
-  id,
-}: {
-  id: number;
-}): React.ReactElement {
+export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
+  const hasMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const [dismissed, setDismissed] = useState(false);
+  const showAuthDialog = hasMounted && !authStorage.hasTokens() && !dismissed;
   const safeDiaryId = Number.isFinite(id) && id > 0 ? id : 0;
   const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId);
   const likeDiary = useLikeDiary();
@@ -658,10 +658,18 @@ export function DiaryDetailScreen({
   }
 
   return (
-    <DiaryDetailView
-      diaryData={mapDiaryToViewData(data, challengeDetailData)}
-      onLikeToggle={handleLikeToggle}
-      isLikePending={isLikePending}
-    />
+    <>
+      <LoginRequiredDialog
+        open={showAuthDialog}
+        onOpenChange={(open) => { if (!open) {setDismissed(true);} }}
+        title="간편 가입 후에 둘러보세요!"
+        description="일지 상세는 로그인 후 이용할 수 있습니다."
+      />
+      <DiaryDetailView
+        diaryData={mapDiaryToViewData(data, challengeDetailData)}
+        onLikeToggle={handleLikeToggle}
+        isLikePending={isLikePending}
+      />
+    </>
   );
 }
