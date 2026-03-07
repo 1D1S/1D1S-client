@@ -56,7 +56,7 @@ export function Step2(): React.ReactElement {
                   width="100%"
                   height={176}
                   className={cn(
-                    '!rounded-3 !items-start !justify-start p-6 text-left',
+                    '!rounded-3 !items-start !justify-start p-6 text-left hover:cursor-pointer',
                     field.value === 'ENDLESS'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
@@ -96,7 +96,7 @@ export function Step2(): React.ReactElement {
                   width="100%"
                   height={176}
                   className={cn(
-                    '!rounded-3 !items-start !justify-start p-6 text-left',
+                    '!rounded-3 !items-start !justify-start p-6 text-left hover:cursor-pointer',
                     field.value === 'LIMITED'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
@@ -159,7 +159,7 @@ export function Step2(): React.ReactElement {
                           width="auto"
                           height={46}
                           className={cn(
-                            '!rounded-full px-4',
+                            '!rounded-full px-4 hover:cursor-pointer',
                             isSelected
                               ? '!border-main-800 !bg-main-800 !text-white'
                               : '!border-gray-300 !bg-white !text-gray-700'
@@ -220,7 +220,11 @@ export function Step2(): React.ReactElement {
               render={({ field }) => (
                 <FormItem>
                   <div className="w-full md:w-[280px]">
-                    <DatePicker value={field.value} onChange={field.onChange} />
+                    <DatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="hover:cursor-pointer"
+                    />
                   </div>
                   <FormMessage />
                 </FormItem>

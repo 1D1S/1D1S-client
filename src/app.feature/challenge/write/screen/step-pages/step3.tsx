@@ -49,7 +49,7 @@ export function Step3(): React.ReactElement {
                   width="100%"
                   height={176}
                   className={cn(
-                    '!rounded-3 !items-start !justify-start p-6 text-left',
+                    '!rounded-3 !items-start !justify-start p-6 text-left hover:cursor-pointer',
                     field.value === 'INDIVIDUAL'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
@@ -89,7 +89,7 @@ export function Step3(): React.ReactElement {
                   width="100%"
                   height={176}
                   className={cn(
-                    '!rounded-3 !items-start !justify-start p-6 text-left',
+                    '!rounded-3 !items-start !justify-start p-6 text-left hover:cursor-pointer',
                     field.value === 'GROUP'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
@@ -138,7 +138,7 @@ export function Step3(): React.ReactElement {
                 <FormItem>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="h-14 w-full rounded-2xl">
+                      <SelectTrigger className="h-14 w-full rounded-2xl hover:cursor-pointer">
                         <SelectValue placeholder="참여 인원을 선택해주세요." />
                       </SelectTrigger>
                     </FormControl>
