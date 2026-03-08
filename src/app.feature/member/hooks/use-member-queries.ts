@@ -21,19 +21,15 @@ function getCachedSidebar(): SidebarData | undefined {
 
 function setCachedSidebar(data: SidebarData): void {
   try {
-    localStorage.setItem(
-      SIDEBAR_CACHE_KEY,
-      JSON.stringify(data)
-    );
+    localStorage.setItem(SIDEBAR_CACHE_KEY, JSON.stringify(data));
   } catch {
     // ignore
   }
 }
 
-export function useSidebar(): UseQueryResult<
-  SidebarData,
-  Error
-> {
+export function useSidebar(): UseQueryResult<SidebarData, Error> {
+  const cachedSidebar = getCachedSidebar();
+
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.sidebar(),
     queryFn: async () => {
@@ -42,20 +38,20 @@ export function useSidebar(): UseQueryResult<
       return data;
     },
     enabled: authStorage.hasTokens(),
-    initialData: getCachedSidebar,
-    staleTime: 1000 * 60 * 5,
+    placeholderData: cachedSidebar,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     gcTime: 1000 * 60 * 30,
   });
 }
 
-export function useMyPage(): UseQueryResult<
-  MyPageData,
-  Error
-> {
+export function useMyPage(): UseQueryResult<MyPageData, Error> {
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.myPage(),
     queryFn: () => memberApi.getMyPage(),
-    staleTime: Infinity,
+    staleTime: 0,
     gcTime: 1000 * 60 * 30,
   });
 }

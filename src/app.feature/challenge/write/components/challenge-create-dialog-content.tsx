@@ -1,4 +1,4 @@
-import { Tag,Text } from '@1d1s/design-system';
+import { Tag, Text } from '@1d1s/design-system';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { ChallengeGoalToggle } from '@feature/challenge/detail/components/challenge-goal-toggle';
 import { format } from 'date-fns';

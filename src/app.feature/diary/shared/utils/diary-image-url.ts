@@ -47,9 +47,7 @@ function pickImageString(rawImage: unknown): string | null {
   return null;
 }
 
-export function resolveDiaryImageUrl(
-  rawImage: unknown
-): string | null {
+export function resolveDiaryImageUrl(rawImage: unknown): string | null {
   const trimmed = pickImageString(rawImage);
   if (!trimmed) {
     return null;
@@ -80,9 +78,7 @@ export function resolveDiaryImageUrl(
   return `${IMAGE_BASE_URL}/${normalizedPath}`;
 }
 
-export function resolveDiaryImageList(
-  rawImages: unknown
-): string[] | null {
+export function resolveDiaryImageList(rawImages: unknown): string[] | null {
   if (!rawImages) {
     return null;
   }

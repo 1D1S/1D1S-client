@@ -3,11 +3,21 @@
 import {
   Button,
   CircularProgress,
+  DiaryCard,
   ScheduleCalendar,
   type ScheduleCalendarCell,
   Text,
 } from '@1d1s/design-system';
+import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { ChallengeGoalToggle } from '@feature/challenge/detail/components/challenge-goal-toggle';
+import { Feeling } from '@feature/diary/board/type/diary';
+import {
+  useLikeDiary,
+  useUnlikeDiary,
+} from '@feature/diary/detail/hooks/use-diary-mutations';
+import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
+import { normalizeApiError, notifyApiError } from '@module/api/error';
+import { authStorage } from '@module/utils/auth';
 import {
   CalendarDays,
   Check,
@@ -15,13 +25,12 @@ import {
   ChevronRight,
   CircleAlert,
   CircleUserRound,
-  Clock3,
   Flame,
   Heart,
   UserRound,
 } from 'lucide-react';
 import Link from 'next/link';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useSyncExternalStore } from 'react';
 import { toast } from 'sonner';
 
 import { useChallengeDetail } from '../../board/hooks/use-challenge-queries';
@@ -31,6 +40,7 @@ import {
   ParticipantStatus,
 } from '../../board/type/challenge';
 import { CHALLENGE_DETAIL_WEEK_LABELS } from '../consts/challenge-detail-data';
+import { useChallengeDiaryList } from '../hooks/use-challenge-diary-queries';
 import {
   useAcceptParticipant,
   useJoinChallenge,
@@ -39,6 +49,7 @@ import {
   useRejectParticipant,
   useUnlikeChallenge,
 } from '../hooks/use-challenge-mutations';
+import { ChallengeDiaryItem } from '../type/challenge-diary';
 
 interface ChallengeDetailScreenProps {
   id: string;
@@ -51,6 +62,7 @@ const PARTICIPATING_STATUS: ParticipantStatus[] = [
 ];
 const EMPTY_GOALS: ChallengeGoal[] = [];
 const EMPTY_PARTICIPANTS: Participant[] = [];
+const ENDLESS_MIN_YEAR = 2090;
 
 function getMonthLabel(monthDate: Date): string {
   return new Intl.DateTimeFormat('ko-KR', {
@@ -60,7 +72,7 @@ function getMonthLabel(monthDate: Date): string {
 }
 
 function getChallengeTypeLabel(challengeType: string): string {
-  return challengeType === 'FIXED' ? '고정 목표' : '개인 목표';
+  return challengeType === 'FIXED' ? '고정 목표' : '자유 목표';
 }
 
 function getCategoryLabel(category: string): string {
@@ -77,12 +89,33 @@ function getCategoryLabel(category: string): string {
   return labels[category] ?? category;
 }
 
+function isEndlessChallengeEndDate(endDate: string): boolean {
+  if (!endDate) {
+    return false;
+  }
+
+  const parsedEndDate = new Date(endDate);
+  if (Number.isNaN(parsedEndDate.getTime())) {
+    return false;
+  }
+
+  return parsedEndDate.getUTCFullYear() >= ENDLESS_MIN_YEAR;
+}
+
 function formatDateRange(startDate: string, endDate: string): string {
   const format = (date: string): string => date.replaceAll('-', '.');
+  if (isEndlessChallengeEndDate(endDate)) {
+    return `${format(startDate)} ~ 무기한`;
+  }
+
   return `${format(startDate)} ~ ${format(endDate)}`;
 }
 
 function getDdayLabel(endDate: string): string {
+  if (isEndlessChallengeEndDate(endDate)) {
+    return '무기한';
+  }
+
   const today = new Date();
   const end = new Date(endDate);
   today.setHours(0, 0, 0, 0);
@@ -118,18 +151,6 @@ function isSameDate(firstDate: Date, secondDate: Date): boolean {
   );
 }
 
-function getParticipantStatusLabel(status: ParticipantStatus): string {
-  const labels: Record<ParticipantStatus, string> = {
-    NONE: '미참여',
-    PENDING: '승인 대기',
-    REJECTED: '참여 거절',
-    ACCEPTED: '참여 중',
-    HOST: '호스트',
-    PARTICIPANT: '참여자',
-  };
-  return labels[status] ?? status;
-}
-
 function buildCalendarRows(
   baseMonth: Date,
   startDate: string,
@@ -157,9 +178,11 @@ function buildCalendarRows(
   const firstWeekday = new Date(year, month, 1).getDay();
   const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
   const daysInPreviousMonth = new Date(year, month, 0).getDate();
+  const totalVisibleCells =
+    Math.ceil((firstWeekday + daysInCurrentMonth) / 7) * 7;
   const calendarCells: ScheduleCalendarCell[] = [];
 
-  for (let cellIndex = 0; cellIndex < 42; cellIndex += 1) {
+  for (let cellIndex = 0; cellIndex < totalVisibleCells; cellIndex += 1) {
     if (cellIndex < firstWeekday) {
       const previousMonthDay =
         daysInPreviousMonth - firstWeekday + cellIndex + 1;
@@ -297,10 +320,23 @@ export function ChallengeDetailScreen({
   const unlikeChallenge = useUnlikeChallenge();
   const acceptParticipant = useAcceptParticipant();
   const rejectParticipant = useRejectParticipant();
+  const likeDiary = useLikeDiary();
+  const unlikeDiary = useUnlikeDiary();
 
+  const hasMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const [dismissed, setDismissed] = useState(false);
+  const showAuthDialog = hasMounted && !authStorage.hasTokens() && !dismissed;
+  const [showDiaryLikeDialog, setShowDiaryLikeDialog] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
   const [selectedGoalIds, setSelectedGoalIds] = useState<number[]>([]);
   const [isGoalSelectionTouched, setIsGoalSelectionTouched] = useState(false);
+
+  const { data: challengeDiaries, isLoading: isDiariesLoading } =
+    useChallengeDiaryList(challengeId);
 
   const summary = data?.challengeSummary;
   const detail = data?.challengeDetail;
@@ -311,10 +347,10 @@ export function ChallengeDetailScreen({
     100,
     Math.max(0, detail?.participationRate ?? 0)
   );
-  const goalCompletionRate = Math.min(
-    100,
-    Math.max(0, detail?.goalCompletionRate ?? 0)
-  );
+  const goalCompletionRate =
+    Math.round(
+      Math.min(100, Math.max(0, detail?.goalCompletionRate ?? 0)) * 100
+    ) / 100;
 
   const pendingParticipants = useMemo(
     () =>
@@ -334,7 +370,7 @@ export function ChallengeDetailScreen({
   const isHost = myStatus === 'HOST';
   const isPending = myStatus === 'PENDING';
   const isParticipating = PARTICIPATING_STATUS.includes(myStatus);
-  const canJoin = myStatus === 'NONE' || myStatus === 'REJECTED';
+  const canJoinByStatus = myStatus === 'NONE' || myStatus === 'REJECTED';
 
   const monthLabel = useMemo(
     () => getMonthLabel(calendarMonth),
@@ -342,45 +378,17 @@ export function ChallengeDetailScreen({
   );
   const summaryStartDate = summary?.startDate ?? '';
   const summaryEndDate = summary?.endDate ?? '';
-  const summaryParticipantCnt = summary?.participantCnt ?? 0;
+  const summaryDdayLabel = getDdayLabel(summaryEndDate);
   const summaryMaxParticipantCnt = summary?.maxParticipantCnt ?? 0;
+  const canJoin = canJoinByStatus && summaryMaxParticipantCnt > 1;
   const calendarRows = useMemo(
     () => buildCalendarRows(calendarMonth, summaryStartDate, summaryEndDate),
     [calendarMonth, summaryEndDate, summaryStartDate]
   );
-  const recentActivityLogs = useMemo(() => {
-    const summaryLogs = [
-      {
-        key: 'participants-total',
-        title: `현재 참여자 ${summaryParticipantCnt}명`,
-        description: `최대 ${summaryMaxParticipantCnt}명 중 ${summaryParticipantCnt}명이 참여 중입니다.`,
-        status: '참여 현황',
-      },
-      {
-        key: 'participants-pending',
-        title: `승인 대기 ${pendingParticipants.length}건`,
-        description:
-          pendingParticipants.length > 0
-            ? '호스트가 참여 승인/거절을 처리할 수 있습니다.'
-            : '현재 처리할 참여 신청이 없습니다.',
-        status: '신청 상태',
-      },
-    ];
-
-    const participantLogs = participants.slice(0, 6).map((participant) => ({
-      key: `participant-${participant.participantId}`,
-      title: participant.nickname,
-      description: `참여 상태: ${getParticipantStatusLabel(participant.status)}`,
-      status: getParticipantStatusLabel(participant.status),
-    }));
-
-    return [...summaryLogs, ...participantLogs];
-  }, [
-    participants,
-    pendingParticipants.length,
-    summaryMaxParticipantCnt,
-    summaryParticipantCnt,
-  ]);
+  const previewDiaries = useMemo(
+    () => (challengeDiaries ?? []).slice(0, 10),
+    [challengeDiaries]
+  );
 
   const isActionLoading =
     joinChallenge.isPending ||
@@ -401,6 +409,11 @@ export function ChallengeDetailScreen({
   };
 
   const handleJoinChallenge = (): void => {
+    if (summaryMaxParticipantCnt <= 1) {
+      toast.error('최대 참여 인원이 2명 이상인 챌린지만 신청할 수 있습니다.');
+      return;
+    }
+
     if (effectiveSelectedGoalIds.length === 0) {
       toast.error('최소 1개 이상의 목표를 선택해 주세요.');
       return;
@@ -421,8 +434,8 @@ export function ChallengeDetailScreen({
         onSuccess: () => {
           toast.success('챌린지 참여 신청이 완료되었습니다.');
         },
-        onError: () => {
-          toast.error('챌린지 참여 신청에 실패했습니다.');
+        onError: (error) => {
+          notifyApiError(error);
         },
       }
     );
@@ -433,8 +446,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('챌린지에서 탈퇴했습니다.');
       },
-      onError: () => {
-        toast.error('챌린지 탈퇴에 실패했습니다.');
+      onError: (error) => {
+        notifyApiError(error);
       },
     });
   };
@@ -449,8 +462,8 @@ export function ChallengeDetailScreen({
         onSuccess: () => {
           toast.success('챌린지 좋아요 취소 성공했습니다.');
         },
-        onError: () => {
-          toast.error('좋아요 취소에 실패했습니다.');
+        onError: (error) => {
+          notifyApiError(error);
         },
       });
       return;
@@ -460,8 +473,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('챌린지 좋아요 성공했습니다.');
       },
-      onError: () => {
-        toast.error('좋아요 요청에 실패했습니다.');
+      onError: (error) => {
+        notifyApiError(error);
       },
     });
   };
@@ -471,8 +484,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('참여 신청을 수락했습니다.');
       },
-      onError: () => {
-        toast.error('참여 신청 수락에 실패했습니다.');
+      onError: (error) => {
+        notifyApiError(error);
       },
     });
   };
@@ -482,11 +495,36 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('참여 신청을 거절했습니다.');
       },
-      onError: () => {
-        toast.error('참여 신청 거절에 실패했습니다.');
+      onError: (error) => {
+        notifyApiError(error);
       },
     });
   };
+
+  const handleDiaryLikeToggle = (diary: ChallengeDiaryItem): void => {
+    if (!authStorage.hasTokens()) {
+      setShowDiaryLikeDialog(true);
+      return;
+    }
+    if (likeDiary.isPending || unlikeDiary.isPending) {
+      return;
+    }
+    if (diary.likeInfo.likedByMe) {
+      unlikeDiary.mutate(diary.id);
+    } else {
+      likeDiary.mutate(diary.id);
+    }
+  };
+
+  function mapFeelingToEmotion(feeling: Feeling): 'happy' | 'soso' | 'sad' {
+    if (feeling === 'HAPPY') {
+      return 'happy';
+    }
+    if (feeling === 'SAD') {
+      return 'sad';
+    }
+    return 'soso';
+  }
 
   const renderActionsSection = (): React.ReactElement => (
     <section className="rounded-4 border border-gray-200 bg-white p-5">
@@ -508,7 +546,9 @@ export function ChallengeDetailScreen({
           asChild
         >
           <button type="button" onClick={handleToggleLike}>
-            <Heart className="h-4 w-4" />
+            <Heart
+              className={`h-4 w-4 ${summary!.likeInfo.likedByMe ? 'fill-current' : ''}`}
+            />
             {summary!.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'} (
             {summary!.likeInfo.likeCnt})
           </button>
@@ -559,70 +599,99 @@ export function ChallengeDetailScreen({
           <Text size="body2" weight="medium" className="text-gray-600">
             참여자
           </Text>
-          <Text size="body1" weight="bold" className="text-gray-900">
-            {summary!.participantCnt} / {summary!.maxParticipantCnt}
-          </Text>
+          {summary!.maxParticipantCnt === 0 ? (
+            <Text size="body1" weight="bold" className="text-gray-900">
+              개인 챌린지
+            </Text>
+          ) : (
+            <Text size="body1" weight="bold" className="text-gray-900">
+              {summary!.participantCnt} / {summary!.maxParticipantCnt}
+            </Text>
+          )}
         </div>
-        <div className="h-2 rounded-full bg-gray-200">
-          <div
-            className="bg-mint-800 h-full rounded-full"
-            style={{
-              width: `${Math.min(
-                100,
-                summary!.maxParticipantCnt > 0
-                  ? (summary!.participantCnt / summary!.maxParticipantCnt) * 100
-                  : 0
-              )}%`,
-            }}
-          />
-        </div>
+        {summary!.maxParticipantCnt > 0 && (
+          <div className="h-2 rounded-full bg-gray-200">
+            <div
+              className="bg-mint-800 h-full rounded-full"
+              style={{
+                width: `${Math.min(
+                  100,
+                  (summary!.participantCnt / summary!.maxParticipantCnt) * 100
+                )}%`,
+              }}
+            />
+          </div>
+        )}
         <div className="mt-3 flex items-center gap-2 text-gray-600">
           <CalendarDays className="h-4 w-4" />
           <Text size="body2" weight="medium">
-            {getDdayLabel(summary!.endDate)} 남음
+            {summaryDdayLabel === '무기한'
+              ? summaryDdayLabel
+              : `${summaryDdayLabel} 남음`}
           </Text>
         </div>
       </div>
     </section>
   );
 
+  const authDialog = (
+    <LoginRequiredDialog
+      open={showAuthDialog}
+      onOpenChange={(open) => {
+        if (!open) {
+          setDismissed(true);
+        }
+      }}
+      title="간편 가입 후에 둘러보세요!"
+      description="챌린지 상세는 로그인 후 이용할 수 있습니다."
+    />
+  );
+
   if (isLoading) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-white">
-        <Text size="body1" weight="medium" className="text-gray-500">
-          상세 정보를 불러오는 중입니다...
-        </Text>
-      </div>
+      <>
+        {authDialog}
+        <div className="flex min-h-screen w-full items-center justify-center bg-white">
+          <Text size="body1" weight="medium" className="text-gray-500">
+            상세 정보를 불러오는 중입니다...
+          </Text>
+        </div>
+      </>
     );
   }
 
   if (isError || !summary || !detail) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-white px-4">
-        <Text size="body1" weight="medium" className="text-red-600">
-          {error?.message ?? '챌린지 상세 정보를 불러오지 못했습니다.'}
-        </Text>
-      </div>
+      <>
+        {authDialog}
+        <div className="flex min-h-screen w-full items-center justify-center bg-white px-4">
+          <Text size="body1" weight="medium" className="text-red-600">
+            {error
+              ? normalizeApiError(error).message
+              : '챌린지 상세 정보를 불러오지 못했습니다.'}
+          </Text>
+        </div>
+      </>
     );
   }
 
   return (
     <div className="min-h-screen w-full bg-white px-4 py-6 md:px-6 lg:px-8">
+      {authDialog}
       <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6">
         <section className="rounded-4 border border-gray-200 bg-white p-6 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="rounded-1.5 bg-main-200 text-caption1 text-main-800 px-2.5 py-1 font-bold">
-                {isHost ? 'HOST VIEW' : 'PARTICIPANT VIEW'}
-              </span>
               <span className="rounded-1.5 text-caption1 bg-gray-100 px-2.5 py-1 font-medium text-gray-600">
-                {getCategoryLabel(summary.category)} ·{' '}
+                {getCategoryLabel(summary.category)}
+              </span>
+              <span className="rounded-1.5 bg-main-200 text-caption1 text-main-800 px-2.5 py-1 font-bold">
                 {getChallengeTypeLabel(summary.challengeType)}
               </span>
             </div>
             <Text size="body2" weight="medium" className="text-gray-600">
               {formatDateRange(summary.startDate, summary.endDate)} ({' '}
-              {getDdayLabel(summary.endDate)} )
+              {summaryDdayLabel} )
             </Text>
           </div>
 
@@ -695,9 +764,10 @@ export function ChallengeDetailScreen({
             <div className="grid gap-6 lg:grid-cols-2">
               <section className="rounded-4 border border-gray-200 bg-white p-5">
                 <StatHeader
-                  icon={<span className="text-main-800">◔</span>}
+                  icon={
+                    <span className="text-main-800 pb-1.5 text-4xl">◔</span>
+                  }
                   title={isHost ? '내 진척도' : '나의 참여 진척도'}
-                  rightText={`${participationRate}%`}
                 />
                 <div className="mt-4 flex items-center gap-4">
                   <CircularProgress
@@ -743,7 +813,6 @@ export function ChallengeDetailScreen({
                 <StatHeader
                   icon={<Flame className="text-main-800 h-5 w-5" />}
                   title="목표 달성률"
-                  rightText={`${goalCompletionRate}%`}
                 />
                 <div className="mt-4">
                   <div className="mb-1 flex items-center justify-between">
@@ -828,52 +897,6 @@ export function ChallengeDetailScreen({
                 weekLabels={CHALLENGE_DETAIL_WEEK_LABELS}
                 cellMinHeight={110}
               />
-            </section>
-
-            <section className="rounded-4 border border-gray-200 bg-white p-5">
-              <StatHeader
-                icon={<Clock3 className="text-main-800 h-5 w-5" />}
-                title="참여 활동 요약"
-              />
-              <div className="mt-3 divide-y divide-gray-200">
-                {recentActivityLogs.map((log) => (
-                  <div
-                    key={log.key}
-                    className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="bg-main-200 text-main-800 mt-1 flex h-10 w-10 items-center justify-center rounded-full">
-                        <Check className="h-5 w-5" />
-                      </div>
-                      <div className="flex min-w-0 flex-1 flex-col justify-center">
-                        <Text
-                          size="heading2"
-                          weight="bold"
-                          className="text-gray-900"
-                        >
-                          {log.title}
-                        </Text>
-                        <div className="mt-1">
-                          <Text
-                            size="body2"
-                            weight="regular"
-                            className="whitespace-pre-wrap text-gray-600"
-                          >
-                            {log.description}
-                          </Text>
-                        </div>
-                      </div>
-                    </div>
-                    <Text
-                      size="caption1"
-                      weight="medium"
-                      className="text-gray-500"
-                    >
-                      {log.status}
-                    </Text>
-                  </div>
-                ))}
-              </div>
             </section>
           </div>
 
@@ -971,6 +994,77 @@ export function ChallengeDetailScreen({
             </section>
           </aside>
         </div>
+
+        <section className="rounded-4 border border-gray-200 bg-white p-5">
+          <LoginRequiredDialog
+            open={showDiaryLikeDialog}
+            onOpenChange={setShowDiaryLikeDialog}
+          />
+          <div className="flex flex-col gap-2 border-b border-gray-200 pb-4 md:flex-row md:items-center md:justify-between">
+            <Text size="heading2" weight="bold" className="text-gray-900">
+              챌린지 일지 리스트
+            </Text>
+            <Link
+              href={`/challenge/${id}/diary`}
+              className="text-main-800 text-sm font-semibold hover:underline"
+            >
+              전체 보기
+            </Link>
+          </div>
+
+          {isDiariesLoading ? (
+            <div className="mt-6 flex justify-center py-6">
+              <Text size="body2" weight="regular" className="text-gray-500">
+                일지를 불러오는 중입니다.
+              </Text>
+            </div>
+          ) : previewDiaries.length === 0 ? (
+            <div className="mt-6 flex justify-center py-6">
+              <Text size="body2" weight="regular" className="text-gray-500">
+                아직 등록된 일지가 없습니다.
+              </Text>
+            </div>
+          ) : (
+            <div className="mt-4 overflow-x-auto">
+              <div className="flex w-max gap-3 pb-2">
+                {previewDiaries.map((diary) => (
+                  <div key={diary.id} className="w-[200px] shrink-0">
+                    <DiaryCard
+                      imageUrl={
+                        resolveDiaryImageUrl(diary.imgUrl?.[0]) ||
+                        '/images/default-card.png'
+                      }
+                      percent={Math.min(
+                        100,
+                        Math.max(0, diary.diaryInfo?.achievementRate ?? 0)
+                      )}
+                      isLiked={diary.likeInfo.likedByMe}
+                      likes={diary.likeInfo.likeCnt}
+                      title={diary.title}
+                      user={diary.author?.nickname || '익명'}
+                      userImage={
+                        resolveDiaryImageUrl(diary.author?.profileImage) ||
+                        '/images/default-profile.png'
+                      }
+                      challengeLabel={
+                        diary.challenge?.title ??
+                        diary.challenge?.category ??
+                        '챌린지'
+                      }
+                      onChallengeClick={() => undefined}
+                      date={diary.diaryInfo?.createdAt ?? ''}
+                      emotion={mapFeelingToEmotion(
+                        diary.diaryInfo?.feeling ?? 'NONE'
+                      )}
+                      onLikeToggle={() => handleDiaryLikeToggle(diary)}
+                      onClick={() => undefined}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

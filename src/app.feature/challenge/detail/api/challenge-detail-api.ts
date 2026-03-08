@@ -6,6 +6,7 @@ import {
   JoinChallengeRequest,
   JoinChallengeResponse,
 } from '../../board/type/challenge';
+import { ChallengeDiaryItem } from '../type/challenge-diary';
 
 export const challengeDetailApi = {
   // 챌린지 상세 조회
@@ -67,4 +68,13 @@ export const challengeDetailApi = {
       method: 'DELETE',
     });
   },
+
+  // 챌린지 일지 목록 조회
+  getChallengeDiaries: async (
+    challengeId: number
+  ): Promise<ChallengeDiaryItem[]> =>
+    requestData<ChallengeDiaryItem[]>(apiClient, {
+      url: `/diaries/challenges/${challengeId}`,
+      method: 'GET',
+    }),
 };

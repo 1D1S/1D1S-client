@@ -8,20 +8,32 @@ import { NextRequest, NextResponse } from 'next/server';
  * @param req NextRequest
  * @returns NextResponse | null
  */
-const protectedRoutes = ['/test'];
+const PROTECTED_DETAIL_ROUTE_PATTERNS: RegExp[] = [
+  /^\/challenge\/\d+\/?$/,
+  /^\/diary\/\d+\/?$/,
+];
+
+function isProtectedDetailRoute(pathname: string): boolean {
+  return PROTECTED_DETAIL_ROUTE_PATTERNS.some((pattern) =>
+    pattern.test(pathname)
+  );
+}
 
 export function authMiddleware(req: NextRequest): NextResponse | null {
   const { pathname } = req.nextUrl;
-  if (!protectedRoutes.some((route) => pathname.startsWith(route))) {
+  if (!isProtectedDetailRoute(pathname)) {
     return null;
   }
 
-  const token = req.cookies.get('access_token')?.value;
+  const token =
+    req.cookies.get('accessToken')?.value ??
+    req.cookies.get('access_token')?.value;
+
   if (!token) {
-    const loginUrl = new URL('/auth/login', req.url);
+    const loginUrl = new URL('/login', req.url);
     // 접근했던 페이지를 기억했다가 로그인 후에 리디렉션 하기 위해 추가.
     // pathname을 쿼리 파라미터로 추가
-    loginUrl.searchParams.set('from', pathname);
+    loginUrl.searchParams.set('from', `${pathname}${req.nextUrl.search}`);
     return NextResponse.redirect(loginUrl);
   }
 

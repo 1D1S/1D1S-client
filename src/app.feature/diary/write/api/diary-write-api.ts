@@ -13,9 +13,7 @@ import {
 
 export const diaryWriteApi = {
   // 다이어리 생성하기
-  createDiary: async (
-    data: CreateDiaryRequest
-  ): Promise<CreateDiaryResponse> =>
+  createDiary: async (data: CreateDiaryRequest): Promise<CreateDiaryResponse> =>
     requestData<CreateDiaryResponse, CreateDiaryRequest>(apiClient, {
       url: '/diaries',
       method: 'POST',

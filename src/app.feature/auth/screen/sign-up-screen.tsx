@@ -22,6 +22,7 @@ import {
   FormItem,
   FormMessage,
 } from '@component/ui/form';
+import { notifyApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -114,8 +115,8 @@ export function SignUpScreen(): React.ReactElement {
 
       toast.success('가입이 완료되었습니다!');
       router.replace('/');
-    } catch {
-      toast.error('가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } catch (error) {
+      notifyApiError(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -497,9 +498,7 @@ export function SignUpScreen(): React.ReactElement {
                             const values = Array.isArray(field.value)
                               ? field.value
                               : [];
-                            const checked = values.includes(
-                              option.value
-                            );
+                            const checked = values.includes(option.value);
 
                             return (
                               <CheckContainer

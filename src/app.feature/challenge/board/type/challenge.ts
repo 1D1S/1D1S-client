@@ -1,11 +1,12 @@
 export type ChallengeCategory =
   | 'ALL'
   | 'DEV'
-  | 'HEALTH'
-  | 'STUDY'
   | 'EXERCISE'
-  | 'HOBBY'
-  | 'OTHER';
+  | 'BOOK'
+  | 'MUSIC'
+  | 'STUDY'
+  | 'LEISURE'
+  | 'ECONOMY';
 export type ChallengeType = 'FIXED' | 'FLEXIBLE';
 export type ParticipantStatus =
   | 'NONE'
@@ -118,6 +119,7 @@ export interface ChallengeListParams {
   limit?: number;
   cursor?: string;
   keyword?: string;
+  category?: Exclude<ChallengeCategory, 'ALL'>;
 }
 
 export interface RandomChallengesParams {

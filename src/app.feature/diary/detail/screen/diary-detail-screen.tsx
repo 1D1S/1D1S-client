@@ -1,41 +1,61 @@
 'use client';
 
-import { Button, CheckList, Tag, Text } from '@1d1s/design-system';
+import {
+  Button,
+  ChallengeListItem,
+  CheckList,
+  Tag,
+  Text,
+} from '@1d1s/design-system';
+import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { normalizeApiError } from '@module/api/error';
+import { authStorage } from '@module/utils/auth';
 import {
   CalendarDays,
-  ChevronRight,
   Edit3,
   Heart,
   ListChecks,
+  MoreVertical,
   NotebookPen,
   Share2,
+  Trash2,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { useMemo } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import { useChallengeDetail } from '../../../challenge/board/hooks/use-challenge-queries';
 import {
   ChallengeDetailResponse,
   ChallengeGoal,
 } from '../../../challenge/board/type/challenge';
+import { useSidebar } from '../../../member/hooks/use-member-queries';
 import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
-import { DiaryDetail, Feeling } from '../../board/type/diary';
+import {
+  AuthorInfo,
+  DiaryDetail,
+  DiaryGoalStatus,
+  Feeling,
+} from '../../board/type/diary';
 import {
   resolveDiaryImageList,
   resolveDiaryImageUrl,
 } from '../../shared/utils/diary-image-url';
-import { useLikeDiary, useUnlikeDiary } from '../hooks/use-diary-mutations';
+import {
+  useDeleteDiary,
+  useLikeDiary,
+  useUnlikeDiary,
+} from '../hooks/use-diary-mutations';
 
 interface ChecklistItem {
   id: string;
   label: string;
-}
-
-interface DiaryGoalStatus {
-  goalId: number;
-  goalName: string;
-  isAchieved: boolean;
 }
 
 interface DiaryInfoWithAliases {
@@ -49,13 +69,8 @@ interface DiaryInfoWithAliases {
 type DiaryDetailWithAliases = DiaryDetail & {
   diaryInfoDto?: DiaryInfoWithAliases | null;
   diaryInfo?: DiaryInfoWithAliases | null;
+  author?: AuthorInfo | null;
 };
-
-interface ChallengeImageFields {
-  imgUrl?: unknown;
-  imageUrl?: unknown;
-  thumbnailUrl?: unknown;
-}
 
 interface DiaryImageFields {
   imgUrl?: unknown;
@@ -74,12 +89,12 @@ interface DiaryDetailViewData {
   feelingEmoji: string;
   connectedChallengeId: number | null;
   connectedChallengeTitle: string;
-  connectedChallengeImageUrl: string;
   connectedChallengeCategory: string;
-  connectedChallengePeriod: string;
-  connectedChallengeParticipants: string;
-  connectedChallengeParticipationRate: string;
-  connectedChallengeGoalCompletionRate: string;
+  connectedChallengeType: string;
+  connectedChallengeStartDate: string;
+  connectedChallengeEndDate: string;
+  connectedChallengeCurrentUsers: number;
+  connectedChallengeMaxUsers: number;
   likedByMe: boolean;
   likeCount: number;
   checklistItems: ChecklistItem[];
@@ -88,6 +103,7 @@ interface DiaryDetailViewData {
   hasContentHtml: boolean;
   contentThumbnailUrl: string | null;
   tags: string[];
+  authorName: string | null;
 }
 
 function feelingToEmoji(feeling: Feeling): string {
@@ -104,9 +120,10 @@ function feelingToEmoji(feeling: Feeling): string {
   }
 }
 
-function formatDate(
-  dateValue: string
-): { dateLabel: string; weekdayLabel: string } {
+function formatDate(dateValue: string): {
+  dateLabel: string;
+  weekdayLabel: string;
+} {
   if (!dateValue) {
     return { dateLabel: '-', weekdayLabel: '-' };
   }
@@ -149,14 +166,6 @@ function hasVisibleHtmlContent(contentHtml: string): boolean {
   return textWithoutTags.length > 0;
 }
 
-function formatPercent(value?: number): string {
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    return '-';
-  }
-
-  return `${Math.round(value)}%`;
-}
-
 function resolveFirstImage(...rawSources: unknown[]): string | null {
   for (const rawSource of rawSources) {
     const resolvedImage = resolveDiaryImageList(rawSource)?.[0];
@@ -178,37 +187,9 @@ function getDiaryInfo(diary: DiaryDetail): DiaryInfoWithAliases | null {
   return diaryWithAliases.diaryInfoDto ?? diaryWithAliases.diaryInfo ?? null;
 }
 
-function getChallengeImageUrl(
-  challengeDetailData?: ChallengeDetailResponse,
-  diary?: DiaryDetail
-): string {
-  const challengeSummary = challengeDetailData?.challengeSummary as
-    | (ChallengeDetailResponse['challengeSummary'] & ChallengeImageFields)
-    | undefined;
-  const diaryChallenge = diary?.challenge as
-    | (DiaryDetail['challenge'] & ChallengeImageFields)
-    | null
-    | undefined;
-
-  const challengeSummaryImage = resolveFirstImage(
-    challengeSummary?.imgUrl,
-    challengeSummary?.imageUrl,
-    challengeSummary?.thumbnailUrl
-  );
-  if (challengeSummaryImage) {
-    return challengeSummaryImage;
-  }
-
-  const diaryChallengeImage = resolveFirstImage(
-    diaryChallenge?.imgUrl,
-    diaryChallenge?.imageUrl,
-    diaryChallenge?.thumbnailUrl
-  );
-  if (diaryChallengeImage) {
-    return diaryChallengeImage;
-  }
-
-  return '/images/default-card.png';
+function getAuthorInfo(diary: DiaryDetail): AuthorInfo | null {
+  const diaryWithAliases = diary as DiaryDetailWithAliases;
+  return diaryWithAliases.authorInfoDto ?? diaryWithAliases.author ?? null;
 }
 
 function mapDiaryToViewData(
@@ -216,8 +197,8 @@ function mapDiaryToViewData(
   challengeDetailData?: ChallengeDetailResponse
 ): DiaryDetailViewData {
   const diaryInfo = getDiaryInfo(diary);
-  const baseDate =
-    diaryInfo?.createdAt ?? diaryInfo?.challengedDate ?? '';
+  const authorInfo = getAuthorInfo(diary);
+  const baseDate = diaryInfo?.createdAt ?? diaryInfo?.challengedDate ?? '';
   const { dateLabel, weekdayLabel } = formatDate(baseDate);
   const challengeGoals: ChallengeGoal[] =
     challengeDetailData?.challengeGoals ?? [];
@@ -278,21 +259,6 @@ function mapDiaryToViewData(
   }
 
   const summary = challengeDetailData?.challengeSummary;
-  const period =
-    summary?.startDate && summary?.endDate
-      ? `${summary.startDate} ~ ${summary.endDate}`
-      : diary.challenge?.startDate && diary.challenge?.endDate
-        ? `${diary.challenge.startDate} ~ ${diary.challenge.endDate}`
-        : '-';
-
-  const participantCnt =
-    summary?.participantCnt ?? diary.challenge?.participantCnt;
-  const maxParticipantCnt =
-    summary?.maxParticipantCnt ?? diary.challenge?.maxParticipantCnt;
-  const participantsText =
-    typeof participantCnt === 'number' && typeof maxParticipantCnt === 'number'
-      ? `${participantCnt}/${maxParticipantCnt}명`
-      : '-';
   const diaryWithImageAliases = diary as DiaryDetail & DiaryImageFields;
   const contentThumbnailUrl =
     resolveFirstImage(
@@ -314,20 +280,18 @@ function mapDiaryToViewData(
       summary?.challengeId ?? diary.challenge?.challengeId ?? null,
     connectedChallengeTitle:
       summary?.title ?? diary.challenge?.title ?? '연동된 챌린지가 없습니다.',
-    connectedChallengeImageUrl: getChallengeImageUrl(
-      challengeDetailData,
-      diary
-    ),
     connectedChallengeCategory:
       summary?.category ?? diary.challenge?.category ?? '-',
-    connectedChallengePeriod: period,
-    connectedChallengeParticipants: participantsText,
-    connectedChallengeParticipationRate: formatPercent(
-      challengeDetailData?.challengeDetail?.participationRate
-    ),
-    connectedChallengeGoalCompletionRate: formatPercent(
-      challengeDetailData?.challengeDetail?.goalCompletionRate
-    ),
+    connectedChallengeType:
+      summary?.challengeType ?? diary.challenge?.challengeType ?? '-',
+    connectedChallengeStartDate:
+      summary?.startDate ?? diary.challenge?.startDate ?? '',
+    connectedChallengeEndDate:
+      summary?.endDate ?? diary.challenge?.endDate ?? '',
+    connectedChallengeCurrentUsers:
+      summary?.participantCnt ?? diary.challenge?.participantCnt ?? 0,
+    connectedChallengeMaxUsers:
+      summary?.maxParticipantCnt ?? diary.challenge?.maxParticipantCnt ?? 0,
     likedByMe: diary.likeInfo?.likedByMe ?? false,
     likeCount: diary.likeInfo?.likeCnt ?? 0,
     checklistItems,
@@ -338,6 +302,7 @@ function mapDiaryToViewData(
     tags: [diary.challenge?.category, diaryInfo?.feeling].filter(
       (tag): tag is string => Boolean(tag)
     ),
+    authorName: authorInfo?.nickname ?? null,
   };
 }
 
@@ -345,28 +310,42 @@ function DiaryDetailView({
   diaryData,
   onLikeToggle,
   isLikePending,
+  isOwner,
+  onDelete,
 }: {
   diaryData: DiaryDetailViewData;
   onLikeToggle(): void;
   isLikePending: boolean;
+  isOwner: boolean;
+  onDelete(): void;
 }): React.ReactElement {
   const router = useRouter();
   const checkedIds = diaryData.checkedChecklistIds;
 
-  const leftChecklistOptions = useMemo(
+  const checklistOptions = useMemo(
     () =>
-      diaryData.checklistItems
-        .filter((_, index) => index % 2 === 0)
-        .map((item) => ({ id: item.id, label: item.label })),
+      diaryData.checklistItems.map((item) => ({
+        id: item.id,
+        label: item.label,
+      })),
     [diaryData.checklistItems]
   );
-  const rightChecklistOptions = useMemo(
-    () =>
-      diaryData.checklistItems
-        .filter((_, index) => index % 2 === 1)
-        .map((item) => ({ id: item.id, label: item.label })),
-    [diaryData.checklistItems]
-  );
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return;
+    }
+    const handleClickOutside = (event: MouseEvent): void => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMenuOpen]);
 
   const handleShare = async (): Promise<void> => {
     const shareUrl = window.location.href;
@@ -388,16 +367,6 @@ function DiaryDetailView({
   return (
     <div className="min-h-screen w-full bg-white">
       <div className="mx-auto w-full max-w-[1080px] px-4 pt-8 pb-12">
-        <div className="flex items-center gap-1 text-gray-500">
-          <Text size="caption2" weight="medium" className="text-gray-500">
-            일지
-          </Text>
-          <ChevronRight className="h-3 w-3" />
-          <Text size="caption2" weight="medium" className="text-gray-500">
-            일지 상세
-          </Text>
-        </div>
-
         <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -415,6 +384,11 @@ function DiaryDetailView({
                 작성일 {diaryData.dateLabel} | {diaryData.weekdayLabel}
               </Text>
             </div>
+            {diaryData.authorName ? (
+              <Text size="body2" weight="medium" className="mt-1 text-gray-500">
+                작성자 {diaryData.authorName}
+              </Text>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-2">
@@ -439,78 +413,79 @@ function DiaryDetailView({
               <Share2 className="mr-1 h-4 w-4" />
               공유
             </Button>
-            <Button
-              variant="default"
-              size="medium"
-              onClick={() => router.push(`/diary/create?diaryId=${diaryData.id}`)}
-            >
-              <Edit3 className="mr-1 h-4 w-4" />
-              일지 수정
-            </Button>
+            {isOwner && (
+              <div ref={menuRef} className="relative">
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  onClick={() => setIsMenuOpen((prev) => !prev)}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+                {isMenuOpen && (
+                  <div className="absolute top-full right-0 z-10 mt-1 w-32 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md">
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        router.push(`/diary/create?diaryId=${diaryData.id}`);
+                      }}
+                    >
+                      <Edit3 className="h-4 w-4" />
+                      일지 수정
+                    </button>
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-500 hover:bg-gray-50"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onDelete();
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      일지 삭제
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
         <div className="mt-6 h-px w-full bg-gray-200" />
 
-        <button
-          type="button"
-          className={`rounded-3 mt-6 w-full border border-gray-200 bg-white p-4 text-left transition ${
-            diaryData.connectedChallengeId
-              ? 'hover:border-main-400 cursor-pointer'
-              : 'cursor-default'
-          }`}
-          onClick={() => {
-            if (!diaryData.connectedChallengeId) {
-              return;
+        <div className="mt-6">
+          <Text
+            size="caption2"
+            weight="bold"
+            className="mb-2 block text-gray-500"
+          >
+            연결된 챌린지
+          </Text>
+          <ChallengeListItem
+            challengeTitle={diaryData.connectedChallengeTitle}
+            challengeType={diaryData.connectedChallengeType}
+            challengeCategory={diaryData.connectedChallengeCategory}
+            currentUserCount={diaryData.connectedChallengeCurrentUsers}
+            maxUserCount={diaryData.connectedChallengeMaxUsers}
+            startDate={diaryData.connectedChallengeStartDate}
+            endDate={diaryData.connectedChallengeEndDate}
+            isOngoing={(() => {
+              const now = new Date();
+              const start = new Date(diaryData.connectedChallengeStartDate);
+              const end = new Date(diaryData.connectedChallengeEndDate);
+              return now >= start && now <= end;
+            })()}
+            isEnded={new Date() > new Date(diaryData.connectedChallengeEndDate)}
+            onClick={
+              diaryData.connectedChallengeId
+                ? () =>
+                    router.push(`/challenge/${diaryData.connectedChallengeId}`)
+                : undefined
             }
-            router.push(`/challenge/${diaryData.connectedChallengeId}`);
-          }}
-          disabled={!diaryData.connectedChallengeId}
-        >
-          <div className="flex items-start gap-4">
-            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
-              <Image
-                src={diaryData.connectedChallengeImageUrl}
-                alt={`${diaryData.connectedChallengeTitle} 썸네일`}
-                fill
-                className="object-cover"
-              />
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <div>
-                <Text size="caption2" weight="bold" className="text-gray-500">
-                  연결된 챌린지
-                </Text>
-                <Text
-                  size="heading2"
-                  weight="bold"
-                  className="line-clamp-2 max-w-[560px] break-words text-gray-900"
-                >
-                  {diaryData.connectedChallengeTitle}
-                </Text>
-              </div>
-
-              <div className="mt-3 grid grid-cols-1 gap-y-1 text-gray-600 sm:grid-cols-2 sm:gap-x-4">
-                <Text size="caption2" weight="medium">
-                  카테고리: {diaryData.connectedChallengeCategory}
-                </Text>
-                <Text size="caption2" weight="medium">
-                  인원수: {diaryData.connectedChallengeParticipants}
-                </Text>
-                <Text size="caption2" weight="medium">
-                  참여율: {diaryData.connectedChallengeParticipationRate}
-                </Text>
-                <Text size="caption2" weight="medium">
-                  목표 달성률: {diaryData.connectedChallengeGoalCompletionRate}
-                </Text>
-                <Text size="caption2" weight="medium" className="sm:col-span-2">
-                  기간: {diaryData.connectedChallengePeriod}
-                </Text>
-              </div>
-            </div>
-          </div>
-        </button>
+          />
+        </div>
 
         <section className="mt-8">
           <div className="mb-3 flex items-center gap-2">
@@ -521,20 +496,12 @@ function DiaryDetailView({
           </div>
 
           {diaryData.checklistItems.length > 0 ? (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <CheckList
-                options={leftChecklistOptions}
-                value={checkedIds}
-                onValueChange={handleReadOnlyChecklistChange}
-                disabled
-              />
-              <CheckList
-                options={rightChecklistOptions}
-                value={checkedIds}
-                onValueChange={handleReadOnlyChecklistChange}
-                disabled
-              />
-            </div>
+            <CheckList
+              options={checklistOptions}
+              value={checkedIds}
+              onValueChange={handleReadOnlyChecklistChange}
+              disabled
+            />
           ) : (
             <Text size="body2" weight="regular" className="text-gray-500">
               달성 목표 데이터가 없습니다.
@@ -560,8 +527,7 @@ function DiaryDetailView({
             >
               {diaryData.hasContentHtml ? (
                 <div
-                  className="prose prose-sm max-w-none text-gray-700
-                    [&_img]:max-h-80 [&_img]:rounded-lg"
+                  className="prose prose-sm max-w-none text-gray-700 [&_img]:max-h-80 [&_img]:rounded-lg"
                   dangerouslySetInnerHTML={{ __html: diaryData.contentHtml }}
                 />
               ) : (
@@ -598,18 +564,39 @@ function DiaryDetailView({
   );
 }
 
-export function DiaryDetailScreen({
-  id,
-}: {
-  id: number;
-}): React.ReactElement {
+export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
+  const router = useRouter();
+  const hasMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const [dismissed, setDismissed] = useState(false);
+  const showAuthDialog = hasMounted && !authStorage.hasTokens() && !dismissed;
   const safeDiaryId = Number.isFinite(id) && id > 0 ? id : 0;
-  const { data, isLoading, isError } = useDiaryDetail(safeDiaryId);
+  const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
+  const deleteDiary = useDeleteDiary();
   const challengeId = data?.challenge?.challengeId ?? 0;
   const { data: challengeDetailData } = useChallengeDetail(challengeId);
+  const { data: sidebarData } = useSidebar();
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
+  const authorInfo = data ? getAuthorInfo(data) : null;
+  const isOwner = Boolean(
+    sidebarData?.nickname &&
+      authorInfo?.nickname &&
+      sidebarData.nickname === authorInfo.nickname
+  );
+
+  const handleDelete = (): void => {
+    if (!window.confirm('일지를 삭제하시겠습니까?')) {
+      return;
+    }
+    deleteDiary.mutate(safeDiaryId, {
+      onSuccess: () => router.push('/diary'),
+    });
+  };
 
   const handleLikeToggle = (): void => {
     if (!data || isLikePending) {
@@ -624,6 +611,19 @@ export function DiaryDetailScreen({
     likeDiary.mutate(data.id);
   };
 
+  const authDialog = (
+    <LoginRequiredDialog
+      open={showAuthDialog}
+      onOpenChange={(open) => {
+        if (!open) {
+          setDismissed(true);
+        }
+      }}
+      title="간편 가입 후에 둘러보세요!"
+      description="일지 상세는 로그인 후 이용할 수 있습니다."
+    />
+  );
+
   if (!safeDiaryId) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center p-4">
@@ -636,29 +636,42 @@ export function DiaryDetailScreen({
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center p-4">
-        <Text size="body1" weight="medium" className="text-gray-500">
-          일지 상세를 불러오는 중입니다.
-        </Text>
-      </div>
+      <>
+        {authDialog}
+        <div className="flex min-h-[40vh] items-center justify-center p-4">
+          <Text size="body1" weight="medium" className="text-gray-500">
+            일지 상세를 불러오는 중입니다.
+          </Text>
+        </div>
+      </>
     );
   }
 
   if (isError || !data) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center p-4">
-        <Text size="body1" weight="medium" className="text-red-600">
-          일지 상세를 불러오지 못했습니다.
-        </Text>
-      </div>
+      <>
+        {authDialog}
+        <div className="flex min-h-[40vh] items-center justify-center p-4">
+          <Text size="body1" weight="medium" className="text-red-600">
+            {error
+              ? normalizeApiError(error).message
+              : '일지 상세를 불러오지 못했습니다.'}
+          </Text>
+        </div>
+      </>
     );
   }
 
   return (
-    <DiaryDetailView
-      diaryData={mapDiaryToViewData(data, challengeDetailData)}
-      onLikeToggle={handleLikeToggle}
-      isLikePending={isLikePending}
-    />
+    <>
+      {authDialog}
+      <DiaryDetailView
+        diaryData={mapDiaryToViewData(data, challengeDetailData)}
+        onLikeToggle={handleLikeToggle}
+        isLikePending={isLikePending}
+        isOwner={isOwner}
+        onDelete={handleDelete}
+      />
+    </>
   );
 }

@@ -1,15 +1,15 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { ChallengeListItem, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { useEffect, useState } from 'react';
 
-import type { ChallengeListItem } from '../../../challenge/board/type/challenge';
+import type { ChallengeListItem as ChallengeListItemType } from '../../../challenge/board/type/challenge';
 
 interface ChallengePickerProps {
-  challenges: ChallengeListItem[];
+  challenges: ChallengeListItemType[];
   isLoading?: boolean;
-  onSelect?(challenge: ChallengeListItem): void;
+  onSelect?(challenge: ChallengeListItemType): void;
   className?: string;
 }
 
@@ -57,7 +57,7 @@ export function ChallengePicker({
         <div className="absolute inset-0 bg-black/50" />
 
         <div
-          className="relative mx-auto max-w-md rounded-xl bg-white p-6 text-center shadow-lg"
+          className="relative mx-auto max-w-md rounded-xl bg-white p-6 shadow-lg"
           onClick={(event) => event.stopPropagation()}
         >
           <Text size="heading1" weight="bold" className="mb-4 block">
@@ -73,35 +73,29 @@ export function ChallengePicker({
                 참여 중인 챌린지가 없습니다.
               </Text>
             ) : (
-              challenges.map((challenge) => (
-                <button
-                  key={challenge.challengeId}
-                  type="button"
-                  className="w-full rounded-lg border border-gray-200 p-3 text-left transition hover:bg-gray-50"
-                  onClick={() => {
-                    onSelect?.(challenge);
-                    setIsOpen(false);
-                  }}
-                >
-                  <Text size="body1" weight="bold" className="text-black">
-                    {challenge.title}
-                  </Text>
-                  <Text
-                    size="caption2"
-                    weight="regular"
-                    className="text-gray-600"
-                  >
-                    {challenge.startDate} - {challenge.endDate}
-                  </Text>
-                  <Text
-                    size="caption2"
-                    weight="regular"
-                    className="text-gray-600"
-                  >
-                    {challenge.participantCnt}/{challenge.maxParticipantCnt}
-                  </Text>
-                </button>
-              ))
+              challenges.map((challenge) => {
+                const now = new Date();
+                const start = new Date(challenge.startDate);
+                const end = new Date(challenge.endDate);
+                return (
+                  <ChallengeListItem
+                    key={challenge.challengeId}
+                    challengeTitle={challenge.title}
+                    challengeType={challenge.challengeType}
+                    challengeCategory={challenge.category}
+                    currentUserCount={challenge.participantCnt}
+                    maxUserCount={challenge.maxParticipantCnt}
+                    startDate={challenge.startDate}
+                    endDate={challenge.endDate}
+                    isOngoing={now >= start && now <= end}
+                    isEnded={now > end}
+                    onClick={() => {
+                      onSelect?.(challenge);
+                      setIsOpen(false);
+                    }}
+                  />
+                );
+              })
             )}
           </div>
         </div>

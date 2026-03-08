@@ -28,9 +28,9 @@ export function Step3(): React.ReactElement {
   const [allowJoinAfterStart, setAllowJoinAfterStart] = useState(false);
 
   return (
-    <div className="mx-auto w-full max-w-[980px] space-y-8">
+    <div className="mx-auto w-full max-w-[980px] space-y-4">
       <div className="flex flex-col space-y-3">
-        <Text size="heading1" weight="bold" className="text-gray-900">
+        <Text size="body1" weight="bold" className="text-gray-900">
           챌린지 형태
         </Text>
         <FormField
@@ -38,7 +38,7 @@ export function Step3(): React.ReactElement {
           name="participationType"
           render={({ field }) => (
             <FormItem>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-2 gap-4">
                 <CheckContainer
                   checked={field.value === 'INDIVIDUAL'}
                   onCheckedChange={(checked) => {
@@ -47,31 +47,30 @@ export function Step3(): React.ReactElement {
                     }
                   }}
                   width="100%"
-                  height={176}
                   className={cn(
-                    '!rounded-3 !items-start !justify-start p-6 text-left',
+                    '!rounded-3 !h-auto !items-start !justify-start p-5 text-left hover:cursor-pointer',
                     field.value === 'INDIVIDUAL'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
                   )}
                   aria-label="개인 챌린지"
                 >
-                  <div className="flex h-full flex-col justify-between">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
-                      <User className="h-5 w-5" />
+                  <div className="flex h-full flex-col gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                      <User className="h-4 w-4" />
                     </span>
                     <div className="flex flex-col">
                       <Text
-                        size="heading1"
+                        size="body1"
                         weight="bold"
                         className="text-gray-900"
                       >
                         개인 챌린지
                       </Text>
                       <Text
-                        size="caption1"
+                        size="body2"
                         weight="regular"
-                        className="mt-2 text-gray-600"
+                        className="mt-1 text-gray-600"
                       >
                         혼자 진행하는 챌린지입니다.
                       </Text>
@@ -87,31 +86,30 @@ export function Step3(): React.ReactElement {
                     }
                   }}
                   width="100%"
-                  height={176}
                   className={cn(
-                    '!rounded-3 !items-start !justify-start p-6 text-left',
+                    '!rounded-3 !h-auto !items-start !justify-start p-5 text-left hover:cursor-pointer',
                     field.value === 'GROUP'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
                   )}
                   aria-label="단체 챌린지"
                 >
-                  <div className="flex h-full flex-col justify-between">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
-                      <Users className="h-5 w-5" />
+                  <div className="flex h-full flex-col gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                      <Users className="h-4 w-4" />
                     </span>
                     <div className="flex flex-col">
                       <Text
-                        size="heading1"
+                        size="body1"
                         weight="bold"
                         className="text-gray-900"
                       >
                         단체 챌린지
                       </Text>
                       <Text
-                        size="caption1"
+                        size="body2"
                         weight="regular"
-                        className="mt-2 text-gray-600"
+                        className="mt-1 text-gray-600"
                       >
                         다른 참여자와 함께 목표를 달성합니다.
                       </Text>
@@ -128,7 +126,7 @@ export function Step3(): React.ReactElement {
       {participationType === 'GROUP' ? (
         <>
           <div className="flex flex-col space-y-3">
-            <Text size="heading1" weight="bold" className="text-gray-900">
+            <Text size="body1" weight="bold" className="text-gray-900">
               최대 참여 인원
             </Text>
             <FormField
@@ -138,7 +136,7 @@ export function Step3(): React.ReactElement {
                 <FormItem>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="h-14 w-full rounded-2xl">
+                      <SelectTrigger className="h-11 w-full rounded-2xl hover:cursor-pointer">
                         <SelectValue placeholder="참여 인원을 선택해주세요." />
                       </SelectTrigger>
                     </FormControl>
@@ -160,7 +158,7 @@ export function Step3(): React.ReactElement {
 
           {memberCount === 'etc' ? (
             <div className="flex flex-col space-y-2">
-              <Text size="body1" weight="medium" className="text-gray-700">
+              <Text size="body2" weight="medium" className="text-gray-700">
                 직접 입력 (최대 50명)
               </Text>
               <FormField
@@ -183,17 +181,13 @@ export function Step3(): React.ReactElement {
             </div>
           ) : null}
 
-          <div className="rounded-2xl border border-gray-200 bg-gray-100 px-4 py-4">
+          <div className="rounded-2xl border border-gray-200 bg-gray-100 px-4 py-3">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <Text size="body1" weight="bold" className="text-gray-800">
+                <Text size="body2" weight="bold" className="text-gray-800">
                   중도 참여 수용 <span className="text-gray-500">(선택)</span>
                 </Text>
-                <Text
-                  size="body2"
-                  weight="regular"
-                  className="mt-1 text-gray-600"
-                >
+                <Text size="body2" weight="regular" className="text-gray-600">
                   챌린지 시작 후에도 새로운 참여자를 받을 수 있습니다.
                 </Text>
               </div>

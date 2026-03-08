@@ -1,6 +1,6 @@
 'use client';
 
-import { Button,Text } from '@1d1s/design-system';
+import { Button, Text } from '@1d1s/design-system';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React from 'react';

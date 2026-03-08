@@ -37,7 +37,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
     isMissingChallengeDialogOpen,
     handleSelectChallenge,
     handleClearChallenge,
-    handleGoalToggle,
+    handleGoalIdsChange,
     handleThumbnailFileSelect,
     closeMissingChallengeDialog,
     clearThumbnail,
@@ -85,7 +85,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
               <DiaryCreateGoalsSection
                 goals={goals}
                 achievedGoalIds={achievedGoalIds}
-                onGoalToggle={handleGoalToggle}
+                onGoalIdsChange={handleGoalIdsChange}
               />
             </div>
 

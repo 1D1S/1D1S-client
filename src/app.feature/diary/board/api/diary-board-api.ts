@@ -1,5 +1,9 @@
 import { apiClient } from '@module/api/client';
-import { buildQueryString, requestBody, requestData } from '@module/api/request';
+import {
+  buildQueryString,
+  requestBody,
+  requestData,
+} from '@module/api/request';
 
 import { resolveDiaryImageList } from '../../shared/utils/diary-image-url';
 import {
@@ -72,6 +76,16 @@ export const diaryBoardApi = {
   getAllDiaries: async (): Promise<DiaryItem[]> => {
     const response = await requestBody<AllDiariesApiResponse>(apiClient, {
       url: '/diaries/all',
+      method: 'GET',
+    });
+
+    return normalizeAllDiariesResponse(response);
+  },
+
+  // 나의 다이어리 목록 조회 (전체)
+  getMyDiaries: async (): Promise<DiaryItem[]> => {
+    const response = await requestBody<AllDiariesApiResponse>(apiClient, {
+      url: '/diaries/my',
       method: 'GET',
     });
 

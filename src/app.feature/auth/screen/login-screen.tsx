@@ -1,8 +1,9 @@
 'use client';
 
-import { Icon, Text } from '@1d1s/design-system';
+import { Button, Icon, Text } from '@1d1s/design-system';
 import { API_BASE_URL } from '@module/api/config';
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { OAuthProvider } from '../type/auth';
 
@@ -17,14 +18,14 @@ export function LoginScreen(): React.ReactElement {
         <div className="pointer-events-none absolute -right-24 -bottom-24 h-80 w-80 rounded-full bg-white/20 blur-3xl" />
         <div className="pointer-events-none absolute -top-20 -left-20 h-64 w-64 rounded-full bg-[#FFC789]/40 blur-3xl" />
 
-        <div className="relative z-10 flex items-center gap-3">
+        <Link href="/" className="relative z-10 flex w-fit items-center gap-3">
           <div className="rounded-2 flex h-8 w-8 items-center justify-center bg-white/20">
             <Icon name="Logo" size={18} className="text-white" />
           </div>
           <Text size="heading2" weight="bold" className="text-white">
             1D1S
           </Text>
-        </div>
+        </Link>
 
         <div className="relative z-10 flex flex-1 items-center">
           <div className="max-w-xl">
@@ -33,19 +34,27 @@ export function LoginScreen(): React.ReactElement {
               weight="bold"
               className="leading-tight text-white"
             >
-              &quot;The only way to achieve the impossible is to believe it is
-              possible.&quot;
+              &quot;불가능을 이루는 단 하나의 방법은, 그것이 가능하다고 믿는
+              것입니다.&quot;
             </Text>
           </div>
         </div>
       </section>
 
-      <section className="flex items-center justify-center px-6 py-10 lg:px-16">
-        <div className="w-full max-w-[460px]">
-          <div className="rounded-3 bg-main-100 text-main-600 mb-6 inline-flex h-10 w-10 items-center justify-center">
-            <Icon name="Logo" size={20} className="text-main-600" />
+      <section className="relative flex items-center justify-center px-6 py-10 lg:px-16">
+        <Link
+          href="/"
+          className="text-main-600 absolute top-6 left-6 flex items-center gap-2 lg:hidden"
+        >
+          <div className="rounded-2 bg-main-100 flex h-8 w-8 items-center justify-center">
+            <Icon name="Logo" size={18} className="text-main-600" />
           </div>
+          <Text size="heading2" weight="bold" className="text-main-600">
+            1D1S
+          </Text>
+        </Link>
 
+        <div className="w-full max-w-[460px]">
           <Text size="display2" weight="bold" className="block text-gray-900">
             1D1S와 함께 챌린지를 시작해봐요!
           </Text>
@@ -59,10 +68,10 @@ export function LoginScreen(): React.ReactElement {
           </Text>
 
           <div className="mt-10 flex flex-col gap-4">
-            <button
-              type="button"
+            <Button
+              size="large"
               onClick={() => handleSocialLogin('kakao')}
-              className="rounded-4 relative flex h-14 w-full items-center justify-center bg-[#FEE500] px-5 font-semibold text-black transition hover:brightness-95"
+              className="relative w-full bg-[#FEE500] text-black hover:bg-[#FEE500]/90"
             >
               <span className="absolute left-5">
                 <Image
@@ -73,12 +82,12 @@ export function LoginScreen(): React.ReactElement {
                 />
               </span>
               카카오 로그인
-            </button>
+            </Button>
 
-            <button
-              type="button"
+            <Button
+              size="large"
               onClick={() => handleSocialLogin('naver')}
-              className="rounded-4 relative flex h-14 w-full items-center justify-center bg-[#03C75A] px-5 font-semibold text-white transition hover:brightness-95"
+              className="relative w-full bg-[#03C75A] text-white hover:bg-[#03C75A]/90"
             >
               <span className="absolute left-5">
                 <Image
@@ -89,7 +98,7 @@ export function LoginScreen(): React.ReactElement {
                 />
               </span>
               네이버 로그인
-            </button>
+            </Button>
           </div>
         </div>
       </section>

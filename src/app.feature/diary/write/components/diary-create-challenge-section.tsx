@@ -1,16 +1,15 @@
-import { Text } from '@1d1s/design-system';
-import { ChevronRight, Flame } from 'lucide-react';
+import { ChallengeListItem, Text } from '@1d1s/design-system';
 import React from 'react';
 
-import type { ChallengeListItem } from '../../../challenge/board/type/challenge';
+import type { ChallengeListItem as ChallengeListItemType } from '../../../challenge/board/type/challenge';
 import { ChallengePicker } from './challenge-picker';
 
 interface DiaryCreateChallengeSectionProps {
-  selectedChallenge: ChallengeListItem | null;
+  selectedChallenge: ChallengeListItemType | null;
   isInitialChallengeLoading: boolean;
-  challenges: ChallengeListItem[];
+  challenges: ChallengeListItemType[];
   isChallengesLoading: boolean;
-  onSelectChallenge(challenge: ChallengeListItem): void;
+  onSelectChallenge(challenge: ChallengeListItemType): void;
   onClearChallenge(): void;
 }
 
@@ -29,32 +28,24 @@ export function DiaryCreateChallengeSection({
       </Text>
 
       {selectedChallenge ? (
-        <div className="mt-2 flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-5">
-          <div className="flex items-center gap-4">
-            <div className="bg-main-200 text-main-800 flex h-14 w-14 items-center justify-center rounded-xl">
-              <Flame className="h-6 w-6" />
-            </div>
-            <div>
-              <Text size="heading1" weight="bold" className="text-gray-900">
-                {selectedChallenge.title}
-              </Text>
-              <div className="mt-1 flex items-center gap-2">
-                <span className="text-caption1 rounded-lg bg-gray-100 px-2 py-0.5 font-medium text-gray-600">
-                  {selectedChallenge.category}
-                </span>
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="flex items-center gap-1 text-gray-600 transition hover:text-gray-800"
+        <div className="mt-2">
+          <ChallengeListItem
+            challengeTitle={selectedChallenge.title}
+            challengeType={selectedChallenge.challengeType}
+            challengeCategory={selectedChallenge.category}
+            currentUserCount={selectedChallenge.participantCnt}
+            maxUserCount={selectedChallenge.maxParticipantCnt}
+            startDate={selectedChallenge.startDate}
+            endDate={selectedChallenge.endDate}
+            isOngoing={(() => {
+              const now = new Date();
+              const start = new Date(selectedChallenge.startDate);
+              const end = new Date(selectedChallenge.endDate);
+              return now >= start && now <= end;
+            })()}
+            isEnded={new Date() > new Date(selectedChallenge.endDate)}
             onClick={onClearChallenge}
-          >
-            <Text size="body2" weight="medium">
-              변경
-            </Text>
-            <ChevronRight className="h-4 w-4" />
-          </button>
+          />
         </div>
       ) : isInitialChallengeLoading ? (
         <div className="rounded-2xl border border-gray-200 bg-white px-4 py-5">

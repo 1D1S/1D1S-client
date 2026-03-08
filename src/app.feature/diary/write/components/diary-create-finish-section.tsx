@@ -1,4 +1,4 @@
-import { DatePicker, Text } from '@1d1s/design-system';
+import { Checkbox, DatePicker, Text } from '@1d1s/design-system';
 import React from 'react';
 
 import type { Feeling } from '../../board/type/diary';
@@ -54,12 +54,10 @@ export function DiaryCreateFinishSection({
       </div>
 
       <div className="mt-6 flex items-center gap-2">
-        <input
-          type="checkbox"
+        <Checkbox
           id="isPublic"
           checked={isPublic}
-          onChange={(event) => onPublicChange(event.target.checked)}
-          className="h-4 w-4"
+          onCheckedChange={(checked) => onPublicChange(Boolean(checked))}
         />
         <label htmlFor="isPublic">
           <Text size="body2" weight="medium" className="text-gray-700">

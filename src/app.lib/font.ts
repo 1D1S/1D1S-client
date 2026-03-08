@@ -32,8 +32,9 @@ const pretendard = localFont({
 const suite = localFont({
   src: [
     {
-      path: '../../public/fonts/suite/SUITE-Bold.woff2',
-      weight: '700',
+      path: '../../public/fonts/suite/SUITE-Variable.woff2',
+      weight: '100 900',
+      style: 'normal',
     },
   ],
   variable: '--font-suite',
