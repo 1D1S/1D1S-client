@@ -22,17 +22,19 @@ export default function ChallengeCreateScreen(): React.ReactElement {
   const prev = (): void => setStep((step) => Math.max(step - 1, 1));
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white">
-      <div className="mx-auto flex w-full max-w-[1120px] flex-col px-6 pt-10 pb-12">
-        <div className="flex flex-col text-center">
-          <Text size="display1" weight="bold" className="text-gray-900">
-            챌린지 생성
-          </Text>
-          <Text size="body1" weight="regular" className="mt-3 text-gray-600">
-            새 챌린지를 단계별로 설정해보세요.
-          </Text>
+    <div className="flex min-h-screen w-full flex-col bg-white p-4">
+      <section className="rounded-3 w-full bg-white p-2">
+        <div className="flex items-start justify-between border-b border-gray-200 pb-5">
+          <div className="flex flex-col gap-2">
+            <Text size="display1" weight="bold" className="text-gray-900">
+              챌린지 생성
+            </Text>
+            <Text size="body1" weight="regular" className="text-gray-600">
+              새 챌린지를 단계별로 설정해보세요.
+            </Text>
+          </div>
         </div>
-        <div className="mt-10">
+        <div className="mt-6 mb-4">
           <StepIndicator steps={steps} currentStep={step} />
         </div>
         <Form {...form}>
@@ -43,7 +45,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
             previousStep={prev}
           />
         </Form>
-      </div>
+      </section>
     </div>
   );
 }

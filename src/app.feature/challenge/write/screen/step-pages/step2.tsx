@@ -35,9 +35,9 @@ export function Step2(): React.ReactElement {
   const period = watch('period');
 
   return (
-    <div className="mx-auto w-full max-w-[980px] space-y-8">
+    <div className="mx-auto w-full max-w-[980px] space-y-4">
       <div className="flex flex-col gap-2 space-y-3">
-        <Text size="heading1" weight="bold" className="text-gray-900">
+        <Text size="body1" weight="bold" className="text-gray-900">
           기간 유형
         </Text>
         <FormField
@@ -45,7 +45,7 @@ export function Step2(): React.ReactElement {
           name="periodType"
           render={({ field }) => (
             <FormItem>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-2 gap-4">
                 <CheckContainer
                   checked={field.value === 'ENDLESS'}
                   onCheckedChange={(checked) => {
@@ -54,31 +54,30 @@ export function Step2(): React.ReactElement {
                     }
                   }}
                   width="100%"
-                  height={176}
                   className={cn(
-                    '!rounded-3 !items-start !justify-start p-6 text-left hover:cursor-pointer',
+                    '!rounded-3 !h-auto !items-start !justify-start p-5 text-left hover:cursor-pointer',
                     field.value === 'ENDLESS'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
                   )}
                   aria-label="무기한 챌린지"
                 >
-                  <div className="flex h-full flex-col justify-between">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
-                      <Infinity className="h-5 w-5" />
+                  <div className="flex h-full flex-col gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                      <Infinity className="h-4 w-4" />
                     </span>
                     <div className="flex flex-col">
                       <Text
-                        size="heading1"
+                        size="body1"
                         weight="bold"
                         className="text-gray-900"
                       >
                         무기한 챌린지
                       </Text>
                       <Text
-                        size="caption1"
+                        size="body2"
                         weight="regular"
-                        className="mt-2 text-gray-600"
+                        className="mt-1 text-gray-600"
                       >
                         종료일 없이 루틴을 이어가는 장기 챌린지입니다.
                       </Text>
@@ -94,31 +93,30 @@ export function Step2(): React.ReactElement {
                     }
                   }}
                   width="100%"
-                  height={176}
                   className={cn(
-                    '!rounded-3 !items-start !justify-start p-6 text-left hover:cursor-pointer',
+                    '!rounded-3 !h-auto !items-start !justify-start p-5 text-left hover:cursor-pointer',
                     field.value === 'LIMITED'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
                   )}
                   aria-label="기간 챌린지"
                 >
-                  <div className="flex h-full flex-col justify-between">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
-                      <Timer className="h-5 w-5" />
+                  <div className="flex h-full flex-col gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                      <Timer className="h-4 w-4" />
                     </span>
                     <div className="flex flex-col">
                       <Text
-                        size="heading1"
+                        size="body1"
                         weight="bold"
                         className="text-gray-900"
                       >
                         기간 챌린지
                       </Text>
                       <Text
-                        size="caption1"
+                        size="body2"
                         weight="regular"
-                        className="mt-2 text-gray-600"
+                        className="mt-1 text-gray-600"
                       >
                         시작일과 종료일을 정해 집중적으로 진행합니다.
                       </Text>
@@ -135,7 +133,7 @@ export function Step2(): React.ReactElement {
       {periodType === 'LIMITED' ? (
         <>
           <div className="flex flex-col space-y-3">
-            <Text size="heading1" weight="bold" className="text-gray-900">
+            <Text size="body1" weight="bold" className="text-gray-900">
               챌린지 기간
             </Text>
             <FormField
@@ -157,7 +155,7 @@ export function Step2(): React.ReactElement {
                           }}
                           showCheckIndicator={false}
                           width="auto"
-                          height={46}
+                          height={38}
                           className={cn(
                             '!rounded-full px-4 hover:cursor-pointer',
                             isSelected
@@ -167,7 +165,7 @@ export function Step2(): React.ReactElement {
                           aria-label={`${option.label} 기간`}
                         >
                           <Text
-                            size="body1"
+                            size="body2"
                             weight="medium"
                             className={
                               isSelected ? 'text-white' : 'text-gray-700'
@@ -187,7 +185,7 @@ export function Step2(): React.ReactElement {
 
           {period === 'etc' ? (
             <div className="flex flex-col space-y-2">
-              <Text size="body1" weight="medium" className="text-gray-700">
+              <Text size="body2" weight="medium" className="text-gray-700">
                 직접 입력 (최대 730일)
               </Text>
               <FormField
@@ -211,7 +209,7 @@ export function Step2(): React.ReactElement {
           ) : null}
 
           <div className="flex flex-col space-y-3">
-            <Text size="heading1" weight="bold" className="text-gray-900">
+            <Text size="body1" weight="bold" className="text-gray-900">
               시작일
             </Text>
             <FormField

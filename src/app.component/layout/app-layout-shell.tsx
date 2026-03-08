@@ -2,14 +2,22 @@
 
 import {
   AppHeader,
+  Button,
   RightSidebar,
   type RightSidebarChallenge,
   type RightSidebarProps,
 } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/use-member-queries';
 import { authStorage } from '@module/utils/auth';
+import { ArrowLeft } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useMemo, useSyncExternalStore } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import { AppLayoutProvider } from './app-layout-context';
 
@@ -28,7 +36,6 @@ const RIGHT_SIDEBAR_HIDDEN_ROUTES = [
   '/mypage',
   '/challenge/create',
 ];
-const FULL_BLEED_ROUTES = ['/auth/login', '/login', '/auth/signup', '/signup'];
 
 const APP_HEADER_NAV_ITEMS = [
   { key: 'home', label: '홈' },
@@ -78,6 +85,50 @@ function isChallengeDetailRoute(pathname: string): boolean {
   }
 
   return segments[1] !== 'create';
+}
+
+/**
+ * 패널 사이드바 없이 헤더 프로필 → 오버레이 방식을 사용하는 경로.
+ * 이 경로에서는 데스크톱 너비여도 오버레이를 자동으로 닫지 않습니다.
+ *
+ * 추가 방법:
+ *   - 고정 경로: OVERLAY_SIDEBAR_ROUTES 배열에 추가
+ *   - 동적 경로: isOverlaySidebarRoute 함수 내 조건 추가 (예: isDiaryDetailRoute)
+ */
+const OVERLAY_SIDEBAR_ROUTES: readonly string[] = [
+  // 예: '/diary/' 형태의 일지 상세는 추후 아래에 추가
+];
+
+function needsBackButton(pathname: string): boolean {
+  if (isChallengeDetailRoute(pathname)) {
+    return true;
+  }
+  if (pathname === '/challenge/create') {
+    return true;
+  }
+  if (/^\/diary\/\d+/.test(pathname)) {
+    return true;
+  }
+  if (pathname === '/diary/create') {
+    return true;
+  }
+  if (pathname === '/mypage/settings') {
+    return true;
+  }
+  if (pathname === '/notification') {
+    return true;
+  }
+  if (pathname === '/onboarding') {
+    return true;
+  }
+  return false;
+}
+
+function isOverlaySidebarRoute(pathname: string): boolean {
+  return (
+    isChallengeDetailRoute(pathname) ||
+    matchesRoute(pathname, OVERLAY_SIDEBAR_ROUTES)
+  );
 }
 
 const NOOP_SUBSCRIBE = (): (() => void) => () => {};
@@ -176,6 +227,72 @@ export default function AppLayoutShell({
   const now = useSyncExternalStore(NOOP_SUBSCRIBE, getMountTimestamp, () => 0);
 
   const isLoggedIn = hasMounted && authStorage.hasTokens();
+  const isMobile = useSyncExternalStore(
+    (callback) => {
+      window.addEventListener('resize', callback);
+      return () => window.removeEventListener('resize', callback);
+    },
+    () => window.innerWidth < 1024,
+    () => true
+  );
+  const [isSidebarOverlayOpen, setIsSidebarOverlayOpen] = useState(false);
+  const [isSidebarOverlayMounted, setIsSidebarOverlayMounted] = useState(false);
+  const sidebarOverlayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isSidebarOverlayOpen) {
+      const timerId = window.setTimeout(
+        () => setIsSidebarOverlayMounted(true),
+        0
+      );
+      return () => window.clearTimeout(timerId);
+    }
+    const timerId = window.setTimeout(
+      () => setIsSidebarOverlayMounted(false),
+      200
+    );
+    return () => window.clearTimeout(timerId);
+  }, [isSidebarOverlayOpen]);
+
+  useEffect(() => {
+    const timerId = window.setTimeout(() => setIsSidebarOverlayOpen(false), 0);
+    return () => window.clearTimeout(timerId);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isMobile && isSidebarOverlayOpen && !isOverlaySidebarRoute(pathname)) {
+      const timerId = window.setTimeout(() => {
+        setIsSidebarOverlayOpen(false);
+      }, 0);
+      return () => window.clearTimeout(timerId);
+    }
+    return undefined;
+  }, [isMobile, isSidebarOverlayOpen, pathname]);
+
+  useEffect(() => {
+    if (!isSidebarOverlayOpen) {
+      return;
+    }
+    const handleClickOutside = (event: MouseEvent): void => {
+      if (
+        sidebarOverlayRef.current &&
+        !sidebarOverlayRef.current.contains(event.target as Node)
+      ) {
+        setIsSidebarOverlayOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') {
+        setIsSidebarOverlayOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isSidebarOverlayOpen]);
   const { data: sidebarData } = useSidebar();
 
   const sidebarProps: RightSidebarProps = useMemo(() => {
@@ -206,10 +323,10 @@ export default function AppLayoutShell({
     };
   }, [sidebarData, now]);
   const showHeader = !matchesRoute(pathname, HEADER_HIDDEN_ROUTES);
+  const showBackButton = needsBackButton(pathname);
   const showRightSidebar =
     !matchesRoute(pathname, RIGHT_SIDEBAR_HIDDEN_ROUTES) &&
     !isChallengeDetailRoute(pathname);
-  const isFullBleedRoute = matchesRoute(pathname, FULL_BLEED_ROUTES);
   const activeNavKey = resolveActiveNavKey(pathname);
   const sidebarStickyTopClass = showHeader ? 'top-28' : 'top-6';
 
@@ -227,8 +344,11 @@ export default function AppLayoutShell({
               navItems={[...APP_HEADER_NAV_ITEMS]}
               activeKey={activeNavKey}
               showProfile={
-                isLoggedIn && !showRightSidebar && pathname !== '/mypage'
+                isLoggedIn &&
+                (!showRightSidebar || isMobile) &&
+                pathname !== '/mypage'
               }
+              profileImage={sidebarProps.userImage}
               onLogoClick={() => router.push('/')}
               onNavChange={(key) => {
                 const route = APP_HEADER_ROUTE_BY_KEY[key];
@@ -236,19 +356,32 @@ export default function AppLayoutShell({
                   router.push(route);
                 }
               }}
+              showBackButton={showBackButton && isMobile}
+              onBackClick={() => router.back()}
               onNotificationClick={() => router.push('/notification')}
-              onProfileClick={() => router.push('/mypage')}
+              onProfileClick={() => setIsSidebarOverlayOpen(true)}
             />
           </header>
         ) : null}
 
+        {showBackButton && (
+          <div className="hidden shrink-0 px-6 pt-3 lg:flex">
+            <Button variant="ghost" size="small" onClick={() => router.back()}>
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              뒤로가기
+            </Button>
+          </div>
+        )}
+
         {showRightSidebar ? (
-          <div className="flex min-h-0 flex-1 gap-4 px-4 pb-4">
+          <div className="flex min-h-0 flex-1 gap-4">
             <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden">
               {children}
             </main>
+
+            {/* 데스크톱 사이드바 */}
             <aside
-              className={`sticky ${sidebarStickyTopClass} h-fit min-h-0 shrink-0 self-start pt-3 pr-3`}
+              className={`sticky ${sidebarStickyTopClass} hidden h-fit min-h-0 shrink-0 self-start pt-3 pr-3 lg:block`}
             >
               {hasMounted ? (
                 <RightSidebar
@@ -266,12 +399,29 @@ export default function AppLayoutShell({
             </aside>
           </div>
         ) : (
-          <main
-            className={`min-h-0 min-w-0 flex-1 ${isFullBleedRoute ? '' : 'px-4 pb-4'}`}
-          >
-            {children}
-          </main>
+          <main className="min-h-0 min-w-0 flex-1">{children}</main>
         )}
+
+        {/* 사이드바 오버레이 (모바일 + 프로필 클릭 공통) */}
+        {isSidebarOverlayMounted && hasMounted ? (
+          <div
+            ref={sidebarOverlayRef}
+            className={`fixed top-4 right-3 z-50 transition-opacity duration-200 ${
+              isSidebarOverlayOpen ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <RightSidebar
+              {...sidebarProps}
+              isLoggedIn={isLoggedIn}
+              fixed={false}
+              onCollapseClick={() => setIsSidebarOverlayOpen(false)}
+              onWriteDiary={() => router.push('/diary/create')}
+              onGoMyPage={() => router.push('/mypage')}
+              onOpenSettings={() => router.push('/mypage/settings')}
+              onLogin={() => router.push('/login')}
+            />
+          </div>
+        ) : null}
       </div>
     </AppLayoutProvider>
   );

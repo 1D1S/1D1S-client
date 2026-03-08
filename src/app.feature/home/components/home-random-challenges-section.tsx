@@ -49,7 +49,7 @@ export default function HomeRandomChallengesSection({
         </div>
       ) : null}
       {!isLoading && !isError ? (
-        <div className="grid grid-cols-1 gap-3 px-4 pb-4 lg:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 px-4 pb-4 sm:grid-cols-2 xl:grid-cols-4">
           {challenges.map((challenge) => (
             <div key={challenge.challengeId} className="min-w-0">
               <ChallengeCard

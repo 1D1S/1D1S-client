@@ -10,6 +10,12 @@ import {
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { ChallengeGoalToggle } from '@feature/challenge/detail/components/challenge-goal-toggle';
+import { Feeling } from '@feature/diary/board/type/diary';
+import {
+  useLikeDiary,
+  useUnlikeDiary,
+} from '@feature/diary/detail/hooks/use-diary-mutations';
+import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
 import { normalizeApiError, notifyApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import {
@@ -33,10 +39,8 @@ import {
   Participant,
   ParticipantStatus,
 } from '../../board/type/challenge';
-import {
-  CHALLENGE_DETAIL_DUMMY_DIARIES,
-  CHALLENGE_DETAIL_WEEK_LABELS,
-} from '../consts/challenge-detail-data';
+import { CHALLENGE_DETAIL_WEEK_LABELS } from '../consts/challenge-detail-data';
+import { useChallengeDiaryList } from '../hooks/use-challenge-diary-queries';
 import {
   useAcceptParticipant,
   useJoinChallenge,
@@ -45,6 +49,7 @@ import {
   useRejectParticipant,
   useUnlikeChallenge,
 } from '../hooks/use-challenge-mutations';
+import { ChallengeDiaryItem } from '../type/challenge-diary';
 
 interface ChallengeDetailScreenProps {
   id: string;
@@ -315,6 +320,8 @@ export function ChallengeDetailScreen({
   const unlikeChallenge = useUnlikeChallenge();
   const acceptParticipant = useAcceptParticipant();
   const rejectParticipant = useRejectParticipant();
+  const likeDiary = useLikeDiary();
+  const unlikeDiary = useUnlikeDiary();
 
   const hasMounted = useSyncExternalStore(
     () => () => {},
@@ -323,12 +330,13 @@ export function ChallengeDetailScreen({
   );
   const [dismissed, setDismissed] = useState(false);
   const showAuthDialog = hasMounted && !authStorage.hasTokens() && !dismissed;
+  const [showDiaryLikeDialog, setShowDiaryLikeDialog] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
   const [selectedGoalIds, setSelectedGoalIds] = useState<number[]>([]);
   const [isGoalSelectionTouched, setIsGoalSelectionTouched] = useState(false);
-  const [dummyDiaries, setDummyDiaries] = useState(
-    () => CHALLENGE_DETAIL_DUMMY_DIARIES
-  );
+
+  const { data: challengeDiaries, isLoading: isDiariesLoading } =
+    useChallengeDiaryList(challengeId);
 
   const summary = data?.challengeSummary;
   const detail = data?.challengeDetail;
@@ -339,10 +347,10 @@ export function ChallengeDetailScreen({
     100,
     Math.max(0, detail?.participationRate ?? 0)
   );
-  const goalCompletionRate = Math.min(
-    100,
-    Math.max(0, detail?.goalCompletionRate ?? 0)
-  );
+  const goalCompletionRate =
+    Math.round(
+      Math.min(100, Math.max(0, detail?.goalCompletionRate ?? 0)) * 100
+    ) / 100;
 
   const pendingParticipants = useMemo(
     () =>
@@ -377,9 +385,9 @@ export function ChallengeDetailScreen({
     () => buildCalendarRows(calendarMonth, summaryStartDate, summaryEndDate),
     [calendarMonth, summaryEndDate, summaryStartDate]
   );
-  const previewDummyDiaries = useMemo(
-    () => dummyDiaries.slice(0, 10),
-    [dummyDiaries]
+  const previewDiaries = useMemo(
+    () => (challengeDiaries ?? []).slice(0, 10),
+    [challengeDiaries]
   );
 
   const isActionLoading =
@@ -493,22 +501,30 @@ export function ChallengeDetailScreen({
     });
   };
 
-  const handleToggleDummyDiaryLike = (diaryId: number): void => {
-    setDummyDiaries((prevDiaries) =>
-      prevDiaries.map((diary) => {
-        if (diary.diaryId !== diaryId) {
-          return diary;
-        }
-
-        const nextLiked = !diary.isLiked;
-        return {
-          ...diary,
-          isLiked: nextLiked,
-          likes: Math.max(0, diary.likes + (nextLiked ? 1 : -1)),
-        };
-      })
-    );
+  const handleDiaryLikeToggle = (diary: ChallengeDiaryItem): void => {
+    if (!authStorage.hasTokens()) {
+      setShowDiaryLikeDialog(true);
+      return;
+    }
+    if (likeDiary.isPending || unlikeDiary.isPending) {
+      return;
+    }
+    if (diary.likeInfo.likedByMe) {
+      unlikeDiary.mutate(diary.id);
+    } else {
+      likeDiary.mutate(diary.id);
+    }
   };
+
+  function mapFeelingToEmotion(feeling: Feeling): 'happy' | 'soso' | 'sad' {
+    if (feeling === 'HAPPY') {
+      return 'happy';
+    }
+    if (feeling === 'SAD') {
+      return 'sad';
+    }
+    return 'soso';
+  }
 
   const renderActionsSection = (): React.ReactElement => (
     <section className="rounded-4 border border-gray-200 bg-white p-5">
@@ -530,7 +546,9 @@ export function ChallengeDetailScreen({
           asChild
         >
           <button type="button" onClick={handleToggleLike}>
-            <Heart className="h-4 w-4" />
+            <Heart
+              className={`h-4 w-4 ${summary!.likeInfo.likedByMe ? 'fill-current' : ''}`}
+            />
             {summary!.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'} (
             {summary!.likeInfo.likeCnt})
           </button>
@@ -581,23 +599,29 @@ export function ChallengeDetailScreen({
           <Text size="body2" weight="medium" className="text-gray-600">
             참여자
           </Text>
-          <Text size="body1" weight="bold" className="text-gray-900">
-            {summary!.participantCnt} / {summary!.maxParticipantCnt}
-          </Text>
+          {summary!.maxParticipantCnt === 0 ? (
+            <Text size="body1" weight="bold" className="text-gray-900">
+              개인 챌린지
+            </Text>
+          ) : (
+            <Text size="body1" weight="bold" className="text-gray-900">
+              {summary!.participantCnt} / {summary!.maxParticipantCnt}
+            </Text>
+          )}
         </div>
-        <div className="h-2 rounded-full bg-gray-200">
-          <div
-            className="bg-mint-800 h-full rounded-full"
-            style={{
-              width: `${Math.min(
-                100,
-                summary!.maxParticipantCnt > 0
-                  ? (summary!.participantCnt / summary!.maxParticipantCnt) * 100
-                  : 0
-              )}%`,
-            }}
-          />
-        </div>
+        {summary!.maxParticipantCnt > 0 && (
+          <div className="h-2 rounded-full bg-gray-200">
+            <div
+              className="bg-mint-800 h-full rounded-full"
+              style={{
+                width: `${Math.min(
+                  100,
+                  (summary!.participantCnt / summary!.maxParticipantCnt) * 100
+                )}%`,
+              }}
+            />
+          </div>
+        )}
         <div className="mt-3 flex items-center gap-2 text-gray-600">
           <CalendarDays className="h-4 w-4" />
           <Text size="body2" weight="medium">
@@ -610,36 +634,50 @@ export function ChallengeDetailScreen({
     </section>
   );
 
+  const authDialog = (
+    <LoginRequiredDialog
+      open={showAuthDialog}
+      onOpenChange={(open) => {
+        if (!open) {
+          setDismissed(true);
+        }
+      }}
+      title="간편 가입 후에 둘러보세요!"
+      description="챌린지 상세는 로그인 후 이용할 수 있습니다."
+    />
+  );
+
   if (isLoading) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-white">
-        <Text size="body1" weight="medium" className="text-gray-500">
-          상세 정보를 불러오는 중입니다...
-        </Text>
-      </div>
+      <>
+        {authDialog}
+        <div className="flex min-h-screen w-full items-center justify-center bg-white">
+          <Text size="body1" weight="medium" className="text-gray-500">
+            상세 정보를 불러오는 중입니다...
+          </Text>
+        </div>
+      </>
     );
   }
 
   if (isError || !summary || !detail) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-white px-4">
-        <Text size="body1" weight="medium" className="text-red-600">
-          {error
-            ? normalizeApiError(error).message
-            : '챌린지 상세 정보를 불러오지 못했습니다.'}
-        </Text>
-      </div>
+      <>
+        {authDialog}
+        <div className="flex min-h-screen w-full items-center justify-center bg-white px-4">
+          <Text size="body1" weight="medium" className="text-red-600">
+            {error
+              ? normalizeApiError(error).message
+              : '챌린지 상세 정보를 불러오지 못했습니다.'}
+          </Text>
+        </div>
+      </>
     );
   }
 
   return (
     <div className="min-h-screen w-full bg-white px-4 py-6 md:px-6 lg:px-8">
-      <LoginRequiredDialog
-        open={showAuthDialog}
-        onOpenChange={(open) => { if (!open) {setDismissed(true);} }}
-        title="간편 가입 후에 둘러보세요!"
-        description="챌린지 상세는 로그인 후 이용할 수 있습니다."
-      />
+      {authDialog}
       <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6">
         <section className="rounded-4 border border-gray-200 bg-white p-6 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -726,7 +764,9 @@ export function ChallengeDetailScreen({
             <div className="grid gap-6 lg:grid-cols-2">
               <section className="rounded-4 border border-gray-200 bg-white p-5">
                 <StatHeader
-                  icon={<span className="text-main-800 pb-1.5 text-4xl">◔</span>}
+                  icon={
+                    <span className="text-main-800 pb-1.5 text-4xl">◔</span>
+                  }
                   title={isHost ? '내 진척도' : '나의 참여 진척도'}
                 />
                 <div className="mt-4 flex items-center gap-4">
@@ -956,15 +996,14 @@ export function ChallengeDetailScreen({
         </div>
 
         <section className="rounded-4 border border-gray-200 bg-white p-5">
+          <LoginRequiredDialog
+            open={showDiaryLikeDialog}
+            onOpenChange={setShowDiaryLikeDialog}
+          />
           <div className="flex flex-col gap-2 border-b border-gray-200 pb-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-2">
-              <Text size="heading2" weight="bold" className="text-gray-900">
-                챌린지 일지 리스트
-              </Text>
-              <span className="text-caption2 rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-600">
-                DUMMY
-              </span>
-            </div>
+            <Text size="heading2" weight="bold" className="text-gray-900">
+              챌린지 일지 리스트
+            </Text>
             <Link
               href={`/challenge/${id}/diary`}
               className="text-main-800 text-sm font-semibold hover:underline"
@@ -973,35 +1012,58 @@ export function ChallengeDetailScreen({
             </Link>
           </div>
 
-          <Text size="caption2" weight="regular" className="mt-3 text-gray-500">
-            {summary.title} 챌린지 일지 더미 데이터 미리보기(최대 10개)입니다.
-          </Text>
-
-          <div className="mt-4 overflow-x-auto">
-            <div className="flex w-max gap-3 pb-2">
-              {previewDummyDiaries.map((diary) => (
-                <div key={diary.diaryId} className="w-[200px] shrink-0">
-                  <DiaryCard
-                    imageUrl={diary.imageUrl}
-                    percent={diary.percent}
-                    isLiked={diary.isLiked}
-                    likes={diary.likes}
-                    title={diary.title}
-                    user={diary.user}
-                    userImage={diary.userImage}
-                    challengeLabel={diary.challengeLabel}
-                    onChallengeClick={() => undefined}
-                    date={diary.dateLabel}
-                    emotion={diary.emotion}
-                    onLikeToggle={() =>
-                      handleToggleDummyDiaryLike(diary.diaryId)
-                    }
-                    onClick={() => undefined}
-                  />
-                </div>
-              ))}
+          {isDiariesLoading ? (
+            <div className="mt-6 flex justify-center py-6">
+              <Text size="body2" weight="regular" className="text-gray-500">
+                일지를 불러오는 중입니다.
+              </Text>
             </div>
-          </div>
+          ) : previewDiaries.length === 0 ? (
+            <div className="mt-6 flex justify-center py-6">
+              <Text size="body2" weight="regular" className="text-gray-500">
+                아직 등록된 일지가 없습니다.
+              </Text>
+            </div>
+          ) : (
+            <div className="mt-4 overflow-x-auto">
+              <div className="flex w-max gap-3 pb-2">
+                {previewDiaries.map((diary) => (
+                  <div key={diary.id} className="w-[200px] shrink-0">
+                    <DiaryCard
+                      imageUrl={
+                        resolveDiaryImageUrl(diary.imgUrl?.[0]) ||
+                        '/images/default-card.png'
+                      }
+                      percent={Math.min(
+                        100,
+                        Math.max(0, diary.diaryInfo?.achievementRate ?? 0)
+                      )}
+                      isLiked={diary.likeInfo.likedByMe}
+                      likes={diary.likeInfo.likeCnt}
+                      title={diary.title}
+                      user={diary.author?.nickname || '익명'}
+                      userImage={
+                        resolveDiaryImageUrl(diary.author?.profileImage) ||
+                        '/images/default-profile.png'
+                      }
+                      challengeLabel={
+                        diary.challenge?.title ??
+                        diary.challenge?.category ??
+                        '챌린지'
+                      }
+                      onChallengeClick={() => undefined}
+                      date={diary.diaryInfo?.createdAt ?? ''}
+                      emotion={mapFeelingToEmotion(
+                        diary.diaryInfo?.feeling ?? 'NONE'
+                      )}
+                      onLikeToggle={() => handleDiaryLikeToggle(diary)}
+                      onClick={() => undefined}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </div>

@@ -44,12 +44,9 @@ export default function HomeQuickActions({
 }: HomeQuickActionsProps): React.ReactElement {
   return (
     <div className="w-full px-4">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-3 gap-3">
         {QUICK_ACTION_ITEMS.map((item) => (
-          <div
-            key={item.href}
-            className="h-[200px] max-h-[200px] min-h-[200px]"
-          >
+          <div key={item.href} className="h-[90px] sm:h-[140px] lg:h-[180px]">
             <InfoButton
               mainText={item.mainText}
               subText={item.subText}

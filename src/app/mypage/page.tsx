@@ -153,7 +153,7 @@ export default function MyPage(): React.ReactElement {
       )}
       <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
         <aside className="space-y-4 xl:order-last">
-          <div className="grid grid-cols-2 gap-4 xl:grid-cols-1">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1">
             <section className="rounded-4 border border-gray-200 bg-white p-5 text-center">
               <div className="border-main-800/20 bg-main-200 mx-auto mb-3 flex h-[80px] w-[80px] items-center justify-center rounded-full border-4">
                 <CircleAvatar imageUrl={profileUrl} size="lg" />

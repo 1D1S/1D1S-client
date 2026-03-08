@@ -108,15 +108,17 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   // }, [filteredChallenges, safeCurrentPage]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col p-4">
-      <section className="rounded-4 w-full px-1 pb-6">
-        <div className="flex flex-col gap-2">
-          <Text size="display1" weight="bold" className="text-gray-900">
-            전체 챌린지
-          </Text>
-          <Text size="body1" weight="regular" className="text-gray-600">
-            새로운 습관을 만들고 함께 성장할 챌린지를 찾아보세요.
-          </Text>
+    <div className="flex min-h-screen w-full flex-col bg-white p-4">
+      <section className="rounded-3 w-full bg-white p-2">
+        <div className="flex items-start justify-between border-b border-gray-200 pb-5">
+          <div className="flex flex-col gap-2">
+            <Text size="display1" weight="bold" className="text-gray-900">
+              전체 챌린지
+            </Text>
+            <Text size="body1" weight="regular" className="text-gray-600">
+              새로운 습관을 만들고 함께 성장할 챌린지를 찾아보세요.
+            </Text>
+          </div>
         </div>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">

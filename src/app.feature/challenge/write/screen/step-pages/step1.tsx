@@ -15,9 +15,9 @@ export function Step1(): React.ReactElement {
   const { control } = useFormContext<ChallengeCreateFormValues>();
 
   return (
-    <div className="mx-auto w-full max-w-[980px] space-y-12">
-      <div className="flex flex-col gap-2 space-y-2">
-        <Text size="heading1" weight="bold" className="text-gray-900">
+    <div className="mx-auto w-full max-w-[980px] space-y-4">
+      <div className="flex flex-col gap-1.5 space-y-1.5">
+        <Text size="body1" weight="bold" className="text-gray-900">
           챌린지 제목 <span className="text-main-800">*</span>
         </Text>
         <FormField
@@ -39,8 +39,8 @@ export function Step1(): React.ReactElement {
         />
       </div>
 
-      <div className="flex flex-col gap-2 space-y-3">
-        <Text size="heading1" weight="bold" className="text-gray-900">
+      <div className="flex flex-col gap-1.5 space-y-2">
+        <Text size="body1" weight="bold" className="text-gray-900">
           카테고리
         </Text>
         <FormField
@@ -63,9 +63,9 @@ export function Step1(): React.ReactElement {
                       }}
                       showCheckIndicator={false}
                       width="auto"
-                      height={48}
+                      height={40}
                       className={cn(
-                        '!min-w-[128px] !rounded-full !border px-4 hover:cursor-pointer',
+                        '!min-w-[110px] !rounded-full !border px-4 hover:cursor-pointer',
                         isSelected
                           ? '!border-main-800 !bg-main-800 !text-white'
                           : '!border-gray-300 !bg-white !text-gray-700'
@@ -75,7 +75,7 @@ export function Step1(): React.ReactElement {
                       <div className="flex items-center gap-2">
                         <span aria-hidden>{option.icon}</span>
                         <Text
-                          size="body1"
+                          size="body2"
                           weight="medium"
                           className={
                             isSelected ? 'text-white' : 'text-gray-700'
@@ -94,8 +94,8 @@ export function Step1(): React.ReactElement {
         />
       </div>
 
-      <div className="flex flex-col gap-2 space-y-2">
-        <Text size="heading1" weight="bold" className="text-gray-900">
+      <div className="flex flex-col gap-1.5 space-y-1.5">
+        <Text size="body1" weight="bold" className="text-gray-900">
           설명 <span className="text-gray-500">(선택)</span>
         </Text>
         <FormField
@@ -107,7 +107,7 @@ export function Step1(): React.ReactElement {
                 <TextField
                   id="description"
                   multiline
-                  rows={8}
+                  rows={6}
                   placeholder="챌린지 소개와 진행 방법을 자유롭게 적어주세요."
                   className="w-full"
                   {...field}

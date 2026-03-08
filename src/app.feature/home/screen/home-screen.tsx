@@ -44,7 +44,8 @@ export default function HomeScreen(): React.ReactElement {
             autoSlideIntervalMs={5000}
             enableLoop
             showIndicators
-            aspectRatioClassName="aspect-[4/1]"
+            aspectRatioClassName="aspect-[5/1]"
+            minHeightPx={140}
             onItemClick={(_, index) => {
               const route = HOME_MAIN_BANNERS[index]?.href;
 

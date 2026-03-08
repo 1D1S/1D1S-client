@@ -1,4 +1,4 @@
-import { Text } from '@1d1s/design-system';
+import { Button, Text } from '@1d1s/design-system';
 import React from 'react';
 
 interface HomeSectionHeaderProps {
@@ -18,15 +18,9 @@ export default function HomeSectionHeader({
         <Text size="heading1" weight="bold" className="text-black">
           {title}
         </Text>
-        <button
-          type="button"
-          onClick={onMoreClick}
-          className="cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
-        >
-          <Text size="body2" weight="medium" className="text-inherit">
-            더보기 +
-          </Text>
-        </button>
+        <Button variant="ghost" size="small" onClick={onMoreClick}>
+          더보기 +
+        </Button>
       </div>
       <Text size="caption3" weight="medium" className="text-gray-600">
         {subtitle}

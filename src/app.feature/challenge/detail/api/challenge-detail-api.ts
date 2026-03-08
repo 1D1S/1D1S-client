@@ -1,16 +1,12 @@
-import { DiaryListResponse } from '@feature/diary/board/type/diary';
 import { apiClient } from '@module/api/client';
-import {
-  buildQueryString,
-  requestBody,
-  requestData,
-} from '@module/api/request';
+import { requestBody, requestData } from '@module/api/request';
 
 import {
   ChallengeDetailResponse,
   JoinChallengeRequest,
   JoinChallengeResponse,
 } from '../../board/type/challenge';
+import { ChallengeDiaryItem } from '../type/challenge-diary';
 
 export const challengeDetailApi = {
   // 챌린지 상세 조회
@@ -73,21 +69,12 @@ export const challengeDetailApi = {
     });
   },
 
-  // 챌린지 일지 목록 조회 (커서 기반 페이지네이션)
+  // 챌린지 일지 목록 조회
   getChallengeDiaries: async (
-    challengeId: number,
-    params: { size?: number; cursor?: string } = {}
-  ): Promise<DiaryListResponse> => {
-    const query = buildQueryString({
-      size: params.size,
-      cursor: params.cursor,
-    });
-
-    return requestData<DiaryListResponse>(apiClient, {
-      url: query
-        ? `/challenges/${challengeId}/diaries?${query}`
-        : `/challenges/${challengeId}/diaries`,
+    challengeId: number
+  ): Promise<ChallengeDiaryItem[]> =>
+    requestData<ChallengeDiaryItem[]>(apiClient, {
+      url: `/diaries/challenges/${challengeId}`,
       method: 'GET',
-    });
-  },
+    }),
 };

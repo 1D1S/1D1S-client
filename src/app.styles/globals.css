@@ -121,6 +121,22 @@
     @apply bg-background text-foreground;
   }
 
+  html {
+    font-size: 14px;
+  }
+
+  @media (min-width: 640px) {
+    html {
+      font-size: 15px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      font-size: 16px;
+    }
+  }
+
   /* Override library Footer width on mobile */
   @media (max-width: 768px) {
     footer {

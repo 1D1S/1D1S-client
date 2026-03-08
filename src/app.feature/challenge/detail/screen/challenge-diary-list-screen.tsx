@@ -2,18 +2,20 @@
 
 import { DiaryCard, Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
-import { DiaryItem, Feeling } from '@feature/diary/board/type/diary';
+import { Feeling } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/use-diary-mutations';
+import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
 import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useState } from 'react';
 
 import { useChallengeDiaryList } from '../hooks/use-challenge-diary-queries';
+import { ChallengeDiaryItem } from '../type/challenge-diary';
 
 type DiaryEmotion = 'happy' | 'soso' | 'sad';
 
@@ -64,45 +66,6 @@ function toRelativeDateLabel(createdAt: string): string {
   return relativeTimeFormatter.format(diffDays, 'day');
 }
 
-function getDiaryAchievementRate(diary: DiaryItem): number {
-  const rate =
-    diary.achievementRate ?? diary.diaryInfoDto?.achievementRate ?? 0;
-  return Math.min(100, Math.max(0, rate));
-}
-
-function useInViewObserver(): {
-  ref: React.RefObject<HTMLDivElement | null>;
-  inView: boolean;
-} {
-  const ref = useRef<HTMLDivElement>(null);
-  const [observedInView, setObservedInView] = useState(false);
-  const isIntersectionObserverUnsupported =
-    typeof window !== 'undefined' &&
-    typeof IntersectionObserver === 'undefined';
-
-  useEffect(() => {
-    const target = ref.current;
-    if (!target || typeof window === 'undefined') {
-      return;
-    }
-    if (typeof IntersectionObserver === 'undefined') {
-      return;
-    }
-
-    const observer = new IntersectionObserver(([entry]) => {
-      setObservedInView(entry.isIntersecting);
-    });
-    observer.observe(target);
-
-    return () => observer.disconnect();
-  }, []);
-
-  return {
-    ref,
-    inView: isIntersectionObserverUnsupported ? true : observedInView,
-  };
-}
-
 export function ChallengeDiaryListScreen({
   id,
 }: ChallengeDiaryListScreenProps): React.ReactElement {
@@ -111,33 +74,16 @@ export function ChallengeDiaryListScreen({
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
   const {
-    data,
+    data: diaries,
     isLoading,
     isError,
     error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useChallengeDiaryList(challengeId, { size: 12 });
-  const { ref, inView } = useInViewObserver();
+  } = useChallengeDiaryList(challengeId);
 
-  const diaries = useMemo(() => {
-    const flattened = data?.pages?.flatMap((page) => page?.items ?? []) ?? [];
-    const map = new Map<number, DiaryItem>();
-    flattened.forEach((diary) => map.set(diary.id, diary));
-    return Array.from(map.values());
-  }, [data]);
-
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  const hasDiaries = diaries.length > 0;
+  const hasDiaries = Boolean(diaries && diaries.length > 0);
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
 
-  const handleLikeToggle = (diary: DiaryItem): void => {
+  const handleLikeToggle = (diary: ChallengeDiaryItem): void => {
     if (!authStorage.hasTokens()) {
       setShowLoginDialog(true);
       return;
@@ -186,7 +132,7 @@ export function ChallengeDiaryListScreen({
           </div>
         ) : null}
 
-        {isError && !hasDiaries ? (
+        {isError ? (
           <div className="mt-10 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-red-600">
               {error
@@ -196,37 +142,41 @@ export function ChallengeDiaryListScreen({
           </div>
         ) : null}
 
-        {!isLoading && hasDiaries ? (
+        {!isLoading && !isError && hasDiaries ? (
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            {diaries.map((diary) => {
-              const diaryInfo = diary.diaryInfoDto;
-              const authorInfo = diary.authorInfoDto;
-
-              return (
-                <DiaryCard
-                  key={diary.id}
-                  imageUrl={diary.imgUrl?.[0] ?? '/images/default-card.png'}
-                  percent={getDiaryAchievementRate(diary)}
-                  isLiked={diary.likeInfo.likedByMe}
-                  likes={diary.likeInfo.likeCnt}
-                  title={diary.title}
-                  user={authorInfo?.nickname ?? '익명'}
-                  userImage={
-                    authorInfo?.profileImage ?? '/images/default-profile.png'
-                  }
-                  challengeLabel={
-                    diary.challenge?.title ??
-                    diary.challenge?.category ??
-                    '챌린지'
-                  }
-                  onChallengeClick={() => undefined}
-                  date={toRelativeDateLabel(diaryInfo?.createdAt ?? '')}
-                  emotion={mapFeelingToEmotion(diaryInfo?.feeling ?? 'NONE')}
-                  onLikeToggle={() => handleLikeToggle(diary)}
-                  onClick={() => undefined}
-                />
-              );
-            })}
+            {diaries!.map((diary) => (
+              <DiaryCard
+                key={diary.id}
+                imageUrl={
+                  resolveDiaryImageUrl(diary.imgUrl?.[0]) ||
+                  '/images/default-card.png'
+                }
+                percent={Math.min(
+                  100,
+                  Math.max(0, diary.diaryInfo?.achievementRate ?? 0)
+                )}
+                isLiked={diary.likeInfo.likedByMe}
+                likes={diary.likeInfo.likeCnt}
+                title={diary.title}
+                user={diary.author?.nickname ?? '익명'}
+                userImage={
+                  resolveDiaryImageUrl(diary.author?.profileImage) ||
+                  '/images/default-profile.png'
+                }
+                challengeLabel={
+                  diary.challenge?.title ??
+                  diary.challenge?.category ??
+                  '챌린지'
+                }
+                onChallengeClick={() => undefined}
+                date={toRelativeDateLabel(diary.diaryInfo?.createdAt ?? '')}
+                emotion={mapFeelingToEmotion(
+                  diary.diaryInfo?.feeling ?? 'NONE'
+                )}
+                onLikeToggle={() => handleLikeToggle(diary)}
+                onClick={() => undefined}
+              />
+            ))}
           </div>
         ) : null}
 
@@ -237,29 +187,6 @@ export function ChallengeDiaryListScreen({
             </Text>
           </div>
         ) : null}
-
-        <div
-          ref={ref}
-          className="mt-4 flex h-10 w-full items-center justify-center"
-        >
-          {isFetchingNextPage ? (
-            <Text size="body2" className="text-gray-400">
-              데이터를 불러오는 중...
-            </Text>
-          ) : isError && hasDiaries ? (
-            <Text size="body2" className="text-red-500">
-              {error
-                ? normalizeApiError(error).message
-                : '추가 일지를 불러오지 못했습니다.'}
-            </Text>
-          ) : hasNextPage ? (
-            <div />
-          ) : hasDiaries ? (
-            <Text size="body2" className="text-gray-400">
-              마지막 일지입니다.
-            </Text>
-          ) : null}
-        </div>
       </section>
     </div>
   );

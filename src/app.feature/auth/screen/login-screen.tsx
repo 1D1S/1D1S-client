@@ -34,7 +34,8 @@ export function LoginScreen(): React.ReactElement {
               weight="bold"
               className="leading-tight text-white"
             >
-              &quot;불가능을 이루는 단 하나의 방법은, 그것이 가능하다고 믿는 것입니다.&quot;
+              &quot;불가능을 이루는 단 하나의 방법은, 그것이 가능하다고 믿는
+              것입니다.&quot;
             </Text>
           </div>
         </div>
