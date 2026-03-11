@@ -7,9 +7,48 @@ import type { Metadata, Viewport } from 'next';
 
 import { pretendard, suite } from '@/app.lib/font';
 
+function resolveSiteUrl(): URL {
+  const rawUrl =
+    process.env.NEXT_PUBLIC_WEB_URL ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    'http://localhost:3000';
+
+  try {
+    return new URL(rawUrl);
+  } catch {
+    return new URL('http://localhost:3000');
+  }
+}
+
+const SITE_URL = resolveSiteUrl();
+const SITE_TITLE = '1Day 1Streak';
+const SITE_DESCRIPTION = '매일 하나의 챌린지로 꾸준함을 기록하는 1Day 1Streak';
+const OG_IMAGE_PATH = '/images/logo-main-700.png';
+
 export const metadata: Metadata = {
-  title: '1Day 1Streak',
-  description: '1Day 1Streak',
+  metadataBase: SITE_URL,
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    siteName: SITE_TITLE,
+    locale: 'ko_KR',
+    type: 'website',
+    images: [
+      {
+        url: OG_IMAGE_PATH,
+        alt: SITE_TITLE,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE_PATH],
+  },
 };
 
 export const viewport: Viewport = {
