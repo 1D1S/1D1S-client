@@ -25,8 +25,8 @@ export interface ChallengeSummary {
 }
 
 export interface DiaryGoalStatus {
-  goalId: number;
-  goalName: string;
+  challengeGoalId: number;
+  challengeGoalName: string;
   isAchieved: boolean;
 }
 

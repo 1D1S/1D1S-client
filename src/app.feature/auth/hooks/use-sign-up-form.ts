@@ -18,8 +18,13 @@ const TOPIC_VALUES = [
 export const signupFormSchema = z.object({
   nickname: z
     .string()
-    .min(2, '닉네임은 2자 이상이어야 해요.')
-    .max(50, '닉네임은 50자 이하이어야 해요.'),
+    .trim()
+    .min(1, '닉네임을 입력해 주세요.')
+    .max(8, '닉네임은 8자 이내여야 해요.')
+    .regex(
+      /^[A-Za-z가-힣]+$/,
+      '닉네임은 한글 또는 영어만 사용할 수 있고, 특수문자는 사용할 수 없어요.'
+    ),
   year: z
     .string()
     .nonempty('연도를 선택해 주세요.')

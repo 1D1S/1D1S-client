@@ -31,6 +31,17 @@ export function ChallengePicker({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const handleOverlayClick = (): void => setIsOpen(false);
 
   return (
@@ -63,7 +74,7 @@ export function ChallengePicker({
           <Text size="heading1" weight="bold" className="mb-4 block">
             챌린지 선택
           </Text>
-          <div className="flex max-h-[60vh] flex-col space-y-2 overflow-y-auto pr-2">
+          <div className="-mx-1 flex max-h-[60vh] flex-col space-y-2 overflow-y-auto px-1 py-1">
             {isLoading ? (
               <Text size="body1" className="py-4 text-gray-500">
                 불러오는 중...

@@ -7,6 +7,8 @@ import {
   Text,
   TextField,
 } from '@1d1s/design-system';
+import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { authStorage } from '@module/utils/auth';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -55,8 +57,21 @@ function useInViewObserver(): {
 
 export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [loginDialogDescription, setLoginDialogDescription] = useState(
+    '로그인 후 이용할 수 있습니다.'
+  );
   const [inputValue, setInputValue] = useState('');
   const [query, setQuery] = useState('');
+
+  const requireAuth = (description: string, action: () => void): void => {
+    if (!authStorage.hasTokens()) {
+      setLoginDialogDescription(description);
+      setShowLoginDialog(true);
+      return;
+    }
+    action();
+  };
   // const [selectedCategory, setSelectedCategory] = useState<ChallengeCategory>('ALL');
 
   const handleSearch = (): void => {
@@ -109,6 +124,11 @@ export default function ChallengeBoardScreen(): React.ReactElement {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-white p-4">
+      <LoginRequiredDialog
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+        description={loginDialogDescription}
+      />
       <section className="rounded-3 w-full bg-white p-2">
         <div className="flex items-start justify-between border-b border-gray-200 pb-5">
           <div className="flex flex-col gap-2">
@@ -147,7 +167,11 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           </div>
           <Button
             size="medium"
-            onClick={() => router.push('/challenge/create')}
+            onClick={() =>
+              requireAuth('챌린지 생성은 로그인 후 이용할 수 있습니다.', () =>
+                router.push('/challenge/create')
+              )
+            }
             className="whitespace-nowrap"
           >
             <span className="flex items-center gap-1">
@@ -192,7 +216,10 @@ export default function ChallengeBoardScreen(): React.ReactElement {
                   isEnded={/*challenge.status === 'ended'*/ false}
                   className="h-full"
                   onClick={() =>
-                    router.push(`/challenge/${challenge.challengeId}`)
+                    requireAuth(
+                      '챌린지 상세는 로그인 후 이용할 수 있습니다.',
+                      () => router.push(`/challenge/${challenge.challengeId}`)
+                    )
                   }
                 />
               </div>

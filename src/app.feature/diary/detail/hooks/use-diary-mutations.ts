@@ -84,11 +84,7 @@ export function useDeleteDiary(): UseMutationResult<boolean, Error, number> {
 
   return useMutation({
     mutationFn: (id: number) => diaryDetailApi.deleteDiary(id),
-    onSuccess: (_, id) => {
-      // 해당 다이어리 상세 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.detail(id),
-      });
+    onSuccess: () => {
       // 다이어리 리스트 무효화
       queryClient.invalidateQueries({
         queryKey: DIARY_QUERY_KEYS.lists(),

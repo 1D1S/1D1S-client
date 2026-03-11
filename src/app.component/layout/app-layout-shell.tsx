@@ -293,7 +293,12 @@ export default function AppLayoutShell({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isSidebarOverlayOpen]);
-  const { data: sidebarData } = useSidebar();
+  const {
+    data: sidebarData,
+    isLoading: isSidebarLoading,
+    isFetching: isSidebarFetching,
+  } = useSidebar();
+  const isSidebarBusy = isLoggedIn && (isSidebarLoading || isSidebarFetching);
 
   const sidebarProps: RightSidebarProps = useMemo(() => {
     if (!sidebarData) {
@@ -329,6 +334,15 @@ export default function AppLayoutShell({
     !isChallengeDetailRoute(pathname);
   const activeNavKey = resolveActiveNavKey(pathname);
   const sidebarStickyTopClass = showHeader ? 'top-28' : 'top-6';
+  const handleSidebarChallengeClick = (
+    challenge: RightSidebarChallenge
+  ): void => {
+    if (!challenge.id) {
+      return;
+    }
+    setIsSidebarOverlayOpen(false);
+    router.push(`/challenge/${challenge.id}`);
+  };
 
   return (
     <AppLayoutProvider
@@ -387,11 +401,13 @@ export default function AppLayoutShell({
                 <RightSidebar
                   {...sidebarProps}
                   isLoggedIn={isLoggedIn}
+                  isLoading={isSidebarBusy}
                   fixed={false}
                   onWriteDiary={() => router.push('/diary/create')}
                   onGoMyPage={() => router.push('/mypage')}
                   onOpenSettings={() => router.push('/mypage/settings')}
                   onLogin={() => router.push('/login')}
+                  onChallengeClick={handleSidebarChallengeClick}
                 />
               ) : (
                 <div className="w-69" />
@@ -413,12 +429,14 @@ export default function AppLayoutShell({
             <RightSidebar
               {...sidebarProps}
               isLoggedIn={isLoggedIn}
+              isLoading={isSidebarBusy}
               fixed={false}
               onCollapseClick={() => setIsSidebarOverlayOpen(false)}
               onWriteDiary={() => router.push('/diary/create')}
               onGoMyPage={() => router.push('/mypage')}
               onOpenSettings={() => router.push('/mypage/settings')}
               onLogin={() => router.push('/login')}
+              onChallengeClick={handleSidebarChallengeClick}
             />
           </div>
         ) : null}

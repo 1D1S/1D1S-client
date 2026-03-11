@@ -88,6 +88,7 @@ export function SignUpScreen(): React.ReactElement {
   const yearOptions = Array.from({ length: 100 }, (_, i) => currentYear - i);
   const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1);
   const dayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
+  const selectedTopics = form.watch('topics') ?? [];
 
   const onSubmit = async (values: SignupFormValues): Promise<void> => {
     const accessToken = authStorage.getAccessToken();
@@ -495,10 +496,9 @@ export function SignUpScreen(): React.ReactElement {
                       <FormItem>
                         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                           {SIGN_UP_TOPIC_OPTIONS.map((option) => {
-                            const values = Array.isArray(field.value)
-                              ? field.value
-                              : [];
-                            const checked = values.includes(option.value);
+                            const checked = Array.isArray(selectedTopics)
+                              ? selectedTopics.includes(option.value)
+                              : false;
 
                             return (
                               <CheckContainer
@@ -506,9 +506,18 @@ export function SignUpScreen(): React.ReactElement {
                                 type="button"
                                 checked={checked}
                                 onCheckedChange={(nextChecked) => {
-                                  const currentTopics = values;
+                                  const currentTopics = Array.isArray(
+                                    form.getValues('topics')
+                                  )
+                                    ? form.getValues('topics')
+                                    : [];
                                   const nextTopics = nextChecked
-                                    ? [...currentTopics, option.value]
+                                    ? Array.from(
+                                        new Set([
+                                          ...currentTopics,
+                                          option.value,
+                                        ])
+                                      )
                                     : currentTopics.filter(
                                         (topic) => topic !== option.value
                                       );
@@ -517,8 +526,8 @@ export function SignUpScreen(): React.ReactElement {
                                 }}
                                 width="100%"
                                 height={96}
-                                showCheckIndicator={false}
-                                className="rounded-3 w-full min-w-0 border border-gray-200 px-3"
+                                showCheckIndicator
+                                className="rounded-3 w-full min-w-0 px-3"
                               >
                                 <div className="flex w-full flex-col items-center justify-center gap-2">
                                   <span className="text-xl leading-none">
@@ -543,25 +552,21 @@ export function SignUpScreen(): React.ReactElement {
                     )}
                   />
 
-                  <div className="mt-8 flex justify-end">
+                  <div className="mt-8 flex items-center justify-between gap-3">
+                    <Button
+                      type="button"
+                      size="medium"
+                      variant="outlined"
+                      disabled={isSubmitting}
+                      onClick={() => setStep(1)}
+                    >
+                      이전 단계
+                    </Button>
                     <Button
                       type="button"
                       size="medium"
                       disabled={isSubmitting}
-                      onClick={() => {
-                        const errors = form.formState.errors;
-                        console.log('form values:', form.getValues());
-                        console.log('form errors:', errors);
-                        form.handleSubmit(
-                          (values) => {
-                            console.log('onSubmit called:', values);
-                            onSubmit(values);
-                          },
-                          (validationErrors) => {
-                            console.log('validation failed:', validationErrors);
-                          }
-                        )();
-                      }}
+                      onClick={() => void form.handleSubmit(onSubmit)()}
                     >
                       {isSubmitting ? '처리 중...' : '가입 완료'}
                     </Button>

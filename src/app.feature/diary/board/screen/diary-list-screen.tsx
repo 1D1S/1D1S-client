@@ -159,6 +159,9 @@ export default function DiaryListScreen(): React.ReactElement {
   const router = useRouter();
   const [sortMode] = useState<SortMode>('latest');
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [loginDialogDescription, setLoginDialogDescription] = useState(
+    '로그인 후 이용할 수 있습니다.'
+  );
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
   const {
@@ -196,8 +199,18 @@ export default function DiaryListScreen(): React.ReactElement {
   );
   const hasLoadedDiaries = sortedDiaries.length > 0;
 
+  const handleCardClick = (id: number): void => {
+    if (!authStorage.hasTokens()) {
+      setLoginDialogDescription('일지 상세는 로그인 후 이용할 수 있습니다.');
+      setShowLoginDialog(true);
+      return;
+    }
+    router.push(`/diary/${id}`);
+  };
+
   const handleLikeToggle = (diary: DiaryItem): void => {
     if (!authStorage.hasTokens()) {
+      setLoginDialogDescription('좋아요 기능은 로그인 후 이용할 수 있습니다.');
       setShowLoginDialog(true);
       return;
     }
@@ -219,6 +232,7 @@ export default function DiaryListScreen(): React.ReactElement {
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}
+        description={loginDialogDescription}
       />
       <section className="rounded-3 w-full bg-white p-2">
         <div className="flex items-start justify-between border-b border-gray-200 pb-5">
@@ -304,7 +318,7 @@ export default function DiaryListScreen(): React.ReactElement {
                         diaryInfo?.feeling ?? 'NONE'
                       )}
                       onLikeToggle={() => handleLikeToggle(item)}
-                      onClick={() => router.push(`/diary/${item.id}`)}
+                      onClick={() => handleCardClick(item.id)}
                     />
                   </motion.div>
                 );

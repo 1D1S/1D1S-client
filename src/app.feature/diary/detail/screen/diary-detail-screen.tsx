@@ -221,12 +221,12 @@ function mapDiaryToViewData(
       const achievedDiaryGoalIds = new Set(
         diaryGoals
           .filter((goal) => goal.isAchieved)
-          .map((goal) => String(goal.goalId))
+          .map((goal) => String(goal.challengeGoalId))
       );
       const achievedDiaryGoalNames = new Set(
         diaryGoals
-          .filter((goal) => goal.isAchieved && Boolean(goal.goalName))
-          .map((goal) => goal.goalName.trim())
+          .filter((goal) => goal.isAchieved && Boolean(goal.challengeGoalName))
+          .map((goal) => goal.challengeGoalName.trim())
       );
 
       checkedChecklistIds = checklistItems
@@ -243,12 +243,12 @@ function mapDiaryToViewData(
     }
   } else if (diaryGoals.length > 0) {
     checklistItems = diaryGoals.map((goal) => ({
-      id: String(goal.goalId),
-      label: goal.goalName || `목표 ${goal.goalId}`,
+      id: String(goal.challengeGoalId),
+      label: goal.challengeGoalName || `목표 ${goal.challengeGoalId}`,
     }));
     checkedChecklistIds = diaryGoals
       .filter((goal) => goal.isAchieved)
-      .map((goal) => String(goal.goalId));
+      .map((goal) => String(goal.challengeGoalId));
   } else {
     const achievedGoalIds = Array.from(achievementIds);
     checklistItems = achievedGoalIds.map((goalId) => ({
@@ -572,12 +572,15 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
     () => false
   );
   const [dismissed, setDismissed] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const showAuthDialog = hasMounted && !authStorage.hasTokens() && !dismissed;
   const safeDiaryId = Number.isFinite(id) && id > 0 ? id : 0;
-  const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId);
+  const deleteDiary = useDeleteDiary();
+  const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId, {
+    enabled: Boolean(safeDiaryId) && !isDeleting,
+  });
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
-  const deleteDiary = useDeleteDiary();
   const challengeId = data?.challenge?.challengeId ?? 0;
   const { data: challengeDetailData } = useChallengeDetail(challengeId);
   const { data: sidebarData } = useSidebar();
@@ -593,8 +596,11 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
     if (!window.confirm('일지를 삭제하시겠습니까?')) {
       return;
     }
+
+    setIsDeleting(true);
     deleteDiary.mutate(safeDiaryId, {
       onSuccess: () => router.push('/diary'),
+      onError: () => setIsDeleting(false),
     });
   };
 

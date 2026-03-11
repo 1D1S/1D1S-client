@@ -347,7 +347,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       const achievedGoalIds =
         diaryInfo?.diaryGoal
           ?.filter((goal) => goal.isAchieved)
-          ?.map((goal) => goal.goalId) ??
+          ?.map((goal) => goal.challengeGoalId) ??
         diaryInfo?.achievement ??
         [];
       setAchievedGoalIds(achievedGoalIds);
