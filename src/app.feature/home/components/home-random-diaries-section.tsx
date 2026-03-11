@@ -1,4 +1,5 @@
 import { DiaryCard, Text } from '@1d1s/design-system';
+import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
 import React from 'react';
 
@@ -74,8 +75,8 @@ export default function HomeRandomDiariesSection({
                     '/images/default-profile.png'
                   }
                   challengeLabel={
-                    item.challenge?.title ??
-                    item.challenge?.category ??
+                    item.challenge?.title ||
+                    getCategoryLabel(item.challenge?.category) ||
                     '챌린지'
                   }
                   onChallengeClick={() =>

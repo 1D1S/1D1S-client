@@ -6,6 +6,8 @@ import { MEMBER_QUERY_KEYS } from '../consts/query-keys';
 import type { MyPageData, SidebarData } from '../type/member';
 
 const SIDEBAR_CACHE_KEY = '1d1s:sidebar';
+const MEMBER_INFO_STALE_TIME = Number.POSITIVE_INFINITY;
+const MEMBER_INFO_GC_TIME = Number.POSITIVE_INFINITY;
 
 function getCachedSidebar(): SidebarData | undefined {
   if (typeof window === 'undefined') {
@@ -39,11 +41,8 @@ export function useSidebar(): UseQueryResult<SidebarData, Error> {
     },
     enabled: authStorage.hasTokens(),
     placeholderData: cachedSidebar,
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    gcTime: 1000 * 60 * 30,
+    staleTime: MEMBER_INFO_STALE_TIME,
+    gcTime: MEMBER_INFO_GC_TIME,
   });
 }
 
@@ -51,7 +50,8 @@ export function useMyPage(): UseQueryResult<MyPageData, Error> {
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.myPage(),
     queryFn: () => memberApi.getMyPage(),
-    staleTime: 0,
-    gcTime: 1000 * 60 * 30,
+    enabled: authStorage.hasTokens(),
+    staleTime: MEMBER_INFO_STALE_TIME,
+    gcTime: MEMBER_INFO_GC_TIME,
   });
 }

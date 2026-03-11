@@ -1,6 +1,7 @@
 'use client';
 
 import { ChallengeListItem, Text } from '@1d1s/design-system';
+import { getCategoryLabel } from '@constants/categories';
 import { cn } from '@module/utils/cn';
 import { useEffect, useState } from 'react';
 
@@ -93,7 +94,7 @@ export function ChallengePicker({
                     key={challenge.challengeId}
                     challengeTitle={challenge.title}
                     challengeType={challenge.challengeType}
-                    challengeCategory={challenge.category}
+                    challengeCategory={getCategoryLabel(challenge.category)}
                     currentUserCount={challenge.participantCnt}
                     maxUserCount={challenge.maxParticipantCnt}
                     startDate={challenge.startDate}

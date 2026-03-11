@@ -2,6 +2,7 @@
 
 import { DiaryCard, Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { getCategoryLabel } from '@constants/categories';
 import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import { motion } from 'framer-motion';
@@ -302,8 +303,8 @@ export default function DiaryListScreen(): React.ReactElement {
                         '/images/default-profile.png'
                       }
                       challengeLabel={
-                        item.challenge?.title ??
-                        item.challenge?.category ??
+                        item.challenge?.title ||
+                        getCategoryLabel(item.challenge?.category) ||
                         '챌린지'
                       }
                       onChallengeClick={() =>

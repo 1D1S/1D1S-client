@@ -1,4 +1,5 @@
 import { ChallengeListItem, Text } from '@1d1s/design-system';
+import { getCategoryLabel } from '@constants/categories';
 import React from 'react';
 
 import type { ChallengeListItem as ChallengeListItemType } from '../../../challenge/board/type/challenge';
@@ -32,7 +33,7 @@ export function DiaryCreateChallengeSection({
           <ChallengeListItem
             challengeTitle={selectedChallenge.title}
             challengeType={selectedChallenge.challengeType}
-            challengeCategory={selectedChallenge.category}
+            challengeCategory={getCategoryLabel(selectedChallenge.category)}
             currentUserCount={selectedChallenge.participantCnt}
             maxUserCount={selectedChallenge.maxParticipantCnt}
             startDate={selectedChallenge.startDate}

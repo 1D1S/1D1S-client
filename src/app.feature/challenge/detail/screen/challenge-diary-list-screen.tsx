@@ -2,6 +2,7 @@
 
 import { DiaryCard, Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { getCategoryLabel } from '@constants/categories';
 import { Feeling } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
@@ -12,6 +13,7 @@ import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 import { useChallengeDiaryList } from '../hooks/use-challenge-diary-queries';
@@ -70,6 +72,7 @@ export function ChallengeDiaryListScreen({
   id,
 }: ChallengeDiaryListScreenProps): React.ReactElement {
   const challengeId = Number(id);
+  const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
@@ -164,17 +167,23 @@ export function ChallengeDiaryListScreen({
                   '/images/default-profile.png'
                 }
                 challengeLabel={
-                  diary.challenge?.title ??
-                  diary.challenge?.category ??
+                  diary.challenge?.title ||
+                  getCategoryLabel(diary.challenge?.category) ||
                   '챌린지'
                 }
-                onChallengeClick={() => undefined}
+                onChallengeClick={() => {
+                  const targetChallengeId =
+                    diary.challenge?.challengeId ?? challengeId;
+                  if (targetChallengeId > 0) {
+                    router.push(`/challenge/${targetChallengeId}`);
+                  }
+                }}
                 date={toRelativeDateLabel(diary.diaryInfo?.createdAt ?? '')}
                 emotion={mapFeelingToEmotion(
                   diary.diaryInfo?.feeling ?? 'NONE'
                 )}
                 onLikeToggle={() => handleLikeToggle(diary)}
-                onClick={() => undefined}
+                onClick={() => router.push(`/diary/${diary.id}`)}
               />
             ))}
           </div>

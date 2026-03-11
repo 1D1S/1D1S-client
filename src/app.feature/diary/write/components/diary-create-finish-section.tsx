@@ -1,12 +1,14 @@
-import { Checkbox, DatePicker, Text } from '@1d1s/design-system';
+import { Checkbox, Text } from '@1d1s/design-system';
 import React from 'react';
 
 import type { Feeling } from '../../board/type/diary';
+import { DiaryCreateDatePicker } from './diary-create-date-picker';
 import { DiaryCreateMoodSelector } from './diary-create-mood-selector';
 
 interface DiaryCreateFinishSectionProps {
   achievedDate: Date | undefined;
   onAchievedDateChange(date: Date | undefined): void;
+  disabledAchievedDateKeys: string[];
   selectedMood: Feeling;
   onMoodChange(mood: Feeling): void;
   isPublic: boolean;
@@ -16,6 +18,7 @@ interface DiaryCreateFinishSectionProps {
 export function DiaryCreateFinishSection({
   achievedDate,
   onAchievedDateChange,
+  disabledAchievedDateKeys,
   selectedMood,
   onMoodChange,
   isPublic,
@@ -32,13 +35,14 @@ export function DiaryCreateFinishSection({
           <Text size="body1" weight="medium" className="mb-4 text-gray-700">
             언제의 기록인가요?
           </Text>
-          <DatePicker
+          <DiaryCreateDatePicker
             value={achievedDate}
             onChange={onAchievedDateChange}
+            disabledDateKeys={disabledAchievedDateKeys}
             placeholder="날짜를 선택해주세요"
           />
           <Text size="caption1" weight="regular" className="mt-2 text-gray-500">
-            오늘 포함 최근 3일까지만 선택할 수 있습니다.
+            오늘 포함 최근 3일 중 이미 작성한 날짜는 비활성화됩니다.
           </Text>
         </div>
 

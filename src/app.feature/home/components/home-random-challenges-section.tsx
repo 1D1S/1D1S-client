@@ -1,4 +1,5 @@
 import { ChallengeCard, Text } from '@1d1s/design-system';
+import { getCategoryLabel } from '@constants/categories';
 import { type ChallengeListItem } from '@feature/challenge/board/type/challenge';
 import React from 'react';
 
@@ -55,7 +56,7 @@ export default function HomeRandomChallengesSection({
               <ChallengeCard
                 challengeTitle={challenge.title}
                 challengeType={formatChallengeType(challenge.challengeType)}
-                challengeCategory={challenge.category}
+                challengeCategory={getCategoryLabel(challenge.category)}
                 currentUserCount={challenge.participantCnt}
                 maxUserCount={challenge.maxParticipantCnt}
                 startDate={challenge.startDate}

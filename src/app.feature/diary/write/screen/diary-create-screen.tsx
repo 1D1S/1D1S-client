@@ -30,6 +30,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
     isInitialChallengeLoading,
     goals,
     achievedGoalIds,
+    disabledAchievedDateKeys,
     thumbnailFile,
     thumbnailPreviewUrl,
     submitButtonLabel,
@@ -107,6 +108,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
           <DiaryCreateFinishSection
             achievedDate={achievedDate}
             onAchievedDateChange={handleAchievedDateChange}
+            disabledAchievedDateKeys={disabledAchievedDateKeys}
             selectedMood={selectedMood}
             onMoodChange={setSelectedMood}
             isPublic={isPublic}

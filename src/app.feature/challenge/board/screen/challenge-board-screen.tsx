@@ -8,6 +8,7 @@ import {
   TextField,
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { getCategoryLabel } from '@constants/categories';
 import { authStorage } from '@module/utils/auth';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -207,7 +208,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
                 <ChallengeCard
                   challengeTitle={challenge.title}
                   challengeType={formatChallengeType(challenge.challengeType)}
-                  challengeCategory={challenge.category}
+                  challengeCategory={getCategoryLabel(challenge.category)}
                   currentUserCount={challenge.participantCnt}
                   maxUserCount={challenge.maxParticipantCnt}
                   startDate={challenge.startDate}

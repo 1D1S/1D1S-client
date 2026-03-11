@@ -3,6 +3,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
+  useChallengeCheckWriteDates,
   useChallengeDetail,
   useMemberChallenges,
 } from '../../../challenge/board/hooks/use-challenge-queries';
@@ -67,6 +68,23 @@ function isSelectableAchievedDate(date: Date): boolean {
   const targetDate = toStartOfDay(date);
 
   return targetDate >= minDate && targetDate <= today;
+}
+
+function getFirstSelectableAchievedDate(
+  disabledDateKeys: Set<string>
+): Date | undefined {
+  const today = toStartOfDay(new Date());
+
+  for (let dayOffset = 0; dayOffset <= 3; dayOffset += 1) {
+    const candidate = new Date(today);
+    candidate.setDate(today.getDate() - dayOffset);
+
+    if (!disabledDateKeys.has(formatDate(candidate))) {
+      return candidate;
+    }
+  }
+
+  return undefined;
 }
 
 function normalizeChallengeCategory(category: string): ChallengeCategory {
@@ -181,6 +199,7 @@ interface UseDiaryCreateFormResult {
   isInitialChallengeLoading: boolean;
   goals: ChallengeGoal[];
   achievedGoalIds: number[];
+  disabledAchievedDateKeys: string[];
   thumbnailFile: File | null;
   thumbnailPreviewUrl: string;
   submitButtonLabel: string;
@@ -291,7 +310,44 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   const { data: challengeDetail } = useChallengeDetail(
     selectedChallenge?.challengeId ?? 0
   );
+  const { data: challengeCheckWriteDateKeys = [] } =
+    useChallengeCheckWriteDates(selectedChallenge?.challengeId ?? 0);
   const goals = challengeDetail?.challengeGoals ?? [];
+
+  const editModeDateKey = useMemo(() => {
+    if (!isEditMode || !existingDiary) {
+      return null;
+    }
+
+    const diaryInfo = getDiaryInfo(existingDiary);
+    const baseDate = diaryInfo?.challengedDate ?? diaryInfo?.createdAt ?? '';
+    const parsedDate = baseDate ? new Date(baseDate) : null;
+
+    if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+      return null;
+    }
+
+    return formatDate(parsedDate);
+  }, [existingDiary, isEditMode]);
+
+  const disabledAchievedDateKeys = useMemo(() => {
+    const uniqueDateKeys = new Set(
+      challengeCheckWriteDateKeys.filter((date) =>
+        /^\d{4}-\d{2}-\d{2}$/.test(date)
+      )
+    );
+
+    if (editModeDateKey) {
+      uniqueDateKeys.delete(editModeDateKey);
+    }
+
+    return Array.from(uniqueDateKeys);
+  }, [challengeCheckWriteDateKeys, editModeDateKey]);
+
+  const disabledAchievedDateKeySet = useMemo(
+    () => new Set(disabledAchievedDateKeys),
+    [disabledAchievedDateKeys]
+  );
 
   const isSubmitting =
     createDiary.isPending ||
@@ -301,6 +357,11 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   const canSubmit =
     Boolean(selectedChallenge) &&
     trimmedTitle.length > 0 &&
+    Boolean(achievedDate) &&
+    (achievedDate
+      ? isSelectableAchievedDate(achievedDate) &&
+        !disabledAchievedDateKeySet.has(formatDate(achievedDate))
+      : false) &&
     !isSubmitting &&
     (!isEditMode || !isExistingDiaryLoading);
   const isInitialChallengeLoading =
@@ -360,6 +421,42 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     };
   }, [existingDiary, isEditFormInitialized, isEditMode]);
 
+  useEffect(() => {
+    if (isEditMode || !selectedChallenge) {
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      if (!achievedDate) {
+        const firstSelectableDate = getFirstSelectableAchievedDate(
+          disabledAchievedDateKeySet
+        );
+        if (firstSelectableDate) {
+          setAchievedDate(firstSelectableDate);
+        }
+        return;
+      }
+
+      if (
+        !isSelectableAchievedDate(achievedDate) ||
+        disabledAchievedDateKeySet.has(formatDate(achievedDate))
+      ) {
+        setAchievedDate(
+          getFirstSelectableAchievedDate(disabledAchievedDateKeySet)
+        );
+      }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [
+    achievedDate,
+    disabledAchievedDateKeySet,
+    isEditMode,
+    selectedChallenge,
+  ]);
+
   const handleSelectChallenge = useCallback((challenge: ChallengeListItem) => {
     setSelectedChallengeId(challenge.challengeId);
     setAchievedGoalIds([]);
@@ -384,8 +481,12 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       return;
     }
 
+    if (disabledAchievedDateKeySet.has(formatDate(date))) {
+      return;
+    }
+
     setAchievedDate(date);
-  }, []);
+  }, [disabledAchievedDateKeySet]);
 
   const setThumbnail = useCallback((file: File | null) => {
     setThumbnailFile(file);
@@ -414,6 +515,14 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
 
   const handleSubmit = useCallback(async (): Promise<void> => {
     if (!selectedChallenge || !trimmedTitle || isSubmitting) {
+      return;
+    }
+
+    if (
+      achievedDate &&
+      (!isSelectableAchievedDate(achievedDate) ||
+        disabledAchievedDateKeySet.has(formatDate(achievedDate)))
+    ) {
       return;
     }
 
@@ -469,6 +578,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     achievedGoalIds,
     content,
     createDiary,
+    disabledAchievedDateKeySet,
     isEditMode,
     isPublic,
     isSubmitting,
@@ -510,6 +620,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     isInitialChallengeLoading,
     goals,
     achievedGoalIds,
+    disabledAchievedDateKeys,
     thumbnailFile,
     thumbnailPreviewUrl,
     submitButtonLabel,

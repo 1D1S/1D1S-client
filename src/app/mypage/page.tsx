@@ -8,6 +8,7 @@ import {
   Streak,
   Text,
 } from '@1d1s/design-system';
+import { getCategoryLabel } from '@constants/categories';
 import { useMyDiaries } from '@feature/diary/board/hooks/use-diary-queries';
 import { DiaryItem } from '@feature/diary/board/type/diary';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
@@ -147,7 +148,9 @@ function MyPageContent(): React.ReactElement {
       user: nickname || '나',
       userImage: profileUrl || '/images/default-profile.png',
       challengeLabel:
-        diary.challenge?.title ?? diary.challenge?.category ?? '나의 일지',
+        diary.challenge?.title ||
+        getCategoryLabel(diary.challenge?.category) ||
+        '나의 일지',
       challengeId: diary.challenge?.challengeId,
       date: toRelativeDateLabel(diaryInfo?.createdAt),
       emotion: mapFeelingToEmotion(diaryInfo?.feeling ?? 'NONE'),
@@ -314,7 +317,7 @@ function MyPageContent(): React.ReactElement {
                         <DSChallengeCard
                           challengeTitle={ch.title}
                           challengeType={ch.challengeType}
-                          challengeCategory={ch.category}
+                          challengeCategory={getCategoryLabel(ch.category)}
                           currentUserCount={ch.participantCnt}
                           maxUserCount={ch.maxParticipantCnt}
                           startDate={ch.startDate}

@@ -9,6 +9,7 @@ import {
   Text,
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { getCategoryLabel } from '@constants/categories';
 import { ChallengeGoalToggle } from '@feature/challenge/detail/components/challenge-goal-toggle';
 import { Feeling } from '@feature/diary/board/type/diary';
 import {
@@ -30,6 +31,7 @@ import {
   UserRound,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useMemo, useState, useSyncExternalStore } from 'react';
 import { toast } from 'sonner';
 
@@ -63,6 +65,7 @@ const PARTICIPATING_STATUS: ParticipantStatus[] = [
 const EMPTY_GOALS: ChallengeGoal[] = [];
 const EMPTY_PARTICIPANTS: Participant[] = [];
 const ENDLESS_MIN_YEAR = 2090;
+const ENDLESS_LABEL = '무한!';
 
 function getMonthLabel(monthDate: Date): string {
   return new Intl.DateTimeFormat('ko-KR', {
@@ -73,20 +76,6 @@ function getMonthLabel(monthDate: Date): string {
 
 function getChallengeTypeLabel(challengeType: string): string {
   return challengeType === 'FIXED' ? '고정 목표' : '자유 목표';
-}
-
-function getCategoryLabel(category: string): string {
-  const labels: Record<string, string> = {
-    DEV: '개발',
-    HEALTH: '건강',
-    STUDY: '공부',
-    EXERCISE: '운동',
-    HOBBY: '취미',
-    OTHER: '기타',
-    ALL: '전체',
-  };
-
-  return labels[category] ?? category;
 }
 
 function isEndlessChallengeEndDate(endDate: string): boolean {
@@ -105,7 +94,7 @@ function isEndlessChallengeEndDate(endDate: string): boolean {
 function formatDateRange(startDate: string, endDate: string): string {
   const format = (date: string): string => date.replaceAll('-', '.');
   if (isEndlessChallengeEndDate(endDate)) {
-    return `${format(startDate)} ~ 무기한`;
+    return `${format(startDate)} ~ ${ENDLESS_LABEL}`;
   }
 
   return `${format(startDate)} ~ ${format(endDate)}`;
@@ -113,7 +102,7 @@ function formatDateRange(startDate: string, endDate: string): string {
 
 function getDdayLabel(endDate: string): string {
   if (isEndlessChallengeEndDate(endDate)) {
-    return '무기한';
+    return ENDLESS_LABEL;
   }
 
   const today = new Date();
@@ -311,6 +300,7 @@ export function ChallengeDetailScreen({
   id,
 }: ChallengeDetailScreenProps): React.ReactElement {
   const challengeId = Number(id);
+  const router = useRouter();
 
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
 
@@ -625,7 +615,7 @@ export function ChallengeDetailScreen({
         <div className="mt-3 flex items-center gap-2 text-gray-600">
           <CalendarDays className="h-4 w-4" />
           <Text size="body2" weight="medium">
-            {summaryDdayLabel === '무기한'
+            {summaryDdayLabel === ENDLESS_LABEL
               ? summaryDdayLabel
               : `${summaryDdayLabel} 남음`}
           </Text>
@@ -690,8 +680,10 @@ export function ChallengeDetailScreen({
               </span>
             </div>
             <Text size="body2" weight="medium" className="text-gray-600">
-              {formatDateRange(summary.startDate, summary.endDate)} ({' '}
-              {summaryDdayLabel} )
+              {formatDateRange(summary.startDate, summary.endDate)}
+              {summaryDdayLabel === ENDLESS_LABEL
+                ? ''
+                : ` ( ${summaryDdayLabel} )`}
             </Text>
           </div>
 
@@ -767,7 +759,7 @@ export function ChallengeDetailScreen({
                   icon={
                     <span className="text-main-800 pb-1.5 text-4xl">◔</span>
                   }
-                  title={isHost ? '내 진척도' : '나의 참여 진척도'}
+                  title="챌린지 참여율"
                 />
                 <div className="mt-4 flex items-center gap-4">
                   <CircularProgress
@@ -782,7 +774,7 @@ export function ChallengeDetailScreen({
                         weight="medium"
                         className="text-gray-600"
                       >
-                        참여율
+                        챌린지 참여율
                       </Text>
                       <Text
                         size="body2"
@@ -803,7 +795,7 @@ export function ChallengeDetailScreen({
                       weight="regular"
                       className="mt-3 text-gray-600"
                     >
-                      개인 참여율 지표입니다.
+                      챌린지 전체 참여율 지표입니다.
                     </Text>
                   </div>
                 </div>
@@ -814,24 +806,42 @@ export function ChallengeDetailScreen({
                   icon={<Flame className="text-main-800 h-5 w-5" />}
                   title="목표 달성률"
                 />
-                <div className="mt-4">
-                  <div className="mb-1 flex items-center justify-between">
+                <div className="mt-4 flex items-center gap-4">
+                  <CircularProgress
+                    value={goalCompletionRate}
+                    size="lg"
+                    showPercentage
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <Text
+                        size="caption1"
+                        weight="medium"
+                        className="text-gray-600"
+                      >
+                        목표 달성률
+                      </Text>
+                      <Text
+                        size="body2"
+                        weight="bold"
+                        className="text-gray-900"
+                      >
+                        {goalCompletionRate}%
+                      </Text>
+                    </div>
+                    <div className="mt-2 h-2 rounded-full bg-gray-200">
+                      <div
+                        className="bg-main-700 h-full rounded-full"
+                        style={{ width: `${goalCompletionRate}%` }}
+                      />
+                    </div>
                     <Text
-                      size="body2"
-                      weight="medium"
-                      className="text-gray-700"
+                      size="caption1"
+                      weight="regular"
+                      className="mt-3 text-gray-600"
                     >
-                      전체 목표 달성률
+                      챌린지 목표 달성률 지표입니다.
                     </Text>
-                    <Text size="body2" weight="bold" className="text-main-800">
-                      {goalCompletionRate}%
-                    </Text>
-                  </div>
-                  <div className="h-2 rounded-full bg-gray-200">
-                    <div
-                      className="bg-main-700 h-full rounded-full"
-                      style={{ width: `${goalCompletionRate}%` }}
-                    />
                   </div>
                 </div>
               </section>
@@ -1025,8 +1035,8 @@ export function ChallengeDetailScreen({
               </Text>
             </div>
           ) : (
-            <div className="mt-4 overflow-x-auto">
-              <div className="flex w-max gap-3 pb-2">
+            <div className="-mx-2 mt-4 overflow-x-auto px-2 pb-3">
+              <div className="flex w-max gap-3 py-1">
                 {previewDiaries.map((diary) => (
                   <div key={diary.id} className="w-[200px] shrink-0">
                     <DiaryCard
@@ -1047,17 +1057,23 @@ export function ChallengeDetailScreen({
                         '/images/default-profile.png'
                       }
                       challengeLabel={
-                        diary.challenge?.title ??
-                        diary.challenge?.category ??
+                        diary.challenge?.title ||
+                        getCategoryLabel(diary.challenge?.category) ||
                         '챌린지'
                       }
-                      onChallengeClick={() => undefined}
+                      onChallengeClick={() => {
+                        const targetChallengeId =
+                          diary.challenge?.challengeId ?? challengeId;
+                        if (targetChallengeId > 0) {
+                          router.push(`/challenge/${targetChallengeId}`);
+                        }
+                      }}
                       date={diary.diaryInfo?.createdAt ?? ''}
                       emotion={mapFeelingToEmotion(
                         diary.diaryInfo?.feeling ?? 'NONE'
                       )}
                       onLikeToggle={() => handleDiaryLikeToggle(diary)}
-                      onClick={() => undefined}
+                      onClick={() => router.push(`/diary/${diary.id}`)}
                     />
                   </div>
                 ))}

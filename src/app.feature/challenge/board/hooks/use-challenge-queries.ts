@@ -71,3 +71,14 @@ export function useMemberChallenges(
     enabled: Boolean(params.memberId),
   });
 }
+
+// 특정 챌린지의 3일 이내 일지 작성 날짜 목록 조회
+export function useChallengeCheckWriteDates(
+  challengeId: number
+): UseQueryResult<string[], Error> {
+  return useQuery({
+    queryKey: CHALLENGE_QUERY_KEYS.checkWrite(challengeId),
+    queryFn: () => challengeBoardApi.getChallengeCheckWriteDates(challengeId),
+    enabled: Boolean(challengeId),
+  });
+}

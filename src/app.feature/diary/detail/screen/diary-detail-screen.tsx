@@ -8,6 +8,7 @@ import {
   Text,
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { getCategoryLabel } from '@constants/categories';
 import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import {
@@ -281,7 +282,7 @@ function mapDiaryToViewData(
     connectedChallengeTitle:
       summary?.title ?? diary.challenge?.title ?? '연동된 챌린지가 없습니다.',
     connectedChallengeCategory:
-      summary?.category ?? diary.challenge?.category ?? '-',
+      getCategoryLabel(summary?.category ?? diary.challenge?.category) || '-',
     connectedChallengeType:
       summary?.challengeType ?? diary.challenge?.challengeType ?? '-',
     connectedChallengeStartDate:
@@ -299,9 +300,9 @@ function mapDiaryToViewData(
     contentHtml: diary.content ?? '',
     hasContentHtml: hasVisibleHtmlContent(diary.content ?? ''),
     contentThumbnailUrl,
-    tags: [diary.challenge?.category, diaryInfo?.feeling].filter(
-      (tag): tag is string => Boolean(tag)
-    ),
+    tags: [diary.challenge?.category, diaryInfo?.feeling]
+      .filter((tag): tag is string => Boolean(tag))
+      .map((tag) => getCategoryLabel(tag) || tag),
     authorName: authorInfo?.nickname ?? null,
   };
 }
