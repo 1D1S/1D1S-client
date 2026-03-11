@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useChallengeList } from '../hooks/use-challenge-queries';
+import { isInfiniteChallengeEndDate } from '../utils/challenge-period';
 
 // async function fetchChallengeList() {
 //   const response = await apiClient('/')
@@ -213,6 +214,9 @@ export default function ChallengeBoardScreen(): React.ReactElement {
                   maxUserCount={challenge.maxParticipantCnt}
                   startDate={challenge.startDate}
                   endDate={challenge.endDate}
+                  isInfiniteChallenge={isInfiniteChallengeEndDate(
+                    challenge.endDate
+                  )}
                   isOngoing={/*challenge.status === 'closingSoon'*/ true}
                   isEnded={/*challenge.status === 'ended'*/ false}
                   className="h-full"

@@ -2,6 +2,7 @@
 
 import { ChallengeListItem, Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
+import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
 import { cn } from '@module/utils/cn';
 import { useEffect, useState } from 'react';
 
@@ -99,6 +100,9 @@ export function ChallengePicker({
                     maxUserCount={challenge.maxParticipantCnt}
                     startDate={challenge.startDate}
                     endDate={challenge.endDate}
+                    isInfiniteChallenge={isInfiniteChallengeEndDate(
+                      challenge.endDate
+                    )}
                     isOngoing={now >= start && now <= end}
                     isEnded={now > end}
                     onClick={() => {

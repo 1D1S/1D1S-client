@@ -9,6 +9,7 @@ import {
   Text,
 } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
+import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
 import { useMyDiaries } from '@feature/diary/board/hooks/use-diary-queries';
 import { DiaryItem } from '@feature/diary/board/type/diary';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
@@ -322,6 +323,9 @@ function MyPageContent(): React.ReactElement {
                           maxUserCount={ch.maxParticipantCnt}
                           startDate={ch.startDate}
                           endDate={ch.endDate}
+                          isInfiniteChallenge={isInfiniteChallengeEndDate(
+                            ch.endDate
+                          )}
                           isOngoing={now >= start && now <= end}
                           isEnded={now > end}
                           onClick={() =>

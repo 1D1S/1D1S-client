@@ -36,6 +36,7 @@ import {
   ChallengeDetailResponse,
   ChallengeGoal,
 } from '../../../challenge/board/type/challenge';
+import { isInfiniteChallengeEndDate } from '../../../challenge/board/utils/challenge-period';
 import { useSidebar } from '../../../member/hooks/use-member-queries';
 import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
 import {
@@ -472,6 +473,9 @@ function DiaryDetailView({
             maxUserCount={diaryData.connectedChallengeMaxUsers}
             startDate={diaryData.connectedChallengeStartDate}
             endDate={diaryData.connectedChallengeEndDate}
+            isInfiniteChallenge={isInfiniteChallengeEndDate(
+              diaryData.connectedChallengeEndDate
+            )}
             isOngoing={(() => {
               const now = new Date();
               const start = new Date(diaryData.connectedChallengeStartDate);

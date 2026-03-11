@@ -1,6 +1,7 @@
 import { ChallengeCard, Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
 import { type ChallengeListItem } from '@feature/challenge/board/type/challenge';
+import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
 import React from 'react';
 
 import {
@@ -61,6 +62,9 @@ export default function HomeRandomChallengesSection({
                 maxUserCount={challenge.maxParticipantCnt}
                 startDate={challenge.startDate}
                 endDate={challenge.endDate}
+                isInfiniteChallenge={isInfiniteChallengeEndDate(
+                  challenge.endDate
+                )}
                 isOngoing={isChallengeOngoing(
                   challenge.startDate,
                   challenge.endDate
