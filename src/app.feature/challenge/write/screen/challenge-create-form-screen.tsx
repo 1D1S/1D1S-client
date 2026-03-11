@@ -80,7 +80,7 @@ export function ChallengeCreateFormScreen({
         ? ENDLESS_CHALLENGE_END_DATE
         : format(
             add(safeStartDate, {
-              days: challengeDurationDays,
+              days: Math.max(0, challengeDurationDays - 1),
             }),
             'yyyy-MM-dd'
           );
