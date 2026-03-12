@@ -3,6 +3,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { getCurrentMemberId } from '@module/utils/auth';
+import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-period';
 
 import {
   useChallengeCheckWriteDates,
@@ -276,13 +277,20 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     useMemberChallenges({
       memberId: currentMemberId ?? 0,
     });
+  const ongoingMemberChallenges = useMemo(
+    () =>
+      memberChallenges.filter((challenge) =>
+        isChallengeOngoing(challenge.startDate, challenge.endDate)
+      ),
+    [memberChallenges]
+  );
   const selectedChallenge = useMemo(() => {
     if (selectedChallengeId === null) {
       return null;
     }
 
     const memberChallenge =
-      memberChallenges.find(
+      ongoingMemberChallenges.find(
         (challenge) => challenge.challengeId === selectedChallengeId
       ) ?? null;
 
@@ -303,7 +311,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       : null;
   }, [
     existingDiary,
-    memberChallenges,
+    ongoingMemberChallenges,
     requestedChallengeFromMyDiaries,
     selectedChallengeId,
   ]);
@@ -355,8 +363,12 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     updateDiary.isPending ||
     uploadDiaryImage.isPending;
   const trimmedTitle = title.trim();
+  const isSelectedChallengeOngoing = selectedChallenge
+    ? isChallengeOngoing(selectedChallenge.startDate, selectedChallenge.endDate)
+    : false;
   const canSubmit =
     Boolean(selectedChallenge) &&
+    isSelectedChallengeOngoing &&
     trimmedTitle.length > 0 &&
     Boolean(achievedDate) &&
     (achievedDate
@@ -618,7 +630,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     isPublic,
     setIsPublic,
     selectedChallenge,
-    memberChallenges,
+    memberChallenges: ongoingMemberChallenges,
     isMemberChallengesLoading,
     isInitialChallengeLoading,
     goals,

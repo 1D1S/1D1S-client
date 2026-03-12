@@ -1,6 +1,10 @@
 import { ChallengeListItem, Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
-import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
+import {
+  isChallengeEnded,
+  isChallengeOngoing,
+  isInfiniteChallengeEndDate,
+} from '@feature/challenge/board/utils/challenge-period';
 import React from 'react';
 
 import type { ChallengeListItem as ChallengeListItemType } from '../../../challenge/board/type/challenge';
@@ -42,13 +46,11 @@ export function DiaryCreateChallengeSection({
             isInfiniteChallenge={isInfiniteChallengeEndDate(
               selectedChallenge.endDate
             )}
-            isOngoing={(() => {
-              const now = new Date();
-              const start = new Date(selectedChallenge.startDate);
-              const end = new Date(selectedChallenge.endDate);
-              return now >= start && now <= end;
-            })()}
-            isEnded={new Date() > new Date(selectedChallenge.endDate)}
+            isOngoing={isChallengeOngoing(
+              selectedChallenge.startDate,
+              selectedChallenge.endDate
+            )}
+            isEnded={isChallengeEnded(selectedChallenge.endDate)}
             onClick={onClearChallenge}
           />
         </div>

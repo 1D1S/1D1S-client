@@ -10,6 +10,7 @@ import {
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
+import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-period';
 import { ChallengeGoalToggle } from '@feature/challenge/detail/components/challenge-goal-toggle';
 import { Feeling } from '@feature/diary/board/type/diary';
 import {
@@ -370,6 +371,10 @@ export function ChallengeDetailScreen({
   const summaryEndDate = summary?.endDate ?? '';
   const summaryDdayLabel = getDdayLabel(summaryEndDate);
   const summaryMaxParticipantCnt = summary?.maxParticipantCnt ?? 0;
+  const isChallengeCurrentlyOngoing = isChallengeOngoing(
+    summaryStartDate,
+    summaryEndDate
+  );
   const canJoin = canJoinByStatus && summaryMaxParticipantCnt > 1;
   const calendarRows = useMemo(
     () => buildCalendarRows(calendarMonth, summaryStartDate, summaryEndDate),
@@ -523,8 +528,17 @@ export function ChallengeDetailScreen({
       </Text>
       <div className="mt-3 flex flex-col gap-2.5">
         {isParticipating ? (
-          <Button size="large" className="w-full" asChild>
-            <Link href={`/diary/create?challengeId=${id}`}>일지 작성하기</Link>
+          <Button
+            size="large"
+            className="w-full"
+            disabled={!isChallengeCurrentlyOngoing}
+            asChild={isChallengeCurrentlyOngoing}
+          >
+            {isChallengeCurrentlyOngoing ? (
+              <Link href={`/diary/create?challengeId=${id}`}>일지 작성하기</Link>
+            ) : (
+              <span>진행 중일 때만 일지 작성 가능</span>
+            )}
           </Button>
         ) : null}
 
