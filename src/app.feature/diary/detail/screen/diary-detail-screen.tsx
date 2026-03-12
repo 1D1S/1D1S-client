@@ -200,7 +200,7 @@ function mapDiaryToViewData(
 ): DiaryDetailViewData {
   const diaryInfo = getDiaryInfo(diary);
   const authorInfo = getAuthorInfo(diary);
-  const baseDate = diaryInfo?.createdAt ?? diaryInfo?.challengedDate ?? '';
+  const baseDate = diaryInfo?.challengedDate ?? diaryInfo?.createdAt ?? '';
   const { dateLabel, weekdayLabel } = formatDate(baseDate);
   const challengeGoals: ChallengeGoal[] =
     challengeDetailData?.challengeGoals ?? [];

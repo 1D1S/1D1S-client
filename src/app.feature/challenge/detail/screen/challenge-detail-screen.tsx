@@ -1068,7 +1068,11 @@ export function ChallengeDetailScreen({
                           router.push(`/challenge/${targetChallengeId}`);
                         }
                       }}
-                      date={diary.diaryInfo?.createdAt ?? ''}
+                      date={
+                        diary.diaryInfo?.challengedDate ??
+                        diary.diaryInfo?.createdAt ??
+                        ''
+                      }
                       emotion={mapFeelingToEmotion(
                         diary.diaryInfo?.feeling ?? 'NONE'
                       )}

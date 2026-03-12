@@ -1,6 +1,8 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { getCurrentMemberId } from '@module/utils/auth';
 
 import {
   useChallengeCheckWriteDates,
@@ -33,8 +35,6 @@ import {
   resolveDiaryImageUrl,
 } from '../../shared/utils/diary-image-url';
 
-const LOGGED_IN_MEMBER_ID = 1;
-
 function parsePositiveInteger(value: string | null): number | null {
   if (!value) {
     return null;
@@ -64,7 +64,7 @@ function toStartOfDay(date: Date): Date {
 function isSelectableAchievedDate(date: Date): boolean {
   const today = toStartOfDay(new Date());
   const minDate = new Date(today);
-  minDate.setDate(today.getDate() - 3);
+  minDate.setDate(today.getDate() - 2);
   const targetDate = toStartOfDay(date);
 
   return targetDate >= minDate && targetDate <= today;
@@ -75,7 +75,7 @@ function getFirstSelectableAchievedDate(
 ): Date | undefined {
   const today = toStartOfDay(new Date());
 
-  for (let dayOffset = 0; dayOffset <= 3; dayOffset += 1) {
+  for (let dayOffset = 0; dayOffset <= 2; dayOffset += 1) {
     const candidate = new Date(today);
     candidate.setDate(today.getDate() - dayOffset);
 
@@ -270,10 +270,11 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     return matchedDiary?.challenge ?? null;
   }, [myDiaries, requestedChallengeId]);
 
-  // TODO: 실제 로그인된 사용자의 memberId로 교체
+  const currentMemberId = getCurrentMemberId();
+
   const { data: memberChallenges = [], isLoading: isMemberChallengesLoading } =
     useMemberChallenges({
-      memberId: LOGGED_IN_MEMBER_ID,
+      memberId: currentMemberId ?? 0,
     });
   const selectedChallenge = useMemo(() => {
     if (selectedChallengeId === null) {
@@ -571,6 +572,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
 
       router.push('/diary');
     } catch (error) {
+      toast.error('일지 저장 또는 썸네일 업로드에 실패했습니다.');
       console.error('일지 저장/썸네일 업로드 중 오류가 발생했습니다.', error);
     }
   }, [
@@ -582,6 +584,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     isEditMode,
     isPublic,
     isSubmitting,
+    currentMemberId,
     router,
     requestedDiaryId,
     selectedChallenge,

@@ -36,7 +36,7 @@ function isWithinRecentThreeDays(date: Date): boolean {
   today.setHours(0, 0, 0, 0);
 
   const minDate = new Date(today);
-  minDate.setDate(today.getDate() - 3);
+  minDate.setDate(today.getDate() - 2);
 
   const targetDate = new Date(date);
   targetDate.setHours(0, 0, 0, 0);
