@@ -88,6 +88,10 @@ function getFirstSelectableAchievedDate(
   return undefined;
 }
 
+function hasSelectableAchievedDate(disabledDateKeys: Set<string>): boolean {
+  return Boolean(getFirstSelectableAchievedDate(disabledDateKeys));
+}
+
 function normalizeChallengeCategory(category: string): ChallengeCategory {
   const categoryMap: Record<string, ChallengeCategory> = {
     ALL: 'ALL',
@@ -206,12 +210,14 @@ interface UseDiaryCreateFormResult {
   submitButtonLabel: string;
   canSubmit: boolean;
   isMissingChallengeDialogOpen: boolean;
+  isCreateUnavailableDialogOpen: boolean;
   handleSelectChallenge(challenge: ChallengeListItem): void;
   handleClearChallenge(): void;
   handleGoalIdsChange(goalIds: number[]): void;
   handleAchievedDateChange(date: Date | undefined): void;
   handleThumbnailFileSelect(file: File): void;
   closeMissingChallengeDialog(): void;
+  closeCreateUnavailableDialog(): void;
   clearThumbnail(): void;
   handleSubmit(): Promise<void>;
 }
@@ -243,6 +249,10 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   const [
     isMissingChallengeDialogDismissed,
     setIsMissingChallengeDialogDismissed,
+  ] = useState(false);
+  const [
+    isCreateUnavailableDialogOpen,
+    setIsCreateUnavailableDialogOpen,
   ] = useState(false);
   const [isEditFormInitialized, setIsEditFormInitialized] = useState(false);
   const [achievedGoalIds, setAchievedGoalIds] = useState<number[]>([]);
@@ -319,8 +329,10 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   const { data: challengeDetail } = useChallengeDetail(
     selectedChallenge?.challengeId ?? 0
   );
-  const { data: challengeCheckWriteDateKeys = [] } =
-    useChallengeCheckWriteDates(selectedChallenge?.challengeId ?? 0);
+  const {
+    data: challengeCheckWriteDateKeys = [],
+    isLoading: isChallengeCheckWriteDatesLoading,
+  } = useChallengeCheckWriteDates(selectedChallenge?.challengeId ?? 0);
   const goals = challengeDetail?.challengeGoals ?? [];
 
   const editModeDateKey = useMemo(() => {
@@ -357,6 +369,9 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     () => new Set(disabledAchievedDateKeys),
     [disabledAchievedDateKeys]
   );
+  const hasWritableRecentDate = hasSelectableAchievedDate(
+    disabledAchievedDateKeySet
+  );
 
   const isSubmitting =
     createDiary.isPending ||
@@ -375,6 +390,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       ? isSelectableAchievedDate(achievedDate) &&
         !disabledAchievedDateKeySet.has(formatDate(achievedDate))
       : false) &&
+    !isChallengeCheckWriteDatesLoading &&
     !isSubmitting &&
     (!isEditMode || !isExistingDiaryLoading);
   const isInitialChallengeLoading =
@@ -433,6 +449,31 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       window.clearTimeout(timerId);
     };
   }, [existingDiary, isEditFormInitialized, isEditMode]);
+
+  useEffect(() => {
+    if (
+      isEditMode ||
+      !selectedChallenge ||
+      isMemberChallengesLoading ||
+      !isSelectedChallengeOngoing
+    ) {
+      return;
+    }
+
+    if (hasWritableRecentDate) {
+      return;
+    }
+
+    setIsCreateUnavailableDialogOpen(true);
+    setSelectedChallengeId(null);
+    setAchievedGoalIds([]);
+  }, [
+    hasWritableRecentDate,
+    isEditMode,
+    isMemberChallengesLoading,
+    isSelectedChallengeOngoing,
+    selectedChallenge,
+  ]);
 
   useEffect(() => {
     if (isEditMode || !selectedChallenge) {
@@ -524,6 +565,10 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
 
   const closeMissingChallengeDialog = useCallback(() => {
     setIsMissingChallengeDialogDismissed(true);
+  }, []);
+
+  const closeCreateUnavailableDialog = useCallback(() => {
+    setIsCreateUnavailableDialogOpen(false);
   }, []);
 
   const handleSubmit = useCallback(async (): Promise<void> => {
@@ -641,12 +686,14 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     submitButtonLabel,
     canSubmit,
     isMissingChallengeDialogOpen,
+    isCreateUnavailableDialogOpen,
     handleSelectChallenge,
     handleClearChallenge,
     handleGoalIdsChange,
     handleAchievedDateChange,
     handleThumbnailFileSelect,
     closeMissingChallengeDialog,
+    closeCreateUnavailableDialog,
     clearThumbnail,
     handleSubmit,
   };

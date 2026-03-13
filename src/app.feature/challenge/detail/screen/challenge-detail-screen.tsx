@@ -17,6 +17,7 @@ import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/use-diary-mutations';
+import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/diary-create-unavailable-dialog';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
 import { normalizeApiError, notifyApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
@@ -36,7 +37,10 @@ import { useRouter } from 'next/navigation';
 import React, { useMemo, useState, useSyncExternalStore } from 'react';
 import { toast } from 'sonner';
 
-import { useChallengeDetail } from '../../board/hooks/use-challenge-queries';
+import {
+  useChallengeCheckWriteDates,
+  useChallengeDetail,
+} from '../../board/hooks/use-challenge-queries';
 import {
   ChallengeGoal,
   Participant,
@@ -120,6 +124,30 @@ function getDdayLabel(endDate: string): string {
     return 'D-DAY';
   }
   return `D+${Math.abs(dayDiff)}`;
+}
+
+function formatDateKey(date: Date): string {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function hasSelectableDiaryDate(disabledDateKeys: string[]): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (let dayOffset = 0; dayOffset <= 2; dayOffset += 1) {
+    const candidate = new Date(today);
+    candidate.setDate(today.getDate() - dayOffset);
+
+    if (!disabledDateKeys.includes(formatDateKey(candidate))) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function formatRelativeJoinedText(status: ParticipantStatus): string {
@@ -322,6 +350,8 @@ export function ChallengeDetailScreen({
   const [dismissed, setDismissed] = useState(false);
   const showAuthDialog = hasMounted && !authStorage.hasTokens() && !dismissed;
   const [showDiaryLikeDialog, setShowDiaryLikeDialog] = useState(false);
+  const [showCreateUnavailableDialog, setShowCreateUnavailableDialog] =
+    useState(false);
   const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
   const [selectedGoalIds, setSelectedGoalIds] = useState<number[]>([]);
   const [isGoalSelectionTouched, setIsGoalSelectionTouched] = useState(false);
@@ -374,6 +404,17 @@ export function ChallengeDetailScreen({
   const isChallengeCurrentlyOngoing = isChallengeOngoing(
     summaryStartDate,
     summaryEndDate
+  );
+  const {
+    data: challengeCheckWriteDateKeys = [],
+    isLoading: isCheckWriteDatesLoading,
+  } = useChallengeCheckWriteDates(
+    challengeId,
+    isParticipating && isChallengeCurrentlyOngoing
+  );
+  const hasWritableRecentDiaryDate = useMemo(
+    () => hasSelectableDiaryDate(challengeCheckWriteDateKeys),
+    [challengeCheckWriteDateKeys]
   );
   const canJoin = canJoinByStatus && summaryMaxParticipantCnt > 1;
   const calendarRows = useMemo(
@@ -474,6 +515,19 @@ export function ChallengeDetailScreen({
     });
   };
 
+  const handleDiaryCreateClick = (): void => {
+    if (!isChallengeCurrentlyOngoing || isCheckWriteDatesLoading) {
+      return;
+    }
+
+    if (!hasWritableRecentDiaryDate) {
+      setShowCreateUnavailableDialog(true);
+      return;
+    }
+
+    router.push(`/diary/create?challengeId=${id}`);
+  };
+
   const handleAcceptParticipant = (participantId: number): void => {
     acceptParticipant.mutate(participantId, {
       onSuccess: () => {
@@ -531,14 +585,12 @@ export function ChallengeDetailScreen({
           <Button
             size="large"
             className="w-full"
-            disabled={!isChallengeCurrentlyOngoing}
-            asChild={isChallengeCurrentlyOngoing}
+            disabled={!isChallengeCurrentlyOngoing || isCheckWriteDatesLoading}
+            onClick={handleDiaryCreateClick}
           >
-            {isChallengeCurrentlyOngoing ? (
-              <Link href={`/diary/create?challengeId=${id}`}>일지 작성하기</Link>
-            ) : (
-              <span>진행 중일 때만 일지 작성 가능</span>
-            )}
+            {isChallengeCurrentlyOngoing
+              ? '일지 작성하기'
+              : '진행 중일 때만 일지 작성 가능'}
           </Button>
         ) : null}
 
@@ -1020,6 +1072,10 @@ export function ChallengeDetailScreen({
         </div>
 
         <section className="rounded-4 border border-gray-200 bg-white p-5">
+          <DiaryCreateUnavailableDialog
+            open={showCreateUnavailableDialog}
+            onOpenChange={setShowCreateUnavailableDialog}
+          />
           <LoginRequiredDialog
             open={showDiaryLikeDialog}
             onOpenChange={setShowDiaryLikeDialog}
