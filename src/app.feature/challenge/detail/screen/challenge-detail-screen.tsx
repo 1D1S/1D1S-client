@@ -1114,17 +1114,18 @@ export function ChallengeDetailScreen({
             </section>
 
             <section className="rounded-4 border border-gray-200 bg-white p-5">
-              <Text size="heading2" weight="bold" className="text-gray-900">
+              <Text size="heading2" weight="bold" className="block text-gray-900">
                 챌린지 목표
               </Text>
               {isFreeChallenge ? (
                 <Text
                   size="body2"
                   weight="regular"
-                  className="mt-3 text-gray-500"
+                  className="mt-3 block text-gray-500"
                 >
-                  자유 목표 챌린지입니다. 참여 신청 시 나만의 목표를 직접 입력할
-                  수 있습니다.
+                  자유 목표 챌린지입니다.
+                  <br />
+                  참여 신청 시 나만의 목표를 직접 입력할 수 있습니다.
                 </Text>
               ) : (
                 <div className="mt-3 flex flex-col gap-2">

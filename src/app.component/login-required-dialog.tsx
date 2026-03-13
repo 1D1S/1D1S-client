@@ -21,7 +21,7 @@ export function LoginRequiredDialog({
   open,
   onOpenChange,
   title = '로그인이 필요한 서비스입니다.',
-  description = '좋아요 기능은 로그인 후 이용할 수 있습니다.',
+  description = '로그인 후 이용할 수 있습니다.',
 }: LoginRequiredDialogProps): React.ReactElement {
   const router = useRouter();
 

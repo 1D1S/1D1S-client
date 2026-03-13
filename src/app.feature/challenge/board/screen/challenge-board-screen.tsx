@@ -10,7 +10,11 @@ import {
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
 import { authStorage } from '@module/utils/auth';
-import { useRouter } from 'next/navigation';
+import {
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useChallengeList } from '../hooks/use-challenge-queries';
@@ -59,11 +63,30 @@ function useInViewObserver(): {
 
 export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isLoginRequired =
+    searchParams.get('loginRequired') === 'true';
+  const [showLoginDialog, setShowLoginDialog] = useState(isLoginRequired);
   const [loginDialogDescription, setLoginDialogDescription] = useState(
-    '로그인 후 이용할 수 있습니다.'
+    isLoginRequired
+      ? '챌린지 상세는 로그인 후 이용할 수 있습니다.'
+      : '로그인 후 이용할 수 있습니다.'
   );
   const [inputValue, setInputValue] = useState('');
+
+  useEffect(() => {
+    if (!isLoginRequired) {
+      return;
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('loginRequired');
+    const query = params.toString();
+    router.replace(
+      query ? `${pathname}?${query}` : pathname,
+      { scroll: false }
+    );
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [query, setQuery] = useState('');
 
   const requireAuth = (description: string, action: () => void): void => {
