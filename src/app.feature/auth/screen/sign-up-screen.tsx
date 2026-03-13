@@ -3,6 +3,12 @@
 import {
   Button,
   CheckContainer,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Icon,
   ImagePicker,
   Select,
@@ -10,6 +16,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  StepIndicator,
   Text,
   TextField,
   ToggleGroup,
@@ -24,10 +31,12 @@ import {
 } from '@component/ui/form';
 import { notifyApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 
+import { MEMBER_QUERY_KEYS } from '@feature/member/consts/query-keys';
 import { authApi } from '../api/auth-api';
 import {
   SIGN_UP_GENDER_OPTIONS,
@@ -39,14 +48,16 @@ import { SignupFormValues, useSignUpForm } from '../hooks/use-sign-up-form';
 import { CategoryType, GenderType, JobType } from '../type/auth';
 
 type Step = 1 | 2;
+const SIGN_UP_STEPS = [
+  { id: 'profile', label: '프로필 설정' },
+  { id: 'topics', label: '관심 주제' },
+];
+const SIGN_UP_LEFT_VISUAL_SIZE = 200;
+const SIGN_UP_LEFT_VISUAL_SLOT_HEIGHT = 280;
 
 function SignUpHeader({
-  step,
-  totalSteps,
   onBack,
 }: {
-  step: Step;
-  totalSteps: number;
   onBack(): void;
 }): React.ReactElement {
   return (
@@ -60,19 +71,6 @@ function SignUpHeader({
         >
           <Icon name="ChevronLeft" size={20} />
         </button>
-
-        <div className="pointer-events-none absolute left-1/2 flex -translate-x-1/2 items-center gap-2">
-          {Array.from({ length: totalSteps }).map((_, index) => {
-            const active = step === index + 1;
-
-            return (
-              <span
-                key={index}
-                className={`h-1.5 w-1.5 rounded-full ${active ? 'bg-main-500' : 'bg-gray-300'}`}
-              />
-            );
-          })}
-        </div>
       </div>
     </header>
   );
@@ -80,10 +78,11 @@ function SignUpHeader({
 
 export function SignUpScreen(): React.ReactElement {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const form = useSignUpForm();
   const [step, setStep] = React.useState<Step>(1);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const totalSteps = 2;
+  const [showExitDialog, setShowExitDialog] = React.useState(false);
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 100 }, (_, i) => currentYear - i);
   const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -115,6 +114,7 @@ export function SignUpScreen(): React.ReactElement {
       );
 
       toast.success('가입이 완료되었습니다!');
+      await queryClient.invalidateQueries({ queryKey: MEMBER_QUERY_KEYS.sidebar() });
       router.replace('/');
     } catch (error) {
       notifyApiError(error);
@@ -129,7 +129,13 @@ export function SignUpScreen(): React.ReactElement {
       return;
     }
 
-    router.push('/login');
+    setShowExitDialog(true);
+  };
+
+  const handleExitConfirm = (): void => {
+    setShowExitDialog(false);
+    authStorage.clearTokens();
+    router.replace('/');
   };
 
   const handleNextStep = async (): Promise<void> => {
@@ -150,34 +156,61 @@ export function SignUpScreen(): React.ReactElement {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-gray-50">
-      <SignUpHeader step={step} totalSteps={totalSteps} onBack={handleBack} />
+    <div className="flex min-h-screen w-full flex-col bg-gray-50 lg:h-screen lg:overflow-hidden">
+      <Dialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+        <DialogContent className="gap-6 px-8 py-6 sm:max-w-[380px] sm:px-6">
+          <DialogHeader className="items-center text-center sm:text-center">
+            <DialogTitle>정말 나가시겠어요?</DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="block w-full text-center">
+            정보를 입력하지 않으면 서비스 사용이 어렵습니다.
+          </DialogDescription>
+          <DialogFooter className="flex-row gap-2">
+            <Button
+              size="medium"
+              variant="ghost"
+              className="flex-1"
+              onClick={() => setShowExitDialog(false)}
+            >
+              계속 입력하기
+            </Button>
+            <Button
+              size="medium"
+              className="flex-1"
+              onClick={handleExitConfirm}
+            >
+              확인
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <SignUpHeader onBack={handleBack} />
 
       <Form {...form}>
         <form
-          className="flex flex-1 flex-col"
+          className="flex min-h-0 flex-1 flex-col"
           onSubmit={form.handleSubmit(onSubmit)}
         >
+          <div className="mx-auto w-full max-w-[1080px] px-4 pt-10 pb-10">
+            <StepIndicator
+              steps={SIGN_UP_STEPS}
+              currentStep={step}
+              size="sm"
+              className="w-full"
+            />
+          </div>
+
           {step === 1 ? (
-            <div className="mx-auto flex w-full max-w-[1200px] flex-1 items-center px-6 py-10">
-              <div className="grid w-full gap-10 lg:grid-cols-[1fr_1.15fr]">
-                <section className="flex flex-col justify-center">
+            <div className="mx-auto flex w-full max-w-[1080px] flex-1 items-stretch px-4 pb-5">
+              <div className="grid w-full gap-6 lg:min-h-0 lg:grid-cols-[0.9fr_1.1fr]">
+                <section className="flex min-h-0 flex-col pt-2 text-left">
                   <Text
-                    size="caption3"
-                    weight="medium"
-                    className="text-gray-600"
-                  >
-                    Step 1 : 프로필 설정
-                  </Text>
-                  <Text
-                    size="display1"
+                    size="display2"
                     weight="bold"
-                    className="mt-4 text-gray-900"
+                    className="text-gray-900"
                   >
-                    나에 대해
-                  </Text>
-                  <Text size="display1" weight="bold" className="text-main-600">
-                    알려주세요.
+                    나에 대해 알려주세요.
                   </Text>
                   <Text
                     size="body2"
@@ -187,13 +220,14 @@ export function SignUpScreen(): React.ReactElement {
                     몇 가지 정보를 입력하고 맞춤 챌린지를 추천받아보세요.
                   </Text>
 
-                  <div className="mt-10">
+                  <div className="mt-6 flex justify-center lg:mt-8">
                     <FormField
                       control={form.control}
                       name="img"
                       render={({ field }) => (
                         <FormItem>
                           <ImagePicker
+                            size={SIGN_UP_LEFT_VISUAL_SIZE}
                             onChange={(
                               event: React.ChangeEvent<HTMLInputElement>
                             ) => {
@@ -208,7 +242,7 @@ export function SignUpScreen(): React.ReactElement {
                   </div>
                 </section>
 
-                <section className="rounded-4 border border-gray-200 bg-white p-6 shadow-[0_8px_20px_rgba(34,34,34,0.04)] lg:p-8">
+                <section className="rounded-4 flex min-h-0 flex-col border border-gray-200 bg-white p-5 shadow-[0_8px_20px_rgba(34,34,34,0.04)] lg:max-h-[620px] lg:self-start lg:overflow-y-auto lg:p-6">
                   <FormField
                     control={form.control}
                     name="nickname"
@@ -459,25 +493,15 @@ export function SignUpScreen(): React.ReactElement {
               </div>
             </div>
           ) : (
-            <div className="mx-auto flex w-full max-w-[1200px] flex-1 items-center px-6 py-10">
-              <div className="grid w-full gap-10 lg:grid-cols-[1fr_1.15fr]">
-                <section className="flex flex-col justify-center">
+            <div className="mx-auto flex w-full max-w-[1080px] flex-1 items-stretch px-4 pb-5">
+              <div className="grid w-full gap-6 lg:min-h-0 lg:grid-cols-[0.9fr_1.1fr]">
+                <section className="flex min-h-0 flex-col pt-2 text-left">
                   <Text
-                    size="caption3"
-                    weight="medium"
-                    className="text-gray-600"
-                  >
-                    Step 2 : 관심 주제
-                  </Text>
-                  <Text
-                    size="display1"
+                    size="display2"
                     weight="bold"
-                    className="mt-4 text-gray-900"
+                    className="text-gray-900"
                   >
-                    어떤 주제에
-                  </Text>
-                  <Text size="display1" weight="bold" className="text-main-600">
-                    관심이 있나요?
+                    어떤 주제에 관심이 있나요?
                   </Text>
                   <Text
                     size="body2"
@@ -486,31 +510,44 @@ export function SignUpScreen(): React.ReactElement {
                   >
                     도전하고 싶은 관심 주제를 선택해주세요.
                   </Text>
+                  <div
+                    aria-hidden
+                    className="mt-6 hidden lg:mt-8 lg:block"
+                    style={{ height: SIGN_UP_LEFT_VISUAL_SLOT_HEIGHT }}
+                  />
                 </section>
 
-                <section className="rounded-4 border border-gray-200 bg-white p-6 shadow-[0_8px_20px_rgba(34,34,34,0.04)] lg:p-8">
+                <section className="rounded-4 flex min-h-0 flex-col border border-gray-200 bg-white p-5 shadow-[0_8px_20px_rgba(34,34,34,0.04)] lg:max-h-[620px] lg:self-start lg:overflow-y-auto lg:p-6">
                   <FormField
                     control={form.control}
                     name="topics"
                     render={({ field }) => (
                       <FormItem>
+                        <Text size="body2" weight="regular" className="mb-3 text-gray-500">
+                          최대 3개까지 선택할 수 있어요.
+                        </Text>
                         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                           {SIGN_UP_TOPIC_OPTIONS.map((option) => {
                             const checked = Array.isArray(selectedTopics)
                               ? selectedTopics.includes(option.value)
                               : false;
+                            const isMaxReached = selectedTopics.length >= 3;
 
                             return (
                               <CheckContainer
                                 key={option.value}
                                 type="button"
                                 checked={checked}
+                                disabled={!checked && isMaxReached}
                                 onCheckedChange={(nextChecked) => {
                                   const currentTopics = Array.isArray(
                                     form.getValues('topics')
                                   )
                                     ? form.getValues('topics')
                                     : [];
+                                  if (nextChecked && currentTopics.length >= 3) {
+                                    return;
+                                  }
                                   const nextTopics = nextChecked
                                     ? Array.from(
                                         new Set([

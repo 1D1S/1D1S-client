@@ -300,6 +300,21 @@ export default function AppLayoutShell({
   } = useSidebar();
   const isSidebarBusy = isLoggedIn && (isSidebarLoading || isSidebarFetching);
 
+  useEffect(() => {
+    if (
+      !isLoggedIn ||
+      !sidebarData ||
+      pathname === '/signup' ||
+      pathname === '/login' ||
+      pathname.startsWith('/auth')
+    ) {
+      return;
+    }
+    if (!sidebarData.nickname) {
+      router.replace('/signup');
+    }
+  }, [isLoggedIn, sidebarData, pathname, router]);
+
   const sidebarProps: RightSidebarProps = useMemo(() => {
     if (!sidebarData) {
       return DEFAULT_RIGHT_SIDEBAR_PROPS;
@@ -358,8 +373,7 @@ export default function AppLayoutShell({
               navItems={[...APP_HEADER_NAV_ITEMS]}
               activeKey={activeNavKey}
               showProfile={
-                isLoggedIn &&
-                (!showRightSidebar || isMobile) &&
+                (isMobile || (isLoggedIn && !showRightSidebar)) &&
                 pathname !== '/mypage'
               }
               profileImage={sidebarProps.userImage}
@@ -373,7 +387,13 @@ export default function AppLayoutShell({
               showBackButton={showBackButton && isMobile}
               onBackClick={() => router.back()}
               onNotificationClick={() => router.push('/notification')}
-              onProfileClick={() => setIsSidebarOverlayOpen(true)}
+              onProfileClick={() => {
+                if (!isLoggedIn) {
+                  router.push('/login');
+                  return;
+                }
+                setIsSidebarOverlayOpen(true);
+              }}
             />
           </header>
         ) : null}
@@ -407,6 +427,8 @@ export default function AppLayoutShell({
                   onGoMyPage={() => router.push('/mypage')}
                   onOpenSettings={() => router.push('/mypage/settings')}
                   onLogin={() => router.push('/login')}
+                  onJoinChallenge={() => router.push('/challenge')}
+                  onCreateChallenge={() => router.push('/challenge/create')}
                   onChallengeClick={handleSidebarChallengeClick}
                 />
               ) : (
@@ -436,6 +458,8 @@ export default function AppLayoutShell({
               onGoMyPage={() => router.push('/mypage')}
               onOpenSettings={() => router.push('/mypage/settings')}
               onLogin={() => router.push('/login')}
+              onJoinChallenge={() => router.push('/challenge')}
+              onCreateChallenge={() => router.push('/challenge/create')}
               onChallengeClick={handleSidebarChallengeClick}
             />
           </div>

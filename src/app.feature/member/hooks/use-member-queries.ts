@@ -36,6 +36,9 @@ export function useSidebar(): UseQueryResult<SidebarData, Error> {
     queryKey: MEMBER_QUERY_KEYS.sidebar(),
     queryFn: async () => {
       const data = await memberApi.getSidebar();
+      if (data === undefined || data === null) {
+        throw new Error('사이드바 데이터를 불러오지 못했습니다.');
+      }
       setCachedSidebar(data);
       return data;
     },
