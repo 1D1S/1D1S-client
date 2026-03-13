@@ -9,6 +9,7 @@ import { DiaryCreateFinishSection } from '../components/diary-create-finish-sect
 import { DiaryCreateGoalsSection } from '../components/diary-create-goals-section';
 import { DiaryCreateMissingChallengeDialog } from '../components/diary-create-missing-challenge-dialog';
 import { DiaryCreateThumbnailSection } from '../components/diary-create-thumbnail-section';
+import { DiaryCreateUnavailableDialog } from '../components/diary-create-unavailable-dialog';
 import { useDiaryCreateForm } from '../hooks/use-diary-create-form';
 
 export default function DiaryCreateScreen(): React.ReactElement {
@@ -36,11 +37,13 @@ export default function DiaryCreateScreen(): React.ReactElement {
     submitButtonLabel,
     canSubmit,
     isMissingChallengeDialogOpen,
+    isCreateUnavailableDialogOpen,
     handleSelectChallenge,
     handleClearChallenge,
     handleGoalIdsChange,
     handleThumbnailFileSelect,
     closeMissingChallengeDialog,
+    closeCreateUnavailableDialog,
     clearThumbnail,
     handleSubmit,
   } = useDiaryCreateForm();
@@ -134,6 +137,15 @@ export default function DiaryCreateScreen(): React.ReactElement {
         onOpenChange={(open) => {
           if (!open) {
             closeMissingChallengeDialog();
+          }
+        }}
+      />
+
+      <DiaryCreateUnavailableDialog
+        open={isCreateUnavailableDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeCreateUnavailableDialog();
           }
         }}
       />

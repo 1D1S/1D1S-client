@@ -200,7 +200,7 @@ function mapDiaryToViewData(
 ): DiaryDetailViewData {
   const diaryInfo = getDiaryInfo(diary);
   const authorInfo = getAuthorInfo(diary);
-  const baseDate = diaryInfo?.createdAt ?? diaryInfo?.challengedDate ?? '';
+  const baseDate = diaryInfo?.challengedDate ?? diaryInfo?.createdAt ?? '';
   const { dateLabel, weekdayLabel } = formatDate(baseDate);
   const challengeGoals: ChallengeGoal[] =
     challengeDetailData?.challengeGoals ?? [];
@@ -532,7 +532,7 @@ function DiaryDetailView({
             >
               {diaryData.hasContentHtml ? (
                 <div
-                  className="prose prose-sm max-w-none text-gray-700 [&_img]:max-h-80 [&_img]:rounded-lg"
+                  className="prose prose-sm max-w-none text-gray-700 [&_img]:max-h-80 [&_img]:rounded-lg [&_li]:mb-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
                   dangerouslySetInnerHTML={{ __html: diaryData.contentHtml }}
                 />
               ) : (

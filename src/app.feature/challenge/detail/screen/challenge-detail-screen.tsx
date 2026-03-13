@@ -10,6 +10,7 @@ import {
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
+import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-period';
 import { ChallengeGoalToggle } from '@feature/challenge/detail/components/challenge-goal-toggle';
 import { Feeling } from '@feature/diary/board/type/diary';
 import {
@@ -17,6 +18,7 @@ import {
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/use-diary-mutations';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
+import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/diary-create-unavailable-dialog';
 import { normalizeApiError, notifyApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import {
@@ -35,7 +37,10 @@ import { useRouter } from 'next/navigation';
 import React, { useMemo, useState, useSyncExternalStore } from 'react';
 import { toast } from 'sonner';
 
-import { useChallengeDetail } from '../../board/hooks/use-challenge-queries';
+import {
+  useChallengeCheckWriteDates,
+  useChallengeDetail,
+} from '../../board/hooks/use-challenge-queries';
 import {
   ChallengeGoal,
   Participant,
@@ -119,6 +124,30 @@ function getDdayLabel(endDate: string): string {
     return 'D-DAY';
   }
   return `D+${Math.abs(dayDiff)}`;
+}
+
+function formatDateKey(date: Date): string {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function hasSelectableDiaryDate(disabledDateKeys: string[]): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (let dayOffset = 0; dayOffset <= 2; dayOffset += 1) {
+    const candidate = new Date(today);
+    candidate.setDate(today.getDate() - dayOffset);
+
+    if (!disabledDateKeys.includes(formatDateKey(candidate))) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function formatRelativeJoinedText(status: ParticipantStatus): string {
@@ -321,6 +350,8 @@ export function ChallengeDetailScreen({
   const [dismissed, setDismissed] = useState(false);
   const showAuthDialog = hasMounted && !authStorage.hasTokens() && !dismissed;
   const [showDiaryLikeDialog, setShowDiaryLikeDialog] = useState(false);
+  const [showCreateUnavailableDialog, setShowCreateUnavailableDialog] =
+    useState(false);
   const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
   const [selectedGoalIds, setSelectedGoalIds] = useState<number[]>([]);
   const [isGoalSelectionTouched, setIsGoalSelectionTouched] = useState(false);
@@ -370,6 +401,21 @@ export function ChallengeDetailScreen({
   const summaryEndDate = summary?.endDate ?? '';
   const summaryDdayLabel = getDdayLabel(summaryEndDate);
   const summaryMaxParticipantCnt = summary?.maxParticipantCnt ?? 0;
+  const isChallengeCurrentlyOngoing = isChallengeOngoing(
+    summaryStartDate,
+    summaryEndDate
+  );
+  const {
+    data: challengeCheckWriteDateKeys = [],
+    isLoading: isCheckWriteDatesLoading,
+  } = useChallengeCheckWriteDates(
+    challengeId,
+    isParticipating && isChallengeCurrentlyOngoing
+  );
+  const hasWritableRecentDiaryDate = useMemo(
+    () => hasSelectableDiaryDate(challengeCheckWriteDateKeys),
+    [challengeCheckWriteDateKeys]
+  );
   const canJoin = canJoinByStatus && summaryMaxParticipantCnt > 1;
   const calendarRows = useMemo(
     () => buildCalendarRows(calendarMonth, summaryStartDate, summaryEndDate),
@@ -469,6 +515,19 @@ export function ChallengeDetailScreen({
     });
   };
 
+  const handleDiaryCreateClick = (): void => {
+    if (!isChallengeCurrentlyOngoing || isCheckWriteDatesLoading) {
+      return;
+    }
+
+    if (!hasWritableRecentDiaryDate) {
+      setShowCreateUnavailableDialog(true);
+      return;
+    }
+
+    router.push(`/diary/create?challengeId=${id}`);
+  };
+
   const handleAcceptParticipant = (participantId: number): void => {
     acceptParticipant.mutate(participantId, {
       onSuccess: () => {
@@ -523,8 +582,15 @@ export function ChallengeDetailScreen({
       </Text>
       <div className="mt-3 flex flex-col gap-2.5">
         {isParticipating ? (
-          <Button size="large" className="w-full" asChild>
-            <Link href={`/diary/create?challengeId=${id}`}>일지 작성하기</Link>
+          <Button
+            size="large"
+            className="w-full"
+            disabled={!isChallengeCurrentlyOngoing || isCheckWriteDatesLoading}
+            onClick={handleDiaryCreateClick}
+          >
+            {isChallengeCurrentlyOngoing
+              ? '일지 작성하기'
+              : '진행 중일 때만 일지 작성 가능'}
           </Button>
         ) : null}
 
@@ -1006,6 +1072,10 @@ export function ChallengeDetailScreen({
         </div>
 
         <section className="rounded-4 border border-gray-200 bg-white p-5">
+          <DiaryCreateUnavailableDialog
+            open={showCreateUnavailableDialog}
+            onOpenChange={setShowCreateUnavailableDialog}
+          />
           <LoginRequiredDialog
             open={showDiaryLikeDialog}
             onOpenChange={setShowDiaryLikeDialog}
@@ -1068,7 +1138,11 @@ export function ChallengeDetailScreen({
                           router.push(`/challenge/${targetChallengeId}`);
                         }
                       }}
-                      date={diary.diaryInfo?.createdAt ?? ''}
+                      date={
+                        diary.diaryInfo?.challengedDate ??
+                        diary.diaryInfo?.createdAt ??
+                        ''
+                      }
                       emotion={mapFeelingToEmotion(
                         diary.diaryInfo?.feeling ?? 'NONE'
                       )}
