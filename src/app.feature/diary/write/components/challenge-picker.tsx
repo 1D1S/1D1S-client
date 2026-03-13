@@ -93,32 +93,30 @@ export function ChallengePicker({
                 작성 가능한 진행 중 챌린지가 없습니다.
               </Text>
             ) : (
-              ongoingChallenges.map((challenge) => {
-                return (
-                  <ChallengeListItem
-                    key={challenge.challengeId}
-                    challengeTitle={challenge.title}
-                    challengeType={challenge.challengeType}
-                    challengeCategory={getCategoryLabel(challenge.category)}
-                    currentUserCount={challenge.participantCnt}
-                    maxUserCount={challenge.maxParticipantCnt}
-                    startDate={challenge.startDate}
-                    endDate={challenge.endDate}
-                    isInfiniteChallenge={isInfiniteChallengeEndDate(
-                      challenge.endDate
-                    )}
-                    isOngoing={isChallengeOngoing(
-                      challenge.startDate,
-                      challenge.endDate
-                    )}
-                    isEnded={isChallengeEnded(challenge.endDate)}
-                    onClick={() => {
-                      onSelect?.(challenge);
-                      setIsOpen(false);
-                    }}
-                  />
-                );
-              })
+              ongoingChallenges.map((challenge) => (
+                <ChallengeListItem
+                  key={challenge.challengeId}
+                  challengeTitle={challenge.title}
+                  challengeType={challenge.challengeType}
+                  challengeCategory={getCategoryLabel(challenge.category)}
+                  currentUserCount={challenge.participantCnt}
+                  maxUserCount={challenge.maxParticipantCnt}
+                  startDate={challenge.startDate}
+                  endDate={challenge.endDate}
+                  isInfiniteChallenge={isInfiniteChallengeEndDate(
+                    challenge.endDate
+                  )}
+                  isOngoing={isChallengeOngoing(
+                    challenge.startDate,
+                    challenge.endDate
+                  )}
+                  isEnded={isChallengeEnded(challenge.endDate)}
+                  onClick={() => {
+                    onSelect?.(challenge);
+                    setIsOpen(false);
+                  }}
+                />
+              ))
             )}
           </div>
         </div>

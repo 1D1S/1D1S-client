@@ -1,9 +1,9 @@
+import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-period';
+import { getCurrentMemberId } from '@module/utils/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { getCurrentMemberId } from '@module/utils/auth';
-import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-period';
 
 import {
   useChallengeCheckWriteDates,
@@ -250,10 +250,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     isMissingChallengeDialogDismissed,
     setIsMissingChallengeDialogDismissed,
   ] = useState(false);
-  const [
-    isCreateUnavailableDialogOpen,
-    setIsCreateUnavailableDialogOpen,
-  ] = useState(false);
+  const [isCreateUnavailableDialogOpen, setIsCreateUnavailableDialogOpen] =
+    useState(false);
   const [isEditFormInitialized, setIsEditFormInitialized] = useState(false);
   const [achievedGoalIds, setAchievedGoalIds] = useState<number[]>([]);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
@@ -464,9 +462,15 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       return;
     }
 
-    setIsCreateUnavailableDialogOpen(true);
-    setSelectedChallengeId(null);
-    setAchievedGoalIds([]);
+    const timerId = window.setTimeout(() => {
+      setIsCreateUnavailableDialogOpen(true);
+      setSelectedChallengeId(null);
+      setAchievedGoalIds([]);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
   }, [
     hasWritableRecentDate,
     isEditMode,
@@ -504,12 +508,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [
-    achievedDate,
-    disabledAchievedDateKeySet,
-    isEditMode,
-    selectedChallenge,
-  ]);
+  }, [achievedDate, disabledAchievedDateKeySet, isEditMode, selectedChallenge]);
 
   const handleSelectChallenge = useCallback((challenge: ChallengeListItem) => {
     setSelectedChallengeId(challenge.challengeId);
@@ -525,22 +524,25 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     setAchievedGoalIds(goalIds);
   }, []);
 
-  const handleAchievedDateChange = useCallback((date: Date | undefined) => {
-    if (!date) {
-      setAchievedDate(undefined);
-      return;
-    }
+  const handleAchievedDateChange = useCallback(
+    (date: Date | undefined) => {
+      if (!date) {
+        setAchievedDate(undefined);
+        return;
+      }
 
-    if (!isSelectableAchievedDate(date)) {
-      return;
-    }
+      if (!isSelectableAchievedDate(date)) {
+        return;
+      }
 
-    if (disabledAchievedDateKeySet.has(formatDate(date))) {
-      return;
-    }
+      if (disabledAchievedDateKeySet.has(formatDate(date))) {
+        return;
+      }
 
-    setAchievedDate(date);
-  }, [disabledAchievedDateKeySet]);
+      setAchievedDate(date);
+    },
+    [disabledAchievedDateKeySet]
+  );
 
   const setThumbnail = useCallback((file: File | null) => {
     setThumbnailFile(file);
