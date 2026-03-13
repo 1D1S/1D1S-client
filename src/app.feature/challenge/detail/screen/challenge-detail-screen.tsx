@@ -3,6 +3,11 @@
 import {
   Button,
   CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   DiaryCard,
   ScheduleCalendar,
   type ScheduleCalendarCell,
@@ -10,8 +15,6 @@ import {
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
-import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-period';
-import { ChallengeGoalToggle } from '@feature/challenge/detail/components/challenge-goal-toggle';
 import { Feeling } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
@@ -46,6 +49,7 @@ import {
   Participant,
   ParticipantStatus,
 } from '../../board/type/challenge';
+import { isChallengeOngoing } from '../../board/utils/challenge-period';
 import { CHALLENGE_DETAIL_WEEK_LABELS } from '../consts/challenge-detail-data';
 import { useChallengeDiaryList } from '../hooks/use-challenge-diary-queries';
 import {
@@ -353,8 +357,8 @@ export function ChallengeDetailScreen({
   const [showCreateUnavailableDialog, setShowCreateUnavailableDialog] =
     useState(false);
   const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
-  const [selectedGoalIds, setSelectedGoalIds] = useState<number[]>([]);
-  const [isGoalSelectionTouched, setIsGoalSelectionTouched] = useState(false);
+  const [showFreeGoalModal, setShowFreeGoalModal] = useState(false);
+  const [freeGoalInputs, setFreeGoalInputs] = useState<string[]>(['']);
 
   const { data: challengeDiaries, isLoading: isDiariesLoading } =
     useChallengeDiaryList(challengeId);
@@ -392,6 +396,7 @@ export function ChallengeDetailScreen({
   const isPending = myStatus === 'PENDING';
   const isParticipating = PARTICIPATING_STATUS.includes(myStatus);
   const canJoinByStatus = myStatus === 'NONE' || myStatus === 'REJECTED';
+  const isFreeChallenge = summary?.challengeType === 'FLEXIBLE';
 
   const monthLabel = useMemo(
     () => getMonthLabel(calendarMonth),
@@ -431,18 +436,6 @@ export function ChallengeDetailScreen({
     leaveChallenge.isPending ||
     likeChallenge.isPending ||
     unlikeChallenge.isPending;
-  const effectiveSelectedGoalIds = isGoalSelectionTouched
-    ? selectedGoalIds
-    : goals.map((goal) => goal.challengeGoalId);
-
-  const toggleGoal = (goalId: number): void => {
-    setIsGoalSelectionTouched(true);
-    setSelectedGoalIds(() =>
-      effectiveSelectedGoalIds.includes(goalId)
-        ? effectiveSelectedGoalIds.filter((prevGoalId) => prevGoalId !== goalId)
-        : [...effectiveSelectedGoalIds, goalId]
-    );
-  };
 
   const handleJoinChallenge = (): void => {
     if (summaryMaxParticipantCnt <= 1) {
@@ -450,24 +443,39 @@ export function ChallengeDetailScreen({
       return;
     }
 
-    if (effectiveSelectedGoalIds.length === 0) {
-      toast.error('최소 1개 이상의 목표를 선택해 주세요.');
+    if (isFreeChallenge) {
+      setFreeGoalInputs(['']);
+      setShowFreeGoalModal(true);
       return;
     }
 
-    const selectedGoalContents = goals
-      .filter((goal) => effectiveSelectedGoalIds.includes(goal.challengeGoalId))
-      .map((goal) => goal.content);
-
-    if (selectedGoalContents.length === 0) {
-      toast.error('선택한 목표를 찾을 수 없습니다. 다시 선택해 주세요.');
-      return;
-    }
-
+    const goalContents = goals.map((goal) => goal.content);
     joinChallenge.mutate(
-      { challengeId, data: selectedGoalContents },
+      { challengeId, data: goalContents },
       {
         onSuccess: () => {
+          toast.success('챌린지 참여 신청이 완료되었습니다.');
+        },
+        onError: (error) => {
+          notifyApiError(error);
+        },
+      }
+    );
+  };
+
+  const handleFreeGoalSubmit = (): void => {
+    const validGoals = freeGoalInputs
+      .map((goal) => goal.trim())
+      .filter(Boolean);
+    if (validGoals.length === 0) {
+      toast.error('목표를 최소 1개 이상 입력해 주세요.');
+      return;
+    }
+    joinChallenge.mutate(
+      { challengeId, data: validGoals },
+      {
+        onSuccess: () => {
+          setShowFreeGoalModal(false);
           toast.success('챌린지 참여 신청이 완료되었습니다.');
         },
         onError: (error) => {
@@ -616,9 +624,7 @@ export function ChallengeDetailScreen({
             size="large"
             className="w-full"
             onClick={handleJoinChallenge}
-            disabled={
-              joinChallenge.isPending || effectiveSelectedGoalIds.length === 0
-            }
+            disabled={joinChallenge.isPending}
           >
             챌린지 참여 신청
           </Button>
@@ -731,9 +737,84 @@ export function ChallengeDetailScreen({
     );
   }
 
+  const freeGoalModal = (
+    <Dialog open={showFreeGoalModal} onOpenChange={setShowFreeGoalModal}>
+      <DialogContent className="gap-5 px-6 py-6 sm:max-w-[460px]">
+        <DialogHeader>
+          <DialogTitle>나의 목표 입력</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-3">
+          <Text size="body2" weight="regular" className="text-gray-500">
+            챌린지에서 달성할 목표를 입력해 주세요. (최대 5개)
+          </Text>
+          <div className="flex flex-col gap-2">
+            {freeGoalInputs.map((value, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={value}
+                  onChange={(event) => {
+                    const next = [...freeGoalInputs];
+                    next[index] = event.target.value;
+                    setFreeGoalInputs(next);
+                  }}
+                  placeholder={`목표 ${index + 1}`}
+                  maxLength={50}
+                  className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-orange-400"
+                />
+                {freeGoalInputs.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFreeGoalInputs(
+                        freeGoalInputs.filter((_, i) => i !== index)
+                      )
+                    }
+                    className="text-gray-400 hover:text-gray-600"
+                    aria-label="목표 삭제"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          {freeGoalInputs.length < 5 && (
+            <button
+              type="button"
+              onClick={() => setFreeGoalInputs([...freeGoalInputs, ''])}
+              className="text-main-700 self-start text-sm font-medium hover:underline"
+            >
+              + 목표 추가
+            </button>
+          )}
+        </div>
+        <DialogFooter className="flex-row gap-2">
+          <Button
+            size="medium"
+            variant="ghost"
+            className="flex-1"
+            onClick={() => setShowFreeGoalModal(false)}
+          >
+            취소
+          </Button>
+          <Button
+            size="medium"
+            className="flex-1"
+            disabled={joinChallenge.isPending}
+            onClick={handleFreeGoalSubmit}
+          >
+            {joinChallenge.isPending ? '처리 중...' : '신청하기'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <div className="min-h-screen w-full bg-white px-4 py-6 md:px-6 lg:px-8">
       {authDialog}
+      {freeGoalModal}
       <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6">
         <section className="rounded-4 border border-gray-200 bg-white p-6 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1034,23 +1115,24 @@ export function ChallengeDetailScreen({
 
             <section className="rounded-4 border border-gray-200 bg-white p-5">
               <Text size="heading2" weight="bold" className="text-gray-900">
-                {canJoin ? '신청할 목표 선택' : '챌린지 목표'}
+                챌린지 목표
               </Text>
-              <div className="mt-3 flex flex-col gap-2">
-                {goals.map((goal) => (
-                  <div
-                    key={goal.challengeGoalId}
-                    className="rounded-2 border border-gray-200 bg-gray-100 p-3"
-                  >
-                    {canJoin ? (
-                      <ChallengeGoalToggle
-                        checked={effectiveSelectedGoalIds.includes(
-                          goal.challengeGoalId
-                        )}
-                        onCheckedChange={() => toggleGoal(goal.challengeGoalId)}
-                        label={goal.content}
-                      />
-                    ) : (
+              {isFreeChallenge ? (
+                <Text
+                  size="body2"
+                  weight="regular"
+                  className="mt-3 text-gray-500"
+                >
+                  자유 목표 챌린지입니다. 참여 신청 시 나만의 목표를 직접 입력할
+                  수 있습니다.
+                </Text>
+              ) : (
+                <div className="mt-3 flex flex-col gap-2">
+                  {goals.map((goal) => (
+                    <div
+                      key={goal.challengeGoalId}
+                      className="rounded-2 border border-gray-200 bg-gray-100 p-3"
+                    >
                       <div className="flex items-start gap-2">
                         <div className="text-main-800 mt-1">
                           <Check className="h-4 w-4" />
@@ -1063,10 +1145,10 @@ export function ChallengeDetailScreen({
                           {goal.content}
                         </Text>
                       </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
           </aside>
         </div>
