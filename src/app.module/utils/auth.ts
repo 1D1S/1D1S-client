@@ -53,7 +53,7 @@ export const authStorage = {
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
-    const payload = token.split('.')[1];
+    const [, payload] = token.split('.');
     if (!payload) {
       return null;
     }
