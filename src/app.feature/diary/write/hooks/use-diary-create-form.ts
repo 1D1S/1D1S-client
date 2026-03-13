@@ -643,7 +643,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     isEditMode,
     isPublic,
     isSubmitting,
-    currentMemberId,
     router,
     requestedDiaryId,
     selectedChallenge,
