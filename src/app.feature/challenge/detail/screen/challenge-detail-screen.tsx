@@ -44,6 +44,7 @@ import {
   useChallengeCheckWriteDates,
   useChallengeDetail,
 } from '../../board/hooks/use-challenge-queries';
+import { isChallengeOngoing } from '../../board/utils/challenge-period';
 import {
   ChallengeGoal,
   Participant,
@@ -395,7 +396,7 @@ export function ChallengeDetailScreen({
   const isPending = myStatus === 'PENDING';
   const isParticipating = PARTICIPATING_STATUS.includes(myStatus);
   const canJoinByStatus = myStatus === 'NONE' || myStatus === 'REJECTED';
-  const isFreeChallenge = summary?.challengeType === 'FREE';
+  const isFreeChallenge = summary?.challengeType === 'FLEXIBLE';
 
   const monthLabel = useMemo(
     () => getMonthLabel(calendarMonth),
@@ -463,7 +464,9 @@ export function ChallengeDetailScreen({
   };
 
   const handleFreeGoalSubmit = (): void => {
-    const validGoals = freeGoalInputs.map((g) => g.trim()).filter(Boolean);
+    const validGoals = freeGoalInputs
+      .map((goal) => goal.trim())
+      .filter(Boolean);
     if (validGoals.length === 0) {
       toast.error('목표를 최소 1개 이상 입력해 주세요.');
       return;
@@ -750,9 +753,9 @@ export function ChallengeDetailScreen({
                 <input
                   type="text"
                   value={value}
-                  onChange={(e) => {
+                  onChange={(event) => {
                     const next = [...freeGoalInputs];
-                    next[index] = e.target.value;
+                    next[index] = event.target.value;
                     setFreeGoalInputs(next);
                   }}
                   placeholder={`목표 ${index + 1}`}

@@ -29,6 +29,7 @@ import {
   FormItem,
   FormMessage,
 } from '@component/ui/form';
+import { MEMBER_QUERY_KEYS } from '@feature/member/consts/query-keys';
 import { notifyApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import { useQueryClient } from '@tanstack/react-query';
@@ -36,7 +37,6 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { MEMBER_QUERY_KEYS } from '@feature/member/consts/query-keys';
 import { authApi } from '../api/auth-api';
 import {
   SIGN_UP_GENDER_OPTIONS,
@@ -114,7 +114,9 @@ export function SignUpScreen(): React.ReactElement {
       );
 
       toast.success('가입이 완료되었습니다!');
-      await queryClient.invalidateQueries({ queryKey: MEMBER_QUERY_KEYS.sidebar() });
+      await queryClient.invalidateQueries({
+        queryKey: MEMBER_QUERY_KEYS.sidebar(),
+      });
       router.replace('/');
     } catch (error) {
       notifyApiError(error);
@@ -545,7 +547,10 @@ export function SignUpScreen(): React.ReactElement {
                                   )
                                     ? form.getValues('topics')
                                     : [];
-                                  if (nextChecked && currentTopics.length >= 3) {
+                                  if (
+                                    nextChecked &&
+                                    currentTopics.length >= 3
+                                  ) {
                                     return;
                                   }
                                   const nextTopics = nextChecked
