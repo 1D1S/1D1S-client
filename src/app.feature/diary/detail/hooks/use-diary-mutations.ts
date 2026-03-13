@@ -121,6 +121,13 @@ export function useDeleteDiary(): UseMutationResult<boolean, Error, number> {
         queryKey: CHALLENGE_QUERY_KEYS.all,
         predicate: (query) => query.queryKey.includes('diaries'),
       });
+      // 내 정보 무효화
+      queryClient.invalidateQueries({
+        queryKey: MEMBER_QUERY_KEYS.myPage(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: MEMBER_QUERY_KEYS.sidebar(),
+      });
     },
   });
 }

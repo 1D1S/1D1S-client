@@ -178,7 +178,11 @@ export function ChallengeDiaryListScreen({
                     router.push(`/challenge/${targetChallengeId}`);
                   }
                 }}
-                date={toRelativeDateLabel(diary.diaryInfo?.createdAt ?? '')}
+                date={toRelativeDateLabel(
+                  diary.diaryInfo?.challengedDate ??
+                    diary.diaryInfo?.createdAt ??
+                    ''
+                )}
                 emotion={mapFeelingToEmotion(
                   diary.diaryInfo?.feeling ?? 'NONE'
                 )}

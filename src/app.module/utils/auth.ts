@@ -50,3 +50,72 @@ export const authStorage = {
   hasTokens: (): boolean =>
     Boolean(Cookies.get(ACCESS_TOKEN_KEY) && Cookies.get(REFRESH_TOKEN_KEY)),
 };
+
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const [, payload] = token.split('.');
+    if (!payload) {
+      return null;
+    }
+
+    const normalizedPayload = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const paddedPayload = normalizedPayload.padEnd(
+      normalizedPayload.length + ((4 - (normalizedPayload.length % 4)) % 4),
+      '='
+    );
+
+    const decodedPayload =
+      typeof window !== 'undefined'
+        ? window.atob(paddedPayload)
+        : Buffer.from(paddedPayload, 'base64').toString('utf-8');
+
+    return JSON.parse(decodedPayload) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function parsePositiveNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsedValue = Number(value);
+    if (Number.isInteger(parsedValue) && parsedValue > 0) {
+      return parsedValue;
+    }
+  }
+
+  return null;
+}
+
+export function getCurrentMemberId(): number | null {
+  const accessToken = authStorage.getAccessToken();
+  if (!accessToken) {
+    return null;
+  }
+
+  const payload = decodeJwtPayload(accessToken);
+  if (!payload) {
+    return null;
+  }
+
+  const candidateKeys = [
+    'memberId',
+    'member_id',
+    'userId',
+    'user_id',
+    'id',
+    'sub',
+  ] as const;
+
+  for (const key of candidateKeys) {
+    const parsedValue = parsePositiveNumber(payload[key]);
+    if (parsedValue !== null) {
+      return parsedValue;
+    }
+  }
+
+  return null;
+}
