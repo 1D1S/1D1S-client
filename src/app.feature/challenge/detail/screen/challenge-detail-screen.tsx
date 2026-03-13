@@ -44,12 +44,12 @@ import {
   useChallengeCheckWriteDates,
   useChallengeDetail,
 } from '../../board/hooks/use-challenge-queries';
-import { isChallengeOngoing } from '../../board/utils/challenge-period';
 import {
   ChallengeGoal,
   Participant,
   ParticipantStatus,
 } from '../../board/type/challenge';
+import { isChallengeOngoing } from '../../board/utils/challenge-period';
 import { CHALLENGE_DETAIL_WEEK_LABELS } from '../consts/challenge-detail-data';
 import { useChallengeDiaryList } from '../hooks/use-challenge-diary-queries';
 import {
