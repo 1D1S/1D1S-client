@@ -110,13 +110,17 @@ export function DiaryCreateDatePicker({
               }
             }}
             disabled={(date) => {
-              if (!isWithinRecentThreeDays(date)) return true;
+              if (!isWithinRecentThreeDays(date)) {
+                return true;
+              }
               if (challengeStartDate) {
                 const start = new Date(challengeStartDate);
                 start.setHours(0, 0, 0, 0);
                 const target = new Date(date);
                 target.setHours(0, 0, 0, 0);
-                if (target < start) return true;
+                if (target < start) {
+                  return true;
+                }
               }
               return disabledDateKeySet.has(formatDateKey(date));
             }}

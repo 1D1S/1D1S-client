@@ -341,8 +341,8 @@ function DiaryDetailView({
     if (!isImageOpen) {
       return;
     }
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') {
         setIsImageOpen(false);
       }
     };
@@ -577,7 +577,7 @@ function DiaryDetailView({
                     >
                       <div
                         className="relative max-h-full max-w-full"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(event) => event.stopPropagation()}
                       >
                         <button
                           type="button"
@@ -586,10 +586,14 @@ function DiaryDetailView({
                         >
                           ✕
                         </button>
-                        <img
+                        <Image
                           src={diaryData.contentThumbnailUrl}
                           alt="일지 썸네일 원본"
+                          width={0}
+                          height={0}
+                          sizes="90vw"
                           className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain"
+                          style={{ width: 'auto', height: 'auto' }}
                         />
                       </div>
                     </div>
