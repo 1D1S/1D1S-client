@@ -56,23 +56,54 @@ function formatDate(date: Date): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function parseDateValue(value?: string | null): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  const matchedDate = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (matchedDate) {
+    const [, year, month, day] = matchedDate;
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  return parsedDate;
+}
+
 function toStartOfDay(date: Date): Date {
   const normalizedDate = new Date(date);
   normalizedDate.setHours(0, 0, 0, 0);
   return normalizedDate;
 }
 
-function isSelectableAchievedDate(date: Date): boolean {
+function isSelectableAchievedDate(
+  date: Date,
+  challengeStartDate?: string | null
+): boolean {
   const today = toStartOfDay(new Date());
   const minDate = new Date(today);
   minDate.setDate(today.getDate() - 2);
   const targetDate = toStartOfDay(date);
+  const parsedChallengeStartDate = parseDateValue(challengeStartDate);
+
+  if (parsedChallengeStartDate) {
+    const challengeStart = toStartOfDay(parsedChallengeStartDate);
+    if (targetDate < challengeStart) {
+      return false;
+    }
+  }
 
   return targetDate >= minDate && targetDate <= today;
 }
 
 function getFirstSelectableAchievedDate(
-  disabledDateKeys: Set<string>
+  disabledDateKeys: Set<string>,
+  challengeStartDate?: string | null
 ): Date | undefined {
   const today = toStartOfDay(new Date());
 
@@ -80,7 +111,10 @@ function getFirstSelectableAchievedDate(
     const candidate = new Date(today);
     candidate.setDate(today.getDate() - dayOffset);
 
-    if (!disabledDateKeys.has(formatDate(candidate))) {
+    if (
+      isSelectableAchievedDate(candidate, challengeStartDate) &&
+      !disabledDateKeys.has(formatDate(candidate))
+    ) {
       return candidate;
     }
   }
@@ -88,8 +122,13 @@ function getFirstSelectableAchievedDate(
   return undefined;
 }
 
-function hasSelectableAchievedDate(disabledDateKeys: Set<string>): boolean {
-  return Boolean(getFirstSelectableAchievedDate(disabledDateKeys));
+function hasSelectableAchievedDate(
+  disabledDateKeys: Set<string>,
+  challengeStartDate?: string | null
+): boolean {
+  return Boolean(
+    getFirstSelectableAchievedDate(disabledDateKeys, challengeStartDate)
+  );
 }
 
 function normalizeChallengeCategory(category: string): ChallengeCategory {
@@ -367,7 +406,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     [disabledAchievedDateKeys]
   );
   const hasWritableRecentDate = hasSelectableAchievedDate(
-    disabledAchievedDateKeySet
+    disabledAchievedDateKeySet,
+    selectedChallenge?.startDate
   );
 
   const isSubmitting =
@@ -384,7 +424,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     trimmedTitle.length > 0 &&
     Boolean(achievedDate) &&
     (achievedDate
-      ? isSelectableAchievedDate(achievedDate) &&
+      ? isSelectableAchievedDate(achievedDate, selectedChallenge?.startDate) &&
         !disabledAchievedDateKeySet.has(formatDate(achievedDate))
       : false) &&
     !isChallengeCheckWriteDatesLoading &&
@@ -488,7 +528,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     const timerId = window.setTimeout(() => {
       if (!achievedDate) {
         const firstSelectableDate = getFirstSelectableAchievedDate(
-          disabledAchievedDateKeySet
+          disabledAchievedDateKeySet,
+          selectedChallenge.startDate
         );
         if (firstSelectableDate) {
           setAchievedDate(firstSelectableDate);
@@ -497,11 +538,14 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       }
 
       if (
-        !isSelectableAchievedDate(achievedDate) ||
+        !isSelectableAchievedDate(achievedDate, selectedChallenge.startDate) ||
         disabledAchievedDateKeySet.has(formatDate(achievedDate))
       ) {
         setAchievedDate(
-          getFirstSelectableAchievedDate(disabledAchievedDateKeySet)
+          getFirstSelectableAchievedDate(
+            disabledAchievedDateKeySet,
+            selectedChallenge.startDate
+          )
         );
       }
     }, 0);
@@ -532,7 +576,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         return;
       }
 
-      if (!isSelectableAchievedDate(date)) {
+      if (!isSelectableAchievedDate(date, selectedChallenge?.startDate)) {
         return;
       }
 
@@ -542,7 +586,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
 
       setAchievedDate(date);
     },
-    [disabledAchievedDateKeySet]
+    [disabledAchievedDateKeySet, selectedChallenge?.startDate]
   );
 
   const setThumbnail = useCallback((file: File | null) => {
@@ -581,7 +625,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
 
     if (
       achievedDate &&
-      (!isSelectableAchievedDate(achievedDate) ||
+      (!isSelectableAchievedDate(achievedDate, selectedChallenge.startDate) ||
         disabledAchievedDateKeySet.has(formatDate(achievedDate)))
     ) {
       return;
