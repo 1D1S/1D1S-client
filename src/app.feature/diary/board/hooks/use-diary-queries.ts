@@ -19,12 +19,15 @@ import {
 
 // 다이어리 상세 조회
 export function useDiaryDetail(
-  diaryId: number
+  diaryId: number,
+  options?: {
+    enabled?: boolean;
+  }
 ): UseQueryResult<DiaryDetail, Error> {
   return useQuery({
     queryKey: DIARY_QUERY_KEYS.detail(diaryId),
     queryFn: () => diaryDetailApi.getDiaryById(diaryId),
-    enabled: Boolean(diaryId),
+    enabled: options?.enabled ?? Boolean(diaryId),
   });
 }
 

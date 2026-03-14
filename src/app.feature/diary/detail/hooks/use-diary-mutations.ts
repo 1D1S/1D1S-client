@@ -4,6 +4,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
+import { CHALLENGE_QUERY_KEYS } from '../../../challenge/board/consts/query-keys';
+import { MEMBER_QUERY_KEYS } from '../../../member/consts/query-keys';
 import { DIARY_QUERY_KEYS } from '../../board/consts/query-keys';
 import {
   CreateDiaryReportRequest,
@@ -27,7 +29,7 @@ export function useCreateDiary(): UseMutationResult<
 
   return useMutation({
     mutationFn: (data: CreateDiaryRequest) => diaryWriteApi.createDiary(data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       // 다이어리 리스트 무효화
       queryClient.invalidateQueries({
         queryKey: DIARY_QUERY_KEYS.lists(),
@@ -40,6 +42,17 @@ export function useCreateDiary(): UseMutationResult<
       // 모든 다이어리 무효화
       queryClient.invalidateQueries({
         queryKey: DIARY_QUERY_KEYS.allDiaries(),
+      });
+      // 내 정보 무효화
+      queryClient.invalidateQueries({
+        queryKey: MEMBER_QUERY_KEYS.myPage(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: MEMBER_QUERY_KEYS.sidebar(),
+      });
+      // 일지 작성 가능 날짜 무효화
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_QUERY_KEYS.checkWrite(variables.challengeId),
       });
     },
   });
@@ -74,6 +87,11 @@ export function useUpdateDiary(): UseMutationResult<
       queryClient.invalidateQueries({
         queryKey: DIARY_QUERY_KEYS.allDiaries(),
       });
+      // 챌린지 일지 리스트 무효화
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_QUERY_KEYS.all,
+        predicate: (query) => query.queryKey.includes('diaries'),
+      });
     },
   });
 }
@@ -84,11 +102,7 @@ export function useDeleteDiary(): UseMutationResult<boolean, Error, number> {
 
   return useMutation({
     mutationFn: (id: number) => diaryDetailApi.deleteDiary(id),
-    onSuccess: (_, id) => {
-      // 해당 다이어리 상세 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.detail(id),
-      });
+    onSuccess: () => {
       // 다이어리 리스트 무효화
       queryClient.invalidateQueries({
         queryKey: DIARY_QUERY_KEYS.lists(),
@@ -101,6 +115,18 @@ export function useDeleteDiary(): UseMutationResult<boolean, Error, number> {
       // 모든 다이어리 무효화
       queryClient.invalidateQueries({
         queryKey: DIARY_QUERY_KEYS.allDiaries(),
+      });
+      // 챌린지 일지 리스트 무효화
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_QUERY_KEYS.all,
+        predicate: (query) => query.queryKey.includes('diaries'),
+      });
+      // 내 정보 무효화
+      queryClient.invalidateQueries({
+        queryKey: MEMBER_QUERY_KEYS.myPage(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: MEMBER_QUERY_KEYS.sidebar(),
       });
     },
   });

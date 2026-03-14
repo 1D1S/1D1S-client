@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
   Text,
@@ -33,40 +32,29 @@ export function ChallengeCreateDialog({
           {triggerText}
         </Button>
       </DialogTrigger>
-      <DialogContent className="min-w-150 gap-6 p-6">
-        <DialogHeader className="items-center">
-          <DialogTitle>
-            <Text size="heading1" weight="bold" className="text-black">
-              챌린지 생성
-            </Text>
-          </DialogTitle>
-        </DialogHeader>
-        {/* 챌린지 정보 요약 */}
-        <div className="my-4 h-[1px] w-full bg-gray-300" />
-        <Text size="heading2" weight="medium" className="text-gray-500">
-          미리 보기
-        </Text>
-
-        <ChallengeCreateDialogContent />
-
-        <div className="my-4 h-[1px] w-full bg-gray-300" />
-
-        {/* 챌린지 생성 확인 메시지 Footer */}
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <DialogDescription>
-            <Text
-              size="heading1"
-              weight="bold"
-              className="text-black"
-              id="challenge-create-dialog"
-            >
-              위와 같이 챌린지를 생성하시겠습니까?
-            </Text>
-          </DialogDescription>
+      <DialogContent className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-[520px]">
+        <DialogTitle className="sr-only">챌린지 생성 미리보기</DialogTitle>
+        <div className="min-h-0 flex-1 overflow-y-auto p-6 pt-10">
+          <ChallengeCreateDialogContent />
         </div>
-        <DialogFooter className="gap-4">
+
+        <div className="h-px w-full bg-gray-200" />
+
+        <div className="flex flex-col gap-4 p-6">
+        <DialogDescription asChild>
+          <Text
+            size="heading2"
+            weight="bold"
+            className="block text-center text-black"
+            id="challenge-create-dialog"
+          >
+            위와 같이 챌린지를 생성하시겠습니까?
+          </Text>
+        </DialogDescription>
+
+        <DialogFooter className="grid grid-cols-2 gap-3 sm:gap-3">
           <DialogClose asChild>
-            <Button variant="outlined" type="button" className="w-37.5">
+            <Button variant="outlined" type="button">
               취소
             </Button>
           </DialogClose>
@@ -74,13 +62,13 @@ export function ChallengeCreateDialog({
             <Button
               variant="default"
               type="submit"
-              className="w-37.5"
               onClick={onConfirm}
             >
-              생성
+              챌린지 생성
             </Button>
           </DialogClose>
         </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

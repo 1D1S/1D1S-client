@@ -1,13 +1,24 @@
 'use client';
 
-import { CircleAvatar, Text, TextField } from '@1d1s/design-system';
+import {
+  Button,
+  CircleAvatar,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Text,
+  TextField,
+} from '@1d1s/design-system';
 import { useLogout } from '@feature/auth/hooks/use-auth-mutations';
 import {
   useUpdateNickname,
   useUpdateProfileImage,
 } from '@feature/member/hooks/use-member-mutations';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
-import { Camera, ChevronLeft, LogOut } from 'lucide-react';
+import { Camera, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -18,6 +29,7 @@ export default function AccountSettingsPage(): React.ReactElement {
 
   const [nickname, setNickname] = useState('');
   const [profilePreview, setProfilePreview] = useState('');
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isInitialized = useRef(false);
 
@@ -56,33 +68,25 @@ export default function AccountSettingsPage(): React.ReactElement {
     updateNickname.mutate(trimmed);
   };
 
-  const handleLogout = (): void => {
+  const confirmLogout = (): void => {
     logout.mutate(undefined, {
       onSettled: () => {
+        setIsLogoutDialogOpen(false);
         router.replace('/login');
       },
     });
   };
 
   return (
-    <div className="min-h-screen w-full bg-white p-4">
-      <div className="mx-auto w-full max-w-[600px]">
-        <div className="mb-6 flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="flex items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-gray-700"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            돌아가기
-          </button>
+    <div className="flex min-h-screen w-full flex-col bg-white p-4">
+      <section className="rounded-3 w-full bg-white p-2">
+        <div className="flex items-start justify-between border-b border-gray-200 pb-5">
+          <Text size="display1" weight="bold" className="text-gray-900">
+            계정 설정
+          </Text>
         </div>
 
-        <Text size="display1" weight="bold" className="mb-6 text-gray-900">
-          계정 설정
-        </Text>
-
-        <div className="flex flex-col gap-3">
+        <div className="mt-6 flex flex-col gap-3">
           {/* 프로필 편집 */}
           <section className="rounded-4 border border-gray-200 bg-white">
             <div className="border-b border-gray-100 px-5 py-4">
@@ -185,7 +189,7 @@ export default function AccountSettingsPage(): React.ReactElement {
 
             <button
               type="button"
-              onClick={handleLogout}
+              onClick={() => setIsLogoutDialogOpen(true)}
               disabled={logout.isPending}
               className="flex w-full items-center gap-3 px-5 py-4 text-red-500 transition hover:bg-red-50 disabled:opacity-50"
             >
@@ -196,7 +200,39 @@ export default function AccountSettingsPage(): React.ReactElement {
             </button>
           </section>
         </div>
-      </div>
+      </section>
+
+      <Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+        <DialogContent className="gap-6 px-8 py-6 sm:max-w-[380px] sm:px-6">
+          <DialogHeader className="items-center text-center sm:text-center">
+            <DialogTitle>로그아웃 하시겠어요?</DialogTitle>
+          </DialogHeader>
+
+          <DialogDescription className="block w-full text-center">
+            현재 계정에서 로그아웃됩니다.
+          </DialogDescription>
+
+          <DialogFooter className="flex-row gap-2">
+            <Button
+              size="medium"
+              variant="ghost"
+              className="flex-1"
+              onClick={() => setIsLogoutDialogOpen(false)}
+              disabled={logout.isPending}
+            >
+              취소
+            </Button>
+            <Button
+              size="medium"
+              className="flex-1"
+              onClick={confirmLogout}
+              disabled={logout.isPending}
+            >
+              {logout.isPending ? '로그아웃 중...' : '로그아웃'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-export type JobType = 'STUDENT' | 'EMPLOYEE' | 'OTHER';
+export type JobType = 'STUDENT' | 'WORKER';
 export type GenderType = 'MALE' | 'FEMALE' | 'OTHER';
 export type CategoryType =
   | 'DEV'

@@ -19,8 +19,7 @@ export const SIGN_UP_OCCUPATION_OPTIONS: Array<{
   label: string;
 }> = [
   { value: 'STUDENT', label: '학생' },
-  { value: 'EMPLOYEE', label: '직장인' },
-  { value: 'OTHER', label: '기타' },
+  { value: 'WORKER', label: '직장인' },
 ];
 
 export const SIGN_UP_TOPIC_OPTIONS: Array<{

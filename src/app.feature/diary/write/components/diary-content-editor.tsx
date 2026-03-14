@@ -153,7 +153,7 @@ export function DiaryContentEditor({
         <div className="min-h-[420px] p-4">
           <EditorContent
             editor={editor}
-            className="prose prose-sm max-w-none text-gray-700 outline-none [&_.tiptap]:min-h-[380px] [&_.tiptap]:outline-none [&_.tiptap_img]:max-h-80 [&_.tiptap_img]:rounded-lg"
+            className="prose prose-sm max-w-none text-gray-700 outline-none [&_.tiptap]:min-h-[380px] [&_.tiptap]:outline-none [&_.tiptap_img]:max-h-80 [&_.tiptap_img]:rounded-lg [&_li]:mb-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
           />
         </div>
       </div>

@@ -48,3 +48,14 @@
   --text-4xl--line-height: 1;
   --text-5xl--line-height: 1;
 }
+
+@media (min-width: 1024px) {
+  :root {
+    --text-5xl: 1.75rem;   /* 32px → 28px */
+    --text-4xl: 1.5rem;    /* 28px → 24px */
+    --text-3xl: 1.25rem;   /* 24px → 20px */
+    --text-2xl: 1.125rem;  /* 20px → 18px */
+    --text-xl: 1rem;       /* 18px → 16px */
+    --text-lg: 0.875rem;   /* 16px → 14px */
+  }
+}

@@ -4,6 +4,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
+import { MEMBER_QUERY_KEYS } from '../../../member/consts/query-keys';
 import { CHALLENGE_QUERY_KEYS } from '../../board/consts/query-keys';
 import {
   CreateChallengeRequest,
@@ -34,6 +35,13 @@ export function useCreateChallenge(): UseMutationResult<
       queryClient.invalidateQueries({
         queryKey: CHALLENGE_QUERY_KEYS.all,
         predicate: (query) => query.queryKey.includes('random'),
+      });
+      // 내 정보 무효화
+      queryClient.invalidateQueries({
+        queryKey: MEMBER_QUERY_KEYS.myPage(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: MEMBER_QUERY_KEYS.sidebar(),
       });
     },
   });

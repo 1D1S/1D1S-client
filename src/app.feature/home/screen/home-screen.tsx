@@ -3,6 +3,7 @@
 import { BannerCarousel, PageWatermark } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { HOME_MAIN_BANNERS } from '@constants/consts/home-data';
+import { authStorage } from '@module/utils/auth';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -56,7 +57,7 @@ export default function HomeScreen(): React.ReactElement {
           />
         </div>
 
-        <div className="h-3" />
+        <div className="h-4" />
 
         {/* 버튼 영역 */}
         <HomeQuickActions onNavigate={(path) => router.push(path)} />
@@ -70,9 +71,13 @@ export default function HomeScreen(): React.ReactElement {
           isError={isChallengesError}
           errorMessage={challengesErrorMessage}
           onMoreClick={() => router.push('/challenge')}
-          onChallengeClick={(challengeId) =>
-            router.push(`/challenge/${challengeId}`)
-          }
+          onChallengeClick={(challengeId) => {
+            if (!authStorage.hasTokens()) {
+              setShowLoginDialog(true);
+              return;
+            }
+            router.push(`/challenge/${challengeId}`);
+          }}
         />
 
         <div className="h-12" />
@@ -85,7 +90,13 @@ export default function HomeScreen(): React.ReactElement {
           errorMessage={diariesErrorMessage}
           isLikePending={isLikePending}
           onMoreClick={() => router.push('/diary')}
-          onDiaryClick={(diaryId) => router.push(`/diary/${diaryId}`)}
+          onDiaryClick={(diaryId) => {
+            if (!authStorage.hasTokens()) {
+              setShowLoginDialog(true);
+              return;
+            }
+            router.push(`/diary/${diaryId}`);
+          }}
           onLikeToggle={onLikeToggle}
           onChallengeClick={(challengeId) =>
             router.push(

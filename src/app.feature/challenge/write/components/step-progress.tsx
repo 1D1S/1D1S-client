@@ -22,7 +22,7 @@ const StepIndicator = memo<StepIndicatorProps>(({ step, label, isActive }) => (
   <div className="flex flex-1 items-center justify-start gap-2">
     <div
       className={cn(
-        'inline-flex h-5 w-5 flex-none items-center justify-center rounded-full text-sm font-medium transition-colors duration-300',
+        'inline-flex h-4 w-4 flex-none items-center justify-center rounded-full text-xs font-medium transition-colors duration-300',
         isActive ? 'bg-main-900 text-white' : 'bg-gray-200 text-gray-500'
       )}
     >
@@ -59,7 +59,7 @@ const ProgressBar = memo<ProgressBarProps>(({ total, current }) => (
         <div
           key={idx}
           className={cn(
-            'mx-1 h-2.5 flex-1 rounded transition-colors duration-300 ease-in-out',
+            'mx-1 h-1.5 flex-1 rounded transition-colors duration-300 ease-in-out',
             step < current
               ? 'bg-main-900'
               : step === current

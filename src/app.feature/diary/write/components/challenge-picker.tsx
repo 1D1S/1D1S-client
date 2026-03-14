@@ -1,6 +1,12 @@
 'use client';
 
 import { ChallengeListItem, Text } from '@1d1s/design-system';
+import { getCategoryLabel } from '@constants/categories';
+import {
+  isChallengeEnded,
+  isChallengeOngoing,
+  isInfiniteChallengeEndDate,
+} from '@feature/challenge/board/utils/challenge-period';
 import { cn } from '@module/utils/cn';
 import { useEffect, useState } from 'react';
 
@@ -20,6 +26,9 @@ export function ChallengePicker({
   className = '',
 }: ChallengePickerProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
+  const ongoingChallenges = challenges.filter((challenge) =>
+    isChallengeOngoing(challenge.startDate, challenge.endDate)
+  );
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -30,6 +39,17 @@ export function ChallengePicker({
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const handleOverlayClick = (): void => setIsOpen(false);
 
@@ -63,39 +83,40 @@ export function ChallengePicker({
           <Text size="heading1" weight="bold" className="mb-4 block">
             챌린지 선택
           </Text>
-          <div className="flex max-h-[60vh] flex-col space-y-2 overflow-y-auto pr-2">
+          <div className="-mx-1 flex max-h-[60vh] flex-col space-y-2 overflow-y-auto px-1 py-1">
             {isLoading ? (
               <Text size="body1" className="py-4 text-gray-500">
                 불러오는 중...
               </Text>
-            ) : challenges.length === 0 ? (
+            ) : ongoingChallenges.length === 0 ? (
               <Text size="body1" className="py-4 text-gray-500">
-                참여 중인 챌린지가 없습니다.
+                작성 가능한 진행 중 챌린지가 없습니다.
               </Text>
             ) : (
-              challenges.map((challenge) => {
-                const now = new Date();
-                const start = new Date(challenge.startDate);
-                const end = new Date(challenge.endDate);
-                return (
-                  <ChallengeListItem
-                    key={challenge.challengeId}
-                    challengeTitle={challenge.title}
-                    challengeType={challenge.challengeType}
-                    challengeCategory={challenge.category}
-                    currentUserCount={challenge.participantCnt}
-                    maxUserCount={challenge.maxParticipantCnt}
-                    startDate={challenge.startDate}
-                    endDate={challenge.endDate}
-                    isOngoing={now >= start && now <= end}
-                    isEnded={now > end}
-                    onClick={() => {
-                      onSelect?.(challenge);
-                      setIsOpen(false);
-                    }}
-                  />
-                );
-              })
+              ongoingChallenges.map((challenge) => (
+                <ChallengeListItem
+                  key={challenge.challengeId}
+                  challengeTitle={challenge.title}
+                  challengeType={challenge.challengeType}
+                  challengeCategory={getCategoryLabel(challenge.category)}
+                  currentUserCount={challenge.participantCnt}
+                  maxUserCount={challenge.maxParticipantCnt}
+                  startDate={challenge.startDate}
+                  endDate={challenge.endDate}
+                  isInfiniteChallenge={isInfiniteChallengeEndDate(
+                    challenge.endDate
+                  )}
+                  isOngoing={isChallengeOngoing(
+                    challenge.startDate,
+                    challenge.endDate
+                  )}
+                  isEnded={isChallengeEnded(challenge.endDate)}
+                  onClick={() => {
+                    onSelect?.(challenge);
+                    setIsOpen(false);
+                  }}
+                />
+              ))
             )}
           </div>
         </div>

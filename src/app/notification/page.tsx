@@ -1,30 +1,38 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
-import { Bell, ChevronLeft } from 'lucide-react';
+import { authStorage } from '@module/utils/auth';
+import { Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useEffect, useSyncExternalStore } from 'react';
 
-export default function NotificationPage(): React.ReactElement {
+export default function NotificationPage(): React.ReactElement | null {
   const router = useRouter();
+  const hasMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const isLoggedIn = hasMounted && authStorage.hasTokens();
+
+  useEffect(() => {
+    if (hasMounted && !authStorage.hasTokens()) {
+      router.replace('/login');
+    }
+  }, [hasMounted, router]);
+
+  if (!isLoggedIn) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen w-full bg-white p-4">
-      <div className="mx-auto w-full max-w-[600px]">
-        <div className="mb-6 flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="flex items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-gray-700"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            돌아가기
-          </button>
+    <div className="flex min-h-screen w-full flex-col bg-white p-4">
+      <section className="rounded-3 w-full bg-white p-2">
+        <div className="flex items-start justify-between border-b border-gray-200 pb-5">
+          <Text size="display1" weight="bold" className="text-gray-900">
+            알림
+          </Text>
         </div>
-
-        <Text size="display1" weight="bold" className="mb-8 text-gray-900">
-          알림
-        </Text>
 
         <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
@@ -37,7 +45,7 @@ export default function NotificationPage(): React.ReactElement {
             알림 기능은 곧 업데이트될 예정입니다.
           </Text>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

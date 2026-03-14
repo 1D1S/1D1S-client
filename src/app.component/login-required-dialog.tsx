@@ -21,39 +21,39 @@ export function LoginRequiredDialog({
   open,
   onOpenChange,
   title = '로그인이 필요한 서비스입니다.',
-  description = '좋아요 기능은 로그인 후 이용할 수 있습니다.',
+  description = '로그인 후 이용할 수 있습니다.',
 }: LoginRequiredDialogProps): React.ReactElement {
   const router = useRouter();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-[380px] gap-6 p-6">
-        <DialogHeader className="items-center">
+      <DialogContent className="gap-6 px-8 py-6 sm:max-w-[380px] sm:px-6">
+        <DialogHeader className="items-center text-center sm:text-center">
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
 
-        <DialogDescription className="text-center">
+        <DialogDescription className="block w-full text-center">
           {description}
         </DialogDescription>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-col">
+        <DialogFooter className="flex-row gap-2">
           <Button
             size="medium"
-            className="w-full"
+            variant="ghost"
+            className="flex-1"
+            onClick={() => onOpenChange(false)}
+          >
+            닫기
+          </Button>
+          <Button
+            size="medium"
+            className="flex-1"
             onClick={() => {
               onOpenChange(false);
               router.push('/login');
             }}
           >
-            로그인 하러 가기
-          </Button>
-          <Button
-            size="medium"
-            variant="ghost"
-            className="w-full"
-            onClick={() => onOpenChange(false)}
-          >
-            닫기
+            로그인
           </Button>
         </DialogFooter>
       </DialogContent>

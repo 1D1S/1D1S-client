@@ -8,6 +8,8 @@ import {
   Streak,
   Text,
 } from '@1d1s/design-system';
+import { getCategoryLabel } from '@constants/categories';
+import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
 import { useMyDiaries } from '@feature/diary/board/hooks/use-diary-queries';
 import { DiaryItem } from '@feature/diary/board/type/diary';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
@@ -23,7 +25,7 @@ import {
   Trophy,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useEffect, useSyncExternalStore } from 'react';
 
 type DiaryEmotion = 'happy' | 'soso' | 'sad';
 type Feeling = 'HAPPY' | 'NORMAL' | 'SAD' | 'NONE';
@@ -94,7 +96,29 @@ function resolveDiaryImage(diary: DiaryItem): string {
   return '/images/default-card.png';
 }
 
-export default function MyPage(): React.ReactElement {
+export default function MyPage(): React.ReactElement | null {
+  const router = useRouter();
+  const hasMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const isLoggedIn = hasMounted && authStorage.hasTokens();
+
+  useEffect(() => {
+    if (hasMounted && !authStorage.hasTokens()) {
+      router.replace('/login');
+    }
+  }, [hasMounted, router]);
+
+  if (!isLoggedIn) {
+    return null;
+  }
+
+  return <MyPageContent />;
+}
+
+function MyPageContent(): React.ReactElement {
   const router = useRouter();
   const { data, isLoading } = useMyPage();
   const { data: myDiaries = [] } = useMyDiaries();
@@ -125,7 +149,9 @@ export default function MyPage(): React.ReactElement {
       user: nickname || '나',
       userImage: profileUrl || '/images/default-profile.png',
       challengeLabel:
-        diary.challenge?.title ?? diary.challenge?.category ?? '나의 일지',
+        diary.challenge?.title ||
+        getCategoryLabel(diary.challenge?.category) ||
+        '나의 일지',
       challengeId: diary.challenge?.challengeId,
       date: toRelativeDateLabel(diaryInfo?.createdAt),
       emotion: mapFeelingToEmotion(diaryInfo?.feeling ?? 'NONE'),
@@ -179,12 +205,12 @@ export default function MyPage(): React.ReactElement {
 
               <div className="mt-4 space-y-2">
                 <QuickActionItem
-                  icon={<PencilLine className="h-4 w-4" />}
+                  icon={<PencilLine className="h-5 w-5" />}
                   title="일지 작성하기"
                   onClick={() => router.push('/diary/create')}
                 />
                 <QuickActionItem
-                  icon={<Plus className="h-4 w-4" />}
+                  icon={<Plus className="h-5 w-5" />}
                   title="챌린지 만들기"
                   onClick={() => router.push('/challenge/create')}
                   tone="blue"
@@ -211,47 +237,47 @@ export default function MyPage(): React.ReactElement {
 
             <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
               <StatCard
-                icon={<Flame className="h-4 w-4" />}
+                icon={<Flame className="h-5 w-5" />}
                 title="현재 스트릭"
                 value={String(streak.currentStreak)}
                 unit="일"
               />
               <StatCard
-                icon={<Trophy className="h-4 w-4" />}
+                icon={<Trophy className="h-5 w-5" />}
                 title="최장 스트릭"
                 value={String(streak.maxStreak)}
                 unit="일"
               />
               <StatCard
-                icon={<FileText className="h-4 w-4" />}
+                icon={<FileText className="h-5 w-5" />}
                 title="전체 일지"
                 value={String(streak.totalDiaryCount)}
                 unit="개"
                 iconTone="text-purple-600"
               />
               <StatCard
-                icon={<Target className="h-4 w-4" />}
+                icon={<Target className="h-5 w-5" />}
                 title="전체 목표"
                 value={String(streak.totalGoalCount)}
                 unit="개"
                 iconTone="text-pink-600"
               />
               <StatCard
-                icon={<CheckCircle2 className="h-4 w-4" />}
+                icon={<CheckCircle2 className="h-5 w-5" />}
                 title="이번 달 일지"
                 value={String(streak.currentMonthDiaryCount)}
                 unit="개"
                 iconTone="text-emerald-600"
               />
               <StatCard
-                icon={<CheckCircle2 className="h-4 w-4" />}
+                icon={<CheckCircle2 className="h-5 w-5" />}
                 title="이번 달 목표"
                 value={String(streak.currentMonthGoalCount)}
                 unit="개"
                 iconTone="text-blue-600"
               />
               <StatCard
-                icon={<Target className="h-4 w-4" />}
+                icon={<Target className="h-5 w-5" />}
                 title="오늘의 목표"
                 value={String(streak.todayGoalCount)}
                 unit="개"
@@ -292,11 +318,14 @@ export default function MyPage(): React.ReactElement {
                         <DSChallengeCard
                           challengeTitle={ch.title}
                           challengeType={ch.challengeType}
-                          challengeCategory={ch.category}
+                          challengeCategory={getCategoryLabel(ch.category)}
                           currentUserCount={ch.participantCnt}
                           maxUserCount={ch.maxParticipantCnt}
                           startDate={ch.startDate}
                           endDate={ch.endDate}
+                          isInfiniteChallenge={isInfiniteChallengeEndDate(
+                            ch.endDate
+                          )}
                           isOngoing={now >= start && now <= end}
                           isEnded={now > end}
                           onClick={() =>
@@ -375,8 +404,12 @@ function StatCard({
 }): React.ReactElement {
   return (
     <article className="rounded-3 border border-gray-200 bg-white p-4">
-      <div className="flex items-start gap-2">
-        <span className={`mt-0.5 ${iconTone}`}>{icon}</span>
+      <div className="flex items-center gap-2.5">
+        <span
+          className={`flex h-5 w-5 shrink-0 items-center justify-center ${iconTone}`}
+        >
+          {icon}
+        </span>
         <Text size="body1" weight="medium" className="text-gray-600">
           {title}
         </Text>
@@ -415,7 +448,7 @@ function QuickActionItem({
     >
       <div className="flex items-center gap-3">
         <span
-          className={`flex h-9 w-9 items-center justify-center rounded-full ${iconClass}`}
+          className={`flex h-10 w-10 items-center justify-center rounded-full ${iconClass}`}
         >
           {icon}
         </span>
