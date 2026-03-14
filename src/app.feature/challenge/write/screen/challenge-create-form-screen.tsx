@@ -1,10 +1,17 @@
-import { Button } from '@1d1s/design-system';
+import {
+  Button,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+} from '@1d1s/design-system';
 import { ChallengeCreateDialog } from '@feature/challenge/write/components/challenge-create-dialog';
 import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/components/challenge-create-success-dialog';
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
 import { useStepValidation } from '@feature/challenge/write/hooks/use-step-validation';
 import { add, format } from 'date-fns';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
@@ -48,7 +55,8 @@ export function ChallengeCreateFormScreen({
   previousStep(): void;
 }): React.ReactElement {
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
-  const router = useRouter();
+  const [createdChallengeId, setCreatedChallengeId] = useState<number>();
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
 
   const renderStep = (): React.ReactElement => {
     switch (step) {
@@ -109,13 +117,14 @@ export function ChallengeCreateFormScreen({
     createChallenge.mutate(formatFormValues(values), {
       onSuccess: (data) => {
         console.log('createChallenge 성공:', data);
-        router.push(`/challenge/${data.challengeId}`);
+        setCreatedChallengeId(data.challengeId);
+        setIsSuccessOpen(true);
       },
       onError: (error) => {
         console.error('createChallenge 실패:', error);
+        setIsErrorOpen(true);
       },
     });
-    setIsSuccessOpen(true);
   };
 
   return (
@@ -163,7 +172,27 @@ export function ChallengeCreateFormScreen({
       <ChallengeCreateSuccessDialog
         open={isSuccessOpen}
         onOpenChange={setIsSuccessOpen}
+        challengeId={createdChallengeId}
       />
+      <Dialog open={isErrorOpen} onOpenChange={setIsErrorOpen}>
+        <DialogContent className="gap-4 p-6 sm:max-w-[360px]">
+          <DialogTitle className="text-center font-bold text-black">
+            문제가 발생했습니다
+          </DialogTitle>
+          <DialogDescription className="text-center text-gray-500">
+            챌린지 생성 중 오류가 발생했습니다.
+            <br />
+            잠시 후 다시 시도해주세요.
+          </DialogDescription>
+          <DialogFooter className="mt-2">
+            <DialogClose asChild>
+              <Button variant="default" type="button" className="w-full">
+                확인
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }

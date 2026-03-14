@@ -18,7 +18,7 @@ export const challengeCreateFormSchema = z
     ),
     description: z
       .string()
-      .max(500, '챌린지 설명은 500자 이하로 입력해주세요.')
+      .max(200, '챌린지 설명은 200자 이하로 입력해주세요.')
       .optional(),
     periodType: z.enum(['ENDLESS', 'LIMITED']),
     period: z.enum(['7', '14', '30', '60', '365', 'etc']).optional(),

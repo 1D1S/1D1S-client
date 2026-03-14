@@ -10,6 +10,7 @@ interface DiaryCreateDatePickerProps {
   value: Date | undefined;
   onChange(date: Date | undefined): void;
   disabledDateKeys: string[];
+  challengeStartDate?: string;
   placeholder?: string;
   className?: string;
 }
@@ -48,6 +49,7 @@ export function DiaryCreateDatePicker({
   value,
   onChange,
   disabledDateKeys,
+  challengeStartDate,
   placeholder = '날짜를 선택해주세요',
   className,
 }: DiaryCreateDatePickerProps): React.ReactElement {
@@ -107,10 +109,17 @@ export function DiaryCreateDatePicker({
                 setOpen(false);
               }
             }}
-            disabled={(date) =>
-              !isWithinRecentThreeDays(date) ||
-              disabledDateKeySet.has(formatDateKey(date))
-            }
+            disabled={(date) => {
+              if (!isWithinRecentThreeDays(date)) return true;
+              if (challengeStartDate) {
+                const start = new Date(challengeStartDate);
+                start.setHours(0, 0, 0, 0);
+                const target = new Date(date);
+                target.setHours(0, 0, 0, 0);
+                if (target < start) return true;
+              }
+              return disabledDateKeySet.has(formatDateKey(date));
+            }}
             initialFocus
           />
         </Popover.Content>

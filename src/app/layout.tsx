@@ -23,7 +23,7 @@ function resolveSiteUrl(): URL {
 const SITE_URL = resolveSiteUrl();
 const SITE_TITLE = '1Day 1Streak';
 const SITE_DESCRIPTION = '매일 하나의 챌린지로 꾸준함을 기록하는 1Day 1Streak';
-const OG_IMAGE_PATH = '/images/logo-main-700.png';
+const OG_IMAGE_PATH = '/images/open-graph.png';
 
 export const metadata: Metadata = {
   metadataBase: SITE_URL,

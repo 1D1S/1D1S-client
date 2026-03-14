@@ -111,11 +111,11 @@ interface DiaryDetailViewData {
 function feelingToEmoji(feeling: Feeling): string {
   switch (feeling) {
     case 'HAPPY':
-      return '🙂';
+      return '😎';
     case 'SAD':
-      return '🙁';
+      return '🥲';
     case 'NORMAL':
-      return '😐';
+      return '🙂';
     case 'NONE':
     default:
       return '📝';
@@ -334,7 +334,21 @@ function DiaryDetailView({
   );
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isImageOpen, setIsImageOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isImageOpen) {
+      return;
+    }
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
+        setIsImageOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isImageOpen]);
 
   useEffect(() => {
     if (!isMenuOpen) {
@@ -375,7 +389,7 @@ function DiaryDetailView({
               <Text size="display1" weight="bold" className="text-gray-900">
                 {diaryData.title}
               </Text>
-              <span className="bg-main-200 flex h-7 w-7 items-center justify-center rounded-full">
+              <span className="text-2xl leading-none">
                 {diaryData.feelingEmoji}
               </span>
             </div>
@@ -542,14 +556,45 @@ function DiaryDetailView({
               )}
 
               {diaryData.contentThumbnailUrl ? (
-                <div className="relative h-48 w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-100 md:h-56">
-                  <Image
-                    src={diaryData.contentThumbnailUrl}
-                    alt="일지 썸네일"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
+                <>
+                  <button
+                    type="button"
+                    className="relative h-48 w-full cursor-zoom-in overflow-hidden rounded-xl border border-gray-200 bg-gray-100 md:h-56"
+                    onClick={() => setIsImageOpen(true)}
+                  >
+                    <Image
+                      src={diaryData.contentThumbnailUrl}
+                      alt="일지 썸네일"
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+
+                  {isImageOpen ? (
+                    <div
+                      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+                      onClick={() => setIsImageOpen(false)}
+                    >
+                      <div
+                        className="relative max-h-full max-w-full"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          className="absolute -top-10 right-0 text-white/80 hover:text-white"
+                          onClick={() => setIsImageOpen(false)}
+                        >
+                          ✕
+                        </button>
+                        <img
+                          src={diaryData.contentThumbnailUrl}
+                          alt="일지 썸네일 원본"
+                          className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain"
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                </>
               ) : null}
             </div>
 

@@ -112,6 +112,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
             achievedDate={achievedDate}
             onAchievedDateChange={handleAchievedDateChange}
             disabledAchievedDateKeys={disabledAchievedDateKeys}
+            challengeStartDate={selectedChallenge?.startDate}
             selectedMood={selectedMood}
             onMoodChange={setSelectedMood}
             isPublic={isPublic}

@@ -19,6 +19,7 @@ import React, {
   useSyncExternalStore,
 } from 'react';
 
+import { BetaButton } from '../beta-button';
 import { AppLayoutProvider } from './app-layout-context';
 
 const HEADER_HIDDEN_ROUTES = [
@@ -39,8 +40,8 @@ const RIGHT_SIDEBAR_HIDDEN_ROUTES = [
 
 const APP_HEADER_NAV_ITEMS = [
   { key: 'home', label: '홈' },
-  { key: 'explore', label: '탐색' },
-  { key: 'community', label: '커뮤니티' },
+  { key: 'explore', label: '챌린지' },
+  { key: 'community', label: '일지' },
 ] as const;
 
 const APP_HEADER_ROUTE_BY_KEY: Record<string, string> = {
@@ -465,6 +466,8 @@ export default function AppLayoutShell({
           </div>
         ) : null}
       </div>
+
+      <BetaButton />
     </AppLayoutProvider>
   );
 }

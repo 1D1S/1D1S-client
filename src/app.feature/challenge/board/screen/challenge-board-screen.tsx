@@ -10,6 +10,7 @@ import {
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
 import { authStorage } from '@module/utils/auth';
+import { X } from 'lucide-react';
 import {
   usePathname,
   useRouter,
@@ -102,6 +103,11 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   const handleSearch = (): void => {
     setQuery(inputValue);
   };
+
+  const handleClear = (): void => {
+    setInputValue('');
+    setQuery('');
+  };
   // const [currentPage, setCurrentPage] = useState(1);
 
   // useChallengeList 무한 스크롤 데이터
@@ -168,24 +174,35 @@ export default function ChallengeBoardScreen(): React.ReactElement {
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex w-full max-w-[560px] gap-2">
-            <TextField
-              variant="search"
-              className="w-full"
-              placeholder="챌린지 검색 (이름, 설명)"
-              value={inputValue}
-              onChange={(event) => {
-                setInputValue(event.target.value);
-              }}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  handleSearch();
-                }
-              }}
-            />
+            <div className="relative w-full">
+              <TextField
+                variant="search"
+                className="w-full pr-8"
+                placeholder="챌린지 검색 (이름, 설명)"
+                value={inputValue}
+                onChange={(event) => {
+                  setInputValue(event.target.value);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
+              />
+              {inputValue ? (
+                <button
+                  type="button"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={handleClear}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              ) : null}
+            </div>
             <Button
               size="medium"
               onClick={handleSearch}
-              className="whitespace-nowrap"
+              className="h-10 whitespace-nowrap"
             >
               검색
             </Button>

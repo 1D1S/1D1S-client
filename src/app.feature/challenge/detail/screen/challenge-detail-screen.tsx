@@ -50,6 +50,7 @@ import {
   ParticipantStatus,
 } from '../../board/type/challenge';
 import { isChallengeOngoing } from '../../board/utils/challenge-period';
+import { ExpandableText } from '../components/expandable-text';
 import { CHALLENGE_DETAIL_WEEK_LABELS } from '../consts/challenge-detail-data';
 import { useChallengeDiaryList } from '../hooks/use-challenge-diary-queries';
 import {
@@ -843,14 +844,7 @@ export function ChallengeDetailScreen({
             >
               {summary.title}
             </Text>
-            <Text
-              as="p"
-              size="body1"
-              weight="regular"
-              className="break-keep whitespace-pre-wrap text-gray-600"
-            >
-              {detail.description}
-            </Text>
+            <ExpandableText>{detail.description}</ExpandableText>
           </div>
         </section>
 

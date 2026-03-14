@@ -263,7 +263,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   const {
     data: myDiaries = [],
     isLoading: isMyDiariesLoading,
-    isSuccess: isMyDiariesLoaded,
   } = useAllDiaries({
     enabled: requestedChallengeId !== null,
   });
@@ -398,8 +397,10 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   const isMissingChallengeDialogOpen =
     !isEditMode &&
     requestedChallengeId !== null &&
-    isMyDiariesLoaded &&
-    !requestedChallengeFromMyDiaries &&
+    !isMemberChallengesLoading &&
+    !memberChallenges.some(
+      (challenge) => challenge.challengeId === requestedChallengeId
+    ) &&
     !isMissingChallengeDialogDismissed;
 
   useEffect(

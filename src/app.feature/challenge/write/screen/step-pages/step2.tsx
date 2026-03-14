@@ -1,10 +1,6 @@
-import {
-  CheckContainer,
-  cn,
-  DatePicker,
-  Text,
-  TextField,
-} from '@1d1s/design-system';
+import { Calendar, CheckContainer, cn, Text, TextField } from '@1d1s/design-system';
+import * as Popover from '@radix-ui/react-popover';
+import { format } from 'date-fns';
 import { CalendarDays, Infinity, Timer } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 
@@ -218,11 +214,43 @@ export function Step2(): React.ReactElement {
               render={({ field }) => (
                 <FormItem>
                   <div className="w-full md:w-[280px]">
-                    <DatePicker
-                      value={field.value}
-                      onChange={field.onChange}
-                      className="hover:cursor-pointer"
-                    />
+                    <Popover.Root>
+                      <Popover.Trigger asChild>
+                        <button
+                          type="button"
+                          className={cn(
+                            'rounded-3 flex h-10 w-full items-center justify-between border border-gray-300 bg-white px-3 text-left text-sm hover:cursor-pointer',
+                            !field.value && 'text-gray-400'
+                          )}
+                        >
+                          {field.value
+                            ? format(field.value, 'yyyy/MM/dd')
+                            : 'YYYY/MM/DD'}
+                          <CalendarDays className="h-4 w-4 shrink-0 text-gray-400" />
+                        </button>
+                      </Popover.Trigger>
+                      <Popover.Portal>
+                        <Popover.Content
+                          align="start"
+                          sideOffset={8}
+                          className={cn(
+                            'rounded-4 z-50 w-auto border border-gray-300 bg-white p-2 text-gray-900',
+                            'shadow-[0_10px_20px_rgba(34,34,34,0.12)] outline-none',
+                            'data-[state=open]:animate-in data-[state=closed]:animate-out',
+                            'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+                            'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95'
+                          )}
+                        >
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={{ before: new Date() }}
+                            initialFocus
+                          />
+                        </Popover.Content>
+                      </Popover.Portal>
+                    </Popover.Root>
                   </div>
                   <FormMessage />
                 </FormItem>

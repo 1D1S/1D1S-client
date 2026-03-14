@@ -9,6 +9,7 @@ interface DiaryCreateFinishSectionProps {
   achievedDate: Date | undefined;
   onAchievedDateChange(date: Date | undefined): void;
   disabledAchievedDateKeys: string[];
+  challengeStartDate?: string;
   selectedMood: Feeling;
   onMoodChange(mood: Feeling): void;
   isPublic: boolean;
@@ -19,6 +20,7 @@ export function DiaryCreateFinishSection({
   achievedDate,
   onAchievedDateChange,
   disabledAchievedDateKeys,
+  challengeStartDate,
   selectedMood,
   onMoodChange,
   isPublic,
@@ -39,6 +41,7 @@ export function DiaryCreateFinishSection({
             value={achievedDate}
             onChange={onAchievedDateChange}
             disabledDateKeys={disabledAchievedDateKeys}
+            challengeStartDate={challengeStartDate}
             placeholder="날짜를 선택해주세요"
           />
           <Text size="caption1" weight="regular" className="mt-2 text-gray-500">
