@@ -3,6 +3,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+function isWholeNumberString(value?: string): boolean {
+  return Boolean(value && /^\d+$/.test(value));
+}
+
 export const challengeCreateFormSchema = z
   .object({
     title: z
@@ -57,7 +61,9 @@ export const challengeCreateFormSchema = z
         const numberValue = Number(data.periodNumber);
         if (
           !data.periodNumber ||
+          !isWholeNumberString(data.periodNumber) ||
           isNaN(numberValue) ||
+          !Number.isInteger(numberValue) ||
           numberValue < 1 ||
           numberValue > 730
         ) {
@@ -81,7 +87,9 @@ export const challengeCreateFormSchema = z
         const numberValue = Number(data.memberCountNumber);
         if (
           !data.memberCountNumber ||
+          !isWholeNumberString(data.memberCountNumber) ||
           isNaN(numberValue) ||
+          !Number.isInteger(numberValue) ||
           numberValue < 1 ||
           numberValue > 50
         ) {

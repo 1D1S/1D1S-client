@@ -9,6 +9,7 @@ import {
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/use-diary-mutations';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
+import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
 import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import { ArrowLeft } from 'lucide-react';
@@ -25,10 +26,6 @@ interface ChallengeDiaryListScreenProps {
   id: string;
 }
 
-const relativeTimeFormatter = new Intl.RelativeTimeFormat('ko', {
-  numeric: 'auto',
-});
-
 function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
   switch (feeling) {
     case 'HAPPY':
@@ -40,32 +37,6 @@ function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
     default:
       return 'soso';
   }
-}
-
-function toRelativeDateLabel(createdAt: string): string {
-  if (!createdAt) {
-    return '방금 전';
-  }
-
-  const targetDate = new Date(createdAt);
-  if (Number.isNaN(targetDate.getTime())) {
-    return '방금 전';
-  }
-
-  const diffMinutes = Math.round((targetDate.getTime() - Date.now()) / 60000);
-  const absMinutes = Math.abs(diffMinutes);
-
-  if (absMinutes < 60) {
-    return relativeTimeFormatter.format(diffMinutes, 'minute');
-  }
-
-  const diffHours = Math.round(diffMinutes / 60);
-  if (Math.abs(diffHours) < 24) {
-    return relativeTimeFormatter.format(diffHours, 'hour');
-  }
-
-  const diffDays = Math.round(diffHours / 24);
-  return relativeTimeFormatter.format(diffDays, 'day');
 }
 
 export function ChallengeDiaryListScreen({
@@ -178,9 +149,9 @@ export function ChallengeDiaryListScreen({
                     router.push(`/challenge/${targetChallengeId}`);
                   }
                 }}
-                date={toRelativeDateLabel(
-                  diary.diaryInfo?.challengedDate ??
-                    diary.diaryInfo?.createdAt ??
+                date={getRelativeDiaryDateLabel(
+                  diary.diaryInfo?.createdAt ??
+                    diary.diaryInfo?.challengedDate ??
                     ''
                 )}
                 emotion={mapFeelingToEmotion(

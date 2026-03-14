@@ -32,6 +32,25 @@ function formatDateKey(date: Date): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function parseDateValue(value?: string): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  const matchedDate = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (matchedDate) {
+    const [, year, month, day] = matchedDate;
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  return parsedDate;
+}
+
 function isWithinRecentThreeDays(date: Date): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -114,12 +133,14 @@ export function DiaryCreateDatePicker({
                 return true;
               }
               if (challengeStartDate) {
-                const start = new Date(challengeStartDate);
-                start.setHours(0, 0, 0, 0);
-                const target = new Date(date);
-                target.setHours(0, 0, 0, 0);
-                if (target < start) {
-                  return true;
+                const start = parseDateValue(challengeStartDate);
+                if (start) {
+                  start.setHours(0, 0, 0, 0);
+                  const target = new Date(date);
+                  target.setHours(0, 0, 0, 0);
+                  if (target < start) {
+                    return true;
+                  }
                 }
               }
               return disabledDateKeySet.has(formatDateKey(date));

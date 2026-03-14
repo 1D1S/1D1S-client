@@ -2,6 +2,7 @@ import { Calendar, CheckContainer, cn, Text, TextField } from '@1d1s/design-syst
 import * as Popover from '@radix-ui/react-popover';
 import { format } from 'date-fns';
 import { CalendarDays, Infinity, Timer } from 'lucide-react';
+import type { ChangeEvent } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import {
@@ -192,9 +193,16 @@ export function Step2(): React.ReactElement {
                     <FormControl>
                       <TextField
                         id="periodNumber"
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         className="w-full md:w-[240px]"
                         {...field}
+                        value={field.value ?? ''}
+                        maxLength={3}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                          field.onChange(event.target.value.replace(/\D/g, ''));
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
