@@ -7,10 +7,19 @@ import {
   Text,
   TextField,
 } from '@1d1s/design-system';
-import { useRouter } from 'next/navigation';
+import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { getCategoryLabel } from '@constants/categories';
+import { authStorage } from '@module/utils/auth';
+import { X } from 'lucide-react';
+import {
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useChallengeList } from '../hooks/use-challenge-queries';
+import { isInfiniteChallengeEndDate } from '../utils/challenge-period';
 
 // async function fetchChallengeList() {
 //   const response = await apiClient('/')
@@ -55,12 +64,49 @@ function useInViewObserver(): {
 
 export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isLoginRequired =
+    searchParams.get('loginRequired') === 'true';
+  const [showLoginDialog, setShowLoginDialog] = useState(isLoginRequired);
+  const [loginDialogDescription, setLoginDialogDescription] = useState(
+    isLoginRequired
+      ? '챌린지 상세는 로그인 후 이용할 수 있습니다.'
+      : '로그인 후 이용할 수 있습니다.'
+  );
   const [inputValue, setInputValue] = useState('');
+
+  useEffect(() => {
+    if (!isLoginRequired) {
+      return;
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('loginRequired');
+    const query = params.toString();
+    router.replace(
+      query ? `${pathname}?${query}` : pathname,
+      { scroll: false }
+    );
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [query, setQuery] = useState('');
+
+  const requireAuth = (description: string, action: () => void): void => {
+    if (!authStorage.hasTokens()) {
+      setLoginDialogDescription(description);
+      setShowLoginDialog(true);
+      return;
+    }
+    action();
+  };
   // const [selectedCategory, setSelectedCategory] = useState<ChallengeCategory>('ALL');
 
   const handleSearch = (): void => {
     setQuery(inputValue);
+  };
+
+  const handleClear = (): void => {
+    setInputValue('');
+    setQuery('');
   };
   // const [currentPage, setCurrentPage] = useState(1);
 
@@ -109,6 +155,11 @@ export default function ChallengeBoardScreen(): React.ReactElement {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-white p-4">
+      <LoginRequiredDialog
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+        description={loginDialogDescription}
+      />
       <section className="rounded-3 w-full bg-white p-2">
         <div className="flex items-start justify-between border-b border-gray-200 pb-5">
           <div className="flex flex-col gap-2">
@@ -123,31 +174,46 @@ export default function ChallengeBoardScreen(): React.ReactElement {
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex w-full max-w-[560px] gap-2">
-            <TextField
-              variant="search"
-              className="w-full"
-              placeholder="챌린지 검색 (이름, 설명)"
-              value={inputValue}
-              onChange={(event) => {
-                setInputValue(event.target.value);
-              }}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  handleSearch();
-                }
-              }}
-            />
+            <div className="relative w-full">
+              <TextField
+                variant="search"
+                className="w-full pr-8"
+                placeholder="챌린지 검색 (이름, 설명)"
+                value={inputValue}
+                onChange={(event) => {
+                  setInputValue(event.target.value);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
+              />
+              {inputValue ? (
+                <button
+                  type="button"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={handleClear}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              ) : null}
+            </div>
             <Button
               size="medium"
               onClick={handleSearch}
-              className="whitespace-nowrap"
+              className="h-10 whitespace-nowrap"
             >
               검색
             </Button>
           </div>
           <Button
             size="medium"
-            onClick={() => router.push('/challenge/create')}
+            onClick={() =>
+              requireAuth('챌린지 생성은 로그인 후 이용할 수 있습니다.', () =>
+                router.push('/challenge/create')
+              )
+            }
             className="whitespace-nowrap"
           >
             <span className="flex items-center gap-1">
@@ -183,16 +249,22 @@ export default function ChallengeBoardScreen(): React.ReactElement {
                 <ChallengeCard
                   challengeTitle={challenge.title}
                   challengeType={formatChallengeType(challenge.challengeType)}
-                  challengeCategory={challenge.category}
+                  challengeCategory={getCategoryLabel(challenge.category)}
                   currentUserCount={challenge.participantCnt}
                   maxUserCount={challenge.maxParticipantCnt}
                   startDate={challenge.startDate}
                   endDate={challenge.endDate}
+                  isInfiniteChallenge={isInfiniteChallengeEndDate(
+                    challenge.endDate
+                  )}
                   isOngoing={/*challenge.status === 'closingSoon'*/ true}
                   isEnded={/*challenge.status === 'ended'*/ false}
                   className="h-full"
                   onClick={() =>
-                    router.push(`/challenge/${challenge.challengeId}`)
+                    requireAuth(
+                      '챌린지 상세는 로그인 후 이용할 수 있습니다.',
+                      () => router.push(`/challenge/${challenge.challengeId}`)
+                    )
                   }
                 />
               </div>

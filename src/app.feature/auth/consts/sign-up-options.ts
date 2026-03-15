@@ -11,7 +11,7 @@ export const SIGN_UP_GENDER_OPTIONS: Array<{
 }> = [
   { value: 'MALE', label: '남성' },
   { value: 'FEMALE', label: '여성' },
-  { value: 'OTHER', label: '기타' },
+  { value: 'ETC', label: '기타' },
 ];
 
 export const SIGN_UP_OCCUPATION_OPTIONS: Array<{
@@ -19,8 +19,7 @@ export const SIGN_UP_OCCUPATION_OPTIONS: Array<{
   label: string;
 }> = [
   { value: 'STUDENT', label: '학생' },
-  { value: 'EMPLOYEE', label: '직장인' },
-  { value: 'OTHER', label: '기타' },
+  { value: 'WORKER', label: '직장인' },
 ];
 
 export const SIGN_UP_TOPIC_OPTIONS: Array<{

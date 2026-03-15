@@ -2,16 +2,25 @@
 
 import { DiaryCard, Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { getCategoryLabel } from '@constants/categories';
 import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import {
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   useLikeDiary,
   useUnlikeDiary,
 } from '../../detail/hooks/use-diary-mutations';
+import {
+  getDateTimestamp,
+  getRelativeDiaryDateLabel,
+} from '../../shared/utils/diary-relative-time';
 import { useDiaryList } from '../hooks/use-diary-queries';
 import { type DiaryItem, Feeling } from '../type/diary';
 
@@ -21,10 +30,6 @@ type DiaryItemWithAliases = DiaryItem & {
   author?: DiaryItem['authorInfoDto'] | null;
   diaryInfo?: DiaryItem['diaryInfoDto'] | null;
 };
-
-const relativeTimeFormatter = new Intl.RelativeTimeFormat('ko', {
-  numeric: 'auto',
-});
 
 function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
   switch (feeling) {
@@ -37,32 +42,6 @@ function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
     default:
       return 'soso';
   }
-}
-
-function toRelativeDateLabel(createdAt: string): string {
-  if (!createdAt) {
-    return '방금 전';
-  }
-
-  const targetDate = new Date(createdAt);
-  if (Number.isNaN(targetDate.getTime())) {
-    return '방금 전';
-  }
-
-  const diffMinutes = Math.round((targetDate.getTime() - Date.now()) / 60000);
-  const absMinutes = Math.abs(diffMinutes);
-
-  if (absMinutes < 60) {
-    return relativeTimeFormatter.format(diffMinutes, 'minute');
-  }
-
-  const diffHours = Math.round(diffMinutes / 60);
-  if (Math.abs(diffHours) < 24) {
-    return relativeTimeFormatter.format(diffHours, 'hour');
-  }
-
-  const diffDays = Math.round(diffHours / 24);
-  return relativeTimeFormatter.format(diffDays, 'day');
 }
 
 function sortDiaries(items: DiaryItem[], sortMode: SortMode): DiaryItem[] {
@@ -87,12 +66,12 @@ function sortDiaries(items: DiaryItem[], sortMode: SortMode): DiaryItem[] {
       rightDiaryWithAliases.diaryInfoDto ??
       rightDiaryWithAliases.diaryInfo ??
       null;
-    const leftDiaryTime = new Date(
+    const leftDiaryTime = getDateTimestamp(
       leftDiaryInfo?.createdAt || leftDiaryInfo?.challengedDate || ''
-    ).getTime();
-    const rightDiaryTime = new Date(
+    );
+    const rightDiaryTime = getDateTimestamp(
       rightDiaryInfo?.createdAt || rightDiaryInfo?.challengedDate || ''
-    ).getTime();
+    );
 
     return rightDiaryTime - leftDiaryTime;
   });
@@ -157,8 +136,31 @@ function useInViewObserver(): {
 
 export default function DiaryListScreen(): React.ReactElement {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isLoginRequired =
+    searchParams.get('loginRequired') === 'true';
   const [sortMode] = useState<SortMode>('latest');
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(isLoginRequired);
+  const [loginDialogDescription, setLoginDialogDescription] = useState(
+    isLoginRequired
+      ? '일지 상세는 로그인 후 이용할 수 있습니다.'
+      : '로그인 후 이용할 수 있습니다.'
+  );
+
+  useEffect(() => {
+    if (!isLoginRequired) {
+      return;
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('loginRequired');
+    const query = params.toString();
+    router.replace(
+      query ? `${pathname}?${query}` : pathname,
+      { scroll: false }
+    );
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
   const {
@@ -196,8 +198,18 @@ export default function DiaryListScreen(): React.ReactElement {
   );
   const hasLoadedDiaries = sortedDiaries.length > 0;
 
+  const handleCardClick = (id: number): void => {
+    if (!authStorage.hasTokens()) {
+      setLoginDialogDescription('일지 상세는 로그인 후 이용할 수 있습니다.');
+      setShowLoginDialog(true);
+      return;
+    }
+    router.push(`/diary/${id}`);
+  };
+
   const handleLikeToggle = (diary: DiaryItem): void => {
     if (!authStorage.hasTokens()) {
+      setLoginDialogDescription('좋아요 기능은 로그인 후 이용할 수 있습니다.');
       setShowLoginDialog(true);
       return;
     }
@@ -219,6 +231,7 @@ export default function DiaryListScreen(): React.ReactElement {
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}
+        description={loginDialogDescription}
       />
       <section className="rounded-3 w-full bg-white p-2">
         <div className="flex items-start justify-between border-b border-gray-200 pb-5">
@@ -288,8 +301,8 @@ export default function DiaryListScreen(): React.ReactElement {
                         '/images/default-profile.png'
                       }
                       challengeLabel={
-                        item.challenge?.title ??
-                        item.challenge?.category ??
+                        item.challenge?.title ||
+                        getCategoryLabel(item.challenge?.category) ||
                         '챌린지'
                       }
                       onChallengeClick={() =>
@@ -299,12 +312,12 @@ export default function DiaryListScreen(): React.ReactElement {
                             : '/challenge'
                         )
                       }
-                      date={toRelativeDateLabel(diaryInfo?.createdAt ?? '')}
+                      date={getRelativeDiaryDateLabel(diaryInfo?.createdAt ?? '')}
                       emotion={mapFeelingToEmotion(
                         diaryInfo?.feeling ?? 'NONE'
                       )}
                       onLikeToggle={() => handleLikeToggle(item)}
-                      onClick={() => router.push(`/diary/${item.id}`)}
+                      onClick={() => handleCardClick(item.id)}
                     />
                   </motion.div>
                 );

@@ -3,6 +3,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+function isWholeNumberString(value?: string): boolean {
+  return Boolean(value && /^\d+$/.test(value));
+}
+
 export const challengeCreateFormSchema = z
   .object({
     title: z
@@ -18,27 +22,15 @@ export const challengeCreateFormSchema = z
     ),
     description: z
       .string()
-      .max(500, '챌린지 설명은 500자 이하로 입력해주세요.')
+      .max(200, '챌린지 설명은 200자 이하로 입력해주세요.')
       .optional(),
     periodType: z.enum(['ENDLESS', 'LIMITED']),
     period: z.enum(['7', '14', '30', '60', '365', 'etc']).optional(),
-    periodNumber: z.string().refine(
-      (val) => {
-        const numberValue = Number(val);
-        return !isNaN(numberValue) && numberValue >= 1 && numberValue <= 730;
-      },
-      { message: '1일부터 730일 사이의 숫자를 입력해주세요.' }
-    ),
+    periodNumber: z.string().optional(),
     startDate: z.date().optional(),
     participationType: z.enum(['INDIVIDUAL', 'GROUP']),
     memberCount: z.enum(['2', '5', '10', 'etc']).optional(),
-    memberCountNumber: z.string().refine(
-      (val) => {
-        const numberValue = Number(val);
-        return !isNaN(numberValue) && numberValue >= 1 && numberValue <= 50;
-      },
-      { message: '1명부터 50명 사이의 숫자를 입력해주세요.' }
-    ),
+    memberCountNumber: z.string().optional(),
     goalType: z.enum(['FIXED', 'FLEXIBLE']),
     goals: z.array(
       z.object({
@@ -65,6 +57,23 @@ export const challengeCreateFormSchema = z
           message: '시작일이 선택되지 않았습니다.',
         });
       }
+      if (data.period === 'etc') {
+        const numberValue = Number(data.periodNumber);
+        if (
+          !data.periodNumber ||
+          !isWholeNumberString(data.periodNumber) ||
+          isNaN(numberValue) ||
+          !Number.isInteger(numberValue) ||
+          numberValue < 1 ||
+          numberValue > 730
+        ) {
+          ctx.addIssue({
+            path: ['periodNumber'],
+            code: z.ZodIssueCode.custom,
+            message: '1일부터 730일 사이의 숫자를 입력해주세요.',
+          });
+        }
+      }
     }
     if (data.participationType === 'GROUP') {
       if (!data.memberCount) {
@@ -73,6 +82,23 @@ export const challengeCreateFormSchema = z
           code: z.ZodIssueCode.custom,
           message: '챌린지 인원이 선택되지 않았습니다.',
         });
+      }
+      if (data.memberCount === 'etc') {
+        const numberValue = Number(data.memberCountNumber);
+        if (
+          !data.memberCountNumber ||
+          !isWholeNumberString(data.memberCountNumber) ||
+          isNaN(numberValue) ||
+          !Number.isInteger(numberValue) ||
+          numberValue < 1 ||
+          numberValue > 50
+        ) {
+          ctx.addIssue({
+            path: ['memberCountNumber'],
+            code: z.ZodIssueCode.custom,
+            message: '1명부터 50명 사이의 숫자를 입력해주세요.',
+          });
+        }
       }
     }
     if (data.goals.length === 0) {

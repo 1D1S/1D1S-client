@@ -23,11 +23,7 @@ export function useUpdateNickname(): UseMutationResult<void, Error, string> {
   });
 }
 
-export function useUpdateProfileImage(): UseMutationResult<
-  { profileUrl: string },
-  Error,
-  File
-> {
+export function useUpdateProfileImage(): UseMutationResult<void, Error, File> {
   const queryClient = useQueryClient();
 
   return useMutation({

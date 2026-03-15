@@ -3,8 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-const GENDER_VALUES = ['MALE', 'FEMALE', 'OTHER'] as const;
-const JOB_VALUES = ['STUDENT', 'EMPLOYEE', 'OTHER'] as const;
+const GENDER_VALUES = ['MALE', 'FEMALE', 'ETC'] as const;
+const JOB_VALUES = ['STUDENT', 'WORKER'] as const;
 const TOPIC_VALUES = [
   'DEV',
   'EXERCISE',
@@ -18,8 +18,13 @@ const TOPIC_VALUES = [
 export const signupFormSchema = z.object({
   nickname: z
     .string()
-    .min(2, '닉네임은 2자 이상이어야 해요.')
-    .max(50, '닉네임은 50자 이하이어야 해요.'),
+    .trim()
+    .min(1, '닉네임을 입력해 주세요.')
+    .max(8, '닉네임은 8자 이내여야 해요.')
+    .regex(
+      /^[A-Za-z가-힣]+$/,
+      '닉네임은 한글 또는 영어만 사용할 수 있고, 특수문자는 사용할 수 없어요.'
+    ),
   year: z
     .string()
     .nonempty('연도를 선택해 주세요.')
@@ -37,7 +42,8 @@ export const signupFormSchema = z.object({
   isPublic: z.boolean(),
   topics: z
     .array(z.enum(TOPIC_VALUES))
-    .min(1, '관심 주제를 최소 1개 이상 선택해 주세요.'),
+    .min(1, '관심 주제를 최소 1개 이상 선택해 주세요.')
+    .max(3, '관심 주제는 최대 3개까지 선택할 수 있어요.'),
   img: z.instanceof(File).optional(),
 });
 
@@ -47,6 +53,8 @@ export type SignupTopic = (typeof TOPIC_VALUES)[number];
 export function useSignUpForm(): ReturnType<typeof useForm<SignupFormValues>> {
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupFormSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
       nickname: '',
       year: '',

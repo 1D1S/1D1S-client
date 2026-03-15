@@ -2,16 +2,19 @@
 
 import { DiaryCard, Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { getCategoryLabel } from '@constants/categories';
 import { Feeling } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/use-diary-mutations';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
+import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
 import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 import { useChallengeDiaryList } from '../hooks/use-challenge-diary-queries';
@@ -22,10 +25,6 @@ type DiaryEmotion = 'happy' | 'soso' | 'sad';
 interface ChallengeDiaryListScreenProps {
   id: string;
 }
-
-const relativeTimeFormatter = new Intl.RelativeTimeFormat('ko', {
-  numeric: 'auto',
-});
 
 function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
   switch (feeling) {
@@ -40,36 +39,11 @@ function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
   }
 }
 
-function toRelativeDateLabel(createdAt: string): string {
-  if (!createdAt) {
-    return '방금 전';
-  }
-
-  const targetDate = new Date(createdAt);
-  if (Number.isNaN(targetDate.getTime())) {
-    return '방금 전';
-  }
-
-  const diffMinutes = Math.round((targetDate.getTime() - Date.now()) / 60000);
-  const absMinutes = Math.abs(diffMinutes);
-
-  if (absMinutes < 60) {
-    return relativeTimeFormatter.format(diffMinutes, 'minute');
-  }
-
-  const diffHours = Math.round(diffMinutes / 60);
-  if (Math.abs(diffHours) < 24) {
-    return relativeTimeFormatter.format(diffHours, 'hour');
-  }
-
-  const diffDays = Math.round(diffHours / 24);
-  return relativeTimeFormatter.format(diffDays, 'day');
-}
-
 export function ChallengeDiaryListScreen({
   id,
 }: ChallengeDiaryListScreenProps): React.ReactElement {
   const challengeId = Number(id);
+  const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
@@ -164,17 +138,27 @@ export function ChallengeDiaryListScreen({
                   '/images/default-profile.png'
                 }
                 challengeLabel={
-                  diary.challenge?.title ??
-                  diary.challenge?.category ??
+                  diary.challenge?.title ||
+                  getCategoryLabel(diary.challenge?.category) ||
                   '챌린지'
                 }
-                onChallengeClick={() => undefined}
-                date={toRelativeDateLabel(diary.diaryInfo?.createdAt ?? '')}
+                onChallengeClick={() => {
+                  const targetChallengeId =
+                    diary.challenge?.challengeId ?? challengeId;
+                  if (targetChallengeId > 0) {
+                    router.push(`/challenge/${targetChallengeId}`);
+                  }
+                }}
+                date={getRelativeDiaryDateLabel(
+                  diary.diaryInfo?.createdAt ??
+                    diary.diaryInfo?.challengedDate ??
+                    ''
+                )}
                 emotion={mapFeelingToEmotion(
                   diary.diaryInfo?.feeling ?? 'NONE'
                 )}
                 onLikeToggle={() => handleLikeToggle(diary)}
-                onClick={() => undefined}
+                onClick={() => router.push(`/diary/${diary.id}`)}
               />
             ))}
           </div>

@@ -1,5 +1,5 @@
-export type JobType = 'STUDENT' | 'EMPLOYEE' | 'OTHER';
-export type GenderType = 'MALE' | 'FEMALE' | 'OTHER';
+export type JobType = 'STUDENT' | 'WORKER';
+export type GenderType = 'MALE' | 'FEMALE' | 'ETC';
 export type CategoryType =
   | 'DEV'
   | 'EXERCISE'
@@ -29,12 +29,25 @@ export interface SocialLoginResponse {
 
 export interface SignUpInfoRequest {
   nickname: string;
-  profileUrl?: string;
+  profileImageKey?: string;
   job: JobType;
   birth: string; // yyyy-MM-dd format
   gender: GenderType;
   isPublic: boolean;
   category: CategoryType[];
+}
+
+export interface PresignedUrlRequest {
+  fileName: string;
+  fileType: string;
+}
+
+export interface PresignedUrlResponse {
+  message: string;
+  data: {
+    presignedUrl: string;
+    objectKey: string;
+  };
 }
 
 export interface SignUpInfoResponse {

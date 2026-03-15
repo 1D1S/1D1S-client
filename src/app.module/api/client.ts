@@ -60,7 +60,51 @@ const attachInterceptors = (
   }
 
   client.interceptors.response.use(
-    (response) => response,
+    async (response) => {
+      if (!handleUnauthorized) {
+        return response;
+      }
+
+      // 브라우저에서 302는 XHR이 자동으로 따라가므로 에러 인터셉터에 잡히지 않음
+      // responseURL이 원래 요청 URL과 다르면 리다이렉트가 발생한 것으로 판단
+      const xhr = response.request as XMLHttpRequest | undefined;
+      const responseUrl = xhr?.responseURL ?? '';
+      const baseUrl = API_BASE_URL.replace(/\/$/, '');
+      const requestPath = response.config.url ?? '';
+      const expectedUrl = `${baseUrl}${requestPath}`;
+
+      const wasRedirected =
+        responseUrl !== '' &&
+        !responseUrl.startsWith(expectedUrl) &&
+        !responseUrl.includes(requestPath);
+
+      if (!wasRedirected) {
+        return response;
+      }
+
+      if (isRefreshing) {
+        return new Promise<AxiosResponse>((resolve) => {
+          addRefreshSubscriber((token) => {
+            response.config.headers.Authorization = `Bearer ${token}`;
+            resolve(client(response.config));
+          });
+        });
+      }
+
+      isRefreshing = true;
+      try {
+        const newToken = await refreshAccessToken();
+        isRefreshing = false;
+        onTokenRefreshed(newToken);
+        response.config.headers.Authorization = `Bearer ${newToken}`;
+        return client(response.config);
+      } catch (refreshError) {
+        isRefreshing = false;
+        refreshSubscribers = [];
+        handleAuthError(refreshError);
+        return Promise.reject(refreshError);
+      }
+    },
     async (error) => {
       if (handleUnauthorized && isUnauthorizedError(error)) {
         const originalRequest = error.config;
@@ -114,6 +158,7 @@ const createClient = (options: ClientOptions): AxiosInstance =>
     axios.create({
       baseURL: API_BASE_URL,
       timeout: 10000,
+      maxRedirects: 0,
     }),
     options
   );

@@ -8,6 +8,7 @@ import {
   Text,
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { getCategoryLabel } from '@constants/categories';
 import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import {
@@ -35,6 +36,7 @@ import {
   ChallengeDetailResponse,
   ChallengeGoal,
 } from '../../../challenge/board/type/challenge';
+import { isInfiniteChallengeEndDate } from '../../../challenge/board/utils/challenge-period';
 import { useSidebar } from '../../../member/hooks/use-member-queries';
 import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
 import {
@@ -109,11 +111,11 @@ interface DiaryDetailViewData {
 function feelingToEmoji(feeling: Feeling): string {
   switch (feeling) {
     case 'HAPPY':
-      return '🙂';
+      return '😎';
     case 'SAD':
-      return '🙁';
+      return '🥲';
     case 'NORMAL':
-      return '😐';
+      return '🙂';
     case 'NONE':
     default:
       return '📝';
@@ -198,7 +200,7 @@ function mapDiaryToViewData(
 ): DiaryDetailViewData {
   const diaryInfo = getDiaryInfo(diary);
   const authorInfo = getAuthorInfo(diary);
-  const baseDate = diaryInfo?.createdAt ?? diaryInfo?.challengedDate ?? '';
+  const baseDate = diaryInfo?.challengedDate ?? diaryInfo?.createdAt ?? '';
   const { dateLabel, weekdayLabel } = formatDate(baseDate);
   const challengeGoals: ChallengeGoal[] =
     challengeDetailData?.challengeGoals ?? [];
@@ -221,12 +223,12 @@ function mapDiaryToViewData(
       const achievedDiaryGoalIds = new Set(
         diaryGoals
           .filter((goal) => goal.isAchieved)
-          .map((goal) => String(goal.goalId))
+          .map((goal) => String(goal.challengeGoalId))
       );
       const achievedDiaryGoalNames = new Set(
         diaryGoals
-          .filter((goal) => goal.isAchieved && Boolean(goal.goalName))
-          .map((goal) => goal.goalName.trim())
+          .filter((goal) => goal.isAchieved && Boolean(goal.challengeGoalName))
+          .map((goal) => goal.challengeGoalName.trim())
       );
 
       checkedChecklistIds = checklistItems
@@ -243,12 +245,12 @@ function mapDiaryToViewData(
     }
   } else if (diaryGoals.length > 0) {
     checklistItems = diaryGoals.map((goal) => ({
-      id: String(goal.goalId),
-      label: goal.goalName || `목표 ${goal.goalId}`,
+      id: String(goal.challengeGoalId),
+      label: goal.challengeGoalName || `목표 ${goal.challengeGoalId}`,
     }));
     checkedChecklistIds = diaryGoals
       .filter((goal) => goal.isAchieved)
-      .map((goal) => String(goal.goalId));
+      .map((goal) => String(goal.challengeGoalId));
   } else {
     const achievedGoalIds = Array.from(achievementIds);
     checklistItems = achievedGoalIds.map((goalId) => ({
@@ -281,7 +283,7 @@ function mapDiaryToViewData(
     connectedChallengeTitle:
       summary?.title ?? diary.challenge?.title ?? '연동된 챌린지가 없습니다.',
     connectedChallengeCategory:
-      summary?.category ?? diary.challenge?.category ?? '-',
+      getCategoryLabel(summary?.category ?? diary.challenge?.category) || '-',
     connectedChallengeType:
       summary?.challengeType ?? diary.challenge?.challengeType ?? '-',
     connectedChallengeStartDate:
@@ -299,9 +301,9 @@ function mapDiaryToViewData(
     contentHtml: diary.content ?? '',
     hasContentHtml: hasVisibleHtmlContent(diary.content ?? ''),
     contentThumbnailUrl,
-    tags: [diary.challenge?.category, diaryInfo?.feeling].filter(
-      (tag): tag is string => Boolean(tag)
-    ),
+    tags: [diary.challenge?.category, diaryInfo?.feeling]
+      .filter((tag): tag is string => Boolean(tag))
+      .map((tag) => getCategoryLabel(tag) || tag),
     authorName: authorInfo?.nickname ?? null,
   };
 }
@@ -332,7 +334,21 @@ function DiaryDetailView({
   );
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isImageOpen, setIsImageOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isImageOpen) {
+      return;
+    }
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') {
+        setIsImageOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isImageOpen]);
 
   useEffect(() => {
     if (!isMenuOpen) {
@@ -373,7 +389,7 @@ function DiaryDetailView({
               <Text size="display1" weight="bold" className="text-gray-900">
                 {diaryData.title}
               </Text>
-              <span className="bg-main-200 flex h-7 w-7 items-center justify-center rounded-full">
+              <span className="text-2xl leading-none">
                 {diaryData.feelingEmoji}
               </span>
             </div>
@@ -471,6 +487,9 @@ function DiaryDetailView({
             maxUserCount={diaryData.connectedChallengeMaxUsers}
             startDate={diaryData.connectedChallengeStartDate}
             endDate={diaryData.connectedChallengeEndDate}
+            isInfiniteChallenge={isInfiniteChallengeEndDate(
+              diaryData.connectedChallengeEndDate
+            )}
             isOngoing={(() => {
               const now = new Date();
               const start = new Date(diaryData.connectedChallengeStartDate);
@@ -527,7 +546,7 @@ function DiaryDetailView({
             >
               {diaryData.hasContentHtml ? (
                 <div
-                  className="prose prose-sm max-w-none text-gray-700 [&_img]:max-h-80 [&_img]:rounded-lg"
+                  className="prose prose-sm max-w-none text-gray-700 [&_img]:max-h-80 [&_img]:rounded-lg [&_li]:mb-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
                   dangerouslySetInnerHTML={{ __html: diaryData.contentHtml }}
                 />
               ) : (
@@ -537,14 +556,49 @@ function DiaryDetailView({
               )}
 
               {diaryData.contentThumbnailUrl ? (
-                <div className="relative h-48 w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-100 md:h-56">
-                  <Image
-                    src={diaryData.contentThumbnailUrl}
-                    alt="일지 썸네일"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
+                <>
+                  <button
+                    type="button"
+                    className="relative h-48 w-full cursor-zoom-in overflow-hidden rounded-xl border border-gray-200 bg-gray-100 md:h-56"
+                    onClick={() => setIsImageOpen(true)}
+                  >
+                    <Image
+                      src={diaryData.contentThumbnailUrl}
+                      alt="일지 썸네일"
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+
+                  {isImageOpen ? (
+                    <div
+                      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+                      onClick={() => setIsImageOpen(false)}
+                    >
+                      <div
+                        className="relative max-h-full max-w-full"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          className="absolute -top-10 right-0 text-white/80 hover:text-white"
+                          onClick={() => setIsImageOpen(false)}
+                        >
+                          ✕
+                        </button>
+                        <Image
+                          src={diaryData.contentThumbnailUrl}
+                          alt="일지 썸네일 원본"
+                          width={0}
+                          height={0}
+                          sizes="90vw"
+                          className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain"
+                          style={{ width: 'auto', height: 'auto' }}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
+                </>
               ) : null}
             </div>
 
@@ -572,12 +626,15 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
     () => false
   );
   const [dismissed, setDismissed] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const showAuthDialog = hasMounted && !authStorage.hasTokens() && !dismissed;
   const safeDiaryId = Number.isFinite(id) && id > 0 ? id : 0;
-  const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId);
+  const deleteDiary = useDeleteDiary();
+  const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId, {
+    enabled: Boolean(safeDiaryId) && !isDeleting,
+  });
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
-  const deleteDiary = useDeleteDiary();
   const challengeId = data?.challenge?.challengeId ?? 0;
   const { data: challengeDetailData } = useChallengeDetail(challengeId);
   const { data: sidebarData } = useSidebar();
@@ -593,8 +650,11 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
     if (!window.confirm('일지를 삭제하시겠습니까?')) {
       return;
     }
+
+    setIsDeleting(true);
     deleteDiary.mutate(safeDiaryId, {
       onSuccess: () => router.push('/diary'),
+      onError: () => setIsDeleting(false),
     });
   };
 

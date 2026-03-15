@@ -7,7 +7,7 @@ export interface MoodOption {
 }
 
 export const DIARY_CREATE_MOOD_OPTIONS: MoodOption[] = [
-  { id: 'SAD', emoji: '😣', label: '힘듦' },
-  { id: 'NORMAL', emoji: '😐', label: '보통' },
-  { id: 'HAPPY', emoji: '😁', label: '좋음' },
+  { id: 'SAD', emoji: '🥲', label: '힘듦' },
+  { id: 'NORMAL', emoji: '🙂', label: '보통' },
+  { id: 'HAPPY', emoji: '😎', label: '좋음' },
 ];

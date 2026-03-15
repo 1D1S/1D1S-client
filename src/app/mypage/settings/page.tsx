@@ -1,40 +1,45 @@
 'use client';
 
-import { CircleAvatar, Text, TextField } from '@1d1s/design-system';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  ImagePicker,
+  Text,
+  TextField,
+} from '@1d1s/design-system';
 import { useLogout } from '@feature/auth/hooks/use-auth-mutations';
 import {
   useUpdateNickname,
   useUpdateProfileImage,
 } from '@feature/member/hooks/use-member-mutations';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
-import { Camera, ChevronLeft, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 
 export default function AccountSettingsPage(): React.ReactElement {
   const router = useRouter();
   const logout = useLogout();
   const { data } = useMyPage();
 
-  const [nickname, setNickname] = useState('');
-  const [profilePreview, setProfilePreview] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const isInitialized = useRef(false);
+  // 서버 데이터를 기반으로 파생: 사용자가 편집하면 editedNickname에 저장
+  const [editedNickname, setEditedNickname] = useState<string | undefined>();
+  const [nicknameError, setNicknameError] = useState('');
+  const [localProfilePreview, setLocalProfilePreview] = useState<
+    string | undefined
+  >();
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+
+  const nickname = editedNickname ?? data?.nickname ?? '';
+  const profilePreview = localProfilePreview ?? data?.profileUrl ?? '';
 
   const updateNickname = useUpdateNickname();
   const updateProfileImage = useUpdateProfileImage();
-
-  useEffect(() => {
-    if (data && !isInitialized.current) {
-      isInitialized.current = true;
-      const timerId = window.setTimeout(() => {
-        setNickname(data.nickname ?? '');
-        setProfilePreview(data.profileUrl ?? '');
-      }, 0);
-      return () => window.clearTimeout(timerId);
-    }
-    return undefined;
-  }, [data]);
 
   const handleProfileImageChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -44,45 +49,66 @@ export default function AccountSettingsPage(): React.ReactElement {
       return;
     }
 
-    setProfilePreview(URL.createObjectURL(file));
+    setLocalProfilePreview(URL.createObjectURL(file));
     updateProfileImage.mutate(file);
+  };
+
+  const NICKNAME_REGEX = /^[A-Za-z가-힣]+$/;
+
+  const validateNickname = (value: string): string => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return '닉네임을 입력해 주세요.';
+    }
+    if (trimmed.length > 8) {
+      return '닉네임은 8자 이내여야 해요.';
+    }
+    if (!NICKNAME_REGEX.test(trimmed)) {
+      return (
+        '닉네임은 한글 또는 영어만 사용할 수 있고, ' +
+        '특수문자는 사용할 수 없어요.'
+      );
+    }
+    return '';
+  };
+
+  const handleNicknameChange = (value: string): void => {
+    setEditedNickname(value);
+    setNicknameError(validateNickname(value));
   };
 
   const handleNicknameSave = (): void => {
     const trimmed = nickname.trim();
-    if (!trimmed || trimmed === data?.nickname) {
+    const error = validateNickname(trimmed);
+    if (error) {
+      setNicknameError(error);
+      return;
+    }
+    if (trimmed === data?.nickname) {
       return;
     }
     updateNickname.mutate(trimmed);
   };
 
-  const handleLogout = (): void => {
+  const confirmLogout = (): void => {
     logout.mutate(undefined, {
       onSettled: () => {
+        setIsLogoutDialogOpen(false);
         router.replace('/login');
       },
     });
   };
 
   return (
-    <div className="min-h-screen w-full bg-white p-4">
-      <div className="mx-auto w-full max-w-[600px]">
-        <div className="mb-6 flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="flex items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-gray-700"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            돌아가기
-          </button>
+    <div className="flex min-h-screen w-full flex-col bg-white p-4">
+      <section className="rounded-3 w-full bg-white p-2">
+        <div className="flex items-start justify-between border-b border-gray-200 pb-5">
+          <Text size="display1" weight="bold" className="text-gray-900">
+            계정 설정
+          </Text>
         </div>
 
-        <Text size="display1" weight="bold" className="mb-6 text-gray-900">
-          계정 설정
-        </Text>
-
-        <div className="flex flex-col gap-3">
+        <div className="mt-6 flex flex-col gap-3">
           {/* 프로필 편집 */}
           <section className="rounded-4 border border-gray-200 bg-white">
             <div className="border-b border-gray-100 px-5 py-4">
@@ -94,33 +120,21 @@ export default function AccountSettingsPage(): React.ReactElement {
             <div className="flex flex-col gap-6 px-5 py-5">
               {/* 프로필 사진 */}
               <div className="flex flex-col items-center gap-3">
-                <div className="relative">
-                  <CircleAvatar imageUrl={profilePreview} size="lg" />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={updateProfileImage.isPending}
-                    className="absolute right-0 bottom-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-gray-700 text-white transition hover:bg-gray-900 disabled:opacity-50"
+                <ImagePicker
+                  size={160}
+                  defaultImageUrl={profilePreview || undefined}
+                  changeLabel="변경"
+                  onChange={handleProfileImageChange}
+                />
+                {updateProfileImage.isPending && (
+                  <Text
+                    size="caption1"
+                    weight="regular"
+                    className="text-gray-400"
                   >
-                    <Camera className="h-3.5 w-3.5" />
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleProfileImageChange}
-                  />
-                </div>
-                <Text
-                  size="caption1"
-                  weight="regular"
-                  className="text-gray-400"
-                >
-                  {updateProfileImage.isPending
-                    ? '업로드 중...'
-                    : '사진을 클릭해 변경하세요'}
-                </Text>
+                    업로드 중...
+                  </Text>
+                )}
               </div>
 
               {/* 닉네임 */}
@@ -131,7 +145,9 @@ export default function AccountSettingsPage(): React.ReactElement {
                 <div className="flex gap-2">
                   <TextField
                     value={nickname}
-                    onChange={(event) => setNickname(event.target.value)}
+                    onChange={(event) =>
+                      handleNicknameChange(event.target.value)
+                    }
                     placeholder="닉네임을 입력하세요"
                     className="flex-1"
                     onKeyDown={(event) => {
@@ -146,14 +162,23 @@ export default function AccountSettingsPage(): React.ReactElement {
                     disabled={
                       updateNickname.isPending ||
                       !nickname.trim() ||
+                      Boolean(nicknameError) ||
                       nickname.trim() === data?.nickname
                     }
-                    className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700 disabled:opacity-40"
+                    className="shrink-0 whitespace-nowrap rounded-xl bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700 disabled:opacity-40"
                   >
                     {updateNickname.isPending ? '저장 중...' : '저장'}
                   </button>
                 </div>
-                {updateNickname.isSuccess && (
+                {nicknameError ? (
+                  <Text
+                    size="caption1"
+                    weight="regular"
+                    className="text-red-500"
+                  >
+                    {nicknameError}
+                  </Text>
+                ) : updateNickname.isSuccess ? (
                   <Text
                     size="caption1"
                     weight="regular"
@@ -161,8 +186,7 @@ export default function AccountSettingsPage(): React.ReactElement {
                   >
                     닉네임이 변경되었습니다.
                   </Text>
-                )}
-                {updateNickname.isError && (
+                ) : updateNickname.isError ? (
                   <Text
                     size="caption1"
                     weight="regular"
@@ -170,7 +194,7 @@ export default function AccountSettingsPage(): React.ReactElement {
                   >
                     닉네임 변경에 실패했습니다.
                   </Text>
-                )}
+                ) : null}
               </div>
             </div>
           </section>
@@ -185,7 +209,7 @@ export default function AccountSettingsPage(): React.ReactElement {
 
             <button
               type="button"
-              onClick={handleLogout}
+              onClick={() => setIsLogoutDialogOpen(true)}
               disabled={logout.isPending}
               className="flex w-full items-center gap-3 px-5 py-4 text-red-500 transition hover:bg-red-50 disabled:opacity-50"
             >
@@ -196,7 +220,39 @@ export default function AccountSettingsPage(): React.ReactElement {
             </button>
           </section>
         </div>
-      </div>
+      </section>
+
+      <Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+        <DialogContent className="gap-6 px-8 py-6 sm:max-w-[380px] sm:px-6">
+          <DialogHeader className="items-center text-center sm:text-center">
+            <DialogTitle>로그아웃 하시겠어요?</DialogTitle>
+          </DialogHeader>
+
+          <DialogDescription className="block w-full text-center">
+            현재 계정에서 로그아웃됩니다.
+          </DialogDescription>
+
+          <DialogFooter className="flex-row gap-2">
+            <Button
+              size="medium"
+              variant="ghost"
+              className="flex-1"
+              onClick={() => setIsLogoutDialogOpen(false)}
+              disabled={logout.isPending}
+            >
+              취소
+            </Button>
+            <Button
+              size="medium"
+              className="flex-1"
+              onClick={confirmLogout}
+              disabled={logout.isPending}
+            >
+              {logout.isPending ? '로그아웃 중...' : '로그아웃'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

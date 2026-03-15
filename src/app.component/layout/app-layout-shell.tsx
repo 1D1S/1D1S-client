@@ -19,6 +19,7 @@ import React, {
   useSyncExternalStore,
 } from 'react';
 
+import { BetaButton } from '../beta-button';
 import { AppLayoutProvider } from './app-layout-context';
 
 const HEADER_HIDDEN_ROUTES = [
@@ -39,8 +40,8 @@ const RIGHT_SIDEBAR_HIDDEN_ROUTES = [
 
 const APP_HEADER_NAV_ITEMS = [
   { key: 'home', label: '홈' },
-  { key: 'explore', label: '탐색' },
-  { key: 'community', label: '커뮤니티' },
+  { key: 'explore', label: '챌린지' },
+  { key: 'community', label: '일지' },
 ] as const;
 
 const APP_HEADER_ROUTE_BY_KEY: Record<string, string> = {
@@ -293,7 +294,27 @@ export default function AppLayoutShell({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isSidebarOverlayOpen]);
-  const { data: sidebarData } = useSidebar();
+  const {
+    data: sidebarData,
+    isLoading: isSidebarLoading,
+    isFetching: isSidebarFetching,
+  } = useSidebar();
+  const isSidebarBusy = isLoggedIn && (isSidebarLoading || isSidebarFetching);
+
+  useEffect(() => {
+    if (
+      !isLoggedIn ||
+      !sidebarData ||
+      pathname === '/signup' ||
+      pathname === '/login' ||
+      pathname.startsWith('/auth')
+    ) {
+      return;
+    }
+    if (!sidebarData.nickname) {
+      router.replace('/signup');
+    }
+  }, [isLoggedIn, sidebarData, pathname, router]);
 
   const sidebarProps: RightSidebarProps = useMemo(() => {
     if (!sidebarData) {
@@ -329,6 +350,15 @@ export default function AppLayoutShell({
     !isChallengeDetailRoute(pathname);
   const activeNavKey = resolveActiveNavKey(pathname);
   const sidebarStickyTopClass = showHeader ? 'top-28' : 'top-6';
+  const handleSidebarChallengeClick = (
+    challenge: RightSidebarChallenge
+  ): void => {
+    if (!challenge.id) {
+      return;
+    }
+    setIsSidebarOverlayOpen(false);
+    router.push(`/challenge/${challenge.id}`);
+  };
 
   return (
     <AppLayoutProvider
@@ -344,8 +374,7 @@ export default function AppLayoutShell({
               navItems={[...APP_HEADER_NAV_ITEMS]}
               activeKey={activeNavKey}
               showProfile={
-                isLoggedIn &&
-                (!showRightSidebar || isMobile) &&
+                (isMobile || (isLoggedIn && !showRightSidebar)) &&
                 pathname !== '/mypage'
               }
               profileImage={sidebarProps.userImage}
@@ -359,7 +388,13 @@ export default function AppLayoutShell({
               showBackButton={showBackButton && isMobile}
               onBackClick={() => router.back()}
               onNotificationClick={() => router.push('/notification')}
-              onProfileClick={() => setIsSidebarOverlayOpen(true)}
+              onProfileClick={() => {
+                if (!isLoggedIn) {
+                  router.push('/login');
+                  return;
+                }
+                setIsSidebarOverlayOpen(true);
+              }}
             />
           </header>
         ) : null}
@@ -387,11 +422,15 @@ export default function AppLayoutShell({
                 <RightSidebar
                   {...sidebarProps}
                   isLoggedIn={isLoggedIn}
+                  isLoading={isSidebarBusy}
                   fixed={false}
                   onWriteDiary={() => router.push('/diary/create')}
                   onGoMyPage={() => router.push('/mypage')}
                   onOpenSettings={() => router.push('/mypage/settings')}
                   onLogin={() => router.push('/login')}
+                  onJoinChallenge={() => router.push('/challenge')}
+                  onCreateChallenge={() => router.push('/challenge/create')}
+                  onChallengeClick={handleSidebarChallengeClick}
                 />
               ) : (
                 <div className="w-69" />
@@ -413,16 +452,22 @@ export default function AppLayoutShell({
             <RightSidebar
               {...sidebarProps}
               isLoggedIn={isLoggedIn}
+              isLoading={isSidebarBusy}
               fixed={false}
               onCollapseClick={() => setIsSidebarOverlayOpen(false)}
               onWriteDiary={() => router.push('/diary/create')}
               onGoMyPage={() => router.push('/mypage')}
               onOpenSettings={() => router.push('/mypage/settings')}
               onLogin={() => router.push('/login')}
+              onJoinChallenge={() => router.push('/challenge')}
+              onCreateChallenge={() => router.push('/challenge/create')}
+              onChallengeClick={handleSidebarChallengeClick}
             />
           </div>
         ) : null}
       </div>
+
+      <BetaButton />
     </AppLayoutProvider>
   );
 }

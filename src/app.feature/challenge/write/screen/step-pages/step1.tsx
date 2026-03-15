@@ -107,7 +107,7 @@ export function Step1(): React.ReactElement {
                 <TextField
                   id="description"
                   multiline
-                  rows={6}
+                  rows={3}
                   placeholder="챌린지 소개와 진행 방법을 자유롭게 적어주세요."
                   className="w-full"
                   {...field}
