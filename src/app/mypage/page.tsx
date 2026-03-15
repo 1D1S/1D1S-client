@@ -12,6 +12,7 @@ import { getCategoryLabel } from '@constants/categories';
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
 import { useMyDiaries } from '@feature/diary/board/hooks/use-diary-queries';
 import { DiaryItem } from '@feature/diary/board/type/diary';
+import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
 import type { StreakCalendarItem } from '@feature/member/type/member';
 import { authStorage } from '@module/utils/auth';
@@ -64,29 +65,7 @@ function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
 }
 
 function toRelativeDateLabel(createdAt: string | undefined): string {
-  if (!createdAt) {
-    return '최근';
-  }
-
-  const targetDate = new Date(createdAt);
-  if (Number.isNaN(targetDate.getTime())) {
-    return '최근';
-  }
-
-  const diffMinutes = Math.round((targetDate.getTime() - Date.now()) / 60000);
-  const absMinutes = Math.abs(diffMinutes);
-
-  if (absMinutes < 60) {
-    return `${absMinutes}분 전`;
-  }
-
-  const diffHours = Math.round(absMinutes / 60);
-  if (diffHours < 24) {
-    return `${diffHours}시간 전`;
-  }
-
-  const diffDays = Math.round(diffHours / 24);
-  return `${diffDays}일 전`;
+  return getRelativeDiaryDateLabel(createdAt ?? '', '최근');
 }
 
 function resolveDiaryImage(diary: DiaryItem): string {

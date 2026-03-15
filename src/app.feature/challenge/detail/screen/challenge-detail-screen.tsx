@@ -21,6 +21,7 @@ import {
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/use-diary-mutations';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
+import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
 import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/diary-create-unavailable-dialog';
 import { normalizeApiError, notifyApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
@@ -1215,11 +1216,11 @@ export function ChallengeDetailScreen({
                           router.push(`/challenge/${targetChallengeId}`);
                         }
                       }}
-                      date={
-                        diary.diaryInfo?.challengedDate ??
+                      date={getRelativeDiaryDateLabel(
                         diary.diaryInfo?.createdAt ??
-                        ''
-                      }
+                          diary.diaryInfo?.challengedDate ??
+                          ''
+                      )}
                       emotion={mapFeelingToEmotion(
                         diary.diaryInfo?.feeling ?? 'NONE'
                       )}
