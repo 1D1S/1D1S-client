@@ -29,12 +29,25 @@ export interface SocialLoginResponse {
 
 export interface SignUpInfoRequest {
   nickname: string;
-  profileUrl?: string;
+  profileImageKey?: string;
   job: JobType;
   birth: string; // yyyy-MM-dd format
   gender: GenderType;
   isPublic: boolean;
   category: CategoryType[];
+}
+
+export interface PresignedUrlRequest {
+  fileName: string;
+  fileType: string;
+}
+
+export interface PresignedUrlResponse {
+  message: string;
+  data: {
+    presignedUrl: string;
+    objectKey: string;
+  };
 }
 
 export interface SignUpInfoResponse {

@@ -30,16 +30,21 @@ import React, { useEffect, useSyncExternalStore } from 'react';
 type DiaryEmotion = 'happy' | 'soso' | 'sad';
 type Feeling = 'HAPPY' | 'NORMAL' | 'SAD' | 'NONE';
 
+function toLocalDateKey(date: Date): string {
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${mm}-${dd}`;
+}
+
 function buildYearStreak(calendar: StreakCalendarItem[]): StreakCalendarItem[] {
-  const year = new Date().getFullYear();
   const today = new Date();
   const calendarMap = new Map(calendar.map((item) => [item.date, item.count]));
 
   const result: StreakCalendarItem[] = [];
-  const cursor = new Date(year, 0, 1);
+  const cursor = new Date(today.getFullYear(), 0, 1);
 
   while (cursor <= today) {
-    const dateStr = cursor.toISOString().slice(0, 10);
+    const dateStr = toLocalDateKey(cursor);
     result.push({
       date: dateStr,
       count: calendarMap.get(dateStr) ?? 0,

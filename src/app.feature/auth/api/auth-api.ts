@@ -4,6 +4,8 @@ import { requestBody } from '@module/api/request';
 import {
   LogoutResponse,
   OAuthProvider,
+  PresignedUrlRequest,
+  PresignedUrlResponse,
   RefreshTokenResponse,
   SignUpInfoRequest,
   SignUpInfoResponse,
@@ -42,6 +44,20 @@ export const authApi = {
     requestBody<SignUpInfoResponse, SignUpInfoRequest>(publicApiClient, {
       url: '/signup/info',
       method: 'PUT',
+      data,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }),
+
+  // presigned URL 발급
+  getPresignedUrl: async (
+    data: PresignedUrlRequest,
+    accessToken: string
+  ): Promise<PresignedUrlResponse> =>
+    requestBody<PresignedUrlResponse, PresignedUrlRequest>(publicApiClient, {
+      url: '/image/presigned-url',
+      method: 'POST',
       data,
       headers: {
         Authorization: `Bearer ${accessToken}`,

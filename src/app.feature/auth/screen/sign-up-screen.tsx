@@ -101,6 +101,21 @@ export function SignUpScreen(): React.ReactElement {
 
     setIsSubmitting(true);
     try {
+      let profileImageKey: string | undefined;
+
+      if (values.img) {
+        const { data: presigned } = await authApi.getPresignedUrl(
+          { fileName: values.img.name, fileType: values.img.type },
+          accessToken
+        );
+        await fetch(presigned.presignedUrl, {
+          method: 'PUT',
+          body: values.img,
+          headers: { 'Content-Type': values.img.type },
+        });
+        profileImageKey = presigned.objectKey;
+      }
+
       await authApi.completeSignUpInfo(
         {
           nickname: values.nickname,
@@ -109,6 +124,7 @@ export function SignUpScreen(): React.ReactElement {
           gender: values.gender as GenderType,
           isPublic: values.isPublic,
           category: values.topics as CategoryType[],
+          profileImageKey,
         },
         accessToken
       );
