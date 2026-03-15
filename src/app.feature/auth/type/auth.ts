@@ -1,5 +1,5 @@
 export type JobType = 'STUDENT' | 'WORKER';
-export type GenderType = 'MALE' | 'FEMALE' | 'OTHER';
+export type GenderType = 'MALE' | 'FEMALE' | 'ETC';
 export type CategoryType =
   | 'DEV'
   | 'EXERCISE'

@@ -83,6 +83,8 @@ export function SignUpScreen(): React.ReactElement {
   const [step, setStep] = React.useState<Step>(1);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showExitDialog, setShowExitDialog] = React.useState(false);
+  const [imgPreviewUrl, setImgPreviewUrl] =
+    React.useState<string | undefined>();
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 100 }, (_, i) => currentYear - i);
   const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -246,11 +248,17 @@ export function SignUpScreen(): React.ReactElement {
                         <FormItem>
                           <ImagePicker
                             size={SIGN_UP_LEFT_VISUAL_SIZE}
+                            defaultImageUrl={imgPreviewUrl}
                             onChange={(
                               event: React.ChangeEvent<HTMLInputElement>
                             ) => {
                               const file = event.target.files?.[0] || undefined;
                               field.onChange(file);
+                              if (file) {
+                                setImgPreviewUrl(
+                                  URL.createObjectURL(file)
+                                );
+                              }
                             }}
                           />
                           <FormMessage />

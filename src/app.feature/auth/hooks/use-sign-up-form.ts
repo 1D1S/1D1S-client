@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-const GENDER_VALUES = ['MALE', 'FEMALE', 'OTHER'] as const;
+const GENDER_VALUES = ['MALE', 'FEMALE', 'ETC'] as const;
 const JOB_VALUES = ['STUDENT', 'WORKER'] as const;
 const TOPIC_VALUES = [
   'DEV',

@@ -11,7 +11,7 @@ export const SIGN_UP_GENDER_OPTIONS: Array<{
 }> = [
   { value: 'MALE', label: '남성' },
   { value: 'FEMALE', label: '여성' },
-  { value: 'OTHER', label: '기타' },
+  { value: 'ETC', label: '기타' },
 ];
 
 export const SIGN_UP_OCCUPATION_OPTIONS: Array<{
