@@ -17,6 +17,10 @@ import {
   useLikeDiary,
   useUnlikeDiary,
 } from '../../detail/hooks/use-diary-mutations';
+import {
+  getDateTimestamp,
+  getRelativeDiaryDateLabel,
+} from '../../shared/utils/diary-relative-time';
 import { useDiaryList } from '../hooks/use-diary-queries';
 import { type DiaryItem, Feeling } from '../type/diary';
 
@@ -26,10 +30,6 @@ type DiaryItemWithAliases = DiaryItem & {
   author?: DiaryItem['authorInfoDto'] | null;
   diaryInfo?: DiaryItem['diaryInfoDto'] | null;
 };
-
-const relativeTimeFormatter = new Intl.RelativeTimeFormat('ko', {
-  numeric: 'auto',
-});
 
 function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
   switch (feeling) {
@@ -42,32 +42,6 @@ function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
     default:
       return 'soso';
   }
-}
-
-function toRelativeDateLabel(createdAt: string): string {
-  if (!createdAt) {
-    return '방금 전';
-  }
-
-  const targetDate = new Date(createdAt);
-  if (Number.isNaN(targetDate.getTime())) {
-    return '방금 전';
-  }
-
-  const diffMinutes = Math.round((targetDate.getTime() - Date.now()) / 60000);
-  const absMinutes = Math.abs(diffMinutes);
-
-  if (absMinutes < 60) {
-    return relativeTimeFormatter.format(diffMinutes, 'minute');
-  }
-
-  const diffHours = Math.round(diffMinutes / 60);
-  if (Math.abs(diffHours) < 24) {
-    return relativeTimeFormatter.format(diffHours, 'hour');
-  }
-
-  const diffDays = Math.round(diffHours / 24);
-  return relativeTimeFormatter.format(diffDays, 'day');
 }
 
 function sortDiaries(items: DiaryItem[], sortMode: SortMode): DiaryItem[] {
@@ -92,12 +66,12 @@ function sortDiaries(items: DiaryItem[], sortMode: SortMode): DiaryItem[] {
       rightDiaryWithAliases.diaryInfoDto ??
       rightDiaryWithAliases.diaryInfo ??
       null;
-    const leftDiaryTime = new Date(
+    const leftDiaryTime = getDateTimestamp(
       leftDiaryInfo?.createdAt || leftDiaryInfo?.challengedDate || ''
-    ).getTime();
-    const rightDiaryTime = new Date(
+    );
+    const rightDiaryTime = getDateTimestamp(
       rightDiaryInfo?.createdAt || rightDiaryInfo?.challengedDate || ''
-    ).getTime();
+    );
 
     return rightDiaryTime - leftDiaryTime;
   });
@@ -338,7 +312,7 @@ export default function DiaryListScreen(): React.ReactElement {
                             : '/challenge'
                         )
                       }
-                      date={toRelativeDateLabel(diaryInfo?.createdAt ?? '')}
+                      date={getRelativeDiaryDateLabel(diaryInfo?.createdAt ?? '')}
                       emotion={mapFeelingToEmotion(
                         diaryInfo?.feeling ?? 'NONE'
                       )}

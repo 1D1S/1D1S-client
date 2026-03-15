@@ -18,7 +18,7 @@ import {
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
 import { cn } from '@module/utils/cn';
 import { User, Users } from 'lucide-react';
-import { useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 export function Step3(): React.ReactElement {
@@ -169,9 +169,16 @@ export function Step3(): React.ReactElement {
                     <FormControl>
                       <TextField
                         id="memberCountNumber"
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         className="w-full md:w-[240px]"
                         {...field}
+                        value={field.value ?? ''}
+                        maxLength={2}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                          field.onChange(event.target.value.replace(/\D/g, ''));
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
