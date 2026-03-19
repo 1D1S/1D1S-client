@@ -10,6 +10,7 @@ import {
 } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
+import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { useMyDiaries } from '@feature/diary/board/hooks/use-diary-queries';
 import { DiaryItem } from '@feature/diary/board/type/diary';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
@@ -301,7 +302,10 @@ function MyPageContent(): React.ReactElement {
                       <div key={ch.challengeId} className="w-[320px] shrink-0">
                         <DSChallengeCard
                           challengeTitle={ch.title}
-                          challengeType={ch.challengeType}
+                          challengeType={formatChallengeCardTypeLabel(
+                            ch.challengeType,
+                            ch.maxParticipantCnt
+                          )}
                           challengeCategory={getCategoryLabel(ch.category)}
                           currentUserCount={ch.participantCnt}
                           maxUserCount={ch.maxParticipantCnt}
