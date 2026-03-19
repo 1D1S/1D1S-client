@@ -1,3 +1,4 @@
+import { clearCachedSidebar } from '@feature/member/hooks/use-member-queries';
 import { authStorage } from '@module/utils/auth';
 import {
   useMutation,
@@ -64,10 +65,12 @@ export function useLogout(): UseMutationResult<LogoutResponse, Error, void> {
     mutationFn: () => authApi.logout(),
     onSuccess: () => {
       authStorage.clearTokens();
+      clearCachedSidebar();
       queryClient.clear();
     },
     onError: () => {
       authStorage.clearTokens();
+      clearCachedSidebar();
       queryClient.clear();
     },
   });
