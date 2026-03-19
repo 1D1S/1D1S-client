@@ -11,11 +11,7 @@ import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
 import { authStorage } from '@module/utils/auth';
 import { X } from 'lucide-react';
-import {
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useChallengeList } from '../hooks/use-challenge-queries';
@@ -66,8 +62,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const isLoginRequired =
-    searchParams.get('loginRequired') === 'true';
+  const isLoginRequired = searchParams.get('loginRequired') === 'true';
   const [showLoginDialog, setShowLoginDialog] = useState(isLoginRequired);
   const [loginDialogDescription, setLoginDialogDescription] = useState(
     isLoginRequired
@@ -83,10 +78,9 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('loginRequired');
     const query = params.toString();
-    router.replace(
-      query ? `${pathname}?${query}` : pathname,
-      { scroll: false }
-    );
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [query, setQuery] = useState('');
 

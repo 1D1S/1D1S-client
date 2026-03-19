@@ -317,7 +317,7 @@ export default function AppLayoutShell({
   }, [isLoggedIn, sidebarData, pathname, router]);
 
   const sidebarProps: RightSidebarProps = useMemo(() => {
-    if (!sidebarData) {
+    if (!sidebarData || !isLoggedIn) {
       return DEFAULT_RIGHT_SIDEBAR_PROPS;
     }
 
@@ -342,7 +342,7 @@ export default function AppLayoutShell({
       streakDays: sidebarData.streakCount,
       challenges,
     };
-  }, [sidebarData, now]);
+  }, [sidebarData, isLoggedIn, now]);
   const showHeader = !matchesRoute(pathname, HEADER_HIDDEN_ROUTES);
   const showBackButton = needsBackButton(pathname);
   const showRightSidebar =
@@ -377,7 +377,11 @@ export default function AppLayoutShell({
                 (isMobile || (isLoggedIn && !showRightSidebar)) &&
                 pathname !== '/mypage'
               }
-              profileImage={sidebarProps.userImage}
+              profileImage={
+                isLoggedIn
+                  ? sidebarProps.userImage || '/images/default-profile.png'
+                  : undefined
+              }
               onLogoClick={() => router.push('/')}
               onNavChange={(key) => {
                 const route = APP_HEADER_ROUTE_BY_KEY[key];
