@@ -14,6 +14,7 @@ import { authStorage } from '@module/utils/auth';
 import {
   CalendarDays,
   Edit3,
+  Flag,
   Heart,
   ListChecks,
   MoreVertical,
@@ -49,6 +50,7 @@ import {
   resolveDiaryImageList,
   resolveDiaryImageUrl,
 } from '../../shared/utils/diary-image-url';
+import { DiaryReportDialog } from '../components/diary-report-dialog';
 import {
   useDeleteDiary,
   useLikeDiary,
@@ -335,6 +337,7 @@ function DiaryDetailView({
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isImageOpen, setIsImageOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -429,6 +432,16 @@ function DiaryDetailView({
               <Share2 className="mr-1 h-4 w-4" />
               공유
             </Button>
+            {!isOwner && (
+              <Button
+                variant="outlined"
+                size="medium"
+                onClick={() => setIsReportOpen(true)}
+              >
+                <Flag className="mr-1 h-4 w-4" />
+                신고
+              </Button>
+            )}
             {isOwner && (
               <div ref={menuRef} className="relative">
                 <Button
@@ -614,6 +627,12 @@ function DiaryDetailView({
           </div>
         </section>
       </div>
+
+      <DiaryReportDialog
+        diaryId={diaryData.id}
+        open={isReportOpen}
+        onOpenChange={setIsReportOpen}
+      />
     </div>
   );
 }
