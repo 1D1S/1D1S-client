@@ -29,6 +29,10 @@ function setCachedSidebar(data: SidebarData): void {
   }
 }
 
+export function clearCachedSidebar(): void {
+  localStorage.removeItem(SIDEBAR_CACHE_KEY);
+}
+
 export function useSidebar(): UseQueryResult<SidebarData, Error> {
   const cachedSidebar = getCachedSidebar();
 

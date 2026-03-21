@@ -9,13 +9,10 @@ import {
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
+import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { authStorage } from '@module/utils/auth';
 import { X } from 'lucide-react';
-import {
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useChallengeList } from '../hooks/use-challenge-queries';
@@ -66,8 +63,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const isLoginRequired =
-    searchParams.get('loginRequired') === 'true';
+  const isLoginRequired = searchParams.get('loginRequired') === 'true';
   const [showLoginDialog, setShowLoginDialog] = useState(isLoginRequired);
   const [loginDialogDescription, setLoginDialogDescription] = useState(
     isLoginRequired
@@ -83,10 +79,9 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('loginRequired');
     const query = params.toString();
-    router.replace(
-      query ? `${pathname}?${query}` : pathname,
-      { scroll: false }
-    );
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [query, setQuery] = useState('');
 
@@ -131,11 +126,6 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     () => data?.pages?.flatMap((page) => page?.data?.items ?? []) ?? [],
     [data]
   );
-
-  const formatChallengeType = (challengeTypeResponse: string): string =>
-    ({ FIXED: '고정 목표', FLEXIBLE: '개인 목표' })[
-      String(challengeTypeResponse)
-    ] ?? '기타';
 
   // 페이지네이션 우선 제거
 
@@ -248,7 +238,10 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               <div key={challenge.challengeId} className="min-w-0">
                 <ChallengeCard
                   challengeTitle={challenge.title}
-                  challengeType={formatChallengeType(challenge.challengeType)}
+                  challengeType={formatChallengeCardTypeLabel(
+                    challenge.challengeType,
+                    challenge.maxParticipantCnt
+                  )}
                   challengeCategory={getCategoryLabel(challenge.category)}
                   currentUserCount={challenge.participantCnt}
                   maxUserCount={challenge.maxParticipantCnt}

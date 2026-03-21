@@ -124,6 +124,7 @@ export const handleAuthError = (error: unknown): void => {
   }
 
   authStorage.clearTokens();
+  localStorage.removeItem('1d1s:sidebar');
 
   notifyApiError(error);
 

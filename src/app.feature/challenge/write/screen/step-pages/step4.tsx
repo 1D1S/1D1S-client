@@ -1,5 +1,6 @@
 import { CheckContainer, cn, GoalAddList, Text } from '@1d1s/design-system';
 import { Flag, Target } from 'lucide-react';
+import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import {
@@ -12,7 +13,19 @@ import {
 import { ChallengeCreateFormValues } from '../../hooks/use-challenge-create-form';
 
 export function Step4(): React.ReactElement {
-  const { control } = useFormContext<ChallengeCreateFormValues>();
+  const { control, setValue, watch } =
+    useFormContext<ChallengeCreateFormValues>();
+  const participationType = watch('participationType');
+  const goalType = watch('goalType');
+  const isIndividualChallenge = participationType === 'INDIVIDUAL';
+
+  useEffect(() => {
+    if (isIndividualChallenge && goalType !== 'FIXED') {
+      setValue('goalType', 'FIXED', {
+        shouldValidate: true,
+      });
+    }
+  }, [goalType, isIndividualChallenge, setValue]);
 
   return (
     <div className="mx-auto w-full max-w-[980px] space-y-4">
@@ -67,17 +80,19 @@ export function Step4(): React.ReactElement {
 
                 <CheckContainer
                   checked={field.value === 'FLEXIBLE'}
+                  disabled={isIndividualChallenge}
                   onCheckedChange={(checked) => {
-                    if (checked) {
+                    if (checked && !isIndividualChallenge) {
                       field.onChange('FLEXIBLE');
                     }
                   }}
                   width="100%"
                   className={cn(
-                    '!rounded-3 !h-auto !items-start !justify-start p-5 text-left hover:cursor-pointer',
+                    '!rounded-3 !h-auto !items-start !justify-start p-5 text-left hover:cursor-pointer disabled:cursor-not-allowed',
                     field.value === 'FLEXIBLE'
                       ? '!border-main-800 !bg-main-200'
-                      : '!border-gray-300 !bg-white'
+                      : '!border-gray-300 !bg-white',
+                    isIndividualChallenge && '!border-gray-200 !bg-gray-100'
                   )}
                   aria-label="자유 목표"
                 >
@@ -104,6 +119,25 @@ export function Step4(): React.ReactElement {
                   </div>
                 </CheckContainer>
               </div>
+              {isIndividualChallenge ? (
+                <div className="border-main-300 bg-main-100 mt-3 rounded-2xl border px-4 py-3">
+                  <Text
+                    size="body2"
+                    weight="bold"
+                    className="text-main-900 block"
+                  >
+                    개인 챌린지는 자동으로 고정 목표로 생성됩니다.
+                  </Text>
+                  <Text
+                    size="body2"
+                    weight="regular"
+                    className="text-main-900 mt-1"
+                  >
+                    참여자가 1명이므로 자유 목표는 선택할 수 없고, 입력한
+                    목표를 기준으로 챌린지가 진행됩니다.
+                  </Text>
+                </div>
+              ) : null}
               <FormMessage />
             </FormItem>
           )}
