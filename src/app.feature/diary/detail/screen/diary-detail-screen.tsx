@@ -9,6 +9,7 @@ import {
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
+import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import {
@@ -286,8 +287,9 @@ function mapDiaryToViewData(
       summary?.title ?? diary.challenge?.title ?? '연동된 챌린지가 없습니다.',
     connectedChallengeCategory:
       getCategoryLabel(summary?.category ?? diary.challenge?.category) || '-',
-    connectedChallengeType:
-      summary?.challengeType ?? diary.challenge?.challengeType ?? '-',
+    connectedChallengeType: formatChallengeTypeLabel(
+      summary?.challengeType ?? diary.challenge?.challengeType ?? '-'
+    ),
     connectedChallengeStartDate:
       summary?.startDate ?? diary.challenge?.startDate ?? '',
     connectedChallengeEndDate:

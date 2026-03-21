@@ -15,6 +15,7 @@ import {
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
+import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { Feeling } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
@@ -86,7 +87,7 @@ function getMonthLabel(monthDate: Date): string {
 }
 
 function getChallengeTypeLabel(challengeType: string): string {
-  return challengeType === 'FIXED' ? '고정 목표' : '자유 목표';
+  return formatChallengeTypeLabel(challengeType);
 }
 
 function isEndlessChallengeEndDate(endDate: string): boolean {

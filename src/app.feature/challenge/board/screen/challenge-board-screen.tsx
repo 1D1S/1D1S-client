@@ -9,6 +9,7 @@ import {
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
+import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { authStorage } from '@module/utils/auth';
 import { X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -126,11 +127,6 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     [data]
   );
 
-  const formatChallengeType = (challengeTypeResponse: string): string =>
-    ({ FIXED: '고정 목표', FLEXIBLE: '개인 목표' })[
-      String(challengeTypeResponse)
-    ] ?? '기타';
-
   // 페이지네이션 우선 제거
 
   // const totalPages = Math.max(
@@ -242,7 +238,10 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               <div key={challenge.challengeId} className="min-w-0">
                 <ChallengeCard
                   challengeTitle={challenge.title}
-                  challengeType={formatChallengeType(challenge.challengeType)}
+                  challengeType={formatChallengeCardTypeLabel(
+                    challenge.challengeType,
+                    challenge.maxParticipantCnt
+                  )}
                   challengeCategory={getCategoryLabel(challenge.category)}
                   currentUserCount={challenge.participantCnt}
                   maxUserCount={challenge.maxParticipantCnt}

@@ -56,7 +56,10 @@ export default function HomeRandomChallengesSection({
             <div key={challenge.challengeId} className="min-w-0">
               <ChallengeCard
                 challengeTitle={challenge.title}
-                challengeType={formatChallengeType(challenge.challengeType)}
+                challengeType={formatChallengeType(
+                  challenge.challengeType,
+                  challenge.maxParticipantCnt
+                )}
                 challengeCategory={getCategoryLabel(challenge.category)}
                 currentUserCount={challenge.participantCnt}
                 maxUserCount={challenge.maxParticipantCnt}

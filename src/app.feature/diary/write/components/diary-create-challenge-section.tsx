@@ -5,6 +5,7 @@ import {
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
 } from '@feature/challenge/board/utils/challenge-period';
+import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import React from 'react';
 
 import type { ChallengeListItem as ChallengeListItemType } from '../../../challenge/board/type/challenge';
@@ -37,7 +38,9 @@ export function DiaryCreateChallengeSection({
         <div className="mt-2">
           <ChallengeListItem
             challengeTitle={selectedChallenge.title}
-            challengeType={selectedChallenge.challengeType}
+            challengeType={formatChallengeTypeLabel(
+              selectedChallenge.challengeType
+            )}
             challengeCategory={getCategoryLabel(selectedChallenge.category)}
             currentUserCount={selectedChallenge.participantCnt}
             maxUserCount={selectedChallenge.maxParticipantCnt}

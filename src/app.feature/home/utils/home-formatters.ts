@@ -1,10 +1,14 @@
+import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { type Feeling } from '@feature/diary/board/type/diary';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
 
 export type DiaryEmotion = 'happy' | 'soso' | 'sad';
 
-export function formatChallengeType(challengeType: string): string {
-  return { FIXED: '고정 목표', FLEXIBLE: '개인 목표' }[challengeType] ?? '기타';
+export function formatChallengeType(
+  challengeType: string,
+  maxParticipantCount: number
+): string {
+  return formatChallengeCardTypeLabel(challengeType, maxParticipantCount);
 }
 
 export function isChallengeOngoing(

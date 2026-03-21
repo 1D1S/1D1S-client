@@ -7,6 +7,7 @@ import {
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
 } from '@feature/challenge/board/utils/challenge-period';
+import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { cn } from '@module/utils/cn';
 import { useEffect, useState } from 'react';
 
@@ -97,7 +98,9 @@ export function ChallengePicker({
                 <ChallengeListItem
                   key={challenge.challengeId}
                   challengeTitle={challenge.title}
-                  challengeType={challenge.challengeType}
+                  challengeType={formatChallengeTypeLabel(
+                    challenge.challengeType
+                  )}
                   challengeCategory={getCategoryLabel(challenge.category)}
                   currentUserCount={challenge.participantCnt}
                   maxUserCount={challenge.maxParticipantCnt}
