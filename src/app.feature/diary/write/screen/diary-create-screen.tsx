@@ -29,6 +29,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
     memberChallenges,
     isMemberChallengesLoading,
     isInitialChallengeLoading,
+    isSelectedChallengeConfirmed,
     goals,
     achievedGoalIds,
     disabledAchievedDateKeys,
@@ -78,8 +79,13 @@ export default function DiaryCreateScreen(): React.ReactElement {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-stretch">
             <div className="flex min-w-0 flex-col gap-6">
               <DiaryCreateChallengeSection
-                selectedChallenge={selectedChallenge}
+                selectedChallenge={
+                  isSelectedChallengeConfirmed ? selectedChallenge : null
+                }
                 isInitialChallengeLoading={isInitialChallengeLoading}
+                isCheckingAvailability={
+                  Boolean(selectedChallenge) && !isSelectedChallengeConfirmed
+                }
                 challenges={memberChallenges}
                 isChallengesLoading={isMemberChallengesLoading}
                 onSelectChallenge={handleSelectChallenge}
@@ -87,7 +93,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
               />
 
               <DiaryCreateGoalsSection
-                goals={goals}
+                goals={isSelectedChallengeConfirmed ? goals : []}
                 achievedGoalIds={achievedGoalIds}
                 onGoalIdsChange={handleGoalIdsChange}
               />
@@ -111,8 +117,14 @@ export default function DiaryCreateScreen(): React.ReactElement {
           <DiaryCreateFinishSection
             achievedDate={achievedDate}
             onAchievedDateChange={handleAchievedDateChange}
-            disabledAchievedDateKeys={disabledAchievedDateKeys}
-            challengeStartDate={selectedChallenge?.startDate}
+            disabledAchievedDateKeys={
+              isSelectedChallengeConfirmed ? disabledAchievedDateKeys : []
+            }
+            challengeStartDate={
+              isSelectedChallengeConfirmed
+                ? selectedChallenge?.startDate
+                : undefined
+            }
             selectedMood={selectedMood}
             onMoodChange={setSelectedMood}
             isPublic={isPublic}

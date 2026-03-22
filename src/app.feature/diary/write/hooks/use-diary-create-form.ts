@@ -2,7 +2,7 @@ import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-per
 import { getCurrentMemberId } from '@module/utils/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Dispatch, SetStateAction } from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -241,6 +241,8 @@ interface UseDiaryCreateFormResult {
   memberChallenges: ChallengeListItem[];
   isMemberChallengesLoading: boolean;
   isInitialChallengeLoading: boolean;
+  /** 챌린지 선택 후 checkWrite 확인이 완료되고 작성 가능한 날짜가 있을 때 true */
+  isSelectedChallengeConfirmed: boolean;
   goals: ChallengeGoal[];
   achievedGoalIds: number[];
   disabledAchievedDateKeys: string[];
@@ -295,16 +297,16 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   const [achievedGoalIds, setAchievedGoalIds] = useState<number[]>([]);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState('');
+  const submitSuccessRef = useRef(false);
 
   const { data: existingDiary, isLoading: isExistingDiaryLoading } =
     useDiaryDetail(requestedDiaryId ?? 0);
 
-  const {
-    data: myDiaries = [],
-    isLoading: isMyDiariesLoading,
-  } = useAllDiaries({
-    enabled: requestedChallengeId !== null,
-  });
+  const { data: myDiaries = [], isLoading: isMyDiariesLoading } = useAllDiaries(
+    {
+      enabled: requestedChallengeId !== null,
+    }
+  );
 
   const requestedChallengeFromMyDiaries = useMemo(() => {
     if (requestedChallengeId === null) {
@@ -410,6 +412,13 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     selectedChallenge?.startDate
   );
 
+  // checkWrite 확인 완료 + 작성 가능한 날짜 존재 여부
+  // 수정 모드에선 editModeDateKey가 제외되므로 항상 true (로딩 완료 후)
+  const isSelectedChallengeConfirmed =
+    Boolean(selectedChallenge) &&
+    !isChallengeCheckWriteDatesLoading &&
+    (isEditMode || hasWritableRecentDate);
+
   const isSubmitting =
     createDiary.isPending ||
     updateDiary.isPending ||
@@ -494,7 +503,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       isEditMode ||
       !selectedChallenge ||
       isMemberChallengesLoading ||
-      !isSelectedChallengeOngoing
+      !isSelectedChallengeOngoing ||
+      submitSuccessRef.current
     ) {
       return;
     }
@@ -505,8 +515,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
 
     const timerId = window.setTimeout(() => {
       setIsCreateUnavailableDialogOpen(true);
-      setSelectedChallengeId(null);
-      setAchievedGoalIds([]);
     }, 0);
 
     return () => {
@@ -616,6 +624,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
 
   const closeCreateUnavailableDialog = useCallback(() => {
     setIsCreateUnavailableDialogOpen(false);
+    setSelectedChallengeId(null);
+    setAchievedGoalIds([]);
   }, []);
 
   const handleSubmit = useCallback(async (): Promise<void> => {
@@ -653,6 +663,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
           });
         }
 
+        submitSuccessRef.current = true;
         router.push(`/diary/${requestedDiaryId}`);
         return;
       }
@@ -674,6 +685,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         });
       }
 
+      submitSuccessRef.current = true;
       router.push('/diary');
     } catch (error) {
       toast.error('일지 저장 또는 썸네일 업로드에 실패했습니다.');
@@ -724,6 +736,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     memberChallenges: ongoingMemberChallenges,
     isMemberChallengesLoading,
     isInitialChallengeLoading,
+    isSelectedChallengeConfirmed,
     goals,
     achievedGoalIds,
     disabledAchievedDateKeys,
