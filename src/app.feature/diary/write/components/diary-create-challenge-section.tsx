@@ -14,6 +14,7 @@ import { ChallengePicker } from './challenge-picker';
 interface DiaryCreateChallengeSectionProps {
   selectedChallenge: ChallengeListItemType | null;
   isInitialChallengeLoading: boolean;
+  isCheckingAvailability: boolean;
   challenges: ChallengeListItemType[];
   isChallengesLoading: boolean;
   onSelectChallenge(challenge: ChallengeListItemType): void;
@@ -23,6 +24,7 @@ interface DiaryCreateChallengeSectionProps {
 export function DiaryCreateChallengeSection({
   selectedChallenge,
   isInitialChallengeLoading,
+  isCheckingAvailability,
   challenges,
   isChallengesLoading,
   onSelectChallenge,
@@ -34,7 +36,13 @@ export function DiaryCreateChallengeSection({
         연동된 챌린지
       </Text>
 
-      {selectedChallenge ? (
+      {isCheckingAvailability ? (
+        <div className="rounded-2xl border border-gray-200 bg-white px-4 py-5">
+          <Text size="body2" weight="regular" className="text-gray-500">
+            챌린지 정보를 확인하는 중입니다.
+          </Text>
+        </div>
+      ) : selectedChallenge ? (
         <div className="mt-2">
           <ChallengeListItem
             challengeTitle={selectedChallenge.title}
