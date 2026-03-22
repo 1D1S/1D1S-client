@@ -68,6 +68,8 @@ export interface MyPageDiary {
 export interface MyPageData {
   nickname: string;
   profileUrl: string;
+  email: string;
+  provider: 'GOOGLE' | 'KAKAO' | 'NAVER';
   streak: MyPageStreak;
   challengeList: MyPageChallenge[];
   diaryList: MyPageDiary[];
