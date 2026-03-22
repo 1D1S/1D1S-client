@@ -39,6 +39,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: OG_IMAGE_PATH,
+        width: 1200,
+        height: 630,
         alt: SITE_TITLE,
       },
     ],
@@ -47,7 +49,14 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: [OG_IMAGE_PATH],
+    images: [
+      {
+        url: OG_IMAGE_PATH,
+        width: 1200,
+        height: 630,
+        alt: SITE_TITLE,
+      },
+    ],
   },
 };
 
