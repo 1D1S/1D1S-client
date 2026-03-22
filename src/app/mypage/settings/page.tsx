@@ -19,8 +19,30 @@ import {
 } from '@feature/member/hooks/use-member-mutations';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
 import { LogOut } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+
+const PROVIDER_CONFIG = {
+  KAKAO: {
+    label: '카카오',
+    bg: 'bg-[#FEE500]',
+    textColor: 'text-black',
+    icon: '/images/kakao-logo.png',
+  },
+  NAVER: {
+    label: '네이버',
+    bg: 'bg-[#03C75A]',
+    textColor: 'text-white',
+    icon: '/images/naver-logo.png',
+  },
+  GOOGLE: {
+    label: '구글',
+    bg: 'bg-white border border-gray-300',
+    textColor: 'text-gray-700',
+    icon: null,
+  },
+} as const;
 
 export default function AccountSettingsPage(): React.ReactElement {
   const router = useRouter();
@@ -165,7 +187,7 @@ export default function AccountSettingsPage(): React.ReactElement {
                       Boolean(nicknameError) ||
                       nickname.trim() === data?.nickname
                     }
-                    className="shrink-0 whitespace-nowrap rounded-xl bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700 disabled:opacity-40"
+                    className="g900 shrink-0 px-4 py-2 text-sm font-medium whitespace-nowrap text-white transition hover:bg-gray-700 disabled:opacity-40"
                   >
                     {updateNickname.isPending ? '저장 중...' : '저장'}
                   </button>
@@ -196,6 +218,43 @@ export default function AccountSettingsPage(): React.ReactElement {
                   </Text>
                 ) : null}
               </div>
+
+              {/* 연동 계정 */}
+              {data?.provider && (
+                <div className="flex flex-col gap-2">
+                  <Text size="body1" weight="medium" className="text-gray-700">
+                    연동 계정
+                  </Text>
+                  <div className="flex items-center gap-2">
+                    {(() => {
+                      const config = PROVIDER_CONFIG[data.provider];
+                      return (
+                        <span
+                          className={`inline-flex shrink-0 items-center justify-center rounded-lg px-3 py-2 ${config.bg} ${config.textColor}`}
+                        >
+                          {config.icon ? (
+                            <Image
+                              src={config.icon}
+                              alt={config.label}
+                              width={20}
+                              height={20}
+                            />
+                          ) : (
+                            <span className="text-sm font-medium">
+                              {config.label}
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })()}
+                    <TextField
+                      value={data.email}
+                      readOnly
+                      className="flex-1 text-gray-500"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
