@@ -165,7 +165,7 @@ export default function AccountSettingsPage(): React.ReactElement {
                       Boolean(nicknameError) ||
                       nickname.trim() === data?.nickname
                     }
-                    className="shrink-0 whitespace-nowrap rounded-xl bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700 disabled:opacity-40"
+                    className="g900 shripx-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700 disabled:opacity-40"
                   >
                     {updateNickname.isPending ? '저장 중...' : '저장'}
                   </button>
