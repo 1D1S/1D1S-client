@@ -134,6 +134,7 @@ function DiaryCreateThumbnailSectionComponent({
               type="button"
               variant="outlined"
               size="small"
+              className="shrink-0"
               onClick={onClearThumbnail}
             >
               선택 해제
