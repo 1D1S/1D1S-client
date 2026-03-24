@@ -13,6 +13,7 @@ import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/chall
 import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { useMemberProfile } from '@feature/member/hooks/use-member-queries';
 import type { StreakCalendarItem } from '@feature/member/type/member';
+import { normalizeApiError } from '@module/api/error';
 import {
   CheckCircle2,
   FileText,
@@ -49,13 +50,29 @@ export default function MemberProfilePage(): React.ReactElement {
   const params = useParams();
   const memberId = Number(params.memberId);
   const router = useRouter();
-  const { data, isLoading } = useMemberProfile(memberId);
+  const { data, isLoading, isError, error } = useMemberProfile(memberId);
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Text size="body1" weight="medium" className="text-gray-500">
           불러오는 중...
+        </Text>
+      </div>
+    );
+  }
+
+  if (isError || !data) {
+    const message = isError ? normalizeApiError(error).message : '';
+    const isPrivate = message.includes('비공개');
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Text
+          size="body1"
+          weight="medium"
+          className={isPrivate ? 'text-gray-500' : 'text-red-500'}
+        >
+          {isPrivate ? '비공개 프로필입니다.' : (message || '프로필을 불러오지 못했습니다.')}
         </Text>
       </div>
     );
