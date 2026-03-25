@@ -98,6 +98,7 @@ export default function HomeScreen(): React.ReactElement {
             router.push(`/diary/${diaryId}`);
           }}
           onLikeToggle={onLikeToggle}
+          onUserClick={(memberId) => router.push(`/member/${memberId}`)}
           onChallengeClick={(challengeId) =>
             router.push(
               challengeId ? `/challenge/${challengeId}` : '/challenge'

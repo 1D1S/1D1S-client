@@ -305,6 +305,11 @@ export default function DiaryListScreen(): React.ReactElement {
                         getCategoryLabel(item.challenge?.category) ||
                         '챌린지'
                       }
+                      onUserClick={
+                        authorInfo?.id
+                          ? () => router.push(`/member/${authorInfo.id}`)
+                          : undefined
+                      }
                       onChallengeClick={() =>
                         router.push(
                           item.challenge

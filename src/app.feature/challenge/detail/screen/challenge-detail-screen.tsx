@@ -2,6 +2,7 @@
 
 import {
   Button,
+  CircleAvatar,
   CircularProgress,
   Dialog,
   DialogContent,
@@ -32,7 +33,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
-  CircleUserRound,
   Flame,
   Heart,
   UserRound,
@@ -1068,23 +1068,31 @@ export function ChallengeDetailScreen({
                   const highlighted = participant.status === 'HOST';
 
                   return (
-                    <div
+                    <button
                       key={participant.participantId}
-                      className="flex flex-col items-center gap-2.5"
+                      type="button"
+                      onClick={() =>
+                        router.push(`/member/${participant.memberId}`)
+                      }
+                      className="flex cursor-pointer flex-col items-center gap-2.5 rounded-2xl p-2 transition-colors duration-150 hover:bg-gray-100"
                     >
-                      <div
-                        className={`flex h-12 w-12 items-center justify-center rounded-full border ${
-                          highlighted
-                            ? 'border-main-700 bg-main-800 text-white'
-                            : 'border-gray-200 bg-gray-100 text-gray-500'
-                        }`}
-                      >
-                        {highlighted ? (
-                          <Text size="caption1" weight="bold">
+                      <div className="relative">
+                        <div
+                          className={`flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border ${
+                            highlighted
+                              ? 'border-main-700'
+                              : 'border-gray-200'
+                          }`}
+                        >
+                          <CircleAvatar
+                            imageUrl={participant.profileImg || undefined}
+                            size="md"
+                          />
+                        </div>
+                        {highlighted && (
+                          <span className="bg-main-800 absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full px-1.5 py-0.5 text-[9px] font-bold leading-none text-white">
                             HOST
-                          </Text>
-                        ) : (
-                          <CircleUserRound className="h-5 w-5" />
+                          </span>
                         )}
                       </div>
                       <Text
@@ -1103,7 +1111,7 @@ export function ChallengeDetailScreen({
                       >
                         {participant.status}
                       </Text>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -1209,6 +1217,11 @@ export function ChallengeDetailScreen({
                         diary.challenge?.title ||
                         getCategoryLabel(diary.challenge?.category) ||
                         '챌린지'
+                      }
+                      onUserClick={
+                        diary.author?.id
+                          ? () => router.push(`/member/${diary.author!.id}`)
+                          : undefined
                       }
                       onChallengeClick={() => {
                         const targetChallengeId =

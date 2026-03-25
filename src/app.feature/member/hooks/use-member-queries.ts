@@ -3,7 +3,7 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
 import { memberApi } from '../api/member-api';
 import { MEMBER_QUERY_KEYS } from '../consts/query-keys';
-import type { MyPageData, SidebarData } from '../type/member';
+import type { MemberProfileData, MyPageData, SidebarData } from '../type/member';
 
 const SIDEBAR_CACHE_KEY = '1d1s:sidebar';
 const MEMBER_INFO_STALE_TIME = Number.POSITIVE_INFINITY;
@@ -48,6 +48,16 @@ export function useSidebar(): UseQueryResult<SidebarData, Error> {
     },
     enabled: authStorage.hasTokens(),
     placeholderData: cachedSidebar,
+    staleTime: MEMBER_INFO_STALE_TIME,
+    gcTime: MEMBER_INFO_GC_TIME,
+  });
+}
+
+export function useMemberProfile(memberId: number): UseQueryResult<MemberProfileData, Error> {
+  return useQuery({
+    queryKey: MEMBER_QUERY_KEYS.profile(memberId),
+    queryFn: () => memberApi.getMemberProfile(memberId),
+    enabled: memberId > 0,
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
   });
