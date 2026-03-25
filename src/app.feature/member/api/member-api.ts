@@ -1,12 +1,18 @@
 import { apiClient } from '@module/api/client';
 import { requestData } from '@module/api/request';
 
-import type { MyPageData, SidebarData } from '../type/member';
+import type { MemberProfileData, MyPageData, SidebarData } from '../type/member';
 
 export const memberApi = {
   getSidebar: async (): Promise<SidebarData> =>
     requestData<SidebarData>(apiClient, {
       url: '/member/side-bar',
+      method: 'GET',
+    }),
+
+  getMemberProfile: async (memberId: number): Promise<MemberProfileData> =>
+    requestData<MemberProfileData>(apiClient, {
+      url: `/member/profile/${memberId}`,
       method: 'GET',
     }),
 

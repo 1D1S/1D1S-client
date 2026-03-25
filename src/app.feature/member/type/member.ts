@@ -65,6 +65,14 @@ export interface MyPageDiary {
   };
 }
 
+export interface MemberProfileData {
+  nickname: string;
+  profileUrl: string;
+  streak: MyPageStreak;
+  challengeList: MyPageChallenge[];
+  diaryList: MyPageDiary[];
+}
+
 export interface MyPageData {
   nickname: string;
   profileUrl: string;

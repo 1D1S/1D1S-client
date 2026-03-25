@@ -4,6 +4,7 @@ import {
   Button,
   ChallengeListItem,
   CheckList,
+  CircleAvatar,
   Tag,
   Text,
 } from '@1d1s/design-system';
@@ -109,6 +110,8 @@ interface DiaryDetailViewData {
   contentThumbnailUrl: string | null;
   tags: string[];
   authorName: string | null;
+  authorId: number | null;
+  authorProfileImage: string | null;
 }
 
 function feelingToEmoji(feeling: Feeling): string {
@@ -309,6 +312,8 @@ function mapDiaryToViewData(
       .filter((tag): tag is string => Boolean(tag))
       .map((tag) => getCategoryLabel(tag) || tag),
     authorName: authorInfo?.nickname ?? null,
+    authorId: authorInfo?.id ?? null,
+    authorProfileImage: authorInfo?.profileImage ?? null,
   };
 }
 
@@ -405,10 +410,22 @@ function DiaryDetailView({
                 작성일 {diaryData.dateLabel} | {diaryData.weekdayLabel}
               </Text>
             </div>
-            {diaryData.authorName ? (
-              <Text size="body2" weight="medium" className="mt-1 text-gray-500">
-                작성자 {diaryData.authorName}
-              </Text>
+            {diaryData.authorName && diaryData.authorId ? (
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(`/member/${diaryData.authorId}`)
+                }
+                className="mt-3 flex cursor-pointer items-center gap-2.5 rounded-xl px-2 py-1.5 transition-colors duration-150 hover:bg-gray-100"
+              >
+                <CircleAvatar
+                  imageUrl={diaryData.authorProfileImage ?? undefined}
+                  size="sm"
+                />
+                <Text size="body2" weight="medium" className="text-gray-700">
+                  {diaryData.authorName}
+                </Text>
+              </button>
             ) : null}
           </div>
 

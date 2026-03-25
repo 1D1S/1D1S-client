@@ -142,6 +142,11 @@ export function ChallengeDiaryListScreen({
                   getCategoryLabel(diary.challenge?.category) ||
                   '챌린지'
                 }
+                onUserClick={
+                  diary.author?.id
+                    ? () => router.push(`/member/${diary.author!.id}`)
+                    : undefined
+                }
                 onChallengeClick={() => {
                   const targetChallengeId =
                     diary.challenge?.challengeId ?? challengeId;
