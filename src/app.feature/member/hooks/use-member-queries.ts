@@ -53,7 +53,9 @@ export function useSidebar(): UseQueryResult<SidebarData, Error> {
   });
 }
 
-export function useMemberProfile(memberId: number): UseQueryResult<MemberProfileData, Error> {
+export function useMemberProfile(
+  memberId: number
+): UseQueryResult<MemberProfileData, Error> {
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.profile(memberId),
     queryFn: () => memberApi.getMemberProfile(memberId),
