@@ -20,6 +20,7 @@ interface HomeRandomDiariesSectionProps {
   onDiaryClick(diaryId: number): void;
   onLikeToggle(diary: DiaryItem): void;
   onChallengeClick(challengeId?: number): void;
+  onUserClick?(memberId: number): void;
 }
 
 export default function HomeRandomDiariesSection({
@@ -32,6 +33,7 @@ export default function HomeRandomDiariesSection({
   onDiaryClick,
   onLikeToggle,
   onChallengeClick,
+  onUserClick,
 }: HomeRandomDiariesSectionProps): React.ReactElement {
   return (
     <>
@@ -78,6 +80,11 @@ export default function HomeRandomDiariesSection({
                     item.challenge?.title ||
                     getCategoryLabel(item.challenge?.category) ||
                     '챌린지'
+                  }
+                  onUserClick={
+                    item.authorInfoDto?.id
+                      ? () => onUserClick?.(item.authorInfoDto!.id)
+                      : undefined
                   }
                   onChallengeClick={() =>
                     onChallengeClick(item.challenge?.challengeId)

@@ -268,6 +268,7 @@ export default function MemberProfilePage(): React.ReactElement {
                         date=""
                         emotion="soso"
                         onLikeToggle={() => undefined}
+                        onUserClick={() => router.push(`/member/${memberId}`)}
                         onClick={() => router.push(`/diary/${diary.id}`)}
                       />
                     </div>
