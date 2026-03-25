@@ -1090,7 +1090,7 @@ export function ChallengeDetailScreen({
                           />
                         </div>
                         {highlighted && (
-                          <span className="bg-main-800 absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full px-1.5 py-0.5 text-[9px] font-bold leading-none text-white">
+                          <span className="bg-main-800 absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-bold text-white">
                             HOST
                           </span>
                         )}
