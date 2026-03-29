@@ -163,6 +163,7 @@ export function Step4(): React.ReactElement {
                   }}
                   placeholder="목표를 입력하고 Enter를 눌러 추가하세요"
                   inputAriaLabel="목표 입력"
+                  maxGoals={5}
                 />
               </FormControl>
               <FormMessage />
