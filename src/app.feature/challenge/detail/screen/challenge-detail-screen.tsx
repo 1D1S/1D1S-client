@@ -9,6 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  GoalAddList,
   ScheduleCalendar,
   type ScheduleCalendarCell,
   Text,
@@ -447,7 +448,7 @@ export function ChallengeDetailScreen({
     }
 
     if (isFreeChallenge) {
-      setFreeGoalInputs(['']);
+      setFreeGoalInputs([]);
       setShowFreeGoalModal(true);
       return;
     }
@@ -748,49 +749,15 @@ export function ChallengeDetailScreen({
         </DialogHeader>
         <div className="flex flex-col gap-3">
           <Text size="body2" weight="regular" className="text-gray-500">
-            챌린지에서 달성할 목표를 입력해 주세요. (최대 5개)
+            챌린지에서 달성할 목표를 입력하고 Enter를 눌러 추가해 주세요.
           </Text>
-          <div className="flex flex-col gap-2">
-            {freeGoalInputs.map((value, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={value}
-                  onChange={(event) => {
-                    const next = [...freeGoalInputs];
-                    next[index] = event.target.value;
-                    setFreeGoalInputs(next);
-                  }}
-                  placeholder={`목표 ${index + 1}`}
-                  maxLength={50}
-                  className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm outline-none focus:border-orange-400"
-                />
-                {freeGoalInputs.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFreeGoalInputs(
-                        freeGoalInputs.filter((_, i) => i !== index)
-                      )
-                    }
-                    className="text-gray-400 hover:text-gray-600"
-                    aria-label="목표 삭제"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-          {freeGoalInputs.length < 5 && (
-            <button
-              type="button"
-              onClick={() => setFreeGoalInputs([...freeGoalInputs, ''])}
-              className="text-main-700 self-start text-sm font-medium hover:underline"
-            >
-              + 목표 추가
-            </button>
-          )}
+          <GoalAddList
+            goals={freeGoalInputs}
+            onGoalsChange={setFreeGoalInputs}
+            placeholder="목표를 입력하고 Enter를 눌러 추가하세요"
+            inputAriaLabel="목표 입력"
+            maxGoals={5}
+          />
         </div>
         <DialogFooter className="flex-row gap-2">
           <Button

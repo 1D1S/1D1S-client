@@ -82,6 +82,7 @@ export interface CreateChallengeRequest {
   maxParticipantCnt: number;
   challengeType: ChallengeType;
   goals: string[];
+  allowMidJoin: boolean;
 }
 
 export interface CreateChallengeResponse {

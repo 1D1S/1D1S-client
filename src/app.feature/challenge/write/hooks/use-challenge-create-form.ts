@@ -32,6 +32,7 @@ export const challengeCreateFormSchema = z
     memberCount: z.enum(['2', '5', '10', 'etc']).optional(),
     memberCountNumber: z.string().optional(),
     goalType: z.enum(['FIXED', 'FLEXIBLE']),
+    allowMidJoin: z.boolean(),
     goals: z.array(
       z.object({
         value: z
@@ -130,6 +131,7 @@ export function useChallengeCreateForm(): ReturnType<
       participationType: 'INDIVIDUAL',
       memberCountNumber: '2',
       goalType: 'FIXED',
+      allowMidJoin: false,
       goals: [],
     },
   });

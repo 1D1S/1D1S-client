@@ -18,14 +18,13 @@ import {
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
 import { cn } from '@module/utils/cn';
 import { User, Users } from 'lucide-react';
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 export function Step3(): React.ReactElement {
   const { control, watch } = useFormContext<ChallengeCreateFormValues>();
   const participationType = watch('participationType');
   const memberCount = watch('memberCount');
-  const [allowJoinAfterStart, setAllowJoinAfterStart] = useState(false);
 
   return (
     <div className="mx-auto w-full max-w-[980px] space-y-4">
@@ -188,25 +187,33 @@ export function Step3(): React.ReactElement {
             </div>
           ) : null}
 
-          <div className="rounded-2xl border border-gray-200 bg-gray-100 px-4 py-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <Text size="body2" weight="bold" className="text-gray-800">
-                  중도 참여 수용 <span className="text-gray-500">(선택)</span>
-                </Text>
-                <Text size="body2" weight="regular" className="text-gray-600">
-                  챌린지 시작 후에도 새로운 참여자를 받을 수 있습니다.
-                </Text>
-              </div>
-              <Checkbox
-                checked={allowJoinAfterStart}
-                onCheckedChange={(checked) =>
-                  setAllowJoinAfterStart(Boolean(checked))
-                }
-                aria-label="중도 참여 수용"
-              />
-            </div>
-          </div>
+          <FormField
+            control={control}
+            name="allowMidJoin"
+            render={({ field }) => (
+              <FormItem>
+                <div className="rounded-2xl border border-gray-200 bg-gray-100 px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <Text size="body2" weight="bold" className="text-gray-800">
+                        중도 참여 수용 <span className="text-gray-500">(선택)</span>
+                      </Text>
+                      <Text size="body2" weight="regular" className="text-gray-600">
+                        챌린지 시작 후에도 새로운 참여자를 받을 수 있습니다.
+                      </Text>
+                    </div>
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                        aria-label="중도 참여 수용"
+                      />
+                    </FormControl>
+                  </div>
+                </div>
+              </FormItem>
+            )}
+          />
         </>
       ) : null}
     </div>

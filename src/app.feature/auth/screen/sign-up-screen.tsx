@@ -238,10 +238,11 @@ export function SignUpScreen(): React.ReactElement {
                       control={form.control}
                       name="img"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="mb-5">
                           <AvatarImagePicker
                             size={SIGN_UP_LEFT_VISUAL_SIZE}
                             defaultImageUrl={imgPreviewUrl}
+                            changeLabel="사진 추가"
                             onChange={(
                               event: React.ChangeEvent<HTMLInputElement>
                             ) => {
