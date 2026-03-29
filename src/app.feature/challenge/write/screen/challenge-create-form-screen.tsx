@@ -175,7 +175,7 @@ export function ChallengeCreateFormScreen({
         challengeId={createdChallengeId}
       />
       <Dialog open={isErrorOpen} onOpenChange={setIsErrorOpen}>
-        <DialogContent className="gap-4 p-6 sm:max-w-[360px]">
+        <DialogContent className="flex flex-col gap-4 p-6 sm:max-w-[360px]">
           <DialogTitle className="text-center font-bold text-black">
             문제가 발생했습니다
           </DialogTitle>

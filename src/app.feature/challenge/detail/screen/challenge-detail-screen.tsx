@@ -371,14 +371,14 @@ export function ChallengeDetailScreen({
   const goals = data?.challengeGoals ?? EMPTY_GOALS;
   const participants = data?.participants ?? EMPTY_PARTICIPANTS;
 
-  const participationRate = Math.min(
-    100,
-    Math.max(0, detail?.participationRate ?? 0)
-  );
+  const participationRate =
+    Math.round(
+      Math.min(100, Math.max(0, detail?.participationRate ?? 0)) * 10
+    ) / 10;
   const goalCompletionRate =
     Math.round(
-      Math.min(100, Math.max(0, detail?.goalCompletionRate ?? 0)) * 100
-    ) / 100;
+      Math.min(100, Math.max(0, detail?.goalCompletionRate ?? 0)) * 10
+    ) / 10;
 
   const pendingParticipants = useMemo(
     () =>

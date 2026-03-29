@@ -6,10 +6,18 @@ import { getCategoryLabel } from '@constants/categories';
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
 import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/components/challenge-card';
 import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
+import {
+  useLikeDiary,
+  useUnlikeDiary,
+} from '@feature/diary/detail/hooks/use-diary-mutations';
 import { DiaryCard } from '@feature/diary/shared/components/diary-card';
 import { useMemberProfile } from '@feature/member/hooks/use-member-queries';
-import type { StreakCalendarItem } from '@feature/member/type/member';
+import type {
+  MyPageDiary,
+  StreakCalendarItem,
+} from '@feature/member/type/member';
 import { normalizeApiError } from '@module/api/error';
+import { authStorage } from '@module/utils/auth';
 import {
   CheckCircle2,
   FileText,
@@ -47,6 +55,8 @@ export default function MemberProfilePage(): React.ReactElement {
   const memberId = Number(params.memberId);
   const router = useRouter();
   const { data, isLoading, isError, error } = useMemberProfile(memberId);
+  const likeDiary = useLikeDiary();
+  const unlikeDiary = useUnlikeDiary();
 
   if (isLoading) {
     return (
@@ -77,6 +87,20 @@ export default function MemberProfilePage(): React.ReactElement {
   }
 
   const { nickname, profileUrl, streak, challengeList, diaryList } = data;
+
+  const handleDiaryLikeToggle = (diary: MyPageDiary): void => {
+    if (!authStorage.hasTokens()) {
+      return;
+    }
+    if (likeDiary.isPending || unlikeDiary.isPending) {
+      return;
+    }
+    if (diary.likeInfo.likedByMe) {
+      unlikeDiary.mutate(diary.id);
+    } else {
+      likeDiary.mutate(diary.id);
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-white p-4">
@@ -265,7 +289,7 @@ export default function MemberProfilePage(): React.ReactElement {
                         challengeLabel="일지"
                         date=""
                         emotion="soso"
-                        onLikeToggle={() => undefined}
+                        onLikeToggle={() => handleDiaryLikeToggle(diary)}
                         onUserClick={() => router.push(`/member/${memberId}`)}
                         onClick={() => router.push(`/diary/${diary.id}`)}
                       />

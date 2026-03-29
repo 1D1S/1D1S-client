@@ -8,6 +8,10 @@ import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/comp
 import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { useMyDiaries } from '@feature/diary/board/hooks/use-diary-queries';
 import { DiaryItem } from '@feature/diary/board/type/diary';
+import {
+  useLikeDiary,
+  useUnlikeDiary,
+} from '@feature/diary/detail/hooks/use-diary-mutations';
 import { DiaryCard } from '@feature/diary/shared/components/diary-card';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
@@ -103,6 +107,8 @@ function MyPageContent(): React.ReactElement {
   const router = useRouter();
   const { data, isLoading } = useMyPage();
   const { data: myDiaries = [] } = useMyDiaries();
+  const likeDiary = useLikeDiary();
+  const unlikeDiary = useUnlikeDiary();
 
   if (isLoading || !data) {
     return (
@@ -115,6 +121,23 @@ function MyPageContent(): React.ReactElement {
   }
 
   const { nickname, profileUrl, streak, challengeList } = data;
+
+  const handleDiaryLikeToggle = (diary: {
+    id: number;
+    isLiked: boolean;
+  }): void => {
+    if (!authStorage.hasTokens()) {
+      return;
+    }
+    if (likeDiary.isPending || unlikeDiary.isPending) {
+      return;
+    }
+    if (diary.isLiked) {
+      unlikeDiary.mutate(diary.id);
+    } else {
+      likeDiary.mutate(diary.id);
+    }
+  };
   const recentDiaryCards = myDiaries.map((diary) => {
     const diaryInfo = diary.diaryInfoDto;
     const achievementRate =
@@ -358,7 +381,7 @@ function MyPageContent(): React.ReactElement {
                         }
                         date={diary.date}
                         emotion={diary.emotion}
-                        onLikeToggle={() => undefined}
+                        onLikeToggle={() => handleDiaryLikeToggle(diary)}
                         onClick={() => router.push(`/diary/${diary.id}`)}
                       />
                     </div>
