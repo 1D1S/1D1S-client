@@ -156,6 +156,18 @@ export function useLikeDiary(): UseMutationResult<number, Error, number> {
       queryClient.invalidateQueries({
         queryKey: DIARY_QUERY_KEYS.allDiaries(),
       });
+      // 챌린지 다이어리 목록 무효화
+      queryClient.invalidateQueries({
+        queryKey: [...CHALLENGE_QUERY_KEYS.all, 'diaries'],
+      });
+      // 멤버 프로필 무효화 (프로필에 포함된 일지 likeInfo 갱신)
+      queryClient.invalidateQueries({
+        queryKey: ['member', 'profile'],
+      });
+      // 내 다이어리 목록 무효화
+      queryClient.invalidateQueries({
+        queryKey: [...DIARY_QUERY_KEYS.all, 'my'],
+      });
     },
   });
 }
@@ -183,6 +195,18 @@ export function useUnlikeDiary(): UseMutationResult<number, Error, number> {
       // 모든 다이어리 무효화
       queryClient.invalidateQueries({
         queryKey: DIARY_QUERY_KEYS.allDiaries(),
+      });
+      // 챌린지 다이어리 목록 무효화
+      queryClient.invalidateQueries({
+        queryKey: [...CHALLENGE_QUERY_KEYS.all, 'diaries'],
+      });
+      // 멤버 프로필 무효화 (프로필에 포함된 일지 likeInfo 갱신)
+      queryClient.invalidateQueries({
+        queryKey: ['member', 'profile'],
+      });
+      // 내 다이어리 목록 무효화
+      queryClient.invalidateQueries({
+        queryKey: [...DIARY_QUERY_KEYS.all, 'my'],
       });
     },
   });

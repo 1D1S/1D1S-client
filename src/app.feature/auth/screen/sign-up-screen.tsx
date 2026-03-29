@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  AvatarImagePicker,
   Button,
   CheckContainer,
   Dialog,
@@ -10,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
   Icon,
-  ImagePicker,
   Select,
   SelectContent,
   SelectItem,
@@ -55,11 +55,7 @@ const SIGN_UP_STEPS = [
 const SIGN_UP_LEFT_VISUAL_SIZE = 200;
 const SIGN_UP_LEFT_VISUAL_SLOT_HEIGHT = 280;
 
-function SignUpHeader({
-  onBack,
-}: {
-  onBack(): void;
-}): React.ReactElement {
+function SignUpHeader({ onBack }: { onBack(): void }): React.ReactElement {
   return (
     <header className="h-14 border-b border-gray-200 bg-white px-4">
       <div className="relative flex h-full items-center">
@@ -83,8 +79,9 @@ export function SignUpScreen(): React.ReactElement {
   const [step, setStep] = React.useState<Step>(1);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showExitDialog, setShowExitDialog] = React.useState(false);
-  const [imgPreviewUrl, setImgPreviewUrl] =
-    React.useState<string | undefined>();
+  const [imgPreviewUrl, setImgPreviewUrl] = React.useState<
+    string | undefined
+  >();
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 100 }, (_, i) => currentYear - i);
   const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -225,11 +222,7 @@ export function SignUpScreen(): React.ReactElement {
             <div className="mx-auto flex w-full max-w-[1080px] flex-1 items-stretch px-4 pb-5">
               <div className="grid w-full gap-6 lg:min-h-0 lg:grid-cols-[0.9fr_1.1fr]">
                 <section className="flex min-h-0 flex-col pt-2 text-left">
-                  <Text
-                    size="display2"
-                    weight="bold"
-                    className="text-gray-900"
-                  >
+                  <Text size="display2" weight="bold" className="text-gray-900">
                     나에 대해 알려주세요.
                   </Text>
                   <Text
@@ -246,7 +239,7 @@ export function SignUpScreen(): React.ReactElement {
                       name="img"
                       render={({ field }) => (
                         <FormItem>
-                          <ImagePicker
+                          <AvatarImagePicker
                             size={SIGN_UP_LEFT_VISUAL_SIZE}
                             defaultImageUrl={imgPreviewUrl}
                             onChange={(
@@ -255,9 +248,7 @@ export function SignUpScreen(): React.ReactElement {
                               const file = event.target.files?.[0] || undefined;
                               field.onChange(file);
                               if (file) {
-                                setImgPreviewUrl(
-                                  URL.createObjectURL(file)
-                                );
+                                setImgPreviewUrl(URL.createObjectURL(file));
                               }
                             }}
                           />
@@ -522,11 +513,7 @@ export function SignUpScreen(): React.ReactElement {
             <div className="mx-auto flex w-full max-w-[1080px] flex-1 items-stretch px-4 pb-5">
               <div className="grid w-full gap-6 lg:min-h-0 lg:grid-cols-[0.9fr_1.1fr]">
                 <section className="flex min-h-0 flex-col pt-2 text-left">
-                  <Text
-                    size="display2"
-                    weight="bold"
-                    className="text-gray-900"
-                  >
+                  <Text size="display2" weight="bold" className="text-gray-900">
                     어떤 주제에 관심이 있나요?
                   </Text>
                   <Text
@@ -549,7 +536,11 @@ export function SignUpScreen(): React.ReactElement {
                     name="topics"
                     render={({ field }) => (
                       <FormItem>
-                        <Text size="body2" weight="regular" className="mb-3 text-gray-500">
+                        <Text
+                          size="body2"
+                          weight="regular"
+                          className="mb-3 text-gray-500"
+                        >
                           최대 3개까지 선택할 수 있어요.
                         </Text>
                         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">

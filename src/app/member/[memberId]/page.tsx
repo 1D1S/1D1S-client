@@ -1,19 +1,23 @@
 /* eslint-disable no-use-before-define */
 'use client';
 
-import {
-  ChallengeCard as DSChallengeCard,
-  CircleAvatar,
-  DiaryCard,
-  Streak,
-  Text,
-} from '@1d1s/design-system';
+import { CircleAvatar, Streak, Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
+import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/components/challenge-card';
 import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
+import {
+  useLikeDiary,
+  useUnlikeDiary,
+} from '@feature/diary/detail/hooks/use-diary-mutations';
+import { DiaryCard } from '@feature/diary/shared/components/diary-card';
 import { useMemberProfile } from '@feature/member/hooks/use-member-queries';
-import type { StreakCalendarItem } from '@feature/member/type/member';
+import type {
+  MyPageDiary,
+  StreakCalendarItem,
+} from '@feature/member/type/member';
 import { normalizeApiError } from '@module/api/error';
+import { authStorage } from '@module/utils/auth';
 import {
   CheckCircle2,
   FileText,
@@ -51,6 +55,8 @@ export default function MemberProfilePage(): React.ReactElement {
   const memberId = Number(params.memberId);
   const router = useRouter();
   const { data, isLoading, isError, error } = useMemberProfile(memberId);
+  const likeDiary = useLikeDiary();
+  const unlikeDiary = useUnlikeDiary();
 
   if (isLoading) {
     return (
@@ -72,13 +78,29 @@ export default function MemberProfilePage(): React.ReactElement {
           weight="medium"
           className={isPrivate ? 'text-gray-500' : 'text-red-500'}
         >
-          {isPrivate ? '비공개 프로필입니다.' : (message || '프로필을 불러오지 못했습니다.')}
+          {isPrivate
+            ? '비공개 프로필입니다.'
+            : message || '프로필을 불러오지 못했습니다.'}
         </Text>
       </div>
     );
   }
 
   const { nickname, profileUrl, streak, challengeList, diaryList } = data;
+
+  const handleDiaryLikeToggle = (diary: MyPageDiary): void => {
+    if (!authStorage.hasTokens()) {
+      return;
+    }
+    if (likeDiary.isPending || unlikeDiary.isPending) {
+      return;
+    }
+    if (diary.likeInfo.likedByMe) {
+      unlikeDiary.mutate(diary.id);
+    } else {
+      likeDiary.mutate(diary.id);
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-white p-4">
@@ -267,7 +289,7 @@ export default function MemberProfilePage(): React.ReactElement {
                         challengeLabel="일지"
                         date=""
                         emotion="soso"
-                        onLikeToggle={() => undefined}
+                        onLikeToggle={() => handleDiaryLikeToggle(diary)}
                         onUserClick={() => router.push(`/member/${memberId}`)}
                         onClick={() => router.push(`/diary/${diary.id}`)}
                       />

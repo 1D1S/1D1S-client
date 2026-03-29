@@ -46,7 +46,10 @@ export default function HomeQuickActions({
     <div className="w-full px-4">
       <div className="grid grid-cols-3 gap-3">
         {QUICK_ACTION_ITEMS.map((item) => (
-          <div key={item.href} className="h-[120px] sm:h-[160px] lg:h-[200px]">
+          <div
+            key={item.href}
+            className="h-[120px] cursor-pointer sm:h-[160px] lg:h-[200px]"
+          >
             <InfoButton
               mainText={item.mainText}
               subText={item.subText}

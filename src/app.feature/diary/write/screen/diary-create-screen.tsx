@@ -98,7 +98,6 @@ export default function DiaryCreateScreen(): React.ReactElement {
                 onGoalIdsChange={handleGoalIdsChange}
               />
             </div>
-
             <DiaryCreateThumbnailSection
               thumbnailPreviewUrl={thumbnailPreviewUrl}
               hasThumbnail={Boolean(thumbnailFile)}

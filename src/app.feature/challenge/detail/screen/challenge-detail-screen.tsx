@@ -9,7 +9,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DiaryCard,
   ScheduleCalendar,
   type ScheduleCalendarCell,
   Text,
@@ -22,6 +21,7 @@ import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/use-diary-mutations';
+import { DiaryCard } from '@feature/diary/shared/components/diary-card';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
 import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/diary-create-unavailable-dialog';
@@ -371,14 +371,14 @@ export function ChallengeDetailScreen({
   const goals = data?.challengeGoals ?? EMPTY_GOALS;
   const participants = data?.participants ?? EMPTY_PARTICIPANTS;
 
-  const participationRate = Math.min(
-    100,
-    Math.max(0, detail?.participationRate ?? 0)
-  );
+  const participationRate =
+    Math.round(
+      Math.min(100, Math.max(0, detail?.participationRate ?? 0)) * 10
+    ) / 10;
   const goalCompletionRate =
     Math.round(
-      Math.min(100, Math.max(0, detail?.goalCompletionRate ?? 0)) * 100
-    ) / 100;
+      Math.min(100, Math.max(0, detail?.goalCompletionRate ?? 0)) * 10
+    ) / 10;
 
   const pendingParticipants = useMemo(
     () =>
@@ -1079,9 +1079,7 @@ export function ChallengeDetailScreen({
                       <div className="relative">
                         <div
                           className={`flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border ${
-                            highlighted
-                              ? 'border-main-700'
-                              : 'border-gray-200'
+                            highlighted ? 'border-main-700' : 'border-gray-200'
                           }`}
                         >
                           <CircleAvatar
@@ -1118,7 +1116,11 @@ export function ChallengeDetailScreen({
             </section>
 
             <section className="rounded-4 border border-gray-200 bg-white p-5">
-              <Text size="heading2" weight="bold" className="block text-gray-900">
+              <Text
+                size="heading2"
+                weight="bold"
+                className="block text-gray-900"
+              >
                 챌린지 목표
               </Text>
               {isFreeChallenge ? (

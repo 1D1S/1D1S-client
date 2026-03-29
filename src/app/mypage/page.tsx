@@ -1,18 +1,18 @@
 /* eslint-disable no-use-before-define */
 'use client';
 
-import {
-  ChallengeCard as DSChallengeCard,
-  CircleAvatar,
-  DiaryCard,
-  Streak,
-  Text,
-} from '@1d1s/design-system';
+import { CircleAvatar, Streak, Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
+import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/components/challenge-card';
 import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { useMyDiaries } from '@feature/diary/board/hooks/use-diary-queries';
 import { DiaryItem } from '@feature/diary/board/type/diary';
+import {
+  useLikeDiary,
+  useUnlikeDiary,
+} from '@feature/diary/detail/hooks/use-diary-mutations';
+import { DiaryCard } from '@feature/diary/shared/components/diary-card';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
 import type { StreakCalendarItem } from '@feature/member/type/member';
@@ -107,6 +107,8 @@ function MyPageContent(): React.ReactElement {
   const router = useRouter();
   const { data, isLoading } = useMyPage();
   const { data: myDiaries = [] } = useMyDiaries();
+  const likeDiary = useLikeDiary();
+  const unlikeDiary = useUnlikeDiary();
 
   if (isLoading || !data) {
     return (
@@ -119,6 +121,23 @@ function MyPageContent(): React.ReactElement {
   }
 
   const { nickname, profileUrl, streak, challengeList } = data;
+
+  const handleDiaryLikeToggle = (diary: {
+    id: number;
+    isLiked: boolean;
+  }): void => {
+    if (!authStorage.hasTokens()) {
+      return;
+    }
+    if (likeDiary.isPending || unlikeDiary.isPending) {
+      return;
+    }
+    if (diary.isLiked) {
+      unlikeDiary.mutate(diary.id);
+    } else {
+      likeDiary.mutate(diary.id);
+    }
+  };
   const recentDiaryCards = myDiaries.map((diary) => {
     const diaryInfo = diary.diaryInfoDto;
     const achievementRate =
@@ -362,7 +381,7 @@ function MyPageContent(): React.ReactElement {
                         }
                         date={diary.date}
                         emotion={diary.emotion}
-                        onLikeToggle={() => undefined}
+                        onLikeToggle={() => handleDiaryLikeToggle(diary)}
                         onClick={() => router.push(`/diary/${diary.id}`)}
                       />
                     </div>

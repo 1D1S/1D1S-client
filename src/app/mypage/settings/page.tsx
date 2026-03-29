@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  AvatarImagePicker,
   Button,
   Dialog,
   DialogContent,
@@ -8,7 +9,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  ImagePicker,
   Text,
   TextField,
 } from '@1d1s/design-system';
@@ -142,7 +142,7 @@ export default function AccountSettingsPage(): React.ReactElement {
             <div className="flex flex-col gap-6 px-5 py-5">
               {/* 프로필 사진 */}
               <div className="flex flex-col items-center gap-3">
-                <ImagePicker
+                <AvatarImagePicker
                   size={160}
                   defaultImageUrl={profilePreview || undefined}
                   changeLabel="변경"

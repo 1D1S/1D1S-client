@@ -1,6 +1,6 @@
 'use client';
 
-import { DiaryCard, Text } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
 import { Feeling } from '@feature/diary/board/type/diary';
@@ -8,6 +8,7 @@ import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/use-diary-mutations';
+import { DiaryCard } from '@feature/diary/shared/components/diary-card';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
 import { normalizeApiError } from '@module/api/error';
