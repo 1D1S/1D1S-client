@@ -205,7 +205,9 @@ export function Step3(): React.ReactElement {
                     <FormControl>
                       <Checkbox
                         checked={field.value}
-                        onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                        onCheckedChange={(checked) =>
+                          field.onChange(Boolean(checked))
+                        }
                         aria-label="중도 참여 수용"
                       />
                     </FormControl>
