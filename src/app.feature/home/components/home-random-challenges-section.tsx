@@ -1,7 +1,8 @@
-import { ChallengeCard, Text } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
 import { type ChallengeListItem } from '@feature/challenge/board/type/challenge';
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
+import { ChallengeCard } from '@feature/challenge/shared/components/challenge-card';
 import React from 'react';
 
 import {

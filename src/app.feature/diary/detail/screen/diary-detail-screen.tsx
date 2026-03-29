@@ -2,7 +2,6 @@
 
 import {
   Button,
-  ChallengeListItem,
   CheckList,
   CircleAvatar,
   Tag,
@@ -10,6 +9,7 @@ import {
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
+import { ChallengeListItem } from '@feature/challenge/shared/components/challenge-list-item';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
@@ -413,9 +413,7 @@ function DiaryDetailView({
             {diaryData.authorName && diaryData.authorId ? (
               <button
                 type="button"
-                onClick={() =>
-                  router.push(`/member/${diaryData.authorId}`)
-                }
+                onClick={() => router.push(`/member/${diaryData.authorId}`)}
                 className="mt-3 flex cursor-pointer items-center gap-2.5 rounded-xl px-2 py-1.5 transition-colors duration-150 hover:bg-gray-100"
               >
                 <CircleAvatar

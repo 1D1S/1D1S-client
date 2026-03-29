@@ -1,10 +1,11 @@
-import { ChallengeListItem, Text } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
 import {
   isChallengeEnded,
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
 } from '@feature/challenge/board/utils/challenge-period';
+import { ChallengeListItem } from '@feature/challenge/shared/components/challenge-list-item';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import React from 'react';
 

@@ -1,16 +1,12 @@
 /* eslint-disable no-use-before-define */
 'use client';
 
-import {
-  ChallengeCard as DSChallengeCard,
-  CircleAvatar,
-  DiaryCard,
-  Streak,
-  Text,
-} from '@1d1s/design-system';
+import { CircleAvatar, Streak, Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
+import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/components/challenge-card';
 import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
+import { DiaryCard } from '@feature/diary/shared/components/diary-card';
 import { useMemberProfile } from '@feature/member/hooks/use-member-queries';
 import type { StreakCalendarItem } from '@feature/member/type/member';
 import { normalizeApiError } from '@module/api/error';
@@ -72,7 +68,9 @@ export default function MemberProfilePage(): React.ReactElement {
           weight="medium"
           className={isPrivate ? 'text-gray-500' : 'text-red-500'}
         >
-          {isPrivate ? '비공개 프로필입니다.' : (message || '프로필을 불러오지 못했습니다.')}
+          {isPrivate
+            ? '비공개 프로필입니다.'
+            : message || '프로필을 불러오지 못했습니다.'}
         </Text>
       </div>
     );

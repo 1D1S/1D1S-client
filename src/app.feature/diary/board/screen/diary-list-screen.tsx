@@ -1,16 +1,13 @@
 'use client';
 
-import { DiaryCard, Text } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
+import { DiaryCard } from '@feature/diary/shared/components/diary-card';
 import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import { motion } from 'framer-motion';
-import {
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
@@ -138,8 +135,7 @@ export default function DiaryListScreen(): React.ReactElement {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const isLoginRequired =
-    searchParams.get('loginRequired') === 'true';
+  const isLoginRequired = searchParams.get('loginRequired') === 'true';
   const [sortMode] = useState<SortMode>('latest');
   const [showLoginDialog, setShowLoginDialog] = useState(isLoginRequired);
   const [loginDialogDescription, setLoginDialogDescription] = useState(
@@ -155,10 +151,9 @@ export default function DiaryListScreen(): React.ReactElement {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('loginRequired');
     const query = params.toString();
-    router.replace(
-      query ? `${pathname}?${query}` : pathname,
-      { scroll: false }
-    );
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const likeDiary = useLikeDiary();
@@ -317,7 +312,9 @@ export default function DiaryListScreen(): React.ReactElement {
                             : '/challenge'
                         )
                       }
-                      date={getRelativeDiaryDateLabel(diaryInfo?.createdAt ?? '')}
+                      date={getRelativeDiaryDateLabel(
+                        diaryInfo?.createdAt ?? ''
+                      )}
                       emotion={mapFeelingToEmotion(
                         diaryInfo?.feeling ?? 'NONE'
                       )}

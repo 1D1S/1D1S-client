@@ -1,18 +1,14 @@
 /* eslint-disable no-use-before-define */
 'use client';
 
-import {
-  ChallengeCard as DSChallengeCard,
-  CircleAvatar,
-  DiaryCard,
-  Streak,
-  Text,
-} from '@1d1s/design-system';
+import { CircleAvatar, Streak, Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
+import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/components/challenge-card';
 import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { useMyDiaries } from '@feature/diary/board/hooks/use-diary-queries';
 import { DiaryItem } from '@feature/diary/board/type/diary';
+import { DiaryCard } from '@feature/diary/shared/components/diary-card';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
 import type { StreakCalendarItem } from '@feature/member/type/member';
