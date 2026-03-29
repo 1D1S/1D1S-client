@@ -57,7 +57,7 @@ export function ChallengeCard({
       className={cn(
         'm w-full overflow-hidden rounded-[12px] border border-gray-200 bg-white',
         onClick && 'cursor-pointer',
-        'hover:shadow-defaulh tover:shadow-default transition-all duration-200 ease-in-out',
+        'transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg',
         className
       )}
       onClick={onClick}
