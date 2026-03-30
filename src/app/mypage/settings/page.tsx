@@ -107,7 +107,7 @@ export default function AccountSettingsPage(): React.ReactElement {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-white p-4">
-      <section className="rounded-3 w-full bg-white p-2">
+      <section className="rounded-3 mx-auto w-full max-w-[980px] bg-white p-2">
         <div className="flex items-start justify-between border-b border-gray-200 pb-5">
           <Text size="display1" weight="bold" className="text-gray-900">
             계정 설정

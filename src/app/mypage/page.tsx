@@ -294,11 +294,17 @@ function MyPageContent(): React.ReactElement {
           </section>
 
           <section>
-            <Text size="display2" weight="bold" className="mb-4 text-gray-900">
+            <Text size="display2" weight="bold" className="text-gray-900">
               활동 기록
             </Text>
 
-            <Streak data={buildYearStreak(streak.calendar)} size={14} gap={6} />
+            <div className="mt-4">
+              <Streak
+                data={buildYearStreak(streak.calendar)}
+                size={14}
+                gap={6}
+              />
+            </div>
           </section>
 
           <section>
