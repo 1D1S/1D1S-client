@@ -19,7 +19,7 @@ import {
 } from '@feature/member/hooks/use-member-mutations';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
 import { validateNickname } from '@module/utils/nickname';
-import { LogOut } from 'lucide-react';
+import { LogOut, UserMinus } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
@@ -57,6 +57,7 @@ export default function AccountSettingsPage(): React.ReactElement {
     string | undefined
   >();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+  const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
 
   const nickname = editedNickname ?? data?.nickname ?? '';
   const profilePreview = localProfilePreview ?? data?.profileUrl ?? '';
@@ -260,6 +261,19 @@ export default function AccountSettingsPage(): React.ReactElement {
                 {logout.isPending ? '로그아웃 중...' : '로그아웃'}
               </Text>
             </button>
+
+            <div className="h-px w-full bg-gray-100" />
+
+            <button
+              type="button"
+              onClick={() => setIsWithdrawDialogOpen(true)}
+              className="flex w-full items-center gap-3 px-5 py-4 text-gray-500 transition hover:bg-gray-50"
+            >
+              <UserMinus className="h-5 w-5" />
+              <Text size="body1" weight="medium" className="text-gray-600">
+                회원탈퇴
+              </Text>
+            </button>
           </section>
         </div>
       </section>
@@ -291,6 +305,31 @@ export default function AccountSettingsPage(): React.ReactElement {
               disabled={logout.isPending}
             >
               {logout.isPending ? '로그아웃 중...' : '로그아웃'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isWithdrawDialogOpen}
+        onOpenChange={setIsWithdrawDialogOpen}
+      >
+        <DialogContent className="gap-6 px-8 py-6 sm:max-w-[380px] sm:px-6">
+          <DialogHeader className="items-center text-center sm:text-center">
+            <DialogTitle>회원탈퇴</DialogTitle>
+          </DialogHeader>
+
+          <DialogDescription className="block w-full text-center">
+            회원탈퇴 기능은 아직 준비 중입니다.
+          </DialogDescription>
+
+          <DialogFooter className="flex-row gap-2">
+            <Button
+              size="medium"
+              className="flex-1"
+              onClick={() => setIsWithdrawDialogOpen(false)}
+            >
+              확인
             </Button>
           </DialogFooter>
         </DialogContent>
