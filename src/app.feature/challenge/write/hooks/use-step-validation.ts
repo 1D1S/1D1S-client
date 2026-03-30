@@ -7,13 +7,13 @@ export function getFieldsByStep(
 ): Array<keyof ChallengeCreateFormValues> {
   switch (step) {
     case 1:
-      return ['title', 'category', 'description'];
+      return ['title', 'category'];
     case 2:
-      return ['periodType', 'period', 'periodNumber', 'startDate'];
-    case 3:
       return ['participationType', 'memberCount', 'memberCountNumber'];
-    case 4:
+    case 3:
       return ['goalType', 'goals'];
+    case 4:
+      return ['periodType', 'period', 'periodNumber', 'startDate'];
     default:
       return [];
   }

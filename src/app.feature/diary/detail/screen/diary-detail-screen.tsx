@@ -101,6 +101,7 @@ interface DiaryDetailViewData {
   connectedChallengeEndDate: string;
   connectedChallengeCurrentUsers: number;
   connectedChallengeMaxUsers: number;
+  connectedChallengeThumbnailImage?: string;
   likedByMe: boolean;
   likeCount: number;
   checklistItems: ChecklistItem[];
@@ -301,6 +302,7 @@ function mapDiaryToViewData(
       summary?.participantCnt ?? diary.challenge?.participantCnt ?? 0,
     connectedChallengeMaxUsers:
       summary?.maxParticipantCnt ?? diary.challenge?.maxParticipantCnt ?? 0,
+    connectedChallengeThumbnailImage: summary?.thumbnailImage,
     likedByMe: diary.likeInfo?.likedByMe ?? false,
     likeCount: diary.likeInfo?.likeCnt ?? 0,
     checklistItems,
@@ -513,6 +515,7 @@ function DiaryDetailView({
             challengeTitle={diaryData.connectedChallengeTitle}
             challengeType={diaryData.connectedChallengeType}
             challengeCategory={diaryData.connectedChallengeCategory}
+            imageUrl={diaryData.connectedChallengeThumbnailImage}
             currentUserCount={diaryData.connectedChallengeCurrentUsers}
             maxUserCount={diaryData.connectedChallengeMaxUsers}
             startDate={diaryData.connectedChallengeStartDate}

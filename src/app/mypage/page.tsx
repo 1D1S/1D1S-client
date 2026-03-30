@@ -326,6 +326,7 @@ function MyPageContent(): React.ReactElement {
                             ch.maxParticipantCnt
                           )}
                           challengeCategory={getCategoryLabel(ch.category)}
+                          imageUrl={ch.thumbnailImage}
                           currentUserCount={ch.participantCnt}
                           maxUserCount={ch.maxParticipantCnt}
                           startDate={ch.startDate}

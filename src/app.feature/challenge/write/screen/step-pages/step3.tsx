@@ -1,62 +1,60 @@
-import {
-  Checkbox,
-  CheckContainer,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Text,
-  TextField,
-} from '@1d1s/design-system';
+import { CheckContainer, cn, GoalAddList, Text } from '@1d1s/design-system';
+import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
+import { Flag, Target } from 'lucide-react';
+import { useEffect } from 'react';
+import { useFormContext } from 'react-hook-form';
+
 import {
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from '@component/ui/form';
-import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
-import { cn } from '@module/utils/cn';
-import { User, Users } from 'lucide-react';
-import { type ChangeEvent } from 'react';
-import { useFormContext } from 'react-hook-form';
+} from '@/app.component/ui/form';
 
 export function Step3(): React.ReactElement {
-  const { control, watch } = useFormContext<ChallengeCreateFormValues>();
+  const { control, setValue, watch } =
+    useFormContext<ChallengeCreateFormValues>();
   const participationType = watch('participationType');
-  const memberCount = watch('memberCount');
+  const goalType = watch('goalType');
+  const isIndividual = participationType === 'INDIVIDUAL';
+
+  useEffect(() => {
+    if (isIndividual && goalType !== 'FIXED') {
+      setValue('goalType', 'FIXED', { shouldValidate: true });
+    }
+  }, [goalType, isIndividual, setValue]);
 
   return (
     <div className="mx-auto w-full max-w-[980px] space-y-4">
       <div className="flex flex-col space-y-3">
         <Text size="body1" weight="bold" className="text-gray-900">
-          챌린지 형태
+          목표 방식
         </Text>
         <FormField
           control={control}
-          name="participationType"
+          name="goalType"
           render={({ field }) => (
             <FormItem>
               <div className="grid grid-cols-2 gap-4">
                 <CheckContainer
-                  checked={field.value === 'INDIVIDUAL'}
+                  checked={field.value === 'FIXED'}
                   onCheckedChange={(checked) => {
                     if (checked) {
-                      field.onChange('INDIVIDUAL');
+                      field.onChange('FIXED');
                     }
                   }}
                   width="100%"
                   className={cn(
                     '!rounded-3 !h-auto !items-start !justify-start p-5 text-left hover:cursor-pointer',
-                    field.value === 'INDIVIDUAL'
+                    field.value === 'FIXED'
                       ? '!border-main-800 !bg-main-200'
                       : '!border-gray-300 !bg-white'
                   )}
-                  aria-label="개인 챌린지"
+                  aria-label="고정 목표"
                 >
                   <div className="flex h-full flex-col gap-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
-                      <User className="h-4 w-4" />
+                      <Flag className="h-4 w-4" />
                     </span>
                     <div className="flex flex-col">
                       <Text
@@ -64,38 +62,40 @@ export function Step3(): React.ReactElement {
                         weight="bold"
                         className="text-gray-900"
                       >
-                        개인 챌린지
+                        고정 목표
                       </Text>
                       <Text
                         size="body2"
                         weight="regular"
                         className="mt-1 text-gray-600"
                       >
-                        혼자 진행하는 챌린지입니다.
+                        참여자가 동일한 목표를 달성하는 방식입니다.
                       </Text>
                     </div>
                   </div>
                 </CheckContainer>
 
                 <CheckContainer
-                  checked={field.value === 'GROUP'}
+                  checked={field.value === 'FLEXIBLE'}
+                  disabled={isIndividual}
                   onCheckedChange={(checked) => {
-                    if (checked) {
-                      field.onChange('GROUP');
+                    if (checked && !isIndividual) {
+                      field.onChange('FLEXIBLE');
                     }
                   }}
                   width="100%"
                   className={cn(
-                    '!rounded-3 !h-auto !items-start !justify-start p-5 text-left hover:cursor-pointer',
-                    field.value === 'GROUP'
+                    '!rounded-3 !h-auto !items-start !justify-start p-5 text-left hover:cursor-pointer disabled:cursor-not-allowed',
+                    field.value === 'FLEXIBLE'
                       ? '!border-main-800 !bg-main-200'
-                      : '!border-gray-300 !bg-white'
+                      : '!border-gray-300 !bg-white',
+                    isIndividual && '!border-gray-200 !bg-gray-100'
                   )}
-                  aria-label="단체 챌린지"
+                  aria-label="자유 목표"
                 >
                   <div className="flex h-full flex-col gap-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
-                      <Users className="h-4 w-4" />
+                      <Target className="h-4 w-4" />
                     </span>
                     <div className="flex flex-col">
                       <Text
@@ -103,121 +103,71 @@ export function Step3(): React.ReactElement {
                         weight="bold"
                         className="text-gray-900"
                       >
-                        단체 챌린지
+                        자유 목표
                       </Text>
                       <Text
                         size="body2"
                         weight="regular"
                         className="mt-1 text-gray-600"
                       >
-                        다른 참여자와 함께 목표를 달성합니다.
+                        참여자가 각자 목표를 설정해 진행하는 방식입니다.
                       </Text>
                     </div>
                   </div>
                 </CheckContainer>
               </div>
+              {isIndividual ? (
+                <div className="border-main-300 bg-main-100 mt-3 rounded-2xl border px-4 py-3">
+                  <Text
+                    size="body2"
+                    weight="bold"
+                    className="text-main-900 block"
+                  >
+                    개인 챌린지는 자동으로 고정 목표로 생성됩니다.
+                  </Text>
+                  <Text
+                    size="body2"
+                    weight="regular"
+                    className="text-main-900 mt-1"
+                  >
+                    참여자가 1명이므로 자유 목표는 선택할 수 없고, 입력한
+                    목표를 기준으로 챌린지가 진행됩니다.
+                  </Text>
+                </div>
+              ) : null}
               <FormMessage />
             </FormItem>
           )}
         />
       </div>
 
-      {participationType === 'GROUP' ? (
-        <>
-          <div className="flex flex-col space-y-3">
-            <Text size="body1" weight="bold" className="text-gray-900">
-              최대 참여 인원
-            </Text>
-            <FormField
-              control={control}
-              name="memberCount"
-              render={({ field }) => (
-                <FormItem>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="h-11 w-full rounded-2xl hover:cursor-pointer">
-                        <SelectValue placeholder="참여 인원을 선택해주세요." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="2">2명</SelectItem>
-                      <SelectItem value="5">5명</SelectItem>
-                      <SelectItem value="10">10명</SelectItem>
-                      <SelectItem value="etc">직접 입력 (최대 50명)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Text size="body2" weight="regular" className="text-gray-600">
-              단체 챌린지 운영을 위해 최대 인원을 설정하세요.
-            </Text>
-          </div>
-
-          {memberCount === 'etc' ? (
-            <div className="flex flex-col space-y-2">
-              <Text size="body2" weight="medium" className="text-gray-700">
-                직접 입력 (최대 50명)
-              </Text>
-              <FormField
-                control={control}
-                name="memberCountNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <TextField
-                        id="memberCountNumber"
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        className="w-full md:w-[240px]"
-                        {...field}
-                        value={field.value ?? ''}
-                        maxLength={2}
-                        onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                          field.onChange(event.target.value.replace(/\D/g, ''));
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          ) : null}
-
-          <FormField
-            control={control}
-            name="allowMidJoin"
-            render={({ field }) => (
-              <FormItem>
-                <div className="rounded-2xl border border-gray-200 bg-gray-100 px-4 py-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <Text size="body2" weight="bold" className="text-gray-800">
-                        중도 참여 수용 <span className="text-gray-500">(선택)</span>
-                      </Text>
-                      <Text size="body2" weight="regular" className="text-gray-600">
-                        챌린지 시작 후에도 새로운 참여자를 받을 수 있습니다.
-                      </Text>
-                    </div>
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={(checked) =>
-                          field.onChange(Boolean(checked))
-                        }
-                        aria-label="중도 참여 수용"
-                      />
-                    </FormControl>
-                  </div>
-                </div>
-              </FormItem>
-            )}
-          />
-        </>
-      ) : null}
+      <div className="flex flex-col space-y-3">
+        <Text size="body1" weight="bold" className="text-gray-900">
+          목표 목록
+        </Text>
+        <FormField
+          control={control}
+          name="goals"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <GoalAddList
+                  goals={(field.value ?? [])
+                    .map((goal) => goal.value)
+                    .filter(Boolean)}
+                  onGoalsChange={(goals) => {
+                    field.onChange(goals.map((goal) => ({ value: goal })));
+                  }}
+                  placeholder="목표를 입력하고 Enter를 눌러 추가하세요"
+                  inputAriaLabel="목표 입력"
+                  maxGoals={5}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
     </div>
   );
 }

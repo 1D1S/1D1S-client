@@ -2,6 +2,7 @@ import { Tag, Text } from '@1d1s/design-system';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { format } from 'date-fns';
 import { Check } from 'lucide-react';
+import Image from 'next/image';
 import { useFormContext } from 'react-hook-form';
 
 import { ChallengeCreateFormValues } from '../hooks/use-challenge-create-form';
@@ -29,6 +30,18 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* 대표 사진 */}
+      {values.thumbnailPreviewUrl && (
+        <div className="relative h-[180px] w-full overflow-hidden rounded-2xl">
+          <Image
+            src={values.thumbnailPreviewUrl}
+            alt="챌린지 대표 사진"
+            fill
+            className="object-cover"
+          />
+        </div>
+      )}
+
       {/* 제목 + 카테고리 태그 */}
       <div className="flex items-start justify-between gap-3">
         <Text size="heading1" weight="bold" className="text-black">

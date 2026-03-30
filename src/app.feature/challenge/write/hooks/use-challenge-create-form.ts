@@ -33,6 +33,8 @@ export const challengeCreateFormSchema = z
     memberCountNumber: z.string().optional(),
     goalType: z.enum(['FIXED', 'FLEXIBLE']),
     allowMidJoin: z.boolean(),
+    thumbnailImageKey: z.string().optional(),
+    thumbnailPreviewUrl: z.string().optional(),
     goals: z.array(
       z.object({
         value: z

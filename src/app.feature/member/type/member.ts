@@ -52,6 +52,7 @@ export interface MyPageChallenge {
     likedByMe: boolean;
     likeCnt: number;
   };
+  thumbnailImage?: string;
 }
 
 export interface MyPageDiary {

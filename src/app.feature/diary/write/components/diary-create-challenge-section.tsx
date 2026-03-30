@@ -51,6 +51,7 @@ export function DiaryCreateChallengeSection({
               selectedChallenge.challengeType
             )}
             challengeCategory={getCategoryLabel(selectedChallenge.category)}
+            imageUrl={selectedChallenge.thumbnailImage}
             currentUserCount={selectedChallenge.participantCnt}
             maxUserCount={selectedChallenge.maxParticipantCnt}
             startDate={selectedChallenge.startDate}

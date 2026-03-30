@@ -38,6 +38,7 @@ import {
   Heart,
   UserRound,
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useMemo, useState, useSyncExternalStore } from 'react';
@@ -786,6 +787,17 @@ export function ChallengeDetailScreen({
       {authDialog}
       {freeGoalModal}
       <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6">
+        {summary.thumbnailImage && (
+          <div className="relative h-[220px] w-full overflow-hidden rounded-3xl md:h-[280px]">
+            <Image
+              src={summary.thumbnailImage}
+              alt={summary.title}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        )}
         <section className="rounded-4 border border-gray-200 bg-white p-6 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">

@@ -108,7 +108,11 @@ export function ChallengeCreateFormScreen({
       // 싱크가 맞지 않는 부분 존재
       challengeType: values.goalType,
       goals: values.goals.map((goal) => goal.value),
-      allowMidJoin: values.participationType === 'INDIVIDUAL' ? false : values.allowMidJoin,
+      allowMidJoin:
+        values.participationType === 'INDIVIDUAL'
+          ? false
+          : values.allowMidJoin,
+      thumbnailImage: values.thumbnailImageKey,
     };
   };
 

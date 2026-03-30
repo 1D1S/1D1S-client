@@ -62,6 +62,7 @@ export default function HomeRandomChallengesSection({
                   challenge.maxParticipantCnt
                 )}
                 challengeCategory={getCategoryLabel(challenge.category)}
+                imageUrl={challenge.thumbnailImage}
                 currentUserCount={challenge.participantCnt}
                 maxUserCount={challenge.maxParticipantCnt}
                 startDate={challenge.startDate}

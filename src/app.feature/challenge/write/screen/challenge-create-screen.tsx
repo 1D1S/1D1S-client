@@ -12,10 +12,10 @@ export default function ChallengeCreateScreen(): React.ReactElement {
   const [step, setStep] = useState(1);
   const totalSteps = 4;
   const steps = [
-    { id: 'basic', label: '기본 정보' },
-    { id: 'duration', label: '기간 설정' },
-    { id: 'members', label: '참여 규칙' },
-    { id: 'goals', label: '목표 설정' },
+    { id: 'info', label: '챌린지 정보' },
+    { id: 'scale', label: '참여 규모' },
+    { id: 'goals', label: '목표' },
+    { id: 'schedule', label: '기간 및 일정' },
   ];
 
   const next = (): void => setStep((step) => Math.min(step + 1, totalSteps));

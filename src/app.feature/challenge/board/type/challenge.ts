@@ -31,6 +31,7 @@ export interface ChallengeSummary {
   challengeType: ChallengeType;
   participantCnt: number;
   likeInfo: LikeInfo;
+  thumbnailImage?: string;
 }
 
 export interface ChallengeListItem {
@@ -44,6 +45,7 @@ export interface ChallengeListItem {
   participantCnt: number;
   liked: boolean;
   likeCnt: number;
+  thumbnailImage?: string;
 }
 
 export interface ChallengeDetail {
@@ -83,6 +85,7 @@ export interface CreateChallengeRequest {
   challengeType: ChallengeType;
   goals: string[];
   allowMidJoin: boolean;
+  thumbnailImage?: string;
 }
 
 export interface CreateChallengeResponse {
