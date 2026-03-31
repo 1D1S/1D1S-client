@@ -367,7 +367,7 @@ export default function AppLayoutShell({
         isRightSidebarCollapsed: false,
       }}
     >
-      <div className="flex min-h-screen w-screen flex-col bg-white">
+      <div className="flex min-h-screen w-full flex-col bg-white">
         {showHeader ? (
           <header className="sticky top-0 z-30 shrink-0 bg-white px-4 pt-3">
             <AppHeader
