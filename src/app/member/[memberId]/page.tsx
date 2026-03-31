@@ -26,6 +26,7 @@ import {
   Trophy,
   UserPlus,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -264,11 +265,21 @@ export default function MemberProfilePage(): React.ReactElement {
 
           {/* 일지 */}
           <section>
-            <Text size="display2" weight="bold" className="text-gray-900">
-              {nickname}님의 일지
-            </Text>
+            <div className="flex items-center justify-between">
+              <Text size="display2" weight="bold" className="text-gray-900">
+                {nickname}님의 일지
+              </Text>
+              {diaryList.pageInfo.hasNextPage && (
+                <Link
+                  href={`/member/${memberId}/diary`}
+                  className="text-main-800 text-sm font-semibold hover:underline"
+                >
+                  전체 보기
+                </Link>
+              )}
+            </div>
 
-            {diaryList.length === 0 ? (
+            {diaryList.items.length === 0 ? (
               <div className="rounded-3 mt-4 border border-gray-200 p-6 text-center">
                 <Text size="body1" weight="medium" className="text-gray-500">
                   작성한 일지가 없습니다.
@@ -277,7 +288,7 @@ export default function MemberProfilePage(): React.ReactElement {
             ) : (
               <div className="mt-4 overflow-x-auto">
                 <div className="flex w-max gap-3 pb-2">
-                  {diaryList.map((diary) => (
+                  {diaryList.items.map((diary) => (
                     <div key={diary.id} className="w-[240px] shrink-0">
                       <DiaryCard
                         imageUrl="/images/default-card.png"

@@ -10,6 +10,7 @@ import {
   DiaryItem,
   DiaryListParams,
   DiaryListResponse,
+  MyDiariesResponse,
   RandomDiaryParams,
 } from '../type/diary';
 
@@ -82,14 +83,43 @@ export const diaryBoardApi = {
     return normalizeAllDiariesResponse(response);
   },
 
-  // 나의 다이어리 목록 조회 (전체)
-  getMyDiaries: async (): Promise<DiaryItem[]> => {
-    const response = await requestBody<AllDiariesApiResponse>(apiClient, {
-      url: '/diaries/my',
+  // 나의 다이어리 목록 조회
+  getMyDiaries: async (size?: number): Promise<MyDiariesResponse> => {
+    const query = size !== undefined ? buildQueryString({ size }) : '';
+    const response = await requestData<{
+      items: DiaryItemApi[];
+      pageInfo: MyDiariesResponse['pageInfo'];
+    }>(apiClient, {
+      url: query ? `/diaries/my?${query}` : '/diaries/my',
       method: 'GET',
     });
 
-    return normalizeAllDiariesResponse(response);
+    return {
+      items: normalizeDiaryItems(response.items),
+      pageInfo: response.pageInfo,
+    };
+  },
+
+  // 특정 멤버의 다이어리 목록 조회
+  getMemberDiaries: async (
+    memberId: number,
+    size?: number
+  ): Promise<MyDiariesResponse> => {
+    const query = size !== undefined ? buildQueryString({ size }) : '';
+    const response = await requestData<{
+      items: DiaryItemApi[];
+      pageInfo: MyDiariesResponse['pageInfo'];
+    }>(apiClient, {
+      url: query
+        ? `/diaries/member/${memberId}?${query}`
+        : `/diaries/member/${memberId}`,
+      method: 'GET',
+    });
+
+    return {
+      items: normalizeDiaryItems(response.items),
+      pageInfo: response.pageInfo,
+    };
   },
 
   // 랜덤 다이어리 보여주기

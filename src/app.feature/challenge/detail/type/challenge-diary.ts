@@ -16,3 +16,16 @@ export interface ChallengeDiaryItem {
   likeInfo: LikeInfo;
   diaryInfo: DiaryInfo;
 }
+
+export interface PageInfo {
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNextPage: boolean;
+}
+
+export interface ChallengeDiaryListResponse {
+  items: ChallengeDiaryItem[];
+  pageInfo: PageInfo;
+}

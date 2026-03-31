@@ -365,8 +365,8 @@ export function ChallengeDetailScreen({
   const [showFreeGoalModal, setShowFreeGoalModal] = useState(false);
   const [freeGoalInputs, setFreeGoalInputs] = useState<string[]>(['']);
 
-  const { data: challengeDiaries, isLoading: isDiariesLoading } =
-    useChallengeDiaryList(challengeId);
+  const { data: challengeDiariesData, isLoading: isDiariesLoading } =
+    useChallengeDiaryList(challengeId, 10);
 
   const summary = data?.challengeSummary;
   const detail = data?.challengeDetail;
@@ -431,10 +431,9 @@ export function ChallengeDetailScreen({
     () => buildCalendarRows(calendarMonth, summaryStartDate, summaryEndDate),
     [calendarMonth, summaryEndDate, summaryStartDate]
   );
-  const previewDiaries = useMemo(
-    () => (challengeDiaries ?? []).slice(0, 10),
-    [challengeDiaries]
-  );
+  const previewDiaries = challengeDiariesData?.items ?? [];
+  const hasMoreDiaries =
+    challengeDiariesData?.pageInfo.hasNextPage ?? false;
 
   const isActionLoading =
     joinChallenge.isPending ||
@@ -1152,12 +1151,14 @@ export function ChallengeDetailScreen({
             <Text size="heading2" weight="bold" className="text-gray-900">
               챌린지 일지 리스트
             </Text>
-            <Link
-              href={`/challenge/${id}/diary`}
-              className="text-main-800 text-sm font-semibold hover:underline"
-            >
-              전체 보기
-            </Link>
+            {hasMoreDiaries && (
+              <Link
+                href={`/challenge/${id}/diary`}
+                className="text-main-800 text-sm font-semibold hover:underline"
+              >
+                전체 보기
+              </Link>
+            )}
           </div>
 
           {isDiariesLoading ? (

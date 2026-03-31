@@ -26,6 +26,7 @@ import {
   Target,
   Trophy,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useSyncExternalStore } from 'react';
 
@@ -106,7 +107,9 @@ export default function MyPage(): React.ReactElement | null {
 function MyPageContent(): React.ReactElement {
   const router = useRouter();
   const { data, isLoading } = useMyPage();
-  const { data: myDiaries = [] } = useMyDiaries();
+  const { data: myDiariesData } = useMyDiaries(10);
+  const myDiaries = myDiariesData?.items ?? [];
+  const hasMoreDiaries = myDiariesData?.pageInfo.hasNextPage ?? false;
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
 
@@ -349,9 +352,19 @@ function MyPageContent(): React.ReactElement {
           </section>
 
           <section>
-            <Text size="display2" weight="bold" className="text-gray-900">
-              내 일지
-            </Text>
+            <div className="flex items-center justify-between">
+              <Text size="display2" weight="bold" className="text-gray-900">
+                내 일지
+              </Text>
+              {hasMoreDiaries && (
+                <Link
+                  href="/mypage/diary"
+                  className="text-main-800 text-sm font-semibold hover:underline"
+                >
+                  전체 보기
+                </Link>
+              )}
+            </div>
 
             {recentDiaryCards.length === 0 ? (
               <div className="rounded-3 mt-4 border border-gray-200 p-6 text-center">

@@ -3,7 +3,7 @@
 import { Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
-import { Feeling } from '@feature/diary/board/type/diary';
+import { DiaryItem,Feeling  } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
@@ -18,14 +18,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
-import { useChallengeDiaryList } from '../hooks/use-challenge-diary-queries';
-import { ChallengeDiaryItem } from '../type/challenge-diary';
+import { useMemberDiaries } from '../hooks/use-diary-queries';
 
 type DiaryEmotion = 'happy' | 'soso' | 'sad';
-
-interface ChallengeDiaryListScreenProps {
-  id: string;
-}
 
 function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
   switch (feeling) {
@@ -33,38 +28,39 @@ function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
       return 'happy';
     case 'SAD':
       return 'sad';
-    case 'NORMAL':
-    case 'NONE':
     default:
       return 'soso';
   }
 }
 
-export function ChallengeDiaryListScreen({
-  id,
-}: ChallengeDiaryListScreenProps): React.ReactElement {
-  const challengeId = Number(id);
+interface MemberDiaryListScreenProps {
+  memberId: string;
+}
+
+export function MemberDiaryListScreen({
+  memberId,
+}: MemberDiaryListScreenProps): React.ReactElement {
+  const memberIdNum = Number(memberId);
   const router = useRouter();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
   const {
-    data: diaries,
+    data,
     isLoading,
     isError,
     error,
-  } = useChallengeDiaryList(challengeId);
+  } = useMemberDiaries(memberIdNum);
 
-  const diaryItems = diaries?.items ?? [];
+  const diaryItems = data?.items ?? [];
   const hasDiaries = diaryItems.length > 0;
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
 
-  const handleLikeToggle = (diary: ChallengeDiaryItem): void => {
+  const handleLikeToggle = (diary: DiaryItem): void => {
     if (!authStorage.hasTokens()) {
       setShowLoginDialog(true);
       return;
     }
-
     if (isLikePending) {
       return;
     }
@@ -85,17 +81,17 @@ export function ChallengeDiaryListScreen({
         <div className="flex flex-col gap-3 border-b border-gray-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-2">
             <Link
-              href={`/challenge/${id}`}
+              href={`/member/${memberId}`}
               className="inline-flex w-fit items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-gray-700"
             >
               <ArrowLeft className="h-4 w-4" />
-              챌린지 상세로
+              프로필로
             </Link>
             <Text size="display1" weight="bold" className="text-gray-900">
-              챌린지 일지
+              일지 전체 보기
             </Text>
             <Text size="body1" weight="regular" className="text-gray-600">
-              챌린지 참여자가 작성한 일지 목록입니다.
+              작성한 일지 전체 목록입니다.
             </Text>
           </div>
         </div>
@@ -129,40 +125,46 @@ export function ChallengeDiaryListScreen({
                 }
                 percent={Math.min(
                   100,
-                  Math.max(0, diary.diaryInfo?.achievementRate ?? 0)
+                  Math.max(
+                    0,
+                    diary.achievementRate ??
+                      diary.diaryInfoDto?.achievementRate ??
+                      0
+                  )
                 )}
                 isLiked={diary.likeInfo.likedByMe}
                 likes={diary.likeInfo.likeCnt}
                 title={diary.title}
-                user={diary.author?.nickname ?? '익명'}
+                user={diary.authorInfoDto?.nickname ?? '익명'}
                 userImage={
-                  resolveDiaryImageUrl(diary.author?.profileImage) ||
+                  resolveDiaryImageUrl(diary.authorInfoDto?.profileImage) ||
                   '/images/default-profile.png'
                 }
                 challengeLabel={
                   diary.challenge?.title ||
                   getCategoryLabel(diary.challenge?.category) ||
-                  '챌린지'
+                  '일지'
                 }
                 onUserClick={
-                  diary.author?.id
-                    ? () => router.push(`/member/${diary.author!.id}`)
+                  diary.authorInfoDto?.id
+                    ? () =>
+                        router.push(`/member/${diary.authorInfoDto!.id}`)
                     : undefined
                 }
                 onChallengeClick={() => {
-                  const targetChallengeId =
-                    diary.challenge?.challengeId ?? challengeId;
-                  if (targetChallengeId > 0) {
-                    router.push(`/challenge/${targetChallengeId}`);
+                  if (diary.challenge?.challengeId) {
+                    router.push(
+                      `/challenge/${diary.challenge.challengeId}`
+                    );
                   }
                 }}
                 date={getRelativeDiaryDateLabel(
-                  diary.diaryInfo?.createdAt ??
-                    diary.diaryInfo?.challengedDate ??
+                  diary.diaryInfoDto?.createdAt ??
+                    diary.diaryInfoDto?.challengedDate ??
                     ''
                 )}
                 emotion={mapFeelingToEmotion(
-                  diary.diaryInfo?.feeling ?? 'NONE'
+                  diary.diaryInfoDto?.feeling ?? 'NONE'
                 )}
                 onLikeToggle={() => handleLikeToggle(diary)}
                 onClick={() => router.push(`/diary/${diary.id}`)}
@@ -174,7 +176,7 @@ export function ChallengeDiaryListScreen({
         {!isLoading && !isError && !hasDiaries ? (
           <div className="mt-10 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-gray-500">
-              아직 등록된 일지가 없습니다.
+              아직 작성한 일지가 없습니다.
             </Text>
           </div>
         ) : null}

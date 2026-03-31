@@ -14,6 +14,7 @@ import {
   DiaryItem,
   DiaryListParams,
   DiaryListResponse,
+  MyDiariesResponse,
   RandomDiaryParams,
 } from '../type/diary';
 
@@ -70,9 +71,23 @@ export function useAllDiaries(options?: {
 }
 
 // 나의 다이어리 목록 조회
-export function useMyDiaries(): UseQueryResult<DiaryItem[], Error> {
+export function useMyDiaries(
+  size?: number
+): UseQueryResult<MyDiariesResponse, Error> {
   return useQuery({
-    queryKey: DIARY_QUERY_KEYS.myDiaries(),
-    queryFn: () => diaryBoardApi.getMyDiaries(),
+    queryKey: DIARY_QUERY_KEYS.myDiaries({ size }),
+    queryFn: () => diaryBoardApi.getMyDiaries(size),
+  });
+}
+
+// 특정 멤버의 다이어리 목록 조회
+export function useMemberDiaries(
+  memberId: number,
+  size?: number
+): UseQueryResult<MyDiariesResponse, Error> {
+  return useQuery({
+    queryKey: DIARY_QUERY_KEYS.memberDiaries(memberId, { size }),
+    queryFn: () => diaryBoardApi.getMemberDiaries(memberId, size),
+    enabled: memberId > 0,
   });
 }

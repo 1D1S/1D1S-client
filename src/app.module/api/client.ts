@@ -126,11 +126,11 @@ const attachInterceptors = (
 
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return client(originalRequest);
-          } catch {
+          } catch (refreshError) {
             isRefreshing = false;
             refreshSubscribers = [];
-            handleAuthError(error);
-            return Promise.reject(error);
+            handleAuthError(refreshError);
+            return Promise.reject(refreshError);
           }
         }
 

@@ -66,12 +66,25 @@ export interface MyPageDiary {
   };
 }
 
+export interface MemberDiaryPageInfo {
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNextPage: boolean;
+}
+
+export interface MemberDiaryListResponse {
+  items: MyPageDiary[];
+  pageInfo: MemberDiaryPageInfo;
+}
+
 export interface MemberProfileData {
   nickname: string;
   profileUrl: string;
   streak: MyPageStreak;
   challengeList: MyPageChallenge[];
-  diaryList: MyPageDiary[];
+  diaryList: MemberDiaryListResponse;
 }
 
 export interface MyPageData {

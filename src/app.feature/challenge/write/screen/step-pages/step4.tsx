@@ -5,6 +5,8 @@ import {
   cn,
   Text,
   TextField,
+  ToggleGroup,
+  ToggleGroupItem,
 } from '@1d1s/design-system';
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
 import * as Popover from '@radix-ui/react-popover';
@@ -146,42 +148,25 @@ export function Step4(): React.ReactElement {
               name="period"
               render={({ field }) => (
                 <FormItem>
-                  <div className="flex flex-wrap gap-3">
-                    {PERIOD_OPTIONS.map((option) => {
-                      const isSelected = field.value === option.value;
-                      return (
-                        <CheckContainer
-                          key={option.value}
-                          checked={isSelected}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              field.onChange(option.value);
-                            }
-                          }}
-                          showCheckIndicator={false}
-                          width="auto"
-                          height={38}
-                          className={cn(
-                            '!rounded-full px-4 hover:cursor-pointer',
-                            isSelected
-                              ? '!border-main-800 !bg-main-800 !text-white'
-                              : '!border-gray-300 !bg-white !text-gray-700'
-                          )}
-                          aria-label={`${option.label} 기간`}
-                        >
-                          <Text
-                            size="body2"
-                            weight="medium"
-                            className={
-                              isSelected ? 'text-white' : 'text-gray-700'
-                            }
-                          >
-                            {option.label}
-                          </Text>
-                        </CheckContainer>
-                      );
-                    })}
-                  </div>
+                  <ToggleGroup
+                    type="single"
+                    value={field.value}
+                    onValueChange={(value) => {
+                      if (value) {
+                        field.onChange(value);
+                      }
+                    }}
+                  >
+                    {PERIOD_OPTIONS.map((option) => (
+                      <ToggleGroupItem
+                        key={option.value}
+                        value={option.value}
+                        aria-label={`${option.label} 기간`}
+                      >
+                        {option.label}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
                   <FormMessage />
                 </FormItem>
               )}
@@ -209,9 +194,7 @@ export function Step4(): React.ReactElement {
                         value={field.value ?? ''}
                         maxLength={3}
                         onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                          field.onChange(
-                            event.target.value.replace(/\D/g, '')
-                          );
+                          field.onChange(event.target.value.replace(/\D/g, ''));
                         }}
                       />
                     </FormControl>
@@ -296,11 +279,7 @@ export function Step4(): React.ReactElement {
               <div className="rounded-2xl border border-gray-200 bg-gray-100 px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex flex-col gap-1">
-                    <Text
-                      size="body2"
-                      weight="bold"
-                      className="text-gray-800"
-                    >
+                    <Text size="body2" weight="bold" className="text-gray-800">
                       중도 참여 수용{' '}
                       <span className="text-gray-500">(선택)</span>
                     </Text>

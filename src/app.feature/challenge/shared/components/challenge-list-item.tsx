@@ -54,14 +54,14 @@ export function ChallengeListItem({
   return (
     <div
       className={cn(
-        'rounded-4 hover:shadow-derauot flunded-4 hw-default flex gap-3 border border-gray-200 bg-white p-3 transition-all duration-200 ease-in-out sm:gap-4 sm:p-4',
+        'rounded-4 flex gap-3 overflow-hidden border border-gray-200 bg-white p-3 transition-all duration-200 ease-in-out hover:shadow-md sm:gap-4 sm:p-4',
         onClick && 'cursor-pointer',
         className
       )}
       onClick={onClick}
     >
       {/* Thumbnail */}
-      <div className="roundod-u-3 relnded-l-3trelatbve overbg-gray-100 -mb-3 -ml-3 w-[120px] shrink-0 self-stretch sm:-mt-4 sm:-mb-4 sm:-ml-4 sm:w-[140px]">
+      <div className="relative -mb-3 -ml-3 w-[120px] shrink-0 self-stretch overflow-hidden bg-gray-100 sm:-mt-4 sm:-mb-4 sm:-ml-4 sm:w-[140px]">
         {hasImage ? (
           <Image
             src={imageUrl as string}

@@ -93,6 +93,19 @@ export interface DiaryListParams {
   cursor?: string;
 }
 
+export interface DiarySimplePageInfo {
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNextPage: boolean;
+}
+
+export interface MyDiariesResponse {
+  items: DiaryItem[];
+  pageInfo: DiarySimplePageInfo;
+}
+
 export interface RandomDiaryParams {
   size?: number;
 }

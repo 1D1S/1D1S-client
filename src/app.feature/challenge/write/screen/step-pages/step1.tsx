@@ -1,9 +1,9 @@
 import {
-  CheckContainer,
-  cn,
   ImagePicker,
   Text,
   TextField,
+  ToggleGroup,
+  ToggleGroupItem,
 } from '@1d1s/design-system';
 import { apiClient } from '@module/api/client';
 import { requestData } from '@module/api/request';
@@ -55,9 +55,7 @@ export function Step1(): React.ReactElement {
       setValue('thumbnailImageKey', objectKey);
       setValue('thumbnailPreviewUrl', blobUrl);
     } catch {
-      setUploadError(
-        '이미지 업로드에 실패했습니다. 다시 시도해주세요.'
-      );
+      setUploadError('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
       setPreviewUrl(undefined);
       setValue('thumbnailImageKey', undefined);
       setValue('thumbnailPreviewUrl', undefined);
@@ -86,23 +84,15 @@ export function Step1(): React.ReactElement {
           placeholderTitle="클릭하여 대표 사진을 추가하세요."
           placeholderSubtitle="또는 이미지를 드래그해서 놓아주세요."
           clearLabel="사진 제거"
-          className="min-h-0"
+          dropZoneClassName="aspect-[4/1]"
         />
         {isUploading && (
-          <Text
-            size="caption1"
-            weight="regular"
-            className="text-gray-500"
-          >
+          <Text size="caption1" weight="regular" className="text-gray-500">
             업로드 중...
           </Text>
         )}
         {uploadError !== null && (
-          <Text
-            size="caption1"
-            weight="regular"
-            className="text-red-500"
-          >
+          <Text size="caption1" weight="regular" className="text-red-500">
             {uploadError}
           </Text>
         )}
@@ -142,47 +132,26 @@ export function Step1(): React.ReactElement {
           name="category"
           render={({ field }) => (
             <FormItem>
-              <div className="flex flex-wrap gap-3">
-                {CATEGORY_OPTIONS.map((option) => {
-                  const isSelected = field.value === option.value;
-
-                  return (
-                    <CheckContainer
-                      key={option.value}
-                      checked={isSelected}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          field.onChange(option.value);
-                        }
-                      }}
-                      showCheckIndicator={false}
-                      width="auto"
-                      height={40}
-                      className={cn(
-                        '!min-w-[110px] !rounded-full !border px-4',
-                        'hover:cursor-pointer',
-                        isSelected
-                          ? '!border-main-800 !bg-main-800 !text-white'
-                          : '!border-gray-300 !bg-white !text-gray-700'
-                      )}
-                      aria-label={`${option.label} 카테고리`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span aria-hidden>{option.icon}</span>
-                        <Text
-                          size="body2"
-                          weight="medium"
-                          className={
-                            isSelected ? 'text-white' : 'text-gray-700'
-                          }
-                        >
-                          {option.label}
-                        </Text>
-                      </div>
-                    </CheckContainer>
-                  );
-                })}
-              </div>
+              <ToggleGroup
+                type="single"
+                value={field.value}
+                onValueChange={(value) => {
+                  if (value) {
+                    field.onChange(value);
+                  }
+                }}
+              >
+                {CATEGORY_OPTIONS.map((option) => (
+                  <ToggleGroupItem
+                    key={option.value}
+                    value={option.value}
+                    icon={option.icon}
+                    aria-label={`${option.label} 카테고리`}
+                  >
+                    {option.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
               <FormMessage />
             </FormItem>
           )}
