@@ -1,5 +1,6 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { nicknameSchema } from '@module/utils/nickname';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -16,15 +17,7 @@ const TOPIC_VALUES = [
 ] as const;
 
 export const signupFormSchema = z.object({
-  nickname: z
-    .string()
-    .trim()
-    .min(1, '닉네임을 입력해 주세요.')
-    .max(8, '닉네임은 8자 이내여야 해요.')
-    .regex(
-      /^[A-Za-z가-힣]+$/,
-      '닉네임은 한글 또는 영어만 사용할 수 있고, 특수문자는 사용할 수 없어요.'
-    ),
+  nickname: nicknameSchema,
   year: z
     .string()
     .nonempty('연도를 선택해 주세요.')

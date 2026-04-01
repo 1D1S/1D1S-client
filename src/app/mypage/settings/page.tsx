@@ -18,6 +18,7 @@ import {
   useUpdateProfileImage,
 } from '@feature/member/hooks/use-member-mutations';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
+import { validateNickname } from '@module/utils/nickname';
 import { LogOut } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -75,26 +76,8 @@ export default function AccountSettingsPage(): React.ReactElement {
     updateProfileImage.mutate(file);
   };
 
-  const NICKNAME_REGEX = /^[A-Za-z가-힣]+$/;
-
-  const validateNickname = (value: string): string => {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      return '닉네임을 입력해 주세요.';
-    }
-    if (trimmed.length > 8) {
-      return '닉네임은 8자 이내여야 해요.';
-    }
-    if (!NICKNAME_REGEX.test(trimmed)) {
-      return (
-        '닉네임은 한글 또는 영어만 사용할 수 있고, ' +
-        '특수문자는 사용할 수 없어요.'
-      );
-    }
-    return '';
-  };
-
   const handleNicknameChange = (value: string): void => {
+    updateNickname.reset();
     setEditedNickname(value);
     setNicknameError(validateNickname(value));
   };
