@@ -20,6 +20,7 @@ import { authStorage } from '@module/utils/auth';
 import {
   CheckCircle2,
   FileText,
+  Flag,
   Flame,
   PencilLine,
   Plus,
@@ -82,6 +83,29 @@ function resolveDiaryImage(diary: DiaryItem): string {
   return '/images/default-card.png';
 }
 
+function getLongestGoalStreakSummary(
+  longestGoalStreak: Array<Record<string, number>> | undefined
+): { goalTitle: string; streakCount: number } {
+  const firstEntry = longestGoalStreak?.[0];
+
+  if (!firstEntry) {
+    return {
+      goalTitle: '아직 기록이 없어요',
+      streakCount: 0,
+    };
+  }
+
+  const [goalTitle, streakCount] = Object.entries(firstEntry)[0] ?? [
+    '아직 기록이 없어요',
+    0,
+  ];
+
+  return {
+    goalTitle,
+    streakCount,
+  };
+}
+
 export default function MyPage(): React.ReactElement | null {
   const router = useRouter();
   const hasMounted = useSyncExternalStore(
@@ -124,6 +148,9 @@ function MyPageContent(): React.ReactElement {
   }
 
   const { nickname, profileUrl, streak, challengeList } = data;
+  const longestGoalStreak = getLongestGoalStreakSummary(
+    streak.longestGoalStreak
+  );
 
   const handleDiaryLikeToggle = (diary: {
     id: number;
@@ -245,50 +272,51 @@ function MyPageContent(): React.ReactElement {
             <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
               <StatCard
                 icon={<Flame className="h-5 w-5" />}
-                title="현재 스트릭"
+                title="현재 일지 스트릭"
                 value={String(streak.currentStreak)}
                 unit="일"
               />
               <StatCard
                 icon={<Trophy className="h-5 w-5" />}
-                title="최장 스트릭"
+                title="일지 최장 스트릭"
                 value={String(streak.maxStreak)}
                 unit="일"
               />
               <StatCard
+                icon={<Target className="h-5 w-5" />}
+                title="목표 최장 스트릭"
+                value={String(longestGoalStreak.streakCount)}
+                unit="일"
+                iconTone="text-pink-600"
+                description={longestGoalStreak.goalTitle}
+              />
+              <StatCard
+                icon={<Flag className="h-5 w-5" />}
+                title="참여한 챌린지 수"
+                value={String(streak.totalChallengeCount ?? 0)}
+                unit="개"
+                iconTone="text-blue-600"
+              />
+              <StatCard
+                icon={<CheckCircle2 className="h-5 w-5" />}
+                title="완료한 단기 챌린지 수"
+                value={String(streak.completedFiniteChallengeCount ?? 0)}
+                unit="개"
+                iconTone="text-emerald-600"
+              />
+              <StatCard
                 icon={<FileText className="h-5 w-5" />}
-                title="전체 일지"
+                title="작성한 전체 일지 수"
                 value={String(streak.totalDiaryCount)}
                 unit="개"
                 iconTone="text-purple-600"
               />
               <StatCard
                 icon={<Target className="h-5 w-5" />}
-                title="전체 목표"
+                title="완료한 전체 목표 수"
                 value={String(streak.totalGoalCount)}
                 unit="개"
                 iconTone="text-pink-600"
-              />
-              <StatCard
-                icon={<CheckCircle2 className="h-5 w-5" />}
-                title="이번 달 일지"
-                value={String(streak.currentMonthDiaryCount)}
-                unit="개"
-                iconTone="text-emerald-600"
-              />
-              <StatCard
-                icon={<CheckCircle2 className="h-5 w-5" />}
-                title="이번 달 목표"
-                value={String(streak.currentMonthGoalCount)}
-                unit="개"
-                iconTone="text-blue-600"
-              />
-              <StatCard
-                icon={<Target className="h-5 w-5" />}
-                title="오늘의 목표"
-                value={String(streak.todayGoalCount)}
-                unit="개"
-                iconTone="text-main-800"
               />
             </div>
           </section>
@@ -422,12 +450,14 @@ function StatCard({
   value,
   unit,
   iconTone = 'text-main-800',
+  description,
 }: {
   icon: React.ReactNode;
   title: string;
   value: string;
   unit: string;
   iconTone?: string;
+  description?: string;
 }): React.ReactElement {
   return (
     <article className="rounded-3 border border-gray-200 bg-white p-4">
@@ -441,13 +471,23 @@ function StatCard({
           {title}
         </Text>
       </div>
-      <div className="mt-3 flex items-end gap-1">
+      <div className="mt-3 flex min-w-0 items-baseline gap-1.5">
         <Text size="display2" weight="bold" className="text-gray-900">
           {value}
         </Text>
-        <Text size="body1" weight="medium" className="pb-1 text-gray-500">
+        <Text size="body1" weight="medium" className="text-gray-500">
           {unit}
         </Text>
+        {description && (
+          <Text
+            size="body1"
+            weight="medium"
+            className="min-w-0 flex-1 truncate text-gray-500"
+            title={description}
+          >
+            - {description}
+          </Text>
+        )}
       </div>
     </article>
   );
