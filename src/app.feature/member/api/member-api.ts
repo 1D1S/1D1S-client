@@ -1,5 +1,5 @@
 import { apiClient } from '@module/api/client';
-import { requestData } from '@module/api/request';
+import { requestBody, requestData } from '@module/api/request';
 
 import type { MemberProfileData, MyPageData, SidebarData } from '../type/member';
 
@@ -51,4 +51,10 @@ export const memberApi = {
       data: { objectKey },
     });
   },
+
+  deleteMember: async (): Promise<{ message?: string }> =>
+    requestBody<{ message?: string }>(apiClient, {
+      url: '/member',
+      method: 'DELETE',
+    }),
 };
