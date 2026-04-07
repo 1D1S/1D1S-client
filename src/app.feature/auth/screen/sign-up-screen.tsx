@@ -22,7 +22,6 @@ import { toast } from 'sonner';
 
 import { authApi } from '../api/auth-api';
 import { SignupFormValues, useSignUpForm } from '../hooks/use-sign-up-form';
-import { CategoryType, GenderType, JobType } from '../type/auth';
 import { Step1 } from './step-pages/step1';
 import { Step2 } from './step-pages/step2';
 
@@ -87,11 +86,11 @@ export function SignUpScreen(): React.ReactElement {
       await authApi.completeSignUpInfo(
         {
           nickname: values.nickname,
-          job: values.job as JobType,
+          job: values.job,
           birth,
-          gender: values.gender as GenderType,
+          gender: values.gender,
           isPublic: values.isPublic,
-          category: values.topics as CategoryType[],
+          category: values.topics,
           profileImageKey,
         },
         accessToken

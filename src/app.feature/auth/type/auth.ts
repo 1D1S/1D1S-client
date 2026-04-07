@@ -1,13 +1,12 @@
-export type JobType = 'STUDENT' | 'WORKER';
-export type GenderType = 'MALE' | 'FEMALE' | 'ETC';
-export type CategoryType =
-  | 'DEV'
-  | 'EXERCISE'
-  | 'BOOK'
-  | 'MUSIC'
-  | 'STUDY'
-  | 'LEISURE'
-  | 'ECONOMY';
+import type {
+  GENDER_VALUES,
+  JOB_VALUES,
+  TOPIC_VALUES,
+} from '../hooks/use-sign-up-form';
+
+export type JobType = (typeof JOB_VALUES)[number];
+export type GenderType = (typeof GENDER_VALUES)[number];
+export type CategoryType = (typeof TOPIC_VALUES)[number];
 export type OAuthProvider = 'google' | 'kakao' | 'naver';
 
 export interface TokenData {

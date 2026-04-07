@@ -4,9 +4,9 @@ import { nicknameSchema } from '@module/utils/nickname';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-const GENDER_VALUES = ['MALE', 'FEMALE', 'ETC'] as const;
-const JOB_VALUES = ['STUDENT', 'WORKER'] as const;
-const TOPIC_VALUES = [
+export const GENDER_VALUES = ['MALE', 'FEMALE', 'ETC'] as const;
+export const JOB_VALUES = ['STUDENT', 'WORKER'] as const;
+export const TOPIC_VALUES = [
   'DEV',
   'EXERCISE',
   'BOOK',
