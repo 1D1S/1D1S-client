@@ -19,15 +19,20 @@ import {
   FormItem,
   FormMessage,
 } from '@component/ui/form';
+import {
+  getDayOptions,
+  getMonthOptions,
+  getYearOptions,
+} from '@module/utils/date';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import {
   SIGN_UP_GENDER_OPTIONS,
   SIGN_UP_OCCUPATION_OPTIONS,
-  SignUpGenderValue,
 } from '../../consts/sign-up-options';
 import { SignupFormValues } from '../../hooks/use-sign-up-form';
+import type { GenderType } from '../../type/auth';
 
 const SIGN_UP_LEFT_VISUAL_SIZE = 200;
 
@@ -41,10 +46,9 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
     string | undefined
   >();
 
-  const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from({ length: 100 }, (_, i) => currentYear - i);
-  const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1);
-  const dayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
+  const yearOptions = getYearOptions();
+  const monthOptions = getMonthOptions();
+  const dayOptions = getDayOptions();
 
   return (
     <div className="mx-auto flex w-full max-w-[1080px] flex-1 items-stretch px-4 pb-5">
@@ -199,7 +203,7 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
                     value={field.value}
                     onValueChange={(value) => {
                       if (value) {
-                        field.onChange(value as SignUpGenderValue);
+                        field.onChange(value as GenderType);
                       }
                     }}
                     className="grid grid-cols-3 gap-2"
