@@ -14,15 +14,18 @@ import {
 } from '@1d1s/design-system';
 import { useLogout } from '@feature/auth/hooks/use-auth-mutations';
 import {
+  useDeleteMember,
   useUpdateNickname,
   useUpdateProfileImage,
 } from '@feature/member/hooks/use-member-mutations';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
+import { notifyApiError } from '@module/api/error';
 import { validateNickname } from '@module/utils/nickname';
-import { LogOut } from 'lucide-react';
+import { LogOut, UserMinus } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 const PROVIDER_CONFIG = {
   KAKAO: {
@@ -57,12 +60,14 @@ export default function AccountSettingsPage(): React.ReactElement {
     string | undefined
   >();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+  const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
 
   const nickname = editedNickname ?? data?.nickname ?? '';
   const profilePreview = localProfilePreview ?? data?.profileUrl ?? '';
 
   const updateNickname = useUpdateNickname();
   const updateProfileImage = useUpdateProfileImage();
+  const deleteMember = useDeleteMember();
 
   const handleProfileImageChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -104,9 +109,22 @@ export default function AccountSettingsPage(): React.ReactElement {
     });
   };
 
+  const confirmWithdraw = (): void => {
+    deleteMember.mutate(undefined, {
+      onSuccess: (response) => {
+        setIsWithdrawDialogOpen(false);
+        toast.success(response.message ?? '회원 탈퇴가 완료되었습니다.');
+        router.replace('/login');
+      },
+      onError: (error) => {
+        notifyApiError(error);
+      },
+    });
+  };
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-white p-4">
-      <section className="rounded-3 w-full bg-white p-2">
+      <section className="rounded-3 mx-auto w-full max-w-[980px] bg-white p-2">
         <div className="flex items-start justify-between border-b border-gray-200 pb-5">
           <Text size="display1" weight="bold" className="text-gray-900">
             계정 설정
@@ -252,12 +270,26 @@ export default function AccountSettingsPage(): React.ReactElement {
             <button
               type="button"
               onClick={() => setIsLogoutDialogOpen(true)}
-              disabled={logout.isPending}
+              disabled={logout.isPending || deleteMember.isPending}
               className="flex w-full items-center gap-3 px-5 py-4 text-red-500 transition hover:bg-red-50 disabled:opacity-50"
             >
               <LogOut className="h-5 w-5" />
               <Text size="body1" weight="medium">
                 {logout.isPending ? '로그아웃 중...' : '로그아웃'}
+              </Text>
+            </button>
+
+            <div className="h-px w-full bg-gray-100" />
+
+            <button
+              type="button"
+              onClick={() => setIsWithdrawDialogOpen(true)}
+              disabled={logout.isPending || deleteMember.isPending}
+              className="flex w-full items-center gap-3 px-5 py-4 text-gray-500 transition hover:bg-gray-50"
+            >
+              <UserMinus className="h-5 w-5" />
+              <Text size="body1" weight="medium" className="text-gray-600">
+                회원탈퇴
               </Text>
             </button>
           </section>
@@ -280,7 +312,7 @@ export default function AccountSettingsPage(): React.ReactElement {
               variant="ghost"
               className="flex-1"
               onClick={() => setIsLogoutDialogOpen(false)}
-              disabled={logout.isPending}
+              disabled={logout.isPending || deleteMember.isPending}
             >
               취소
             </Button>
@@ -288,9 +320,44 @@ export default function AccountSettingsPage(): React.ReactElement {
               size="medium"
               className="flex-1"
               onClick={confirmLogout}
-              disabled={logout.isPending}
+              disabled={logout.isPending || deleteMember.isPending}
             >
               {logout.isPending ? '로그아웃 중...' : '로그아웃'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isWithdrawDialogOpen}
+        onOpenChange={setIsWithdrawDialogOpen}
+      >
+        <DialogContent className="gap-6 px-8 py-6 sm:max-w-[380px] sm:px-6">
+          <DialogHeader className="items-center text-center sm:text-center">
+            <DialogTitle>회원탈퇴 하시겠어요?</DialogTitle>
+          </DialogHeader>
+
+          <DialogDescription className="block w-full text-center">
+            회원 탈퇴 요청 후 계정 삭제는 7일 뒤 처리됩니다.
+          </DialogDescription>
+
+          <DialogFooter className="flex-row gap-2">
+            <Button
+              size="medium"
+              variant="ghost"
+              className="flex-1"
+              onClick={() => setIsWithdrawDialogOpen(false)}
+              disabled={deleteMember.isPending || logout.isPending}
+            >
+              취소
+            </Button>
+            <Button
+              size="medium"
+              className="flex-1"
+              onClick={confirmWithdraw}
+              disabled={deleteMember.isPending || logout.isPending}
+            >
+              {deleteMember.isPending ? '처리 중...' : '회원탈퇴'}
             </Button>
           </DialogFooter>
         </DialogContent>
