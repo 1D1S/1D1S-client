@@ -36,6 +36,9 @@ export interface MyPageStreak {
   currentMonthDiaryCount: number;
   currentMonthGoalCount: number;
   maxStreak: number;
+  longestGoalStreak?: Array<Record<string, number>>;
+  totalChallengeCount?: number;
+  completedFiniteChallengeCount?: number;
   calendar: StreakCalendarItem[];
 }
 
@@ -95,4 +98,5 @@ export interface MyPageData {
   streak: MyPageStreak;
   challengeList: MyPageChallenge[];
   diaryList: MyPageDiary[];
+  pageInfo?: MemberDiaryPageInfo;
 }
