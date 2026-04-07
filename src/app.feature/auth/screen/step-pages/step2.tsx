@@ -127,7 +127,7 @@ export function Step2({
             <Button
               type="button"
               size="medium"
-              disabled={isSubmitting}
+              disabled={isSubmitting || selectedTopics.length === 0}
               onClick={onSubmit}
             >
               {isSubmitting ? '처리 중...' : '가입 완료'}
