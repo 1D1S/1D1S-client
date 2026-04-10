@@ -31,8 +31,7 @@ function OAuthCallbackContent(): React.ReactElement {
 
     if (data) {
       processed.current = true;
-      authStorage.setAccessToken(data.data.accessToken);
-      authStorage.setRefreshToken(data.data.refreshToken);
+      authStorage.markAuthenticated();
 
       if (!data.data.profileComplete) {
         router.replace('/signup');

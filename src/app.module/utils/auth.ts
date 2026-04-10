@@ -2,33 +2,51 @@ import Cookies from 'js-cookie';
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
+const AUTH_SESSION_KEY = '1d1s:isAuthenticated';
+const INVALID_COOKIE_VALUES = new Set(['', 'undefined', 'null']);
 
-// 쿠키 설정 옵션
-const COOKIE_OPTIONS = {
-  secure: process.env.NODE_ENV === 'production', // HTTPS에서만 전송 (프로덕션)
-  sameSite: 'strict' as const, // CSRF 보호
-  expires: 7, // 7일 후 만료
-};
+function normalizeCookieValue(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed || INVALID_COOKIE_VALUES.has(trimmed)) {
+    return undefined;
+  }
+  return trimmed;
+}
 
 export const authStorage = {
+  markAuthenticated: (): void => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    // 신규 Set-Cookie 모델에서 사용하지 않는 레거시 토큰 쿠키 정리
+    Cookies.remove(ACCESS_TOKEN_KEY);
+    Cookies.remove(REFRESH_TOKEN_KEY);
+    localStorage.setItem(AUTH_SESSION_KEY, 'true');
+  },
+
   // 액세스 토큰 저장
   setAccessToken: (token: string): void => {
-    Cookies.set(ACCESS_TOKEN_KEY, token, {
-      ...COOKIE_OPTIONS,
-      expires: 1, // 1일 후 만료 (액세스 토큰은 짧게)
-    });
+    void token;
+    // 백엔드 Set-Cookie(HTTP-only) 인증으로 전환되어 토큰은 프론트에서 저장하지 않음
+    authStorage.markAuthenticated();
   },
 
   // 리프레시 토큰 저장
   setRefreshToken: (token: string): void => {
-    Cookies.set(REFRESH_TOKEN_KEY, token, COOKIE_OPTIONS);
+    void token;
+    // 백엔드 Set-Cookie(HTTP-only) 인증으로 전환되어 토큰은 프론트에서 저장하지 않음
+    authStorage.markAuthenticated();
   },
 
   // 액세스 토큰 조회
-  getAccessToken: (): string | undefined => Cookies.get(ACCESS_TOKEN_KEY),
+  getAccessToken: (): string | undefined =>
+    normalizeCookieValue(Cookies.get('access_token')) ??
+    normalizeCookieValue(Cookies.get(ACCESS_TOKEN_KEY)),
 
   // 리프레시 토큰 조회
-  getRefreshToken: (): string | undefined => Cookies.get(REFRESH_TOKEN_KEY),
+  getRefreshToken: (): string | undefined =>
+    normalizeCookieValue(Cookies.get('refresh_token')) ??
+    normalizeCookieValue(Cookies.get(REFRESH_TOKEN_KEY)),
 
   // 액세스 토큰 제거
   removeAccessToken: (): void => {
@@ -44,11 +62,22 @@ export const authStorage = {
   clearTokens: (): void => {
     Cookies.remove(ACCESS_TOKEN_KEY);
     Cookies.remove(REFRESH_TOKEN_KEY);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(AUTH_SESSION_KEY);
+    }
   },
 
   // 토큰 존재 여부 확인
-  hasTokens: (): boolean =>
-    Boolean(Cookies.get(ACCESS_TOKEN_KEY) && Cookies.get(REFRESH_TOKEN_KEY)),
+  hasTokens: (): boolean => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return (
+      localStorage.getItem(AUTH_SESSION_KEY) === 'true' ||
+      Boolean(authStorage.getAccessToken())
+    );
+  },
 };
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
@@ -92,11 +121,7 @@ function parsePositiveNumber(value: unknown): number | null {
 
 export function getCurrentMemberId(): number | null {
   const accessToken = authStorage.getAccessToken();
-  if (!accessToken) {
-    return null;
-  }
-
-  const payload = decodeJwtPayload(accessToken);
+  const payload = accessToken ? decodeJwtPayload(accessToken) : null;
   if (!payload) {
     return null;
   }

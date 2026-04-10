@@ -32,7 +32,10 @@ export function authMiddleware(req: NextRequest): NextResponse | null {
 
   const token =
     req.cookies.get('accessToken')?.value ??
-    req.cookies.get('access_token')?.value;
+    req.cookies.get('access_token')?.value ??
+    req.cookies.get('JSESSIONID')?.value ??
+    req.cookies.get('SESSION')?.value ??
+    req.cookies.get('session')?.value;
 
   if (!token) {
     const redirectUrl = new URL(fallback, req.url);
