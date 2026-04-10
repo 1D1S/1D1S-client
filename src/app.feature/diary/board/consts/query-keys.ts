@@ -14,4 +14,14 @@ export const DIARY_QUERY_KEYS = {
     [...DIARY_QUERY_KEYS.all, 'my', params] as const,
   memberDiaries: (memberId: number, params?: { size?: number }) =>
     [...DIARY_QUERY_KEYS.all, 'member', memberId, params] as const,
+  comments: () => [...DIARY_QUERY_KEYS.all, 'comments'] as const,
+  diaryComments: (diaryId: number, params?: { page?: number; size?: number }) =>
+    [...DIARY_QUERY_KEYS.comments(), 'diary', diaryId, params] as const,
+  commentReplies: () => [...DIARY_QUERY_KEYS.comments(), 'replies'] as const,
+  replies: (commentId: number, params?: { page?: number; size?: number }) =>
+    [...DIARY_QUERY_KEYS.commentReplies(), commentId, params] as const,
+  repliesMap: (
+    commentIds: number[],
+    params?: { page?: number; size?: number }
+  ) => [...DIARY_QUERY_KEYS.commentReplies(), 'map', commentIds, params] as const,
 };
