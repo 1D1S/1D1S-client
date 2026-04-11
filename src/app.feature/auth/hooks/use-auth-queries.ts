@@ -12,8 +12,8 @@ export function useSocialLogin(
 ): UseQueryResult<SocialLoginResponse, Error> {
   return useQuery({
     queryKey: AUTH_QUERY_KEYS.socialLogin(provider, code, state),
-    queryFn: () => authApi.socialLogin(provider, code!, state!),
-    enabled: Boolean(provider) && Boolean(code) && Boolean(state),
+    queryFn: () => authApi.socialLogin(provider, code!, state ?? undefined),
+    enabled: Boolean(provider) && Boolean(code),
     retry: false,
     staleTime: Infinity,
     refetchOnMount: false,

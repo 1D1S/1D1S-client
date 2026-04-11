@@ -1,5 +1,7 @@
+import { authStorage } from '@module/utils/auth';
 import axios, {
   type AxiosInstance,
+  type AxiosRequestHeaders,
   type InternalAxiosRequestConfig,
 } from 'axios';
 
@@ -15,7 +17,32 @@ const attachInterceptors = (
   { handleUnauthorized }: ClientOptions
 ): AxiosInstance => {
   client.interceptors.request.use(
-    (config: InternalAxiosRequestConfig) => config
+    (config: InternalAxiosRequestConfig) => {
+      if (typeof window === 'undefined') {
+        return config;
+      }
+
+      const accessToken = authStorage.getAccessToken();
+      if (!accessToken) {
+        return config;
+      }
+
+      const authorizationValue = accessToken.startsWith('Bearer ')
+        ? accessToken
+        : `Bearer ${accessToken}`;
+
+      const headers = config.headers as AxiosRequestHeaders | undefined;
+      if (headers?.Authorization) {
+        return config;
+      }
+
+      config.headers = {
+        ...(headers ?? {}),
+        Authorization: authorizationValue,
+      };
+
+      return config;
+    }
   );
 
   client.interceptors.response.use(

@@ -22,8 +22,8 @@ if [[ "$DOMAIN" == -* ]]; then
   exit 1
 fi
 
-KEY_PATH="${LOCAL_SSL_KEY_PATH:-_wildcard.1day1streak.com-key.pem}"
-CERT_PATH="${LOCAL_SSL_CERT_PATH:-_wildcard.1day1streak.com.pem}"
+KEY_PATH="${LOCAL_SSL_KEY_PATH:-_wildcard.dev.1day1streak.com-key.pem}"
+CERT_PATH="${LOCAL_SSL_CERT_PATH:-_wildcard.dev.1day1streak.com.pem}"
 
 if [ -f "$KEY_PATH" ] && [ -f "$CERT_PATH" ]; then
   echo "Local cert already exists:"
@@ -40,7 +40,7 @@ if ! command -v mkcert >/dev/null 2>&1; then
   exit 1
 fi
 
-# local.1day1streak.com -> 1day1streak.com
+# local.dev.1day1streak.com -> dev.1day1streak.com
 BASE_DOMAIN="${DOMAIN#*.}"
 
 echo "Installing local CA with mkcert..."

@@ -1,7 +1,10 @@
 import Cookies from 'js-cookie';
 
-const ACCESS_TOKEN_KEY = 'accessToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
+import {
+  ACCESS_TOKEN_COOKIE_CANDIDATES,
+  REFRESH_TOKEN_COOKIE_CANDIDATES,
+} from './token-cookie';
+
 const AUTH_SESSION_KEY = '1d1s:isAuthenticated';
 const INVALID_COOKIE_VALUES = new Set(['', 'undefined', 'null']);
 
@@ -18,9 +21,8 @@ export const authStorage = {
     if (typeof window === 'undefined') {
       return;
     }
-    // 신규 Set-Cookie 모델에서 사용하지 않는 레거시 토큰 쿠키 정리
-    Cookies.remove(ACCESS_TOKEN_KEY);
-    Cookies.remove(REFRESH_TOKEN_KEY);
+    // 로그인 성공 플래그만 저장한다.
+    // 로그인 직후 서버가 발급한 쿠키를 여기서 정리하면 인증이 즉시 풀릴 수 있다.
     localStorage.setItem(AUTH_SESSION_KEY, 'true');
   },
 
@@ -39,29 +41,49 @@ export const authStorage = {
   },
 
   // 액세스 토큰 조회
-  getAccessToken: (): string | undefined =>
-    normalizeCookieValue(Cookies.get('access_token')) ??
-    normalizeCookieValue(Cookies.get(ACCESS_TOKEN_KEY)),
+  getAccessToken: (): string | undefined => {
+    for (const cookieName of ACCESS_TOKEN_COOKIE_CANDIDATES) {
+      const token = normalizeCookieValue(Cookies.get(cookieName));
+      if (token) {
+        return token;
+      }
+    }
+    return undefined;
+  },
 
   // 리프레시 토큰 조회
-  getRefreshToken: (): string | undefined =>
-    normalizeCookieValue(Cookies.get('refresh_token')) ??
-    normalizeCookieValue(Cookies.get(REFRESH_TOKEN_KEY)),
+  getRefreshToken: (): string | undefined => {
+    for (const cookieName of REFRESH_TOKEN_COOKIE_CANDIDATES) {
+      const token = normalizeCookieValue(Cookies.get(cookieName));
+      if (token) {
+        return token;
+      }
+    }
+    return undefined;
+  },
 
   // 액세스 토큰 제거
   removeAccessToken: (): void => {
-    Cookies.remove(ACCESS_TOKEN_KEY);
+    for (const cookieName of ACCESS_TOKEN_COOKIE_CANDIDATES) {
+      Cookies.remove(cookieName);
+    }
   },
 
   // 리프레시 토큰 제거
   removeRefreshToken: (): void => {
-    Cookies.remove(REFRESH_TOKEN_KEY);
+    for (const cookieName of REFRESH_TOKEN_COOKIE_CANDIDATES) {
+      Cookies.remove(cookieName);
+    }
   },
 
   // 모든 토큰 제거
   clearTokens: (): void => {
-    Cookies.remove(ACCESS_TOKEN_KEY);
-    Cookies.remove(REFRESH_TOKEN_KEY);
+    for (const cookieName of ACCESS_TOKEN_COOKIE_CANDIDATES) {
+      Cookies.remove(cookieName);
+    }
+    for (const cookieName of REFRESH_TOKEN_COOKIE_CANDIDATES) {
+      Cookies.remove(cookieName);
+    }
     if (typeof window !== 'undefined') {
       localStorage.removeItem(AUTH_SESSION_KEY);
     }

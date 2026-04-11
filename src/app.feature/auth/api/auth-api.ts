@@ -16,7 +16,7 @@ export const authApi = {
   socialLogin: async (
     provider: OAuthProvider,
     code: string,
-    state: string
+    state?: string
   ): Promise<SocialLoginResponse> =>
     requestBody<SocialLoginResponse>(publicApiClient, {
       url: `/login/oauth2/code/${provider}`,
