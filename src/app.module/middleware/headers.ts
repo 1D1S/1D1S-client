@@ -33,15 +33,17 @@ export function headersMiddleware(res: NextResponse): void {
   );
   const connectSrcValue =
     allowedOrigins.length > 0
-      ? `connect-src 'self' ${allowedOrigins.join(' ')};`
-      : "connect-src 'self';";
+      ? `connect-src 'self' ${allowedOrigins.join(' ')} https://vercel.live https://*.vercel.live;`
+      : "connect-src 'self' https://vercel.live https://*.vercel.live;";
   const imgSrcValue = "img-src 'self' blob: data: https: http:;";
+  const scriptSrcValue =
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://*.vercel.live;";
 
   // const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const cspHeader = `
     default-src 'self';
     ${connectSrcValue}
-    script-src 'self' 'unsafe-eval' 'unsafe-inline';
+    ${scriptSrcValue}
     style-src 'self' 'unsafe-inline';
     ${imgSrcValue}
     font-src 'self';

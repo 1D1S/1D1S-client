@@ -22,11 +22,11 @@ if [ -f .env ]; then
 fi
 
 # Local alias settings are intentionally hardcoded here (not managed by .env).
-LOCAL_ALIAS_HOST_FIXED="local.1day1streak.com"
+LOCAL_ALIAS_HOST_FIXED="local.dev.1day1streak.com"
 LOCAL_ALIAS_PROTOCOL_FIXED="https"
 LOCAL_ALIAS_PORT_FIXED="443"
-LOCAL_SSL_KEY_PATH_FIXED="_wildcard.1day1streak.com-key.pem"
-LOCAL_SSL_CERT_PATH_FIXED="_wildcard.1day1streak.com.pem"
+LOCAL_SSL_KEY_PATH_FIXED="_wildcard.dev.1day1streak.com-key.pem"
+LOCAL_SSL_CERT_PATH_FIXED="_wildcard.dev.1day1streak.com.pem"
 
 export LOCAL_ALIAS_HOST="$LOCAL_ALIAS_HOST_FIXED"
 export LOCAL_ALIAS_PROTOCOL="$LOCAL_ALIAS_PROTOCOL_FIXED"

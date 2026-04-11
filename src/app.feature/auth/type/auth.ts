@@ -10,21 +10,14 @@ export type CategoryType =
   | 'ECONOMY';
 export type OAuthProvider = 'google' | 'kakao' | 'naver';
 
-export interface TokenData {
-  accessToken: string;
-  refreshToken: string;
-}
-
-export interface RefreshTokenResponse {
-  message: string;
-  data: TokenData;
-}
-
 export interface SocialLoginResponse {
   message: string;
-  data: TokenData & {
+  data: {
     profileComplete: boolean;
-  };
+  } & Partial<{
+    accessToken: string;
+    refreshToken: string;
+  }>;
 }
 
 export interface SignUpInfoRequest {

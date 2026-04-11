@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { ACCESS_TOKEN_COOKIE_CANDIDATES } from '../utils/token-cookie';
+
 /**
  * 인증 미들웨어
  * - JWT 토큰을 사용하여 인증 및 권한 검사
@@ -31,8 +33,12 @@ export function authMiddleware(req: NextRequest): NextResponse | null {
   }
 
   const token =
-    req.cookies.get('accessToken')?.value ??
-    req.cookies.get('access_token')?.value;
+    ACCESS_TOKEN_COOKIE_CANDIDATES
+      .map((cookieName) => req.cookies.get(cookieName)?.value)
+      .find((value): value is string => Boolean(value?.trim())) ??
+    req.cookies.get('JSESSIONID')?.value ??
+    req.cookies.get('SESSION')?.value ??
+    req.cookies.get('session')?.value;
 
   if (!token) {
     const redirectUrl = new URL(fallback, req.url);

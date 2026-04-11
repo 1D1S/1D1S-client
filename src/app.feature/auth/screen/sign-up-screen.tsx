@@ -89,8 +89,7 @@ export function SignUpScreen(): React.ReactElement {
   const selectedTopics = form.watch('topics') ?? [];
 
   const onSubmit = async (values: SignupFormValues): Promise<void> => {
-    const accessToken = authStorage.getAccessToken();
-    if (!accessToken) {
+    if (!authStorage.hasTokens()) {
       toast.error('로그인이 필요합니다.');
       router.replace('/login');
       return;
@@ -103,10 +102,10 @@ export function SignUpScreen(): React.ReactElement {
       let profileImageKey: string | undefined;
 
       if (values.img) {
-        const { data: presigned } = await authApi.getPresignedUrl(
-          { fileName: values.img.name, fileType: values.img.type },
-          accessToken
-        );
+        const { data: presigned } = await authApi.getPresignedUrl({
+          fileName: values.img.name,
+          fileType: values.img.type,
+        });
         await fetch(presigned.presignedUrl, {
           method: 'PUT',
           body: values.img,
@@ -124,8 +123,7 @@ export function SignUpScreen(): React.ReactElement {
           isPublic: values.isPublic,
           category: values.topics as CategoryType[],
           profileImageKey,
-        },
-        accessToken
+        }
       );
 
       toast.success('가입이 완료되었습니다!');
