@@ -1,3 +1,6 @@
+import { silentAuthClient } from '@module/api/client';
+import { isUnauthorizedError } from '@module/api/error';
+import { requestData } from '@module/api/request';
 import { authStorage } from '@module/utils/auth';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
@@ -33,21 +36,36 @@ export function clearCachedSidebar(): void {
   localStorage.removeItem(SIDEBAR_CACHE_KEY);
 }
 
-export function useSidebar(): UseQueryResult<SidebarData, Error> {
+export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
   const cachedSidebar = getCachedSidebar();
 
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.sidebar(),
     queryFn: async () => {
-      const data = await memberApi.getSidebar();
-      if (data === undefined || data === null) {
-        throw new Error('사이드바 데이터를 불러오지 못했습니다.');
+      try {
+        // silentAuthClient: 401에서 리다이렉트/토스트 없이 조용히 처리
+        // withCredentials로 백엔드 쿠키를 자동 전송 → 응답 결과로 인증 상태 판단
+        const data = await requestData<SidebarData>(silentAuthClient, {
+          url: '/member/side-bar',
+          method: 'GET',
+        });
+        if (!data) {
+          return null;
+        }
+        authStorage.markAuthenticated();
+        setCachedSidebar(data);
+        return data;
+      } catch (error) {
+        if (isUnauthorizedError(error)) {
+          // 세션 없음 - 조용히 null 반환 (리다이렉트 없음)
+          authStorage.clearTokens();
+          return null;
+        }
+        throw error;
       }
-      setCachedSidebar(data);
-      return data;
     },
-    enabled: authStorage.hasTokens(),
-    placeholderData: cachedSidebar,
+    enabled: true,
+    placeholderData: cachedSidebar ?? null,
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
   });
