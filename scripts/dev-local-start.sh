@@ -43,4 +43,4 @@ if [ "$PROTOCOL" = "https" ]; then
   bash ./scripts/init-local-cert.sh "$DOMAIN"
 fi
 
-exec node dev-server.js
+exec node --max-old-space-size=4096 dev-server.js

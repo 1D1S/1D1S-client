@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "bash ./scripts/dev-local-start.sh",
-    "dev:next": "next dev",
+    "dev:next": "NODE_OPTIONS=--max-old-space-size=4096 next dev",
     "dev:localias": "bash ./scripts/dev-local-start.sh",
     "dev:localalias": "bash ./scripts/dev-local-start.sh",
     "init:local-dns": "bash ./scripts/init-local-dns.sh",

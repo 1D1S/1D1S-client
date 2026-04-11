@@ -2,6 +2,9 @@
 const isDev = process.env.NODE_ENV !== 'production';
 
 const nextConfig = {
+  experimental: {
+    webpackMemoryOptimizations: true,
+  },
   images: {
     dangerouslyAllowSVG: isDev,
     remotePatterns: [

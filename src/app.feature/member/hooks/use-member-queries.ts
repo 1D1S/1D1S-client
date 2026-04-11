@@ -2,7 +2,7 @@ import { silentAuthClient } from '@module/api/client';
 import { isUnauthorizedError } from '@module/api/error';
 import { requestData } from '@module/api/request';
 import { authStorage } from '@module/utils/auth';
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { isServer, useQuery, UseQueryResult } from '@tanstack/react-query';
 
 import { memberApi } from '../api/member-api';
 import { MEMBER_QUERY_KEYS } from '../consts/query-keys';
@@ -64,7 +64,7 @@ export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
         throw error;
       }
     },
-    enabled: true,
+    enabled: !isServer, // 서버에서는 실행 안 함 (쿠키 없어 401 → 매 SSR마다 불필요한 API 호출)
     placeholderData: cachedSidebar ?? null,
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
