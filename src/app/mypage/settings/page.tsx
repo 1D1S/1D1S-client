@@ -271,7 +271,7 @@ export default function AccountSettingsPage(): React.ReactElement {
               type="button"
               onClick={() => setIsLogoutDialogOpen(true)}
               disabled={logout.isPending || deleteMember.isPending}
-              className="flex w-full items-center gap-3 px-5 py-4 text-red-500 transition hover:bg-red-50 disabled:opacity-50"
+              className="flex w-full cursor-pointer items-center gap-3 px-5 py-4 text-red-500 transition hover:bg-red-50 disabled:opacity-50"
             >
               <LogOut className="h-5 w-5" />
               <Text size="body1" weight="medium">
@@ -285,7 +285,7 @@ export default function AccountSettingsPage(): React.ReactElement {
               type="button"
               onClick={() => setIsWithdrawDialogOpen(true)}
               disabled={logout.isPending || deleteMember.isPending}
-              className="flex w-full items-center gap-3 px-5 py-4 text-gray-500 transition hover:bg-gray-50"
+              className="flex w-full cursor-pointer items-center gap-3 px-5 py-4 text-gray-500 transition hover:bg-gray-50"
             >
               <UserMinus className="h-5 w-5" />
               <Text size="body1" weight="medium" className="text-gray-600">
