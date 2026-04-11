@@ -8,6 +8,7 @@ import {
   CommentThread,
   Tag,
   Text,
+  TextArea,
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
@@ -215,6 +216,97 @@ function getAuthorInfo(diary: DiaryDetail): AuthorInfo | null {
   return diaryWithAliases.authorInfoDto ?? diaryWithAliases.author ?? null;
 }
 
+function parsePositiveInteger(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsedValue = Number(value);
+    if (Number.isInteger(parsedValue) && parsedValue > 0) {
+      return parsedValue;
+    }
+  }
+
+  return null;
+}
+
+function resolveSidebarMemberId(sidebarData: unknown): number | null {
+  if (!sidebarData || typeof sidebarData !== 'object') {
+    return null;
+  }
+
+  const sidebar = sidebarData as Record<string, unknown>;
+  const candidateKeys = ['memberId', 'member_id', 'userId', 'user_id', 'id'];
+
+  for (const key of candidateKeys) {
+    const parsedValue = parsePositiveInteger(sidebar[key]);
+    if (parsedValue !== null) {
+      return parsedValue;
+    }
+  }
+
+  return null;
+}
+
+function parseCommentTimestamp(value: string): number {
+  if (!value) {
+    return 0;
+  }
+
+  const normalizedValue = value.replace(
+    /\.(\d{3})\d*(?=(?:Z|[+-]\d{2}:\d{2})?$)/,
+    '.$1'
+  );
+  const parsedTime = new Date(normalizedValue).getTime();
+  if (!Number.isNaN(parsedTime)) {
+    return parsedTime;
+  }
+
+  const directParsedTime = new Date(value).getTime();
+  return Number.isNaN(directParsedTime) ? 0 : directParsedTime;
+}
+
+function formatCommentDateTime(value: string): string {
+  const timestamp = parseCommentTimestamp(value);
+  if (!timestamp) {
+    return '-';
+  }
+
+  const date = new Date(timestamp);
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}.${month}.${day} ${hours}:${minutes}`;
+}
+
+function sortCommentsByLatest(comments: DiaryComment[]): DiaryComment[] {
+  return [...comments].sort((leftComment, rightComment) => {
+    const timeDiff =
+      parseCommentTimestamp(rightComment.createdAt) -
+      parseCommentTimestamp(leftComment.createdAt);
+    if (timeDiff !== 0) {
+      return timeDiff;
+    }
+    return rightComment.id - leftComment.id;
+  });
+}
+
+function sortCommentsByOldest(comments: DiaryComment[]): DiaryComment[] {
+  return [...comments].sort((leftComment, rightComment) => {
+    const timeDiff =
+      parseCommentTimestamp(leftComment.createdAt) -
+      parseCommentTimestamp(rightComment.createdAt);
+    if (timeDiff !== 0) {
+      return timeDiff;
+    }
+    return leftComment.id - rightComment.id;
+  });
+}
+
 function mapDiaryToViewData(
   diary: DiaryDetail,
   challengeDetailData?: ChallengeDetailResponse
@@ -349,7 +441,17 @@ function DiaryDetailView({
   onRequireLogin(): void;
 }): React.ReactElement {
   const router = useRouter();
+  const { data: sidebarData } = useSidebar();
   const currentMemberId = getCurrentMemberId();
+  const currentSidebarMemberId = useMemo(
+    () => resolveSidebarMemberId(sidebarData),
+    [sidebarData]
+  );
+  const effectiveCurrentMemberId = currentMemberId ?? currentSidebarMemberId;
+  const currentUserNickname = useMemo(
+    () => sidebarData?.nickname?.trim() ?? null,
+    [sidebarData?.nickname]
+  );
   const checkedIds = diaryData.checkedChecklistIds;
   const [commentContent, setCommentContent] = useState('');
 
@@ -372,7 +474,7 @@ function DiaryDetailView({
     isError: isCommentsError,
   } = useDiaryComments(diaryData.id, { page: 0, size: 10 });
   const commentItems = useMemo(
-    () => commentsData?.items ?? [],
+    () => sortCommentsByLatest(commentsData?.items ?? []),
     [commentsData?.items]
   );
   const commentIds = useMemo(
@@ -394,27 +496,46 @@ function DiaryDetailView({
     (comment: DiaryComment): CommentNode => ({
       id: String(comment.id),
       content: comment.content || '삭제된 댓글입니다.',
-      createdAt: comment.createdAt,
+      createdAt: formatCommentDateTime(comment.createdAt),
       author: {
         id: String(comment.author.id),
         nickname: comment.author.nickname || '익명',
         profileImageUrl: comment.author.profileImage ?? undefined,
       },
       isAuthor:
-        currentMemberId !== null &&
-        comment.author.id === Number(currentMemberId),
+        (effectiveCurrentMemberId !== null &&
+          comment.author.id === effectiveCurrentMemberId) ||
+        (effectiveCurrentMemberId === null &&
+          Boolean(comment.author.nickname) &&
+          Boolean(currentUserNickname) &&
+          comment.author.nickname.trim() === currentUserNickname),
     }),
-    [currentMemberId]
+    [currentUserNickname, effectiveCurrentMemberId]
   );
 
   const threadComments = useMemo<CommentNode[]>(
     () =>
       commentItems.map((comment) => ({
         ...mapCommentNode(comment),
-        replies: (commentRepliesMap[comment.id] ?? []).map(mapCommentNode),
+        replies: sortCommentsByOldest(commentRepliesMap[comment.id] ?? []).map(
+          mapCommentNode
+        ),
       })),
     [commentItems, commentRepliesMap, mapCommentNode]
   );
+  const totalCommentCount = useMemo(() => {
+    const baseCommentCount = commentsData?.pageInfo.totalElements ?? 0;
+    const totalReplyCount = commentItems.reduce(
+      (accumulator, comment) =>
+        accumulator +
+        (comment.replyCount > 0
+          ? comment.replyCount
+          : (commentRepliesMap[comment.id]?.length ?? 0)),
+      0
+    );
+
+    return baseCommentCount + totalReplyCount;
+  }, [commentItems, commentRepliesMap, commentsData?.pageInfo.totalElements]);
 
   const requireAuthAction = (action: () => void): void => {
     if (!authStorage.hasTokens()) {
@@ -484,10 +605,7 @@ function DiaryDetailView({
     });
   };
 
-  const handleReplySubmit = (
-    comment: CommentNode,
-    content: string
-  ): void => {
+  const handleReplySubmit = (comment: CommentNode, content: string): void => {
     const targetCommentId = Number(comment.id);
     const trimmedContent = content.trim();
 
@@ -782,21 +900,43 @@ function DiaryDetailView({
           <div className="mb-3 flex items-center gap-2">
             <MessageCircle className="text-main-800 h-5 w-5" />
             <Text size="heading1" weight="bold" className="text-gray-900">
-              댓글 {commentsData?.pageInfo.totalElements ?? 0}
+              댓글 {totalCommentCount}
             </Text>
           </div>
 
           <div className="rounded-3 border border-gray-200 bg-white p-5">
-            <div className="mb-5">
-              <label
-                htmlFor="diary-comment-content"
-                className="mb-2 block text-sm font-medium text-gray-700"
-              >
+            {isCommentsLoading ? (
+              <Text size="body2" weight="regular" className="text-gray-500">
+                댓글을 불러오는 중입니다.
+              </Text>
+            ) : isCommentsError ? (
+              <Text size="body2" weight="regular" className="text-red-600">
+                댓글을 불러오지 못했습니다.
+              </Text>
+            ) : threadComments.length > 0 ? (
+              <CommentThread
+                comments={threadComments}
+                currentUserId={
+                  effectiveCurrentMemberId !== null
+                    ? String(effectiveCurrentMemberId)
+                    : undefined
+                }
+                onReplySubmit={handleReplySubmit}
+                onDelete={handleDeleteComment}
+              />
+            ) : (
+              <Text size="body2" weight="regular" className="text-gray-500">
+                첫 댓글을 남겨보세요.
+              </Text>
+            )}
+
+            <div className="mt-5">
+              <Text size="body2" className="text-gray-900">
                 댓글 작성
-              </label>
-              <textarea
+              </Text>
+              <TextArea
                 id="diary-comment-content"
-                className="w-full resize-none rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-800 transition outline-none focus:border-gray-500"
+                className="mt-2 w-full resize-none text-[15px]"
                 rows={3}
                 value={commentContent}
                 onChange={(event) => setCommentContent(event.target.value)}
@@ -812,29 +952,6 @@ function DiaryDetailView({
                 </Button>
               </div>
             </div>
-
-            {isCommentsLoading ? (
-              <Text size="body2" weight="regular" className="text-gray-500">
-                댓글을 불러오는 중입니다.
-              </Text>
-            ) : isCommentsError ? (
-              <Text size="body2" weight="regular" className="text-red-600">
-                댓글을 불러오지 못했습니다.
-              </Text>
-            ) : threadComments.length > 0 ? (
-              <CommentThread
-                comments={threadComments}
-                currentUserId={
-                  currentMemberId !== null ? String(currentMemberId) : undefined
-                }
-                onReplySubmit={handleReplySubmit}
-                onDelete={handleDeleteComment}
-              />
-            ) : (
-              <Text size="body2" weight="regular" className="text-gray-500">
-                첫 댓글을 남겨보세요.
-              </Text>
-            )}
           </div>
         </section>
       </div>

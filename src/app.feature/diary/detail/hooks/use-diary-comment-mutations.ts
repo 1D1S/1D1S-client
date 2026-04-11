@@ -13,10 +13,12 @@ function invalidateDiaryCommentQueries(
   diaryId: number
 ): void {
   queryClient.invalidateQueries({
-    queryKey: DIARY_QUERY_KEYS.diaryComments(diaryId),
+    queryKey: [...DIARY_QUERY_KEYS.comments(), 'diary', diaryId],
+    exact: false,
   });
   queryClient.invalidateQueries({
     queryKey: DIARY_QUERY_KEYS.commentReplies(),
+    exact: false,
   });
 }
 

@@ -28,9 +28,15 @@ interface DiaryCommentApi {
   parentCommentId?: number | null;
   content?: string | null;
   createdAt?: string | null;
+  replyCount?: number;
+  replyCnt?: number;
   isDeleted?: boolean;
   deleted?: boolean;
+  authorId?: number;
   memberId?: number;
+  authorNickname?: string | null;
+  authorProfileUrl?: string | null;
+  authorProfileImage?: string | null;
   authorInfoDto?: DiaryCommentAuthorApi | null;
   author?: DiaryCommentAuthorApi | null;
   member?: DiaryCommentAuthorApi | null;
@@ -43,11 +49,23 @@ interface DiaryCommentListApiResponse {
 
 const normalizeAuthor = (
   authorApi: DiaryCommentAuthorApi | null | undefined,
-  fallbackMemberId?: number
+  fallbackAuthorId?: number,
+  fallbackMemberId?: number,
+  fallbackNickname?: string | null,
+  fallbackProfileImage?: string | null
 ): DiaryCommentAuthor => ({
-  id: authorApi?.id ?? authorApi?.memberId ?? fallbackMemberId ?? 0,
-  nickname: authorApi?.nickname ?? null,
-  profileImage: authorApi?.profileImage ?? authorApi?.profileImageUrl ?? null,
+  id:
+    authorApi?.id ??
+    authorApi?.memberId ??
+    fallbackAuthorId ??
+    fallbackMemberId ??
+    0,
+  nickname: authorApi?.nickname ?? fallbackNickname ?? null,
+  profileImage:
+    authorApi?.profileImage ??
+    authorApi?.profileImageUrl ??
+    fallbackProfileImage ??
+    null,
 });
 
 const normalizeComment = (commentApi: DiaryCommentApi): DiaryComment => ({
@@ -55,9 +73,13 @@ const normalizeComment = (commentApi: DiaryCommentApi): DiaryComment => ({
   parentCommentId: commentApi.parentCommentId ?? null,
   content: commentApi.content ?? '',
   createdAt: commentApi.createdAt ?? '',
+  replyCount: commentApi.replyCount ?? commentApi.replyCnt ?? 0,
   author: normalizeAuthor(
     commentApi.authorInfoDto ?? commentApi.author ?? commentApi.member,
-    commentApi.memberId
+    commentApi.authorId,
+    commentApi.memberId,
+    commentApi.authorNickname,
+    commentApi.authorProfileUrl ?? commentApi.authorProfileImage
   ),
   isDeleted: commentApi.isDeleted ?? commentApi.deleted ?? false,
 });

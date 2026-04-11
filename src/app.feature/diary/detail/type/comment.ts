@@ -9,6 +9,7 @@ export interface DiaryComment {
   parentCommentId: number | null;
   content: string;
   createdAt: string;
+  replyCount: number;
   author: DiaryCommentAuthor;
   isDeleted: boolean;
 }
