@@ -1,7 +1,7 @@
 import { authStorage } from '@module/utils/auth';
 import axios, {
+  AxiosHeaders,
   type AxiosInstance,
-  type AxiosRequestHeaders,
   type InternalAxiosRequestConfig,
 } from 'axios';
 
@@ -31,15 +31,13 @@ const attachInterceptors = (
         ? accessToken
         : `Bearer ${accessToken}`;
 
-      const headers = config.headers as AxiosRequestHeaders | undefined;
-      if (headers?.Authorization) {
+      const headers = AxiosHeaders.from(config.headers);
+      if (headers.has('Authorization')) {
         return config;
       }
 
-      config.headers = {
-        ...(headers ?? {}),
-        Authorization: authorizationValue,
-      };
+      headers.set('Authorization', authorizationValue);
+      config.headers = headers;
 
       return config;
     }

@@ -493,23 +493,27 @@ function DiaryDetailView({
     createComment.isPending || createReply.isPending || deleteComment.isPending;
 
   const mapCommentNode = useCallback(
-    (comment: DiaryComment): CommentNode => ({
-      id: String(comment.id),
-      content: comment.content || '삭제된 댓글입니다.',
-      createdAt: formatCommentDateTime(comment.createdAt),
-      author: {
-        id: String(comment.author.id),
-        nickname: comment.author.nickname || '익명',
-        profileImageUrl: comment.author.profileImage ?? undefined,
-      },
-      isAuthor:
-        (effectiveCurrentMemberId !== null &&
-          comment.author.id === effectiveCurrentMemberId) ||
-        (effectiveCurrentMemberId === null &&
-          Boolean(comment.author.nickname) &&
-          Boolean(currentUserNickname) &&
-          comment.author.nickname.trim() === currentUserNickname),
-    }),
+    (comment: DiaryComment): CommentNode => {
+      const authorNickname = comment.author.nickname?.trim();
+
+      return {
+        id: String(comment.id),
+        content: comment.content || '삭제된 댓글입니다.',
+        createdAt: formatCommentDateTime(comment.createdAt),
+        author: {
+          id: String(comment.author.id),
+          nickname: comment.author.nickname || '익명',
+          profileImageUrl: comment.author.profileImage ?? undefined,
+        },
+        isAuthor:
+          (effectiveCurrentMemberId !== null &&
+            comment.author.id === effectiveCurrentMemberId) ||
+          (effectiveCurrentMemberId === null &&
+            Boolean(authorNickname) &&
+            Boolean(currentUserNickname) &&
+            authorNickname === currentUserNickname),
+      };
+    },
     [currentUserNickname, effectiveCurrentMemberId]
   );
 
