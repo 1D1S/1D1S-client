@@ -283,18 +283,6 @@ function formatCommentDateTime(value: string): string {
   return `${year}.${month}.${day} ${hours}:${minutes}`;
 }
 
-function sortCommentsByLatest(comments: DiaryComment[]): DiaryComment[] {
-  return [...comments].sort((leftComment, rightComment) => {
-    const timeDiff =
-      parseCommentTimestamp(rightComment.createdAt) -
-      parseCommentTimestamp(leftComment.createdAt);
-    if (timeDiff !== 0) {
-      return timeDiff;
-    }
-    return rightComment.id - leftComment.id;
-  });
-}
-
 function sortCommentsByOldest(comments: DiaryComment[]): DiaryComment[] {
   return [...comments].sort((leftComment, rightComment) => {
     const timeDiff =
@@ -474,7 +462,7 @@ function DiaryDetailView({
     isError: isCommentsError,
   } = useDiaryComments(diaryData.id, { page: 0, size: 10 });
   const commentItems = useMemo(
-    () => sortCommentsByLatest(commentsData?.items ?? []),
+    () => sortCommentsByOldest(commentsData?.items ?? []),
     [commentsData?.items]
   );
   const commentIds = useMemo(
