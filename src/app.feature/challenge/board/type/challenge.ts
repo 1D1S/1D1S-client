@@ -32,6 +32,7 @@ export interface ChallengeSummary {
   participantCnt: number;
   likeInfo: LikeInfo;
   thumbnailImage?: string;
+  allowMidJoin?: boolean;
 }
 
 export interface ChallengeListItem {
@@ -86,6 +87,17 @@ export interface CreateChallengeRequest {
   goals: string[];
   allowMidJoin: boolean;
   thumbnailImage?: string;
+}
+
+// 변경할 필드만 포함 (생략 시 기존 값 유지, null 명시 시 삭제)
+export interface UpdateChallengeRequest {
+  title?: string;
+  thumbnailImage?: string | null;
+  category?: ChallengeCategory;
+  description?: string;
+  allowMidJoin?: boolean;
+  maxParticipantCnt?: number;
+  goals?: string[];
 }
 
 export interface CreateChallengeResponse {

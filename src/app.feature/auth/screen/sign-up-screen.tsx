@@ -57,8 +57,7 @@ export function SignUpScreen(): React.ReactElement {
   const [showExitDialog, setShowExitDialog] = React.useState(false);
 
   const onSubmit = async (values: SignupFormValues): Promise<void> => {
-    const accessToken = authStorage.getAccessToken();
-    if (!accessToken) {
+    if (!authStorage.hasTokens()) {
       toast.error('로그인이 필요합니다.');
       router.replace('/login');
       return;
@@ -71,14 +70,15 @@ export function SignUpScreen(): React.ReactElement {
       let profileImageKey: string | undefined;
 
       if (values.img) {
-        const { data: presigned } = await authApi.getPresignedUrl(
-          { fileName: values.img.name, fileType: values.img.type },
-          accessToken
-        );
+        const { data: presigned } = await authApi.getPresignedUrl({
+          fileName: values.img.name,
+          fileType: values.img.type,
+        });
+        // iOS에서 HEIC 등 일부 포맷은 file.type이 빈 문자열일 수 있음
         await fetch(presigned.presignedUrl, {
           method: 'PUT',
           body: values.img,
-          headers: { 'Content-Type': values.img.type },
+          headers: { 'Content-Type': values.img.type || 'image/jpeg' },
         });
         profileImageKey = presigned.objectKey;
       }
@@ -92,8 +92,7 @@ export function SignUpScreen(): React.ReactElement {
           isPublic: values.isPublic,
           category: values.topics,
           profileImageKey,
-        },
-        accessToken
+        }
       );
 
       toast.success('가입이 완료되었습니다!');

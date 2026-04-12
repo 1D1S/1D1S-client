@@ -194,23 +194,6 @@ function MyPageContent(): React.ReactElement {
 
   return (
     <div className="min-h-screen w-full bg-white p-4">
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mx-auto mb-4 max-w-[1440px] rounded-lg border border-yellow-300 bg-yellow-50 p-4">
-          <Text size="body2" weight="bold" className="mb-2 text-yellow-800">
-            [DEV] Token Info
-          </Text>
-          <div className="space-y-1 font-mono text-xs break-all text-yellow-700">
-            <p>
-              <span className="font-bold">Access:</span>{' '}
-              {authStorage.getAccessToken() ?? 'none'}
-            </p>
-            <p>
-              <span className="font-bold">Refresh:</span>{' '}
-              {authStorage.getRefreshToken() ?? 'none'}
-            </p>
-          </div>
-        </div>
-      )}
       <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
         <aside className="space-y-4 xl:order-last">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1">
@@ -224,7 +207,7 @@ function MyPageContent(): React.ReactElement {
               <button
                 type="button"
                 onClick={() => router.push('/mypage/settings')}
-                className="mt-5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-800 transition hover:bg-gray-100"
+                className="mt-5 w-full cursor-pointer rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-800 transition hover:bg-gray-100"
               >
                 <Text size="body1" weight="bold">
                   계정 설정
@@ -348,7 +331,7 @@ function MyPageContent(): React.ReactElement {
               </div>
             ) : (
               <div className="mt-4 overflow-x-auto">
-                <div className="flex w-max gap-3 pb-2">
+                <div className="flex w-max gap-3 py-2">
                   {challengeList.map((ch) => {
                     const now = new Date();
                     const start = new Date(ch.startDate);
@@ -408,7 +391,7 @@ function MyPageContent(): React.ReactElement {
               </div>
             ) : (
               <div className="mt-4 overflow-x-auto">
-                <div className="flex w-max gap-3 pb-2">
+                <div className="flex w-max gap-3 py-2">
                   {recentDiaryCards.map((diary) => (
                     <div key={diary.id} className="w-[240px] shrink-0">
                       <DiaryCard
@@ -511,7 +494,7 @@ function QuickActionItem({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-3 py-3 transition hover:bg-gray-100"
+      className="flex w-full cursor-pointer items-center justify-between rounded-2xl border border-gray-200 bg-white px-3 py-3 transition hover:bg-gray-100"
     >
       <div className="flex items-center gap-3">
         <span

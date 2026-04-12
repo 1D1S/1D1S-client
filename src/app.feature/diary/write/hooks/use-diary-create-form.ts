@@ -1,5 +1,6 @@
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-period';
-import { getCurrentMemberId } from '@module/utils/auth';
+import { useSidebar } from '@feature/member/hooks/use-member-queries';
+import type { SidebarChallenge } from '@feature/member/type/member';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -8,7 +9,6 @@ import { toast } from 'sonner';
 import {
   useChallengeCheckWriteDates,
   useChallengeDetail,
-  useMemberChallenges,
 } from '../../../challenge/board/hooks/use-challenge-queries';
 import type {
   ChallengeCategory,
@@ -152,6 +152,23 @@ function normalizeChallengeType(challengeType: string): ChallengeType {
 
 function mapDiaryChallengeToChallengeListItem(
   challenge: DiaryChallengeSummary
+): ChallengeListItem {
+  return {
+    challengeId: challenge.challengeId,
+    title: challenge.title,
+    category: normalizeChallengeCategory(challenge.category),
+    startDate: challenge.startDate,
+    endDate: challenge.endDate,
+    maxParticipantCnt: challenge.maxParticipantCnt,
+    challengeType: normalizeChallengeType(challenge.challengeType),
+    participantCnt: challenge.participantCnt,
+    liked: challenge.likeInfo.likedByMe,
+    likeCnt: challenge.likeInfo.likeCnt,
+  };
+}
+
+function mapSidebarChallengeToChallengeListItem(
+  challenge: SidebarChallenge
 ): ChallengeListItem {
   return {
     challengeId: challenge.challengeId,
@@ -319,12 +336,15 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     return matchedDiary?.challenge ?? null;
   }, [myDiaries, requestedChallengeId]);
 
-  const currentMemberId = getCurrentMemberId();
-
-  const { data: memberChallenges = [], isLoading: isMemberChallengesLoading } =
-    useMemberChallenges({
-      memberId: currentMemberId ?? 0,
-    });
+  const { data: sidebarData, isLoading: isMemberChallengesLoading } =
+    useSidebar();
+  const memberChallenges = useMemo(
+    () =>
+      (sidebarData?.challengeList ?? []).map(
+        mapSidebarChallengeToChallengeListItem
+      ),
+    [sidebarData]
+  );
   const ongoingMemberChallenges = useMemo(
     () =>
       memberChallenges.filter((challenge) =>

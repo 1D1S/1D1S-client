@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "bash ./scripts/dev-local-start.sh",
-    "dev:next": "next dev",
+    "dev:next": "NODE_OPTIONS=--max-old-space-size=4096 next dev",
     "dev:localias": "bash ./scripts/dev-local-start.sh",
     "dev:localalias": "bash ./scripts/dev-local-start.sh",
     "init:local-dns": "bash ./scripts/init-local-dns.sh",
@@ -17,7 +17,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@1d1s/design-system": "^0.2.29",
+    "@1d1s/design-system": "^0.2.33",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-alert-dialog": "^1.1.7",
     "@radix-ui/react-aspect-ratio": "^1.1.3",

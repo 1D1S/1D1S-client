@@ -221,7 +221,7 @@ export function DiaryListItem({
           <button
             type="button"
             onClick={handleToggleLike}
-            className="flex shrink-0 items-center gap-1 text-gray-500 transition-colors hover:text-red-500"
+            className="flex shrink-0 cursor-pointer items-center gap-1 text-gray-500 transition-colors hover:text-red-500"
           >
             {isLiked ? (
               <HeartFilled width={15} height={15} className="text-red-500" />

@@ -9,7 +9,7 @@ const { parse } = require('url');
 const dev = process.env.NODE_ENV !== 'production';
 const requestedProtocol = process.env.LOCAL_ALIAS_PROTOCOL || 'https';
 const localAliasHost =
-  process.env.LOCAL_ALIAS_HOST || 'local.1day1streak.com';
+  process.env.LOCAL_ALIAS_HOST || 'local.dev.1day1streak.com';
 const bindHost = process.env.LOCAL_BIND_HOST;
 const isMac = process.platform === 'darwin';
 const isWindows = process.platform === 'win32';
@@ -17,9 +17,9 @@ const strictHttps = process.env.LOCAL_ALIAS_HTTPS_STRICT === 'true';
 const allowInsecureTls = process.env.LOCAL_ALLOW_INSECURE_TLS === 'true';
 
 const keyPath =
-  process.env.LOCAL_SSL_KEY_PATH || '_wildcard.1day1streak.com-key.pem';
+  process.env.LOCAL_SSL_KEY_PATH || '_wildcard.dev.1day1streak.com-key.pem';
 const certPath =
-  process.env.LOCAL_SSL_CERT_PATH || '_wildcard.1day1streak.com.pem';
+  process.env.LOCAL_SSL_CERT_PATH || '_wildcard.dev.1day1streak.com.pem';
 const resolvedKeyPath = path.resolve(process.cwd(), keyPath);
 const resolvedCertPath = path.resolve(process.cwd(), certPath);
 

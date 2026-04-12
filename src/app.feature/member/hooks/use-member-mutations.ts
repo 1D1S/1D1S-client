@@ -1,3 +1,5 @@
+import { clearCachedSidebar } from '@feature/member/hooks/use-member-queries';
+import { authStorage } from '@module/utils/auth';
 import {
   useMutation,
   UseMutationResult,
@@ -35,6 +37,23 @@ export function useUpdateProfileImage(): UseMutationResult<void, Error, File> {
       void queryClient.invalidateQueries({
         queryKey: MEMBER_QUERY_KEYS.sidebar(),
       });
+    },
+  });
+}
+
+export function useDeleteMember(): UseMutationResult<
+  { message?: string },
+  Error,
+  void
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => memberApi.deleteMember(),
+    onSuccess: () => {
+      authStorage.clearTokens();
+      clearCachedSidebar();
+      queryClient.clear();
     },
   });
 }

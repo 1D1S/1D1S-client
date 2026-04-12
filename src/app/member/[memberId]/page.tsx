@@ -226,7 +226,7 @@ export default function MemberProfilePage(): React.ReactElement {
               </div>
             ) : (
               <div className="mt-4 overflow-x-auto">
-                <div className="flex w-max gap-3 pb-2">
+                <div className="flex w-max gap-3 py-2">
                   {challengeList.map((ch) => {
                     const now = new Date();
                     const start = new Date(ch.startDate);
@@ -287,7 +287,7 @@ export default function MemberProfilePage(): React.ReactElement {
               </div>
             ) : (
               <div className="mt-4 overflow-x-auto">
-                <div className="flex w-max gap-3 pb-2">
+                <div className="flex w-max gap-3 py-2">
                   {diaryList.items.map((diary) => (
                     <div key={diary.id} className="w-[240px] shrink-0">
                       <DiaryCard

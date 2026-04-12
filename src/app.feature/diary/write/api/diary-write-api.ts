@@ -47,13 +47,12 @@ export const diaryWriteApi = {
     const formData = new FormData();
     formData.append('file', file);
 
+    // Content-Type을 명시하지 않아야 Axios가 boundary를 포함한
+    // 'multipart/form-data; boundary=...' 를 자동으로 설정함
     const imageUrl = await requestData<string, FormData>(apiClient, {
       url: `/diaries/${id}/image`,
       method: 'POST',
       data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
     });
 
     return { imageUrl };
@@ -73,9 +72,6 @@ export const diaryWriteApi = {
       url: `/diaries/${id}/images`,
       method: 'POST',
       data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
     });
 
     return { imageUrls };

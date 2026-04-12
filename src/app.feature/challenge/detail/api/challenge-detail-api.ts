@@ -69,6 +69,18 @@ export const challengeDetailApi = {
     });
   },
 
+  // 참여자 목표 수정 (자유 목표 챌린지 전용, 시작 전에만 가능)
+  updateParticipantGoal: async (
+    challengeId: number,
+    goals: string[]
+  ): Promise<void> => {
+    await requestBody<void, string[]>(apiClient, {
+      url: `/challenges/${challengeId}/challenge-goal`,
+      method: 'PATCH',
+      data: goals,
+    });
+  },
+
   // 챌린지 일지 목록 조회
   getChallengeDiaries: async (
     challengeId: number,

@@ -10,45 +10,20 @@ import { authApi } from '../api/auth-api';
 import { AUTH_QUERY_KEYS } from '../consts/query-keys';
 import {
   LogoutResponse,
-  RefreshTokenResponse,
   SignUpInfoRequest,
   SignUpInfoResponse,
 } from '../type/auth';
-
-// 토큰 갱신
-export function useRefreshToken(): UseMutationResult<
-  RefreshTokenResponse,
-  Error,
-  string
-> {
-  return useMutation({
-    mutationFn: (refreshToken: string) => authApi.refreshToken(refreshToken),
-    onSuccess: (data) => {
-      authStorage.setAccessToken(data.data.accessToken);
-      authStorage.setRefreshToken(data.data.refreshToken);
-    },
-    onError: () => {
-      authStorage.clearTokens();
-    },
-  });
-}
 
 // 추가 정보 입력 (텍스트만)
 export function useCompleteSignUpInfo(): UseMutationResult<
   SignUpInfoResponse,
   Error,
-  { data: SignUpInfoRequest; accessToken: string }
+  SignUpInfoRequest
 > {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      data,
-      accessToken,
-    }: {
-      data: SignUpInfoRequest;
-      accessToken: string;
-    }) => authApi.completeSignUpInfo(data, accessToken),
+    mutationFn: (data: SignUpInfoRequest) => authApi.completeSignUpInfo(data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: AUTH_QUERY_KEYS.all,
