@@ -45,6 +45,13 @@ export const authApi = {
       data,
     }),
 
+  // 토큰 재발급 (refresh token cookie → 새 access token)
+  refreshToken: async (): Promise<void> =>
+    requestBody<void>(publicApiClient, {
+      url: '/auth/token',
+      method: 'GET',
+    }),
+
   // 로그아웃
   logout: async (): Promise<LogoutResponse> =>
     requestBody<LogoutResponse, Record<string, never>>(apiClient, {

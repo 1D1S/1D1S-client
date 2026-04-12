@@ -106,10 +106,11 @@ export function SignUpScreen(): React.ReactElement {
           fileName: values.img.name,
           fileType: values.img.type,
         });
+        // iOS에서 HEIC 등 일부 포맷은 file.type이 빈 문자열일 수 있음
         await fetch(presigned.presignedUrl, {
           method: 'PUT',
           body: values.img,
-          headers: { 'Content-Type': values.img.type },
+          headers: { 'Content-Type': values.img.type || 'image/jpeg' },
         });
         profileImageKey = presigned.objectKey;
       }

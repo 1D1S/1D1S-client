@@ -715,7 +715,7 @@ function DiaryDetailView({
                   <div className="absolute top-full right-0 z-10 mt-1 w-32 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md">
                     <button
                       type="button"
-                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50"
+                      className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => {
                         setIsMenuOpen(false);
                         router.push(`/diary/create?diaryId=${diaryData.id}`);
@@ -726,7 +726,7 @@ function DiaryDetailView({
                     </button>
                     <button
                       type="button"
-                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-500 hover:bg-gray-50"
+                      className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-red-500 hover:bg-gray-50"
                       onClick={() => {
                         setIsMenuOpen(false);
                         onDelete();

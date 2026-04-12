@@ -59,8 +59,8 @@ export default function HomeScreen(): React.ReactElement {
 
         <div className="h-4" />
 
-        {/* 버튼 영역 */}
-        <HomeQuickActions onNavigate={(path) => router.push(path)} />
+        {/* 문의 버튼 */}
+        <HomeQuickActions />
 
         <div className="h-10" />
 

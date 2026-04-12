@@ -207,7 +207,7 @@ function MyPageContent(): React.ReactElement {
               <button
                 type="button"
                 onClick={() => router.push('/mypage/settings')}
-                className="mt-5 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-800 transition hover:bg-gray-100"
+                className="mt-5 w-full cursor-pointer rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-800 transition hover:bg-gray-100"
               >
                 <Text size="body1" weight="bold">
                   계정 설정
@@ -494,7 +494,7 @@ function QuickActionItem({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-3 py-3 transition hover:bg-gray-100"
+      className="flex w-full cursor-pointer items-center justify-between rounded-2xl border border-gray-200 bg-white px-3 py-3 transition hover:bg-gray-100"
     >
       <div className="flex items-center gap-3">
         <span

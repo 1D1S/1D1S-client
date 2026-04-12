@@ -1,12 +1,8 @@
 import {
   CheckContainer,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Text,
-  TextField,
+  ToggleGroup,
+  ToggleGroupItem,
 } from '@1d1s/design-system';
 import {
   FormControl,
@@ -14,16 +10,15 @@ import {
   FormItem,
   FormMessage,
 } from '@component/ui/form';
+import { MaxParticipantCountSelect } from '@feature/challenge/write/components/max-participant-count-select';
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
 import { cn } from '@module/utils/cn';
 import { User, Users } from 'lucide-react';
-import { type ChangeEvent } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 export function Step2(): React.ReactElement {
   const { control, watch } = useFormContext<ChallengeCreateFormValues>();
   const participationType = watch('participationType');
-  const memberCount = watch('memberCount');
 
   return (
     <div className="mx-auto w-full max-w-[980px] space-y-4">
@@ -132,63 +127,51 @@ export function Step2(): React.ReactElement {
               name="memberCount"
               render={({ field }) => (
                 <FormItem>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="h-11 w-full rounded-2xl hover:cursor-pointer">
-                        <SelectValue placeholder="참여 인원을 선택해주세요." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="2">2명</SelectItem>
-                      <SelectItem value="5">5명</SelectItem>
-                      <SelectItem value="10">10명</SelectItem>
-                      <SelectItem value="etc">
-                        직접 입력 (최대 50명)
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormField
+                    control={control}
+                    name="memberCountNumber"
+                    render={({ field: customField }) => (
+                      <MaxParticipantCountSelect
+                        value={field.value ?? ''}
+                        onValueChange={field.onChange}
+                        customValue={customField.value ?? ''}
+                        onCustomValueChange={customField.onChange}
+                      />
+                    )}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Text size="body2" weight="regular" className="text-gray-600">
-              단체 챌린지 운영을 위해 최대 인원을 설정하세요.
-            </Text>
           </div>
 
-          {memberCount === 'etc' ? (
-            <div className="flex flex-col space-y-2">
-              <Text size="body2" weight="medium" className="text-gray-700">
-                직접 입력 (최대 50명)
-              </Text>
-              <FormField
-                control={control}
-                name="memberCountNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <TextField
-                        id="memberCountNumber"
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        className="w-full md:w-[240px]"
-                        {...field}
-                        value={field.value ?? ''}
-                        maxLength={2}
-                        onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                          field.onChange(
-                            event.target.value.replace(/\D/g, '')
-                          );
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          ) : null}
+          <div className="flex flex-col space-y-3">
+            <Text size="body1" weight="bold" className="text-gray-900">
+              중간 참여 허용
+            </Text>
+            <FormField
+              control={control}
+              name="allowMidJoin"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <ToggleGroup
+                      type="single"
+                      value={field.value ? 'yes' : 'no'}
+                      onValueChange={(value) => {
+                        if (value) { field.onChange(value === 'yes'); }
+                      }}
+                      className="w-fit"
+                    >
+                      <ToggleGroupItem value="yes">허용</ToggleGroupItem>
+                      <ToggleGroupItem value="no">미허용</ToggleGroupItem>
+                    </ToggleGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </>
       ) : null}
     </div>

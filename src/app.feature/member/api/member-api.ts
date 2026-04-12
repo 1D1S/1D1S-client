@@ -39,10 +39,12 @@ export const memberApi = {
       data: { fileName: file.name, fileType: file.type },
     });
 
+    // iOS에서 HEIC 등 일부 포맷은 file.type이 빈 문자열일 수 있음
+    // Content-Type이 없으면 S3 서명 불일치(403)가 발생하므로 fallback 적용
     await fetch(presignedUrl, {
       method: 'PUT',
       body: file,
-      headers: { 'Content-Type': file.type },
+      headers: { 'Content-Type': file.type || 'image/jpeg' },
     });
 
     await requestData<void>(apiClient, {
