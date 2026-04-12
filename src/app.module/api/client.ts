@@ -1,148 +1,54 @@
 import { authStorage } from '@module/utils/auth';
 import axios, {
+  AxiosHeaders,
   type AxiosInstance,
-  type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios';
 
 import { API_BASE_URL } from './config';
-import { handleAuthError, isUnauthorizedError, notifyApiError } from './error';
+import { handleAuthError, notifyApiError } from './error';
 
 interface ClientOptions {
-  withAuthToken: boolean;
   handleUnauthorized: boolean;
 }
 
-let isRefreshing = false;
-let refreshSubscribers: Array<(token: string) => void> = [];
-
-const onTokenRefreshed = (token: string): void => {
-  refreshSubscribers.forEach((callback) => callback(token));
-  refreshSubscribers = [];
-};
-
-const addRefreshSubscriber = (callback: (token: string) => void): void => {
-  refreshSubscribers.push(callback);
-};
-
-const refreshAccessToken = async (): Promise<string> => {
-  const refreshToken = authStorage.getRefreshToken();
-  if (!refreshToken) {
-    throw new Error('No refresh token');
-  }
-
-  const response = await axios.get<{
-    message: string;
-    data: { accessToken: string; refreshToken: string };
-  }>(`${API_BASE_URL}/auth/token`, {
-    headers: { 'Authorization-Refresh': `Bearer ${refreshToken}` },
-  });
-
-  const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-  authStorage.setAccessToken(accessToken);
-  authStorage.setRefreshToken(newRefreshToken);
-
-  return accessToken;
-};
-
 const attachInterceptors = (
   client: AxiosInstance,
-  { withAuthToken, handleUnauthorized }: ClientOptions
+  { handleUnauthorized }: ClientOptions
 ): AxiosInstance => {
-  if (withAuthToken) {
-    client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-      const token = authStorage.getAccessToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+  client.interceptors.request.use(
+    (config: InternalAxiosRequestConfig) => {
+      if (typeof window === 'undefined') {
+        return config;
       }
+
+      const accessToken = authStorage.getAccessToken();
+      if (!accessToken) {
+        return config;
+      }
+
+      const authorizationValue = accessToken.startsWith('Bearer ')
+        ? accessToken
+        : `Bearer ${accessToken}`;
+
+      const headers = AxiosHeaders.from(config.headers);
+      if (headers.has('Authorization')) {
+        return config;
+      }
+
+      headers.set('Authorization', authorizationValue);
+      config.headers = headers;
+
       return config;
-    });
-  }
+    }
+  );
 
   client.interceptors.response.use(
-    async (response) => {
-      if (!handleUnauthorized) {
-        return response;
-      }
-
-      // 브라우저에서 302는 XHR이 자동으로 따라가므로 에러 인터셉터에 잡히지 않음
-      // responseURL이 원래 요청 URL과 다르면 리다이렉트가 발생한 것으로 판단
-      const xhr = response.request as XMLHttpRequest | undefined;
-      const responseUrl = xhr?.responseURL ?? '';
-      const baseUrl = API_BASE_URL.replace(/\/$/, '');
-      const requestPath = response.config.url ?? '';
-      const expectedUrl = `${baseUrl}${requestPath}`;
-
-      const wasRedirected =
-        responseUrl !== '' &&
-        !responseUrl.startsWith(expectedUrl) &&
-        !responseUrl.includes(requestPath);
-
-      if (!wasRedirected) {
-        return response;
-      }
-
-      if (isRefreshing) {
-        return new Promise<AxiosResponse>((resolve) => {
-          addRefreshSubscriber((token) => {
-            response.config.headers.Authorization = `Bearer ${token}`;
-            resolve(client(response.config));
-          });
-        });
-      }
-
-      isRefreshing = true;
-      try {
-        const newToken = await refreshAccessToken();
-        isRefreshing = false;
-        onTokenRefreshed(newToken);
-        response.config.headers.Authorization = `Bearer ${newToken}`;
-        return client(response.config);
-      } catch (refreshError) {
-        isRefreshing = false;
-        refreshSubscribers = [];
-        handleAuthError(refreshError);
-        return Promise.reject(refreshError);
-      }
-    },
+    (response) => response,
     async (error) => {
-      if (handleUnauthorized && isUnauthorizedError(error)) {
-        const originalRequest = error.config;
-
-        if (originalRequest._retry) {
-          handleAuthError(error);
-          return Promise.reject(error);
-        }
-
-        originalRequest._retry = true;
-
-        if (!isRefreshing) {
-          isRefreshing = true;
-
-          try {
-            const newToken = await refreshAccessToken();
-            isRefreshing = false;
-            onTokenRefreshed(newToken);
-
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            return client(originalRequest);
-          } catch (refreshError) {
-            isRefreshing = false;
-            refreshSubscribers = [];
-            handleAuthError(refreshError);
-            return Promise.reject(refreshError);
-          }
-        }
-
-        return new Promise<AxiosResponse>((resolve) => {
-          addRefreshSubscriber((token: string) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            resolve(client(originalRequest));
-          });
-        });
-      }
-
-      if (!handleUnauthorized) {
+      if (handleUnauthorized) {
+        handleAuthError(error);
+      } else {
         notifyApiError(error);
       }
 
@@ -158,16 +64,52 @@ const createClient = (options: ClientOptions): AxiosInstance =>
     axios.create({
       baseURL: API_BASE_URL,
       timeout: 10000,
-      maxRedirects: 0,
+      withCredentials: true,
     }),
     options
   );
 
 export const apiClient = createClient({
-  withAuthToken: true,
   handleUnauthorized: true,
 });
+
 export const publicApiClient = createClient({
-  withAuthToken: false,
   handleUnauthorized: false,
 });
+
+// 사이드바 등 선택적 인증 요청용: 401 리다이렉트/토스트 없이 조용히 실패
+// withCredentials로 쿠키를 자동 전송하고, 에러는 호출부에서 직접 처리
+export const silentAuthClient: AxiosInstance = (() => {
+  const instance = axios.create({
+    baseURL: API_BASE_URL,
+    timeout: 10000,
+    withCredentials: true,
+  });
+
+  instance.interceptors.request.use(
+    (config: InternalAxiosRequestConfig) => {
+      if (typeof window === 'undefined') {
+        return config;
+      }
+
+      const accessToken = authStorage.getAccessToken();
+      if (!accessToken) {
+        return config;
+      }
+
+      const authorizationValue = accessToken.startsWith('Bearer ')
+        ? accessToken
+        : `Bearer ${accessToken}`;
+
+      const headers = AxiosHeaders.from(config.headers);
+      if (!headers.has('Authorization')) {
+        headers.set('Authorization', authorizationValue);
+        config.headers = headers;
+      }
+
+      return config;
+    }
+  );
+
+  return instance;
+})();

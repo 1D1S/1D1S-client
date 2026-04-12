@@ -23,9 +23,9 @@ domain and HTTPS.
 
 `pnpm dev` now bootstraps everything automatically:
 
-1. add host entry to `/etc/hosts` (`local.1day1streak.com`)
+1. add host entry to `/etc/hosts` (`local.dev.1day1streak.com`)
 2. create local HTTPS cert with `mkcert`
-3. start server at `https://local.1day1streak.com`
+3. start server at `https://local.dev.1day1streak.com`
 4. open browser automatically
 
 Prerequisite: `mkcert` must be installed on your machine.
@@ -41,11 +41,16 @@ Do not use `.env.local` in this project.
 `LOCAL_ALIAS_*` and local cert file names are hardcoded in
 `scripts/dev-local-start.sh`.
 
+Auth cookie env vars:
+
+- `NEXT_PUBLIC_ACCESS_TOKEN_COOKIE_NAME` (`devAccessToken` in local/develop, `accessToken` in production)
+- `NEXT_PUBLIC_REFRESH_TOKEN_COOKIE_NAME` (`devRefreshToken` in local/develop, `refreshToken` in production)
+
 Manual shortcuts:
 
 ```bash
-pnpm run init:local-dns -- local.1day1streak.com
-pnpm run init-local-cert -- local.1day1streak.com
+pnpm run init:local-dns -- local.dev.1day1streak.com
+pnpm run init-local-cert -- local.dev.1day1streak.com
 ```
 
 Optional env vars:

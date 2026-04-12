@@ -16,7 +16,7 @@ function OAuthCallbackContent(): React.ReactElement {
   const code = searchParams.get('code');
   const state = searchParams.get('state');
 
-  const { data, error } = useSocialLogin(provider, code, state);
+  const { data, error, isSuccess } = useSocialLogin(provider, code, state);
 
   useEffect(() => {
     if (processed.current) {
@@ -29,18 +29,17 @@ function OAuthCallbackContent(): React.ReactElement {
       return;
     }
 
-    if (data) {
+    if (isSuccess) {
       processed.current = true;
-      authStorage.setAccessToken(data.data.accessToken);
-      authStorage.setRefreshToken(data.data.refreshToken);
+      authStorage.markAuthenticated();
 
-      if (!data.data.profileComplete) {
+      if (data?.data?.profileComplete === false) {
         router.replace('/signup');
       } else {
         router.replace('/');
       }
     }
-  }, [data, error, router]);
+  }, [data, error, isSuccess, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

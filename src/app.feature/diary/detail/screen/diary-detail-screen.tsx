@@ -4,21 +4,25 @@ import {
   Button,
   CheckList,
   CircleAvatar,
+  type CommentNode,
+  CommentThread,
   Tag,
   Text,
+  TextArea,
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
 import { ChallengeListItem } from '@feature/challenge/shared/components/challenge-list-item';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { normalizeApiError } from '@module/api/error';
-import { authStorage } from '@module/utils/auth';
+import { authStorage, getCurrentMemberId } from '@module/utils/auth';
 import {
   CalendarDays,
   Edit3,
   Flag,
   Heart,
   ListChecks,
+  MessageCircle,
   MoreVertical,
   NotebookPen,
   Share2,
@@ -27,6 +31,7 @@ import {
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -54,10 +59,20 @@ import {
 } from '../../shared/utils/diary-image-url';
 import { DiaryReportDialog } from '../components/diary-report-dialog';
 import {
+  useCreateCommentReply,
+  useCreateDiaryComment,
+  useDeleteComment,
+} from '../hooks/use-diary-comment-mutations';
+import {
+  useCommentRepliesMap,
+  useDiaryComments,
+} from '../hooks/use-diary-comment-queries';
+import {
   useDeleteDiary,
   useLikeDiary,
   useUnlikeDiary,
 } from '../hooks/use-diary-mutations';
+import { DiaryComment } from '../type/comment';
 
 interface ChecklistItem {
   id: string;
@@ -201,6 +216,85 @@ function getAuthorInfo(diary: DiaryDetail): AuthorInfo | null {
   return diaryWithAliases.authorInfoDto ?? diaryWithAliases.author ?? null;
 }
 
+function parsePositiveInteger(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsedValue = Number(value);
+    if (Number.isInteger(parsedValue) && parsedValue > 0) {
+      return parsedValue;
+    }
+  }
+
+  return null;
+}
+
+function resolveSidebarMemberId(sidebarData: unknown): number | null {
+  if (!sidebarData || typeof sidebarData !== 'object') {
+    return null;
+  }
+
+  const sidebar = sidebarData as Record<string, unknown>;
+  const candidateKeys = ['memberId', 'member_id', 'userId', 'user_id', 'id'];
+
+  for (const key of candidateKeys) {
+    const parsedValue = parsePositiveInteger(sidebar[key]);
+    if (parsedValue !== null) {
+      return parsedValue;
+    }
+  }
+
+  return null;
+}
+
+function parseCommentTimestamp(value: string): number {
+  if (!value) {
+    return 0;
+  }
+
+  const normalizedValue = value.replace(
+    /\.(\d{3})\d*(?=(?:Z|[+-]\d{2}:\d{2})?$)/,
+    '.$1'
+  );
+  const parsedTime = new Date(normalizedValue).getTime();
+  if (!Number.isNaN(parsedTime)) {
+    return parsedTime;
+  }
+
+  const directParsedTime = new Date(value).getTime();
+  return Number.isNaN(directParsedTime) ? 0 : directParsedTime;
+}
+
+function formatCommentDateTime(value: string): string {
+  const timestamp = parseCommentTimestamp(value);
+  if (!timestamp) {
+    return '-';
+  }
+
+  const date = new Date(timestamp);
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}.${month}.${day} ${hours}:${minutes}`;
+}
+
+function sortCommentsByOldest(comments: DiaryComment[]): DiaryComment[] {
+  return [...comments].sort((leftComment, rightComment) => {
+    const timeDiff =
+      parseCommentTimestamp(leftComment.createdAt) -
+      parseCommentTimestamp(rightComment.createdAt);
+    if (timeDiff !== 0) {
+      return timeDiff;
+    }
+    return leftComment.id - rightComment.id;
+  });
+}
+
 function mapDiaryToViewData(
   diary: DiaryDetail,
   challengeDetailData?: ChallengeDetailResponse
@@ -325,15 +419,29 @@ function DiaryDetailView({
   isLikePending,
   isOwner,
   onDelete,
+  onRequireLogin,
 }: {
   diaryData: DiaryDetailViewData;
   onLikeToggle(): void;
   isLikePending: boolean;
   isOwner: boolean;
   onDelete(): void;
+  onRequireLogin(): void;
 }): React.ReactElement {
   const router = useRouter();
+  const { data: sidebarData } = useSidebar();
+  const currentMemberId = getCurrentMemberId();
+  const currentSidebarMemberId = useMemo(
+    () => resolveSidebarMemberId(sidebarData),
+    [sidebarData]
+  );
+  const effectiveCurrentMemberId = currentMemberId ?? currentSidebarMemberId;
+  const currentUserNickname = useMemo(
+    () => sidebarData?.nickname?.trim() ?? null,
+    [sidebarData?.nickname]
+  );
   const checkedIds = diaryData.checkedChecklistIds;
+  const [commentContent, setCommentContent] = useState('');
 
   const checklistOptions = useMemo(
     () =>
@@ -348,6 +456,87 @@ function DiaryDetailView({
   const [isImageOpen, setIsImageOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const {
+    data: commentsData,
+    isLoading: isCommentsLoading,
+    isError: isCommentsError,
+  } = useDiaryComments(diaryData.id, { page: 0, size: 10 });
+  const commentItems = useMemo(
+    () => sortCommentsByOldest(commentsData?.items ?? []),
+    [commentsData?.items]
+  );
+  const commentIds = useMemo(
+    () => commentItems.map((comment) => comment.id),
+    [commentItems]
+  );
+  const { data: commentRepliesMap = {} } = useCommentRepliesMap(commentIds, {
+    page: 0,
+    size: 10,
+    enabled: commentIds.length > 0,
+  });
+  const createComment = useCreateDiaryComment(diaryData.id);
+  const createReply = useCreateCommentReply(diaryData.id);
+  const deleteComment = useDeleteComment(diaryData.id);
+  const isCommentPending =
+    createComment.isPending || createReply.isPending || deleteComment.isPending;
+
+  const mapCommentNode = useCallback(
+    (comment: DiaryComment): CommentNode => {
+      const authorNickname = comment.author.nickname?.trim();
+
+      return {
+        id: String(comment.id),
+        content: comment.content || '삭제된 댓글입니다.',
+        createdAt: formatCommentDateTime(comment.createdAt),
+        author: {
+          id: String(comment.author.id),
+          nickname: comment.author.nickname || '익명',
+          profileImageUrl: comment.author.profileImage ?? undefined,
+        },
+        isAuthor:
+          (effectiveCurrentMemberId !== null &&
+            comment.author.id === effectiveCurrentMemberId) ||
+          (effectiveCurrentMemberId === null &&
+            Boolean(authorNickname) &&
+            Boolean(currentUserNickname) &&
+            authorNickname === currentUserNickname),
+      };
+    },
+    [currentUserNickname, effectiveCurrentMemberId]
+  );
+
+  const threadComments = useMemo<CommentNode[]>(
+    () =>
+      commentItems.map((comment) => ({
+        ...mapCommentNode(comment),
+        replies: sortCommentsByOldest(commentRepliesMap[comment.id] ?? []).map(
+          mapCommentNode
+        ),
+      })),
+    [commentItems, commentRepliesMap, mapCommentNode]
+  );
+  const totalCommentCount = useMemo(() => {
+    const baseCommentCount = commentsData?.pageInfo.totalElements ?? 0;
+    const totalReplyCount = commentItems.reduce(
+      (accumulator, comment) =>
+        accumulator +
+        (comment.replyCount > 0
+          ? comment.replyCount
+          : (commentRepliesMap[comment.id]?.length ?? 0)),
+      0
+    );
+
+    return baseCommentCount + totalReplyCount;
+  }, [commentItems, commentRepliesMap, commentsData?.pageInfo.totalElements]);
+
+  const requireAuthAction = (action: () => void): void => {
+    if (!authStorage.hasTokens()) {
+      onRequireLogin();
+      return;
+    }
+
+    action();
+  };
 
   useEffect(() => {
     if (!isImageOpen) {
@@ -391,6 +580,58 @@ function DiaryDetailView({
   };
 
   const handleReadOnlyChecklistChange = (): void => {};
+
+  const handleCreateComment = (): void => {
+    const content = commentContent.trim();
+    if (!content || isCommentPending) {
+      return;
+    }
+
+    requireAuthAction(() => {
+      createComment.mutate(
+        { content },
+        {
+          onSuccess: () => setCommentContent(''),
+        }
+      );
+    });
+  };
+
+  const handleReplySubmit = (comment: CommentNode, content: string): void => {
+    const targetCommentId = Number(comment.id);
+    const trimmedContent = content.trim();
+
+    if (!Number.isFinite(targetCommentId) || targetCommentId <= 0) {
+      return;
+    }
+
+    if (!trimmedContent || isCommentPending) {
+      return;
+    }
+
+    requireAuthAction(() => {
+      createReply.mutate({
+        commentId: targetCommentId,
+        content: trimmedContent,
+      });
+    });
+  };
+
+  const handleDeleteComment = (comment: CommentNode): void => {
+    const targetCommentId = Number(comment.id);
+
+    if (!Number.isFinite(targetCommentId) || targetCommentId <= 0) {
+      return;
+    }
+
+    if (!window.confirm('댓글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    requireAuthAction(() => {
+      deleteComment.mutate(targetCommentId);
+    });
+  };
 
   return (
     <div className="min-h-screen w-full bg-white">
@@ -646,6 +887,65 @@ function DiaryDetailView({
             ) : null}
           </div>
         </section>
+
+        <section className="mt-8">
+          <div className="mb-3 flex items-center gap-2">
+            <MessageCircle className="text-main-800 h-5 w-5" />
+            <Text size="heading1" weight="bold" className="text-gray-900">
+              댓글 {totalCommentCount}
+            </Text>
+          </div>
+
+          <div className="rounded-3 border border-gray-200 bg-white p-5">
+            {isCommentsLoading ? (
+              <Text size="body2" weight="regular" className="text-gray-500">
+                댓글을 불러오는 중입니다.
+              </Text>
+            ) : isCommentsError ? (
+              <Text size="body2" weight="regular" className="text-red-600">
+                댓글을 불러오지 못했습니다.
+              </Text>
+            ) : threadComments.length > 0 ? (
+              <CommentThread
+                comments={threadComments}
+                currentUserId={
+                  effectiveCurrentMemberId !== null
+                    ? String(effectiveCurrentMemberId)
+                    : undefined
+                }
+                onReplySubmit={handleReplySubmit}
+                onDelete={handleDeleteComment}
+              />
+            ) : (
+              <Text size="body2" weight="regular" className="text-gray-500">
+                첫 댓글을 남겨보세요.
+              </Text>
+            )}
+
+            <div className="mt-5">
+              <Text size="body2" className="text-gray-900">
+                댓글 작성
+              </Text>
+              <TextArea
+                id="diary-comment-content"
+                className="mt-2 w-full resize-none text-[15px]"
+                rows={3}
+                value={commentContent}
+                onChange={(event) => setCommentContent(event.target.value)}
+                placeholder="댓글을 입력해 주세요."
+              />
+              <div className="mt-3 flex justify-end">
+                <Button
+                  size="small"
+                  onClick={handleCreateComment}
+                  disabled={isCommentPending || !commentContent.trim()}
+                >
+                  댓글 등록
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
       <DiaryReportDialog
@@ -710,6 +1010,10 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
     likeDiary.mutate(data.id);
   };
 
+  const handleRequireLogin = (): void => {
+    setDismissed(false);
+  };
+
   const authDialog = (
     <LoginRequiredDialog
       open={showAuthDialog}
@@ -770,6 +1074,7 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
         isLikePending={isLikePending}
         isOwner={isOwner}
         onDelete={handleDelete}
+        onRequireLogin={handleRequireLogin}
       />
     </>
   );
