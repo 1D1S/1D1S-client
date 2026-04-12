@@ -11,6 +11,7 @@ import {
   CreateChallengeResponse,
   JoinChallengeRequest,
   JoinChallengeResponse,
+  UpdateChallengeRequest,
 } from '../../board/type/challenge';
 import { challengeWriteApi } from '../../write/api/challenge-write-api';
 import { challengeDetailApi } from '../api/challenge-detail-api';
@@ -153,6 +154,47 @@ export function useLikeChallenge(): UseMutationResult<void, Error, number> {
       queryClient.invalidateQueries({
         queryKey: CHALLENGE_QUERY_KEYS.all,
         predicate: (query) => query.queryKey.includes('random'),
+      });
+    },
+  });
+}
+
+// 챌린지 수정하기 (HOST 전용)
+export function useUpdateChallenge(): UseMutationResult<
+  void,
+  Error,
+  { challengeId: number; data: UpdateChallengeRequest }
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ challengeId, data }) =>
+      challengeWriteApi.updateChallenge(challengeId, data),
+    onSuccess: (_, { challengeId }) => {
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_QUERY_KEYS.detail(challengeId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_QUERY_KEYS.lists(),
+      });
+    },
+  });
+}
+
+// 참여자 목표 수정 (자유 목표 챌린지 전용, 시작 전에만 가능)
+export function useUpdateParticipantGoal(): UseMutationResult<
+  void,
+  Error,
+  { challengeId: number; goals: string[] }
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ challengeId, goals }) =>
+      challengeDetailApi.updateParticipantGoal(challengeId, goals),
+    onSuccess: (_, { challengeId }) => {
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_QUERY_KEYS.detail(challengeId),
       });
     },
   });

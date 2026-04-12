@@ -18,7 +18,7 @@ function MoodOptionButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-2 relative flex h-[92px] w-[92px] flex-col items-center justify-center border transition ${
+      className={`rounded-2 relative flex h-[92px] w-[92px] cursor-pointer flex-col items-center justify-center border transition ${
         active
           ? 'border-main-800 bg-main-100 text-main-800'
           : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-100'

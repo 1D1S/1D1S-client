@@ -179,8 +179,8 @@ export default function AccountSettingsPage(): React.ReactElement {
                       }
                     }}
                   />
-                  <button
-                    type="button"
+                  <Button
+                    size="small"
                     onClick={handleNicknameSave}
                     disabled={
                       updateNickname.isPending ||
@@ -188,10 +188,9 @@ export default function AccountSettingsPage(): React.ReactElement {
                       Boolean(nicknameError) ||
                       nickname.trim() === data?.nickname
                     }
-                    className="g900 shripx-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700 disabled:opacity-40"
                   >
                     {updateNickname.isPending ? '저장 중...' : '저장'}
-                  </button>
+                  </Button>
                 </div>
                 {nicknameError ? (
                   <Text

@@ -64,6 +64,7 @@ import {
   useLikeChallenge,
   useRejectParticipant,
   useUnlikeChallenge,
+  useUpdateParticipantGoal,
 } from '../hooks/use-challenge-mutations';
 import { ChallengeDiaryItem } from '../type/challenge-diary';
 
@@ -313,7 +314,7 @@ function PendingMemberItem({
       <div className="flex items-center gap-2">
         <button
           type="button"
-          className="bg-main-200 text-main-800 flex h-8 w-8 items-center justify-center rounded-xl"
+          className="bg-main-200 text-main-800 flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl"
           aria-label="참여 승인"
           onClick={onAccept}
           disabled={isLoading}
@@ -322,7 +323,7 @@ function PendingMemberItem({
         </button>
         <button
           type="button"
-          className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-200 text-gray-500"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl bg-gray-200 text-gray-500"
           aria-label="참여 거절"
           onClick={onReject}
           disabled={isLoading}
@@ -348,6 +349,7 @@ export function ChallengeDetailScreen({
   const unlikeChallenge = useUnlikeChallenge();
   const acceptParticipant = useAcceptParticipant();
   const rejectParticipant = useRejectParticipant();
+  const updateParticipantGoal = useUpdateParticipantGoal();
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
 
@@ -364,6 +366,8 @@ export function ChallengeDetailScreen({
   const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
   const [showFreeGoalModal, setShowFreeGoalModal] = useState(false);
   const [freeGoalInputs, setFreeGoalInputs] = useState<string[]>(['']);
+  const [showEditGoalModal, setShowEditGoalModal] = useState(false);
+  const [editGoalInputs, setEditGoalInputs] = useState<string[]>(['']);
 
   const { data: challengeDiariesData, isLoading: isDiariesLoading } =
     useChallengeDiaryList(challengeId, 10);
@@ -415,6 +419,12 @@ export function ChallengeDetailScreen({
     summaryStartDate,
     summaryEndDate
   );
+  // 챌린지 시작 여부 (시작일이 오늘 이전이면 시작된 것으로 간주)
+  const isChallengeStarted =
+    isChallengeCurrentlyOngoing ||
+    (summaryStartDate
+      ? new Date() >= new Date(summaryStartDate)
+      : false);
   const {
     data: challengeCheckWriteDateKeys = [],
     isLoading: isCheckWriteDatesLoading,
@@ -562,6 +572,31 @@ export function ChallengeDetailScreen({
     });
   };
 
+  const handleOpenEditGoalModal = (): void => {
+    setEditGoalInputs(['']);
+    setShowEditGoalModal(true);
+  };
+
+  const handleEditGoalSubmit = (): void => {
+    const validGoals = editGoalInputs.map((g) => g.trim()).filter(Boolean);
+    if (validGoals.length === 0) {
+      toast.error('목표를 최소 1개 이상 입력해 주세요.');
+      return;
+    }
+    updateParticipantGoal.mutate(
+      { challengeId, goals: validGoals },
+      {
+        onSuccess: () => {
+          setShowEditGoalModal(false);
+          toast.success('목표가 수정되었습니다.');
+        },
+        onError: (error) => {
+          notifyApiError(error);
+        },
+      }
+    );
+  };
+
   const handleDiaryLikeToggle = (diary: ChallengeDiaryItem): void => {
     if (!authStorage.hasTokens()) {
       setShowDiaryLikeDialog(true);
@@ -593,6 +628,17 @@ export function ChallengeDetailScreen({
         ACTIONS
       </Text>
       <div className="mt-3 flex flex-col gap-2.5">
+        {isHost ? (
+          <Button
+            variant="outlined"
+            size="large"
+            className="w-full"
+            onClick={() => router.push(`/challenge/${id}/edit`)}
+          >
+            챌린지 수정
+          </Button>
+        ) : null}
+
         {isParticipating ? (
           <Button
             size="large"
@@ -603,6 +649,18 @@ export function ChallengeDetailScreen({
             {isChallengeCurrentlyOngoing
               ? '일지 작성하기'
               : '진행 중일 때만 일지 작성 가능'}
+          </Button>
+        ) : null}
+
+        {/* 자유 목표 참여자 - 시작 전에만 목표 수정 가능 */}
+        {!isHost && isFreeChallenge && isParticipating && !isChallengeStarted ? (
+          <Button
+            variant="outlined"
+            size="large"
+            className="w-full"
+            onClick={handleOpenEditGoalModal}
+          >
+            내 목표 수정
           </Button>
         ) : null}
 
@@ -781,10 +839,51 @@ export function ChallengeDetailScreen({
     </Dialog>
   );
 
+  const editGoalModal = (
+    <Dialog open={showEditGoalModal} onOpenChange={setShowEditGoalModal}>
+      <DialogContent className="gap-5 px-6 py-6 sm:max-w-[460px]">
+        <DialogHeader>
+          <DialogTitle>내 목표 수정</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-3">
+          <Text size="body2" weight="regular" className="text-gray-500">
+            새 목표를 입력하고 Enter를 눌러 추가해 주세요.
+          </Text>
+          <GoalAddList
+            goals={editGoalInputs}
+            onGoalsChange={setEditGoalInputs}
+            placeholder="목표를 입력하고 Enter를 눌러 추가하세요"
+            inputAriaLabel="목표 입력"
+            maxGoals={5}
+          />
+        </div>
+        <DialogFooter className="flex-row gap-2">
+          <Button
+            size="medium"
+            variant="ghost"
+            className="flex-1"
+            onClick={() => setShowEditGoalModal(false)}
+          >
+            취소
+          </Button>
+          <Button
+            size="medium"
+            className="flex-1"
+            disabled={updateParticipantGoal.isPending}
+            onClick={handleEditGoalSubmit}
+          >
+            {updateParticipantGoal.isPending ? '저장 중...' : '저장'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <div className="min-h-screen w-full bg-white px-4 py-6 md:px-6 lg:px-8">
       {authDialog}
       {freeGoalModal}
+      {editGoalModal}
       <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6">
         {summary.thumbnailImage && (
           <div className="relative h-[220px] w-full overflow-hidden rounded-3xl md:h-[280px]">
@@ -982,7 +1081,7 @@ export function ChallengeDetailScreen({
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    className="rounded-full border border-gray-200 p-1.5 text-gray-600 transition hover:bg-gray-100"
+                    className="cursor-pointer rounded-full border border-gray-200 p-1.5 text-gray-600 transition hover:bg-gray-100"
                     aria-label="이전 달"
                     onClick={() =>
                       setCalendarMonth(
@@ -1006,7 +1105,7 @@ export function ChallengeDetailScreen({
                   </Text>
                   <button
                     type="button"
-                    className="rounded-full border border-gray-200 p-1.5 text-gray-600 transition hover:bg-gray-100"
+                    className="cursor-pointer rounded-full border border-gray-200 p-1.5 text-gray-600 transition hover:bg-gray-100"
                     aria-label="다음 달"
                     onClick={() =>
                       setCalendarMonth(
