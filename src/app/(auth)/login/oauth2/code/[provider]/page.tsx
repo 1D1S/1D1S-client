@@ -2,12 +2,15 @@
 
 import { useSocialLogin } from '@feature/auth/hooks/use-auth-queries';
 import { OAuthProvider } from '@feature/auth/type/auth';
+import { MEMBER_QUERY_KEYS } from '@feature/member/consts/query-keys';
 import { authStorage } from '@module/utils/auth';
+import { useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef } from 'react';
 
 function OAuthCallbackContent(): React.ReactElement {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const params = useParams<{ provider: string }>();
   const searchParams = useSearchParams();
   const processed = useRef(false);
@@ -32,6 +35,8 @@ function OAuthCallbackContent(): React.ReactElement {
     if (isSuccess) {
       processed.current = true;
       authStorage.markAuthenticated();
+      // 로그인 전 null로 캐시된 사이드바 데이터를 무효화 → 홈에서 즉시 리페치
+      void queryClient.invalidateQueries({ queryKey: MEMBER_QUERY_KEYS.sidebar() });
 
       if (data?.data?.profileComplete === false) {
         router.replace('/signup');
@@ -39,7 +44,7 @@ function OAuthCallbackContent(): React.ReactElement {
         router.replace('/');
       }
     }
-  }, [data, error, isSuccess, router]);
+  }, [data, error, isSuccess, router, queryClient]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">
