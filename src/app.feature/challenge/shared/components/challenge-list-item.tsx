@@ -54,7 +54,7 @@ export function ChallengeListItem({
   return (
     <div
       className={cn(
-        'flex gap-3 overflow-hidden rounded-4 border border-gray-200 bg-white p-3 transition-all duration-200 ease-in-out hover:-translate-y-1 hover:shadow-default sm:gap-4 sm:p-4',
+        'rounded-4 hover:shadow-default flex gap-3 overflow-hidden border border-gray-200 bg-white p-3 transition-all duration-200 ease-in-out hover:-translate-y-1 sm:gap-4 sm:p-4',
         onClick && 'cursor-pointer',
         className
       )}

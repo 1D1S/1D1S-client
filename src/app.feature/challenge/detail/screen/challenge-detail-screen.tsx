@@ -578,7 +578,9 @@ export function ChallengeDetailScreen({
   };
 
   const handleEditGoalSubmit = (): void => {
-    const validGoals = editGoalInputs.map((g) => g.trim()).filter(Boolean);
+    const validGoals = editGoalInputs
+      .map((goalInput) => goalInput.trim())
+      .filter(Boolean);
     if (validGoals.length === 0) {
       toast.error('목표를 최소 1개 이상 입력해 주세요.');
       return;
@@ -653,7 +655,10 @@ export function ChallengeDetailScreen({
         ) : null}
 
         {/* 자유 목표 참여자 목표 수정 (시작 전) */}
-        {!isHost && isFreeChallenge && isParticipating && !isChallengeStarted ? (
+        {!isHost &&
+        isFreeChallenge &&
+        isParticipating &&
+        !isChallengeStarted ? (
           <Button
             variant="outlined"
             size="large"

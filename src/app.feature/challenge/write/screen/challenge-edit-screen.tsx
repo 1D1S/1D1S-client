@@ -48,7 +48,7 @@ export default function ChallengeEditScreen({
 
   const summary = data?.challengeSummary;
   const detail = data?.challengeDetail;
-  const goals = data?.challengeGoals ?? [];
+  const challengeGoals = data?.challengeGoals;
 
   // 시작 여부
   const isChallengeStarted = isChallengeOngoing(
@@ -96,10 +96,10 @@ export default function ChallengeEditScreen({
       setMemberCount('etc');
       setMemberCountNumber(String(cnt));
     }
-    setGoalInputs(goals.map((g) => g.content));
+    setGoalInputs((challengeGoals ?? []).map((goal) => goal.content));
     setThumbnailPreviewUrl(summary.thumbnailImage ?? undefined);
     setIsInitialized(true);
-  }, [summary, detail, goals, isInitialized]);
+  }, [summary, detail, challengeGoals, isInitialized]);
 
   // HOST 체크
   useEffect(() => {
@@ -179,7 +179,7 @@ export default function ChallengeEditScreen({
       }
     }
     if (!isChallengeStarted && isFixedGoal) {
-      payload.goals = goalInputs.filter((g) => g.trim());
+      payload.goals = goalInputs.filter((goal) => goal.trim());
     }
     if (thumbnailAction === 'update' && newThumbnailKey) {
       payload.thumbnailImage = newThumbnailKey;
@@ -260,7 +260,7 @@ export default function ChallengeEditScreen({
           </Text>
           <TextField
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(event) => setTitle(event.target.value)}
             placeholder="챌린지 제목을 입력해주세요."
             className="w-full"
             maxLength={50}
@@ -294,7 +294,7 @@ export default function ChallengeEditScreen({
           </Text>
           <TextField
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(event) => setDescription(event.target.value)}
             placeholder="챌린지 소개와 진행 방법을 자유롭게 적어주세요."
             multiline
             rows={4}
