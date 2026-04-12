@@ -35,8 +35,10 @@ function OAuthCallbackContent(): React.ReactElement {
     if (isSuccess) {
       processed.current = true;
       authStorage.markAuthenticated();
-      // 로그인 전 null로 캐시된 사이드바 데이터를 무효화 → 홈에서 즉시 리페치
-      void queryClient.invalidateQueries({ queryKey: MEMBER_QUERY_KEYS.sidebar() });
+      // 로그인 전 null로 캐시된 사이드바 무효화 → 홈에서 즉시 리페치
+      void queryClient.invalidateQueries({
+        queryKey: MEMBER_QUERY_KEYS.sidebar(),
+      });
 
       if (data?.data?.profileComplete === false) {
         router.replace('/signup');
