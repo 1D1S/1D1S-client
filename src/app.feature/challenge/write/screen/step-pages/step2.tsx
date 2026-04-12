@@ -159,7 +159,7 @@ export function Step2(): React.ReactElement {
                       type="single"
                       value={field.value ? 'yes' : 'no'}
                       onValueChange={(value) => {
-                        if (value) field.onChange(value === 'yes');
+                        if (value) { field.onChange(value === 'yes'); }
                       }}
                       className="w-fit"
                     >

@@ -11,9 +11,9 @@ import { type ChangeEvent } from 'react';
 
 interface MaxParticipantCountSelectProps {
   value: string;
-  onValueChange: (value: string) => void;
+  onValueChange(value: string): void;
   customValue?: string;
-  onCustomValueChange?: (value: string) => void;
+  onCustomValueChange?(value: string): void;
 }
 
 export function MaxParticipantCountSelect({
@@ -50,8 +50,8 @@ export function MaxParticipantCountSelect({
             className="w-full md:w-[240px]"
             value={customValue}
             maxLength={2}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              onCustomValueChange?.(e.target.value.replace(/\D/g, ''));
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
+              onCustomValueChange?.(event.target.value.replace(/\D/g, ''));
             }}
           />
         </div>

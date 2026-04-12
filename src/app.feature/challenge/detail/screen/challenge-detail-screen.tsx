@@ -652,7 +652,7 @@ export function ChallengeDetailScreen({
           </Button>
         ) : null}
 
-        {/* 자유 목표 참여자 - 시작 전에만 목표 수정 가능 */}
+        {/* 자유 목표 참여자 목표 수정 (시작 전) */}
         {!isHost && isFreeChallenge && isParticipating && !isChallengeStarted ? (
           <Button
             variant="outlined"

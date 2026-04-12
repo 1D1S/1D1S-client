@@ -9,13 +9,13 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@1d1s/design-system';
-import { MaxParticipantCountSelect } from '@feature/challenge/write/components/max-participant-count-select';
 import { getCategoryLabel } from '@constants/categories';
 import { useChallengeDetail } from '@feature/challenge/board/hooks/use-challenge-queries';
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-period';
 import { useUpdateChallenge } from '@feature/challenge/detail/hooks/use-challenge-mutations';
-import { notifyApiError } from '@module/api/error';
+import { MaxParticipantCountSelect } from '@feature/challenge/write/components/max-participant-count-select';
 import { apiClient } from '@module/api/client';
+import { notifyApiError } from '@module/api/error';
 import { requestData } from '@module/api/request';
 import { authStorage } from '@module/utils/auth';
 import { useRouter } from 'next/navigation';
@@ -173,7 +173,8 @@ export default function ChallengeEditScreen({
     if (isGroupChallenge && !isChallengeStarted) {
       const resolved = memberCount === 'etc' ? memberCountNumber : memberCount;
       const parsed = Number(resolved);
-      if (!Number.isNaN(parsed) && parsed >= 2 && parsed !== summary?.maxParticipantCnt) {
+      const isChanged = parsed !== summary?.maxParticipantCnt;
+      if (!Number.isNaN(parsed) && parsed >= 2 && isChanged) {
         payload.maxParticipantCnt = parsed;
       }
     }
@@ -234,7 +235,7 @@ export default function ChallengeEditScreen({
         {/* 대표 사진 */}
         <div className="flex flex-col gap-2">
           <Text size="body1" weight="bold" className="text-gray-900">
-            대표 사진 <span className="text-gray-400 font-normal">(선택)</span>
+            대표 사진 <span className="font-normal text-gray-400">(선택)</span>
           </Text>
           <ImagePicker
             previewUrl={thumbnailPreviewUrl}
@@ -275,7 +276,7 @@ export default function ChallengeEditScreen({
             type="single"
             value={category}
             onValueChange={(value) => {
-              if (value) setCategory(value as ChallengeCategory);
+              if (value) { setCategory(value as ChallengeCategory); }
             }}
           >
             {CATEGORY_OPTIONS.map((opt) => (
@@ -289,7 +290,7 @@ export default function ChallengeEditScreen({
         {/* 설명 */}
         <div className="flex flex-col gap-2">
           <Text size="body1" weight="bold" className="text-gray-900">
-            설명 <span className="text-gray-400 font-normal">(선택)</span>
+            설명 <span className="font-normal text-gray-400">(선택)</span>
           </Text>
           <TextField
             value={description}
@@ -313,7 +314,7 @@ export default function ChallengeEditScreen({
                 type="single"
                 value={allowMidJoin ? 'yes' : 'no'}
                 onValueChange={(value) => {
-                  if (value) setAllowMidJoin(value === 'yes');
+                  if (value) { setAllowMidJoin(value === 'yes'); }
                 }}
                 className="w-fit"
               >
