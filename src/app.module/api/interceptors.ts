@@ -14,15 +14,29 @@ export interface ClientOptions {
 }
 
 let isRefreshing = false;
-let refreshSubscribers: Array<(token: string) => void> = [];
+let refreshSubscribers: Array<{
+  resolve(token: string): void;
+  reject(error: unknown): void;
+}> = [];
 
 const onTokenRefreshed = (token: string): void => {
-  refreshSubscribers.forEach((callback) => callback(token));
+  refreshSubscribers.forEach(({ resolve }) => resolve(token));
   refreshSubscribers = [];
 };
 
-const addRefreshSubscriber = (callback: (token: string) => void): void => {
-  refreshSubscribers.push(callback);
+const onTokenRefreshFailed = (error: unknown): void => {
+  refreshSubscribers.forEach(({ reject }) => reject(error));
+  refreshSubscribers = [];
+};
+
+const addRefreshSubscriber = ({
+  resolve,
+  reject,
+}: {
+  resolve(token: string): void;
+  reject(error: unknown): void;
+}): void => {
+  refreshSubscribers.push({ resolve, reject });
 };
 
 const refreshAccessToken = async (): Promise<string> => {
@@ -84,10 +98,15 @@ export const attachInterceptors = (
       }
 
       if (isRefreshing) {
-        return new Promise<AxiosResponse>((resolve) => {
-          addRefreshSubscriber((token) => {
-            response.config.headers.Authorization = `Bearer ${token}`;
-            resolve(client(response.config));
+        return new Promise<AxiosResponse>((resolve, reject) => {
+          addRefreshSubscriber({
+            resolve: (token: string) => {
+              response.config.headers.Authorization = `Bearer ${token}`;
+              resolve(client(response.config));
+            },
+            reject: (error: unknown) => {
+              reject(error);
+            },
           });
         });
       }
@@ -101,7 +120,7 @@ export const attachInterceptors = (
         return client(response.config);
       } catch (refreshError) {
         isRefreshing = false;
-        refreshSubscribers = [];
+        onTokenRefreshFailed(refreshError);
         handleAuthError(refreshError);
         return Promise.reject(refreshError);
       }
@@ -129,16 +148,21 @@ export const attachInterceptors = (
             return client(originalRequest);
           } catch (refreshError) {
             isRefreshing = false;
-            refreshSubscribers = [];
+            onTokenRefreshFailed(refreshError);
             handleAuthError(refreshError);
             return Promise.reject(refreshError);
           }
         }
 
-        return new Promise<AxiosResponse>((resolve) => {
-          addRefreshSubscriber((token: string) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            resolve(client(originalRequest));
+        return new Promise<AxiosResponse>((resolve, reject) => {
+          addRefreshSubscriber({
+            resolve: (token) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              resolve(client(originalRequest));
+            },
+            reject: (error) => {
+              reject(error);
+            },
           });
         });
       }
