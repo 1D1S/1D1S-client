@@ -1,6 +1,7 @@
 import axios, {
   type AxiosInstance,
   type AxiosResponse,
+  InternalAxiosRequestConfig,
 } from 'axios';
 
 import { API_BASE_URL } from './config';
@@ -8,6 +9,10 @@ import { handleAuthError, isUnauthorizedError, notifyApiError } from './error';
 
 export interface ClientOptions {
   handleUnauthorized: boolean;
+}
+
+interface RetryableAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
 }
 
 let isRefreshing = false;
@@ -52,6 +57,12 @@ export const attachInterceptors = (
         return response;
       }
 
+      const config = response.config as RetryableAxiosRequestConfig;
+
+      if (config._retry) {
+        return response;
+      }
+
       const xhr = response.request as XMLHttpRequest | undefined;
       const responseUrl = xhr?.responseURL ?? '';
       const baseUrl = API_BASE_URL.replace(/\/$/, '');
@@ -71,7 +82,10 @@ export const attachInterceptors = (
       if (isRefreshing) {
         return new Promise<AxiosResponse>((resolve, reject) => {
           addRefreshSubscriber({
-            resolve: () => resolve(client(response.config)),
+            resolve: () => {
+              config._retry = false;
+              resolve(client(response.config));
+            },
             reject,
           });
         });
@@ -92,7 +106,7 @@ export const attachInterceptors = (
     },
     async (error) => {
       if (handleUnauthorized && isUnauthorizedError(error)) {
-        const originalRequest = error.config;
+        const originalRequest = error.config as RetryableAxiosRequestConfig;
 
         if (originalRequest._retry) {
           handleAuthError(error);
@@ -120,7 +134,10 @@ export const attachInterceptors = (
 
         return new Promise<AxiosResponse>((resolve, reject) => {
           addRefreshSubscriber({
-            resolve: () => resolve(client(originalRequest)),
+            resolve: () => {
+              originalRequest._retry = false;
+              resolve(client(originalRequest));
+            },
             reject,
           });
         });
