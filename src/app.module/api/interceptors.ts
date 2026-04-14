@@ -1,4 +1,3 @@
-import { authStorage } from '@module/utils/auth';
 import axios, {
   type AxiosInstance,
   type AxiosResponse,
@@ -15,12 +14,12 @@ export interface ClientOptions {
 
 let isRefreshing = false;
 let refreshSubscribers: Array<{
-  resolve(token: string): void;
+  resolve(): void;
   reject(error: unknown): void;
 }> = [];
 
-const onTokenRefreshed = (token: string): void => {
-  refreshSubscribers.forEach(({ resolve }) => resolve(token));
+const onTokenRefreshed = (): void => {
+  refreshSubscribers.forEach(({ resolve }) => resolve());
   refreshSubscribers = [];
 };
 
@@ -33,30 +32,17 @@ const addRefreshSubscriber = ({
   resolve,
   reject,
 }: {
-  resolve(token: string): void;
+  resolve(): void;
   reject(error: unknown): void;
 }): void => {
   refreshSubscribers.push({ resolve, reject });
 };
 
-const refreshAccessToken = async (): Promise<string> => {
-  const refreshToken = authStorage.getRefreshToken();
-  if (!refreshToken) {
-    throw new Error('No refresh token');
-  }
-
-  const response = await axios.get<{
-    message: string;
-    data: { accessToken: string; refreshToken: string };
-  }>(`${API_BASE_URL}/auth/token`, {
-    headers: { 'Authorization-Refresh': `Bearer ${refreshToken}` },
+const refreshAccessToken = async (): Promise<void> => {
+  // refresh 토큰이 쿠키에 저장되므로, 별도의 헤더 전달 없이 API를 호출하면 백엔드에서 쿠키를 읽어 새 access 토큰이 든 Set-Cookie 응답을 줍니다.
+  await axios.get(`${API_BASE_URL}/auth/token`, {
+    withCredentials: true,
   });
-
-  const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-  authStorage.setAccessToken(accessToken);
-  authStorage.setRefreshToken(newRefreshToken);
-
-  return accessToken;
 };
 
 export const attachInterceptors = (
@@ -64,13 +50,9 @@ export const attachInterceptors = (
   { withAuthToken, handleUnauthorized }: ClientOptions
 ): AxiosInstance => {
   if (withAuthToken) {
-    client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-      const token = authStorage.getAccessToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    });
+    client.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => config
+    );
   }
 
   client.interceptors.response.use(
@@ -100,8 +82,7 @@ export const attachInterceptors = (
       if (isRefreshing) {
         return new Promise<AxiosResponse>((resolve, reject) => {
           addRefreshSubscriber({
-            resolve: (token: string) => {
-              response.config.headers.Authorization = `Bearer ${token}`;
+            resolve: () => {
               resolve(client(response.config));
             },
             reject: (error: unknown) => {
@@ -113,10 +94,9 @@ export const attachInterceptors = (
 
       isRefreshing = true;
       try {
-        const newToken = await refreshAccessToken();
+        await refreshAccessToken();
         isRefreshing = false;
-        onTokenRefreshed(newToken);
-        response.config.headers.Authorization = `Bearer ${newToken}`;
+        onTokenRefreshed();
         return client(response.config);
       } catch (refreshError) {
         isRefreshing = false;
@@ -140,11 +120,10 @@ export const attachInterceptors = (
           isRefreshing = true;
 
           try {
-            const newToken = await refreshAccessToken();
+            await refreshAccessToken();
             isRefreshing = false;
-            onTokenRefreshed(newToken);
+            onTokenRefreshed();
 
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return client(originalRequest);
           } catch (refreshError) {
             isRefreshing = false;
@@ -156,8 +135,7 @@ export const attachInterceptors = (
 
         return new Promise<AxiosResponse>((resolve, reject) => {
           addRefreshSubscriber({
-            resolve: (token) => {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve: () => {
               resolve(client(originalRequest));
             },
             reject: (error) => {
