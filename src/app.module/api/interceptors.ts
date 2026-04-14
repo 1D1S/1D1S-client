@@ -76,6 +76,7 @@ export const attachInterceptors = (
       const wasRedirected =
         responseUrl !== '' &&
         !responseUrl.startsWith(expectedUrl) &&
+        requestPath.length > 1 &&
         !responseUrl.includes(requestPath);
 
       if (!wasRedirected) {
