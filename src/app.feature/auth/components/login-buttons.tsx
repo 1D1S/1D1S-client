@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@1d1s/design-system';
 import { API_BASE_URL } from '@module/api/config';
 import Image from 'next/image';
