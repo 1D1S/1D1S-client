@@ -1,14 +1,12 @@
 import axios, {
   type AxiosInstance,
   type AxiosResponse,
-  type InternalAxiosRequestConfig,
 } from 'axios';
 
 import { API_BASE_URL } from './config';
 import { handleAuthError, isUnauthorizedError, notifyApiError } from './error';
 
 export interface ClientOptions {
-  withAuthToken: boolean;
   handleUnauthorized: boolean;
 }
 
@@ -39,7 +37,6 @@ const addRefreshSubscriber = ({
 };
 
 const refreshAccessToken = async (): Promise<void> => {
-  // refresh 토큰이 쿠키에 저장되므로, 별도의 헤더 전달 없이 API를 호출하면 백엔드에서 쿠키를 읽어 새 access 토큰이 든 Set-Cookie 응답을 줍니다.
   await axios.get(`${API_BASE_URL}/auth/token`, {
     withCredentials: true,
   });
@@ -47,22 +44,14 @@ const refreshAccessToken = async (): Promise<void> => {
 
 export const attachInterceptors = (
   client: AxiosInstance,
-  { withAuthToken, handleUnauthorized }: ClientOptions
+  { handleUnauthorized }: ClientOptions
 ): AxiosInstance => {
-  if (withAuthToken) {
-    client.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => config
-    );
-  }
-
   client.interceptors.response.use(
     async (response) => {
       if (!handleUnauthorized) {
         return response;
       }
 
-      // 브라우저에서 302는 XHR이 자동으로 따라가므로 에러 인터셉터에 잡히지 않음
-      // responseURL이 원래 요청 URL과 다르면 리다이렉트가 발생한 것으로 판단
       const xhr = response.request as XMLHttpRequest | undefined;
       const responseUrl = xhr?.responseURL ?? '';
       const baseUrl = API_BASE_URL.replace(/\/$/, '');
@@ -82,12 +71,8 @@ export const attachInterceptors = (
       if (isRefreshing) {
         return new Promise<AxiosResponse>((resolve, reject) => {
           addRefreshSubscriber({
-            resolve: () => {
-              resolve(client(response.config));
-            },
-            reject: (error: unknown) => {
-              reject(error);
-            },
+            resolve: () => resolve(client(response.config)),
+            reject,
           });
         });
       }
@@ -135,17 +120,13 @@ export const attachInterceptors = (
 
         return new Promise<AxiosResponse>((resolve, reject) => {
           addRefreshSubscriber({
-            resolve: () => {
-              resolve(client(originalRequest));
-            },
-            reject: (error) => {
-              reject(error);
-            },
+            resolve: () => resolve(client(originalRequest)),
+            reject,
           });
         });
       }
 
-      if (!handleUnauthorized) {
+      if (!handleUnauthorized && !isUnauthorizedError(error)) {
         notifyApiError(error);
       }
 
