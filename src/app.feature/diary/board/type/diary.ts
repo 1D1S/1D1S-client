@@ -49,6 +49,7 @@ export interface DiaryItem {
   imgUrl: string[] | null;
   isPublic: boolean;
   likeInfo: LikeInfo;
+  commentCount: number;
   achievementRate?: number;
   diaryInfoDto: DiaryInfo | null;
 }

@@ -14,6 +14,7 @@ export interface ChallengeDiaryItem {
   imgUrl: string[];
   isPublic: boolean;
   likeInfo: LikeInfo;
+  commentCount: number;
   diaryInfo: DiaryInfo;
 }
 

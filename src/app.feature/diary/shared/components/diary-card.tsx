@@ -50,6 +50,29 @@ function HeartFilled(props: React.SVGProps<SVGSVGElement>): React.ReactElement {
   );
 }
 
+function CommentIcon(
+  props: React.SVGProps<SVGSVGElement>
+): React.ReactElement {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M21 13a4 4 0 0 1-4 4H7l-4 4V6a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 interface ImageSectionProps {
   imageUrl?: string;
   alt: string;
@@ -84,6 +107,7 @@ function ImageSection({
           src={imageUrl as string}
           alt={alt}
           fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 240px"
           className="h-full w-full object-cover"
         />
       ) : (
@@ -140,6 +164,7 @@ interface TextSectionProps {
   onChallengeClick?(): void;
   onUserClick?(): void;
   date: string;
+  commentCount: number;
 }
 
 function TextSection({
@@ -150,6 +175,7 @@ function TextSection({
   onChallengeClick,
   onUserClick,
   date,
+  commentCount,
 }: TextSectionProps): React.ReactElement {
   return (
     <div className="flex w-full flex-col gap-2 p-3 sm:gap-3 sm:p-4">
@@ -184,50 +210,59 @@ function TextSection({
 
       <div className="h-px w-full bg-gray-200" />
 
-      <div
-        className={cn(
-          'flex items-center gap-2 sm:gap-3',
-          onUserClick &&
-            'rounded-1 cursor-pointer px-1 py-0.5 transition-colors hover:bg-gray-100'
-        )}
-        role={onUserClick ? 'button' : undefined}
-        tabIndex={onUserClick ? 0 : undefined}
-        onClick={
-          onUserClick
-            ? (event) => {
-                event.stopPropagation();
-                onUserClick();
-              }
-            : undefined
-        }
-        onKeyDown={
-          onUserClick
-            ? (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
+      <div className="flex items-center justify-between gap-2">
+        <div
+          className={cn(
+            'flex min-w-0 items-center gap-2 sm:gap-3',
+            onUserClick &&
+              'rounded-1 cursor-pointer px-1 py-0.5 transition-colors hover:bg-gray-100'
+          )}
+          role={onUserClick ? 'button' : undefined}
+          tabIndex={onUserClick ? 0 : undefined}
+          onClick={
+            onUserClick
+              ? (event) => {
                   event.stopPropagation();
                   onUserClick();
                 }
-              }
-            : undefined
-        }
-      >
-        <CircleAvatar imageUrl={userImage} size="sm" />
-        <div className="flex flex-col gap-0.5 sm:gap-1">
-          <Text
-            size="caption1"
-            weight="bold"
-            className="text-gray-900 sm:text-lg"
-          >
-            {user}
-          </Text>
-          <Text
-            size="caption3"
-            weight="regular"
-            className="text-gray-500 sm:text-sm"
-          >
-            {date}
-          </Text>
+              : undefined
+          }
+          onKeyDown={
+            onUserClick
+              ? (event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.stopPropagation();
+                    onUserClick();
+                  }
+                }
+              : undefined
+          }
+        >
+          <CircleAvatar imageUrl={userImage} size="sm" />
+          <div className="flex flex-col gap-0.5 sm:gap-1">
+            <Text
+              size="caption1"
+              weight="bold"
+              className="text-gray-900 sm:text-lg"
+            >
+              {user}
+            </Text>
+            <Text
+              size="caption3"
+              weight="regular"
+              className="text-gray-500 sm:text-sm"
+            >
+              {date}
+            </Text>
+          </div>
         </div>
+
+        <span className="flex shrink-0 items-center gap-1 text-gray-500">
+          <CommentIcon width={14} height={14} />
+          <Text size="caption2" weight="medium" className="text-inherit">
+            {commentCount}
+          </Text>
+        </span>
       </div>
     </div>
   );
@@ -240,6 +275,7 @@ export interface DiaryCardProps {
   isLiked?: boolean;
   defaultLiked?: boolean;
   onLikeToggle?(nextLiked: boolean): void;
+  commentCount?: number;
   title: string;
   user: string;
   userImage?: string;
@@ -260,6 +296,7 @@ export function DiaryCard({
   isLiked: isLikedProp,
   defaultLiked = false,
   onLikeToggle,
+  commentCount = 0,
   title,
   user,
   userImage,
@@ -325,6 +362,7 @@ export function DiaryCard({
           onChallengeClick={onChallengeClick}
           onUserClick={onUserClick}
           date={date}
+          commentCount={commentCount}
         />
       </div>
     </div>

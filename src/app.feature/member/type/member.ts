@@ -67,6 +67,7 @@ export interface MyPageDiary {
     likedByMe: boolean;
     likeCnt: number;
   };
+  commentCount: number;
 }
 
 export interface MemberDiaryPageInfo {

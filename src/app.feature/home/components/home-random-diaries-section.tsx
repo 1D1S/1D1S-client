@@ -101,6 +101,7 @@ export default function HomeRandomDiariesSection({
 
                     onLikeToggle(item);
                   }}
+                  commentCount={item.commentCount}
                   onClick={() => onDiaryClick(item.id)}
                 />
               </div>
