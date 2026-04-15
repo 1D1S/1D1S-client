@@ -159,6 +159,7 @@ export function MyDiaryListScreen(): React.ReactElement {
                 emotion={mapFeelingToEmotion(
                   diary.diaryInfoDto?.feeling ?? 'NONE'
                 )}
+                commentCount={diary.commentCount}
                 onLikeToggle={() => handleLikeToggle(diary)}
                 onClick={() => router.push(`/diary/${diary.id}`)}
               />

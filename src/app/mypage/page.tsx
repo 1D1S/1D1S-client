@@ -180,6 +180,7 @@ function MyPageContent(): React.ReactElement {
       percent: Math.min(100, Math.max(0, achievementRate)),
       isLiked: diary.likeInfo.likedByMe,
       likes: diary.likeInfo.likeCnt,
+      commentCount: diary.commentCount,
       user: nickname || '나',
       userImage: profileUrl || '/images/default-profile.png',
       challengeLabel:
@@ -412,6 +413,7 @@ function MyPageContent(): React.ReactElement {
                         }
                         date={diary.date}
                         emotion={diary.emotion}
+                        commentCount={diary.commentCount}
                         onLikeToggle={() => handleDiaryLikeToggle(diary)}
                         onClick={() => router.push(`/diary/${diary.id}`)}
                       />

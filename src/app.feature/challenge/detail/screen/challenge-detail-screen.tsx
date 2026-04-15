@@ -1324,6 +1324,7 @@ export function ChallengeDetailScreen({
                       emotion={mapFeelingToEmotion(
                         diary.diaryInfo?.feeling ?? 'NONE'
                       )}
+                      commentCount={diary.commentCount}
                       onLikeToggle={() => handleDiaryLikeToggle(diary)}
                       onClick={() => router.push(`/diary/${diary.id}`)}
                     />

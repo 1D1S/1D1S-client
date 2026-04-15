@@ -318,6 +318,7 @@ export default function DiaryListScreen(): React.ReactElement {
                       emotion={mapFeelingToEmotion(
                         diaryInfo?.feeling ?? 'NONE'
                       )}
+                      commentCount={item.commentCount}
                       onLikeToggle={() => handleLikeToggle(item)}
                       onClick={() => handleCardClick(item.id)}
                     />

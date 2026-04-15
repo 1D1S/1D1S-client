@@ -19,7 +19,11 @@ import {
   FormItem,
   FormMessage,
 } from '@component/ui/form';
-import { getDayOptions, getMonthOptions, getYearOptions } from '@module/utils/date';
+import {
+  getDayOptions,
+  getMonthOptions,
+  getYearOptions,
+} from '@module/utils/date';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 

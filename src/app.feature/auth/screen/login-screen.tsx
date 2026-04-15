@@ -1,15 +1,9 @@
 'use client';
 
-import { Button, Icon, Text } from '@1d1s/design-system';
-import { API_BASE_URL } from '@module/api/config';
-import Image from 'next/image';
+import { Icon, Text } from '@1d1s/design-system';
 import Link from 'next/link';
 
-import { OAuthProvider } from '../type/auth';
-
-const handleSocialLogin = (provider: OAuthProvider): void => {
-  window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
-};
+import { LoginButton } from '../components/login-buttons';
 
 export function LoginScreen(): React.ReactElement {
   return (
@@ -68,37 +62,19 @@ export function LoginScreen(): React.ReactElement {
           </Text>
 
           <div className="mt-10 flex flex-col gap-4">
-            <Button
-              size="large"
-              onClick={() => handleSocialLogin('kakao')}
+            <LoginButton
+              img="/images/kakao-logo.png"
+              text="카카오 로그인"
+              provider="kakao"
               className="relative w-full bg-[#FEE500] text-black hover:bg-[#FEE500]/90"
-            >
-              <span className="absolute left-5">
-                <Image
-                  src="/images/kakao-logo.png"
-                  alt="카카오"
-                  width={22}
-                  height={22}
-                />
-              </span>
-              카카오 로그인
-            </Button>
+            />
 
-            <Button
-              size="large"
-              onClick={() => handleSocialLogin('naver')}
+            <LoginButton
+              img="/images/naver-logo.png"
+              text="네이버 로그인"
+              provider="naver"
               className="relative w-full bg-[#03C75A] text-white hover:bg-[#03C75A]/90"
-            >
-              <span className="absolute left-5">
-                <Image
-                  src="/images/naver-logo.png"
-                  alt="네이버"
-                  width={22}
-                  height={22}
-                />
-              </span>
-              네이버 로그인
-            </Button>
+            />
           </div>
         </div>
       </section>

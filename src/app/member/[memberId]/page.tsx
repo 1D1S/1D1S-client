@@ -301,6 +301,7 @@ export default function MemberProfilePage(): React.ReactElement {
                         challengeLabel="일지"
                         date=""
                         emotion="soso"
+                        commentCount={diary.commentCount}
                         onLikeToggle={() => handleDiaryLikeToggle(diary)}
                         onUserClick={() => router.push(`/member/${memberId}`)}
                         onClick={() => router.push(`/diary/${diary.id}`)}
