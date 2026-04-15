@@ -30,7 +30,7 @@ export const publicApiClient = createClient({
 });
 
 // auth/token, auth/logout 직접 호출용 (순환 임포트 방지 - auth-api.ts가 client.ts를 임포트함)
-const tokenClient = axios.create({
+export const tokenClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   withCredentials: true,
