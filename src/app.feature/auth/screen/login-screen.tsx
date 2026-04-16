@@ -75,6 +75,13 @@ export function LoginScreen(): React.ReactElement {
               provider="naver"
               className="relative w-full bg-[#03C75A] text-white hover:bg-[#03C75A]/90"
             />
+
+            <LoginButton
+              img="/images/google-logo.svg"
+              text="Google 로그인"
+              provider="google"
+              className="relative w-full border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            />
           </div>
         </div>
       </section>

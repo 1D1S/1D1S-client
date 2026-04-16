@@ -114,6 +114,17 @@ export const notifyApiError = (error: unknown): void => {
   toast.error(normalizedError.message);
 };
 
+const PROTECTED_PATH_PREFIXES = [
+  '/mypage',
+  '/diary/create',
+  '/challenge/create',
+];
+const PROTECTED_PATH_PATTERNS = [/^\/challenge\/\d+/, /^\/diary\/\d+/];
+
+const isProtectedRoute = (pathname: string): boolean =>
+  PROTECTED_PATH_PREFIXES.some((p) => pathname.startsWith(p)) ||
+  PROTECTED_PATH_PATTERNS.some((p) => p.test(pathname));
+
 export const handleAuthError = (error: unknown): void => {
   if (typeof window === 'undefined') {
     return;
@@ -128,8 +139,8 @@ export const handleAuthError = (error: unknown): void => {
 
   notifyApiError(error);
 
-  if (!isRedirecting) {
+  if (!isRedirecting && isProtectedRoute(window.location.pathname)) {
     isRedirecting = true;
-    window.location.assign('/login');
+    window.location.assign('/');
   }
 };

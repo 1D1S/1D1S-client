@@ -44,9 +44,6 @@ const isRefreshFailure = (error: unknown): boolean =>
 const logoutAndClearSidebar = (): void => {
   clearCachedSidebar();
   authStorage.clearTokens();
-  if (typeof window !== 'undefined') {
-    window.location.assign('/login');
-  }
 };
 
 export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
