@@ -28,6 +28,7 @@ function OAuthCallbackContent(): React.ReactElement {
 
     if (error) {
       processed.current = true;
+      console.error(`[OAuth] ${provider} 로그인 실패:`, error);
       router.replace('/login');
       return;
     }

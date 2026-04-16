@@ -4,10 +4,13 @@ import { requestData } from '@module/api/request';
 import { authStorage } from '@module/utils/auth';
 import { isServer, useQuery, UseQueryResult } from '@tanstack/react-query';
 import axios from 'axios';
+import { usePathname } from 'next/navigation';
 
 import { memberApi } from '../api/member-api';
 import { MEMBER_QUERY_KEYS } from '../consts/query-keys';
 import type { MemberProfileData, MyPageData, SidebarData } from '../type/member';
+
+const AUTH_ROUTE_PREFIXES = ['/login', '/signup', '/auth'];
 
 const SIDEBAR_CACHE_KEY = '1d1s:sidebar';
 const MEMBER_INFO_STALE_TIME = Number.POSITIVE_INFINITY;
@@ -54,6 +57,13 @@ const logoutAndClearSidebar = (): void => {
 
 export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
   const cachedSidebar = getCachedSidebar();
+  const pathname = usePathname();
+
+  // 인증 관련 페이지(로그인, 회원가입, OAuth 콜백)에서는 사이드바 쿼리를 실행하지 않음
+  // OAuth 콜백 중 /auth/token 호출이 소셜 로그인 세션을 방해할 수 있음
+  const isAuthRoute = AUTH_ROUTE_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix)
+  );
 
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.sidebar(),
@@ -93,7 +103,7 @@ export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
         throw error;
       }
     },
-    enabled: !isServer, // 서버에서는 실행 안 함 (쿠키 없어 401 → 매 SSR마다 불필요한 API 호출)
+    enabled: !isServer && !isAuthRoute,
     placeholderData: cachedSidebar ?? null,
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
