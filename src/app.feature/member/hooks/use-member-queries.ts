@@ -44,7 +44,10 @@ const isRefreshFailure = (error: unknown): boolean =>
 const logoutAndClearSidebar = (): void => {
   clearCachedSidebar();
   authStorage.clearTokens();
-  if (typeof window !== 'undefined') {
+  if (
+    typeof window !== 'undefined' &&
+    window.location.pathname !== '/login'
+  ) {
     window.location.assign('/login');
   }
 };

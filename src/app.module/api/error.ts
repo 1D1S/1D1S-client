@@ -128,7 +128,7 @@ export const handleAuthError = (error: unknown): void => {
 
   notifyApiError(error);
 
-  if (!isRedirecting) {
+  if (!isRedirecting && window.location.pathname !== '/login') {
     isRedirecting = true;
     window.location.assign('/login');
   }
