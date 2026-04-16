@@ -47,7 +47,7 @@ function OAuthCallbackContent(): React.ReactElement {
         router.replace('/');
       }
     }
-  }, [data, error, isSuccess, router, queryClient]);
+  }, [data, error, isSuccess, provider, router, queryClient]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

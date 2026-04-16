@@ -44,12 +44,14 @@ const isRefreshFailure = (error: unknown): boolean =>
   axios.isAxiosError(error) &&
   (error.response?.status === 401 || error.response?.status === 302);
 
+const PUBLIC_ROUTES = ['/', '/login', '/signup'];
+
 const logoutAndClearSidebar = (): void => {
   clearCachedSidebar();
   authStorage.clearTokens();
   if (
     typeof window !== 'undefined' &&
-    window.location.pathname !== '/login'
+    !PUBLIC_ROUTES.includes(window.location.pathname)
   ) {
     window.location.assign('/login');
   }
