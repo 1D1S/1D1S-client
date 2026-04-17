@@ -1,6 +1,7 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
+import { cn } from '@module/utils/cn';
 import React, { useEffect, useRef, useState } from 'react';
 
 interface ExpandableTextProps {
@@ -18,7 +19,9 @@ export function ExpandableText({
 
   useEffect(() => {
     const element = ref.current;
-    if (!element) {return;}
+    if (!element) {
+      return;
+    }
     setIsOverflowing(element.scrollHeight > element.clientHeight);
   }, [children]);
 
@@ -26,13 +29,11 @@ export function ExpandableText({
     <div>
       <p
         ref={ref}
-        className={[
+        className={cn(
           'break-keep whitespace-pre-wrap text-gray-600',
-          !isExpanded ? 'line-clamp-1' : '',
-          className ?? '',
-        ]
-          .join(' ')
-          .trim()}
+          !isExpanded && 'line-clamp-1',
+          className
+        )}
       >
         {children}
       </p>

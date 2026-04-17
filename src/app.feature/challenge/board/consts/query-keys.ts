@@ -17,6 +17,7 @@ export const CHALLENGE_QUERY_KEYS = {
     [...CHALLENGE_QUERY_KEYS.all, 'member', params] as const,
   checkWrite: (challengeId: number) =>
     [...CHALLENGE_QUERY_KEYS.all, 'check-write', challengeId] as const,
+  challengeDiaries: () => [...CHALLENGE_QUERY_KEYS.all, 'diaries'] as const,
   diaries: (challengeId: number, params?: { size?: number }) =>
-    [...CHALLENGE_QUERY_KEYS.all, 'diaries', challengeId, params] as const,
+    [...CHALLENGE_QUERY_KEYS.challengeDiaries(), challengeId, params] as const,
 };

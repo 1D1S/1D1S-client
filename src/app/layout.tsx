@@ -3,6 +3,7 @@ import '@/app.styles/globals.css';
 
 import AppLayoutShell from '@component/layout/app-layout-shell';
 import { AppProviders } from '@module/providers';
+import { cn } from '@module/utils/cn';
 import type { Metadata, Viewport } from 'next';
 
 import { pretendard, suite } from '@/app.lib/font';
@@ -73,9 +74,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }): React.ReactElement {
   return (
-    <html lang="en">
+    <html lang="ko">
       <body
-        className={`${pretendard.variable} ${suite.variable} font-suite bg-white text-gray-900`}
+        className={cn(
+          pretendard.variable,
+          suite.variable,
+          'font-suite bg-white text-gray-900'
+        )}
       >
         <AppProviders>
           <AppLayoutShell>{children}</AppLayoutShell>

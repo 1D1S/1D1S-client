@@ -7,6 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@1d1s/design-system';
+import { cn } from '@module/utils/cn';
 import TiptapUnderline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -37,11 +38,12 @@ function ToolbarButton({
       variant="ghost"
       size="small"
       aria-label={ariaLabel}
-      className={`rounded-lg border p-2 ${
+      className={cn(
+        'rounded-lg border p-2',
         active
           ? 'border-main-800 bg-main-100 text-main-800'
           : 'border-gray-200 text-gray-600 hover:bg-gray-100'
-      }`}
+      )}
       onClick={onClick}
     >
       {children}

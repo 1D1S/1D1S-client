@@ -15,10 +15,7 @@ import { add, format } from 'date-fns';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import {
-  ChallengeCategory,
-  CreateChallengeRequest,
-} from '../../board/type/challenge';
+import { CreateChallengeRequest } from '../../board/type/challenge';
 import { useCreateChallenge } from '../../detail/hooks/use-challenge-mutations';
 import { Step1 } from './step-pages/step1';
 import { Step2 } from './step-pages/step2';
@@ -95,9 +92,8 @@ export function ChallengeCreateFormScreen({
 
     return {
       title: values.title,
-      // 'BOOK' 카테고리 싱크가 맞지 않음
-      category: values.category as ChallengeCategory,
-      description: values.description!,
+      category: values.category,
+      description: values.description ?? '',
       startDate: format(safeStartDate, 'yyyy-MM-dd'),
       endDate,
       maxParticipantCnt: Number(
@@ -117,16 +113,12 @@ export function ChallengeCreateFormScreen({
   };
 
   const onSubmit = (values: ChallengeCreateFormValues): void => {
-    console.log('폼 값:', values);
-    // API 호출
     createChallenge.mutate(formatFormValues(values), {
       onSuccess: (data) => {
-        console.log('createChallenge 성공:', data);
         setCreatedChallengeId(data.challengeId);
         setIsSuccessOpen(true);
       },
-      onError: (error) => {
-        console.error('createChallenge 실패:', error);
+      onError: () => {
         setIsErrorOpen(true);
       },
     });

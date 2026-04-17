@@ -1,3 +1,5 @@
+import { toStartOfDay } from '@module/utils/date';
+
 const ENDLESS_MIN_YEAR = 2090;
 
 export function isInfiniteChallengeEndDate(endDate?: string | null): boolean {
@@ -12,12 +14,6 @@ export function isInfiniteChallengeEndDate(endDate?: string | null): boolean {
   }
 
   return parsedEndDate.getUTCFullYear() >= ENDLESS_MIN_YEAR;
-}
-
-function toStartOfDay(date: Date): Date {
-  const normalizedDate = new Date(date);
-  normalizedDate.setHours(0, 0, 0, 0);
-  return normalizedDate;
 }
 
 export function isChallengeOngoing(

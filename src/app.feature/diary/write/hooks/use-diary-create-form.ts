@@ -1,6 +1,7 @@
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-period';
 import { useSidebar } from '@feature/member/hooks/use-member-queries';
 import type { SidebarChallenge } from '@feature/member/type/member';
+import { toStartOfDay } from '@module/utils/date';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -75,12 +76,6 @@ function parseDateValue(value?: string | null): Date | null {
   return parsedDate;
 }
 
-function toStartOfDay(date: Date): Date {
-  const normalizedDate = new Date(date);
-  normalizedDate.setHours(0, 0, 0, 0);
-  return normalizedDate;
-}
-
 function isSelectableAchievedDate(
   date: Date,
   challengeStartDate?: string | null
@@ -129,6 +124,31 @@ function hasSelectableAchievedDate(
   return Boolean(
     getFirstSelectableAchievedDate(disabledDateKeys, challengeStartDate)
   );
+}
+
+interface SubmitButtonLabelArgs {
+  isCreating: boolean;
+  isUpdating: boolean;
+  isUploadingImage: boolean;
+  isEditMode: boolean;
+}
+
+function getSubmitButtonLabel({
+  isCreating,
+  isUpdating,
+  isUploadingImage,
+  isEditMode,
+}: SubmitButtonLabelArgs): string {
+  if (isCreating) {
+    return '작성 중...';
+  }
+  if (isUpdating) {
+    return '수정 중...';
+  }
+  if (isUploadingImage) {
+    return '썸네일 업로드 중...';
+  }
+  return isEditMode ? '수정 완료' : '작성 완료';
 }
 
 function normalizeChallengeCategory(category: string): ChallengeCategory {
@@ -707,9 +727,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
 
       submitSuccessRef.current = true;
       router.push('/diary');
-    } catch (error) {
+    } catch {
       toast.error('일지 저장 또는 썸네일 업로드에 실패했습니다.');
-      console.error('일지 저장/썸네일 업로드 중 오류가 발생했습니다.', error);
     }
   }, [
     achievedDate,
@@ -730,15 +749,12 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     uploadDiaryImage,
   ]);
 
-  const submitButtonLabel = createDiary.isPending
-    ? '작성 중...'
-    : updateDiary.isPending
-      ? '수정 중...'
-      : uploadDiaryImage.isPending
-        ? '썸네일 업로드 중...'
-        : isEditMode
-          ? '수정 완료'
-          : '작성 완료';
+  const submitButtonLabel = getSubmitButtonLabel({
+    isCreating: createDiary.isPending,
+    isUpdating: updateDiary.isPending,
+    isUploadingImage: uploadDiaryImage.isPending,
+    isEditMode,
+  });
 
   return {
     isEditMode,
