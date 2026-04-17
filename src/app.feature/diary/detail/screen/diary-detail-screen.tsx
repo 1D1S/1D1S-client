@@ -15,7 +15,7 @@ import { getCategoryLabel } from '@constants/categories';
 import { ChallengeListItem } from '@feature/challenge/shared/components/challenge-list-item';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { normalizeApiError } from '@module/api/error';
-import { authStorage, getCurrentMemberId } from '@module/utils/auth';
+import { authStorage } from '@module/utils/auth';
 import {
   CalendarDays,
   Edit3,
@@ -430,12 +430,10 @@ function DiaryDetailView({
 }): React.ReactElement {
   const router = useRouter();
   const { data: sidebarData } = useSidebar();
-  const currentMemberId = getCurrentMemberId();
-  const currentSidebarMemberId = useMemo(
+  const currentMemberId = useMemo(
     () => resolveSidebarMemberId(sidebarData),
     [sidebarData]
   );
-  const effectiveCurrentMemberId = currentMemberId ?? currentSidebarMemberId;
   const currentUserNickname = useMemo(
     () => sidebarData?.nickname?.trim() ?? null,
     [sidebarData?.nickname]
@@ -494,15 +492,15 @@ function DiaryDetailView({
           profileImageUrl: comment.author.profileImage ?? undefined,
         },
         isAuthor:
-          (effectiveCurrentMemberId !== null &&
-            comment.author.id === effectiveCurrentMemberId) ||
-          (effectiveCurrentMemberId === null &&
+          (currentMemberId !== null &&
+            comment.author.id === currentMemberId) ||
+          (currentMemberId === null &&
             Boolean(authorNickname) &&
             Boolean(currentUserNickname) &&
             authorNickname === currentUserNickname),
       };
     },
-    [currentUserNickname, effectiveCurrentMemberId]
+    [currentUserNickname, currentMemberId]
   );
 
   const threadComments = useMemo<CommentNode[]>(
@@ -909,8 +907,8 @@ function DiaryDetailView({
               <CommentThread
                 comments={threadComments}
                 currentUserId={
-                  effectiveCurrentMemberId !== null
-                    ? String(effectiveCurrentMemberId)
+                  currentMemberId !== null
+                    ? String(currentMemberId)
                     : undefined
                 }
                 onReplySubmit={handleReplySubmit}
