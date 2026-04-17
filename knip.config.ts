@@ -11,18 +11,14 @@ import type { KnipConfig } from 'knip';
  */
 const config: KnipConfig = {
   // Next.js App Router 진입점
+  // loading/error/template 파일은 현재 없음 — 생성 시 여기 추가
   entry: [
     'src/app/**/page.{ts,tsx}',
     'src/app/**/layout.{ts,tsx}',
-    'src/app/**/loading.{ts,tsx}',
-    'src/app/**/error.{ts,tsx}',
     'src/app/**/not-found.{ts,tsx}',
     'src/app/**/route.{ts,tsx}',
-    'src/app/**/template.{ts,tsx}',
-    'src/middleware.ts',
     'src/app.module/middleware/middleware.ts',
     'next.config.{js,ts,mjs}',
-    'tailwind.config.{js,ts}',
     'postcss.config.{js,cjs,mjs}',
   ],
   project: ['src/**/*.{ts,tsx}'],
@@ -93,10 +89,10 @@ const config: KnipConfig = {
   ignoreExportsUsedInFile: true,
 
   /**
-   * 이슈 severity 정책.
-   * - files / dependencies: error  → CI 차단 (신규 dead code 유입 방지)
-   * - exports / types / enumMembers: warn → 보고만, CI 통과
-   *   (공개 API / WIP 특성상 export 단위 엄격화는 개별 판단이 필요)
+   * 이슈 severity 정책 — 모두 CI 차단.
+   * 신규 dead code / 미사용 export / 미사용 타입 유입을 방지한다.
+   * 공개 API 로 유지하려는 export 가 있다면 파일 상단에 `// @public` 주석을 달고
+   * `ignoreExportsUsedInFile` 또는 개별 파일 레벨 ignore 로 처리한다.
    */
   rules: {
     files: 'error',
@@ -105,12 +101,12 @@ const config: KnipConfig = {
     unlisted: 'error',
     binaries: 'error',
     unresolved: 'error',
-    exports: 'warn',
-    types: 'warn',
-    nsExports: 'warn',
-    nsTypes: 'warn',
-    enumMembers: 'warn',
-    duplicates: 'warn',
+    exports: 'error',
+    types: 'error',
+    nsExports: 'error',
+    nsTypes: 'error',
+    enumMembers: 'error',
+    duplicates: 'error',
   },
 };
 

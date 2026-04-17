@@ -14,7 +14,6 @@ import {
   UpdateDiaryRequest,
   UpdateDiaryResponse,
   UploadImageResponse,
-  UploadImagesResponse,
 } from '../../board/type/diary';
 import { diaryWriteApi } from '../../write/api/diary-write-api';
 import { diaryDetailApi } from '../api/diary-detail-api';
@@ -242,22 +241,3 @@ export function useUploadDiaryImage(): UseMutationResult<
   });
 }
 
-// 다이어리에 이미지 여러개 업로드하기
-export function useUploadDiaryImages(): UseMutationResult<
-  UploadImagesResponse,
-  Error,
-  { id: number; files: File[] }
-> {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, files }: { id: number; files: File[] }) =>
-      diaryWriteApi.uploadDiaryImages(id, files),
-    onSuccess: (_, { id }) => {
-      // 해당 다이어리 상세 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.detail(id),
-      });
-    },
-  });
-}
