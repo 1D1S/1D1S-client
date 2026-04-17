@@ -227,7 +227,7 @@ export default function AppLayoutShell({
   );
   const now = useSyncExternalStore(NOOP_SUBSCRIBE, getMountTimestamp, () => 0);
 
-  const isLoggedIn = hasMounted && authStorage.hasTokens();
+  const hasTokenHint = hasMounted && authStorage.hasTokens();
   const isMobile = useSyncExternalStore(
     (callback) => {
       window.addEventListener('resize', callback);
@@ -299,7 +299,18 @@ export default function AppLayoutShell({
     isLoading: isSidebarLoading,
     isFetching: isSidebarFetching,
   } = useSidebar();
-  const isSidebarBusy = isLoggedIn && (isSidebarLoading || isSidebarFetching);
+  /**
+   * 실제 로그인 상태 판정:
+   * - 사이드바 API 응답으로 유효한 사용자 데이터를 받으면 권위 있는 로그인 판정.
+   * - 응답 전 초기 렌더에서는 토큰 힌트(쿠키/플래그)로 깜빡임을 방지.
+   *   단, 힌트만 있고 아직 fetching 중이 아니며 데이터도 없다면
+   *   비로그인으로 취급하여 잘못된 UI 노출을 막는다.
+   */
+  const isLoggedIn = hasMounted && (
+    Boolean(sidebarData) ||
+    (hasTokenHint && (isSidebarLoading || isSidebarFetching))
+  );
+  const isSidebarBusy = hasTokenHint && (isSidebarLoading || isSidebarFetching);
 
   useEffect(() => {
     if (
