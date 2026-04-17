@@ -3,7 +3,6 @@ import { isUnauthorizedError } from '@module/api/error';
 import { requestData } from '@module/api/request';
 import { authStorage } from '@module/utils/auth';
 import { isServer, useQuery, UseQueryResult } from '@tanstack/react-query';
-import axios from 'axios';
 
 import { memberApi } from '../api/member-api';
 import { MEMBER_QUERY_KEYS } from '../consts/query-keys';
@@ -12,6 +11,7 @@ import type { MemberProfileData, MyPageData, SidebarData } from '../type/member'
 const SIDEBAR_CACHE_KEY = '1d1s:sidebar';
 const MEMBER_INFO_STALE_TIME = Number.POSITIVE_INFINITY;
 const MEMBER_INFO_GC_TIME = Number.POSITIVE_INFINITY;
+const SIDEBAR_MAX_RETRIES = 2;
 
 function getCachedSidebar(): SidebarData | undefined {
   if (typeof window === 'undefined') {
@@ -37,14 +37,48 @@ export function clearCachedSidebar(): void {
   localStorage.removeItem(SIDEBAR_CACHE_KEY);
 }
 
-const isRefreshFailure = (error: unknown): boolean =>
-  axios.isAxiosError(error) &&
-  (error.response?.status === 401 || error.response?.status === 302);
-
-const logoutAndClearSidebar = (): void => {
+/** 백엔드 로그아웃 API 호출 + 로컬 인증 상태 정리 */
+async function forceLogout(): Promise<void> {
+  try {
+    await tokenClient.post('/auth/logout');
+  } catch {
+    // 로그아웃 API 실패는 무시하고 로컬 상태만 정리
+  }
   clearCachedSidebar();
   authStorage.clearTokens();
-};
+}
+
+async function fetchSidebar(): Promise<SidebarData> {
+  return requestData<SidebarData>(silentAuthClient, {
+    url: '/member/side-bar',
+    method: 'GET',
+  });
+}
+
+/**
+ * 사이드바 데이터 요청 (최대 3회 시도)
+ * - 401: 즉시 포기 → 강제 로그아웃
+ * - 기타 오류: 2번 더 재시도 → 모두 실패 시 강제 로그아웃
+ */
+async function fetchSidebarWithRetry(): Promise<SidebarData | null> {
+  for (let attempt = 0; attempt <= SIDEBAR_MAX_RETRIES; attempt++) {
+    try {
+      const data = await fetchSidebar();
+      return data ?? null;
+    } catch (error) {
+      if (isUnauthorizedError(error)) {
+        await forceLogout();
+        return null;
+      }
+      // 마지막 시도에서도 실패하면 강제 로그아웃
+      if (attempt === SIDEBAR_MAX_RETRIES) {
+        await forceLogout();
+        return null;
+      }
+    }
+  }
+  return null;
+}
 
 export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
   const cachedSidebar = getCachedSidebar();
@@ -52,42 +86,15 @@ export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.sidebar(),
     queryFn: async () => {
-      // accessToken(또는 devAccessToken)이 없으면 리프레시 선시도
-      if (!authStorage.getAccessToken()) {
-        try {
-          await tokenClient.get('/auth/token');
-        } catch (refreshError) {
-          if (isRefreshFailure(refreshError)) {
-            logoutAndClearSidebar();
-            return null;
-          }
-          // 네트워크 오류 등은 무시하고 계속 진행
-        }
-      }
-
-      try {
-        // silentAuthClient: 401에서 리다이렉트/토스트 없이 조용히 처리
-        // withCredentials로 백엔드 쿠키를 자동 전송 → 응답 결과로 인증 상태 판단
-        const data = await requestData<SidebarData>(silentAuthClient, {
-          url: '/member/side-bar',
-          method: 'GET',
-        });
-        if (!data) {
-          return null;
-        }
+      const data = await fetchSidebarWithRetry();
+      if (data) {
         authStorage.markAuthenticated();
         setCachedSidebar(data);
-        return data;
-      } catch (error) {
-        if (isUnauthorizedError(error)) {
-          // 세션 없음 - 조용히 null 반환 (리다이렉트 없음)
-          authStorage.clearTokens();
-          return null;
-        }
-        throw error;
       }
+      return data;
     },
-    enabled: !isServer, // 서버에서는 실행 안 함 (쿠키 없어 401 → 매 SSR마다 불필요한 API 호출)
+    retry: false, // queryFn 내부에서 직접 재시도 처리
+    enabled: !isServer,
     placeholderData: cachedSidebar ?? null,
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,

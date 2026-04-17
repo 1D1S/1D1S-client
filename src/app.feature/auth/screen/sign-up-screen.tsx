@@ -140,7 +140,7 @@ export function SignUpScreen(): React.ReactElement {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-gray-50 lg:h-screen lg:overflow-hidden">
+    <div className="flex min-h-screen w-full flex-col bg-gray-50 lg:overflow-y-auto">
       <Dialog open={showExitDialog} onOpenChange={setShowExitDialog}>
         <DialogContent className="gap-6 px-8 py-6 sm:max-w-[380px] sm:px-6">
           <DialogHeader className="items-center text-center sm:text-center">

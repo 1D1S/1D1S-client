@@ -1,9 +1,4 @@
-import { authStorage } from '@module/utils/auth';
-import axios, {
-  AxiosHeaders,
-  type AxiosInstance,
-  type InternalAxiosRequestConfig,
-} from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 
 import { API_BASE_URL } from './config';
 import { attachInterceptors, type ClientOptions } from './interceptors';
@@ -20,12 +15,10 @@ const createClient = (options: ClientOptions): AxiosInstance =>
   );
 
 export const apiClient = createClient({
-  withAuthToken: true,
   handleUnauthorized: true,
 });
 
 export const publicApiClient = createClient({
-  withAuthToken: false,
   handleUnauthorized: false,
 });
 
@@ -45,36 +38,11 @@ export const silentAuthClient: AxiosInstance = (() => {
     withCredentials: true,
   });
 
-  instance.interceptors.request.use(
-    (config: InternalAxiosRequestConfig) => {
-      if (typeof window === 'undefined') {
-        return config;
-      }
-
-      const accessToken = authStorage.getAccessToken();
-      if (!accessToken) {
-        return config;
-      }
-
-      const authorizationValue = accessToken.startsWith('Bearer ')
-        ? accessToken
-        : `Bearer ${accessToken}`;
-
-      const headers = AxiosHeaders.from(config.headers);
-      if (!headers.has('Authorization')) {
-        headers.set('Authorization', authorizationValue);
-        config.headers = headers;
-      }
-
-      return config;
-    }
-  );
-
   instance.interceptors.response.use(
     (response) => response,
     async (error) => {
       const status = error?.response?.status;
-      const config = error?.config as InternalAxiosRequestConfig & {
+      const config = error?.config as import('axios').InternalAxiosRequestConfig & {
         _retried?: boolean;
       };
 
@@ -85,16 +53,7 @@ export const silentAuthClient: AxiosInstance = (() => {
           await tokenClient.get('/auth/token');
           return instance.request(config);
         } catch {
-          // 재발급 실패 → 로그아웃 처리 후 인증 상태 초기화
-          try {
-            await tokenClient.post('/auth/logout');
-          } catch {
-            // 로그아웃 API 실패는 무시하고 로컬 상태만 정리
-          }
-          authStorage.clearTokens();
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('1d1s:sidebar');
-          }
+          // 재발급 실패는 호출부에서 처리
         }
       }
 

@@ -134,10 +134,9 @@ export const handleAuthError = (error: unknown): void => {
     return;
   }
 
+  // 토큰 없음/만료 시 조용히 로그아웃 처리 (토스트 표시하지 않음)
   authStorage.clearTokens();
   localStorage.removeItem('1d1s:sidebar');
-
-  notifyApiError(error);
 
   if (!isRedirecting && isProtectedRoute(window.location.pathname)) {
     isRedirecting = true;
