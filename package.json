@@ -14,6 +14,8 @@
     "start": "next start",
     "start:localias": "NODE_ENV=production node dev-server.js",
     "lint": "eslint src",
+    "knip": "knip",
+    "knip:report": "knip --reporter=json",
     "prepare": "husky"
   },
   "dependencies": {
@@ -89,6 +91,7 @@
     "eslint-plugin-tailwindcss": "4.0.0-beta.0",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
+    "knip": "^6.4.1",
     "lint-staged": "^15.5.0",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
