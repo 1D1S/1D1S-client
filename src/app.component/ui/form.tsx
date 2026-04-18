@@ -1,8 +1,6 @@
 'use client';
 
-import { Label } from '@component/ui/label';
 import { cn } from '@module/utils/cn';
-import * as LabelPrimitive from '@radix-ui/react-label';
 import { Slot } from '@radix-ui/react-slot';
 import * as React from 'react';
 import {
@@ -99,23 +97,6 @@ function FormItem({
   );
 }
 
-function FormLabel({
-  className,
-  ...props
-}: React.ComponentProps<typeof LabelPrimitive.Root>): React.ReactElement {
-  const { error, formItemId } = useFormField();
-
-  return (
-    <Label
-      data-slot="form-label"
-      data-error={Boolean(error)}
-      className={cn('data-[error=true]:text-destructive', className)}
-      htmlFor={formItemId}
-      {...props}
-    />
-  );
-}
-
 function FormControl({
   ...props
 }: React.ComponentProps<typeof Slot>): React.ReactElement {
@@ -132,22 +113,6 @@ function FormControl({
           : `${formDescriptionId} ${formMessageId}`
       }
       aria-invalid={Boolean(error)}
-      {...props}
-    />
-  );
-}
-
-function FormDescription({
-  className,
-  ...props
-}: React.ComponentProps<'p'>): React.ReactElement {
-  const { formDescriptionId } = useFormField();
-
-  return (
-    <p
-      data-slot="form-description"
-      id={formDescriptionId}
-      className={cn('text-muted-foreground text-xs', className)}
       {...props}
     />
   );
@@ -179,10 +144,8 @@ function FormMessage({
 export {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
   useFormField,
 };

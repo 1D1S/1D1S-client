@@ -2,6 +2,11 @@ import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/ch
 import { type Feeling } from '@feature/diary/board/type/diary';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
 
+export {
+  isChallengeEnded,
+  isChallengeOngoing,
+} from '@feature/challenge/board/utils/challenge-period';
+
 export type DiaryEmotion = 'happy' | 'soso' | 'sad';
 
 export function formatChallengeType(
@@ -9,31 +14,6 @@ export function formatChallengeType(
   maxParticipantCount: number
 ): string {
   return formatChallengeCardTypeLabel(challengeType, maxParticipantCount);
-}
-
-export function isChallengeOngoing(
-  startDate: string,
-  endDate: string
-): boolean {
-  const now = new Date();
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return false;
-  }
-
-  return now >= start && now <= end;
-}
-
-export function isChallengeEnded(endDate: string): boolean {
-  const end = new Date(endDate);
-
-  if (Number.isNaN(end.getTime())) {
-    return false;
-  }
-
-  return new Date() > end;
 }
 
 export function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {

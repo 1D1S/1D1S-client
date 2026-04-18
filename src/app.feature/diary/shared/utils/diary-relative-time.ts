@@ -1,4 +1,4 @@
-'use client';
+import { toStartOfDay } from '@module/utils/date';
 
 const relativeTimeFormatter = new Intl.RelativeTimeFormat('ko', {
   numeric: 'auto',
@@ -25,12 +25,6 @@ function parseDateValue(value: string): Date | null {
   }
 
   return parsedDate;
-}
-
-function toStartOfDay(date: Date): Date {
-  const normalizedDate = new Date(date);
-  normalizedDate.setHours(0, 0, 0, 0);
-  return normalizedDate;
 }
 
 export function getRelativeDiaryDateLabel(

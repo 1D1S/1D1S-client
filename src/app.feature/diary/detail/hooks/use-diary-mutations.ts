@@ -14,7 +14,6 @@ import {
   UpdateDiaryRequest,
   UpdateDiaryResponse,
   UploadImageResponse,
-  UploadImagesResponse,
 } from '../../board/type/diary';
 import { diaryWriteApi } from '../../write/api/diary-write-api';
 import { diaryDetailApi } from '../api/diary-detail-api';
@@ -89,8 +88,7 @@ export function useUpdateDiary(): UseMutationResult<
       });
       // 챌린지 일지 리스트 무효화
       queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.all,
-        predicate: (query) => query.queryKey.includes('diaries'),
+        queryKey: CHALLENGE_QUERY_KEYS.challengeDiaries(),
       });
     },
   });
@@ -118,8 +116,7 @@ export function useDeleteDiary(): UseMutationResult<boolean, Error, number> {
       });
       // 챌린지 일지 리스트 무효화
       queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.all,
-        predicate: (query) => query.queryKey.includes('diaries'),
+        queryKey: CHALLENGE_QUERY_KEYS.challengeDiaries(),
       });
       // 내 정보 무효화
       queryClient.invalidateQueries({
@@ -158,15 +155,15 @@ export function useLikeDiary(): UseMutationResult<number, Error, number> {
       });
       // 챌린지 다이어리 목록 무효화
       queryClient.invalidateQueries({
-        queryKey: [...CHALLENGE_QUERY_KEYS.all, 'diaries'],
+        queryKey: CHALLENGE_QUERY_KEYS.challengeDiaries(),
       });
       // 멤버 프로필 무효화 (프로필에 포함된 일지 likeInfo 갱신)
       queryClient.invalidateQueries({
-        queryKey: ['member', 'profile'],
+        queryKey: MEMBER_QUERY_KEYS.profiles(),
       });
       // 내 다이어리 목록 무효화
       queryClient.invalidateQueries({
-        queryKey: [...DIARY_QUERY_KEYS.all, 'my'],
+        queryKey: DIARY_QUERY_KEYS.my(),
       });
     },
   });
@@ -198,15 +195,15 @@ export function useUnlikeDiary(): UseMutationResult<number, Error, number> {
       });
       // 챌린지 다이어리 목록 무효화
       queryClient.invalidateQueries({
-        queryKey: [...CHALLENGE_QUERY_KEYS.all, 'diaries'],
+        queryKey: CHALLENGE_QUERY_KEYS.challengeDiaries(),
       });
       // 멤버 프로필 무효화 (프로필에 포함된 일지 likeInfo 갱신)
       queryClient.invalidateQueries({
-        queryKey: ['member', 'profile'],
+        queryKey: MEMBER_QUERY_KEYS.profiles(),
       });
       // 내 다이어리 목록 무효화
       queryClient.invalidateQueries({
-        queryKey: [...DIARY_QUERY_KEYS.all, 'my'],
+        queryKey: DIARY_QUERY_KEYS.my(),
       });
     },
   });
@@ -244,22 +241,3 @@ export function useUploadDiaryImage(): UseMutationResult<
   });
 }
 
-// 다이어리에 이미지 여러개 업로드하기
-export function useUploadDiaryImages(): UseMutationResult<
-  UploadImagesResponse,
-  Error,
-  { id: number; files: File[] }
-> {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, files }: { id: number; files: File[] }) =>
-      diaryWriteApi.uploadDiaryImages(id, files),
-    onSuccess: (_, { id }) => {
-      // 해당 다이어리 상세 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.detail(id),
-      });
-    },
-  });
-}

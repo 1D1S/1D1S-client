@@ -122,8 +122,8 @@ const PROTECTED_PATH_PREFIXES = [
 const PROTECTED_PATH_PATTERNS = [/^\/challenge\/\d+/, /^\/diary\/\d+/];
 
 const isProtectedRoute = (pathname: string): boolean =>
-  PROTECTED_PATH_PREFIXES.some((p) => pathname.startsWith(p)) ||
-  PROTECTED_PATH_PATTERNS.some((p) => p.test(pathname));
+  PROTECTED_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+  PROTECTED_PATH_PATTERNS.some((pattern) => pattern.test(pathname));
 
 export const handleAuthError = (error: unknown): void => {
   if (typeof window === 'undefined') {

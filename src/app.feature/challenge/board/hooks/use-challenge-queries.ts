@@ -14,7 +14,6 @@ import {
   ChallengeListItem,
   ChallengeListParams,
   ChallengeListResponse,
-  MemberChallengesParams,
   RandomChallengesParams,
 } from '../type/challenge';
 
@@ -58,17 +57,6 @@ export function useChallengeList(
       const pageInfo = lastPage?.data?.pageInfo;
       return pageInfo?.hasNextPage ? pageInfo.nextCursor : undefined;
     },
-  });
-}
-
-// 특정 멤버가 진행중인 챌린지 보기
-export function useMemberChallenges(
-  params: MemberChallengesParams
-): UseQueryResult<ChallengeListItem[], Error> {
-  return useQuery({
-    queryKey: CHALLENGE_QUERY_KEYS.memberChallenges(params),
-    queryFn: () => challengeBoardApi.getMemberChallenges(params),
-    enabled: Boolean(params.memberId),
   });
 }
 

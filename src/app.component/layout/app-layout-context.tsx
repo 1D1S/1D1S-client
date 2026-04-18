@@ -25,7 +25,3 @@ export function AppLayoutProvider({
     </AppLayoutContext.Provider>
   );
 }
-
-export function useAppLayoutContext(): AppLayoutContextValue {
-  return React.useContext(AppLayoutContext);
-}

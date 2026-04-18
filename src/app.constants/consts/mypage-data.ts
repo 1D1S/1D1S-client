@@ -42,20 +42,26 @@ export interface MyPageProfileData {
   imageUrl: string;
 }
 
+function getStreakCount(activityLevel: number): number {
+  if (activityLevel <= 1) {
+    return 0;
+  }
+  if (activityLevel <= 3) {
+    return 1;
+  }
+  if (activityLevel <= 5) {
+    return 3;
+  }
+  return 6;
+}
+
 export function buildMyPageStreakData(): Array<{
   date: string;
   count: number;
 }> {
   return Array.from({ length: 364 }).map((_, index) => {
     const activityLevel = (index * 11 + 7) % 8;
-    const count =
-      activityLevel <= 1
-        ? 0
-        : activityLevel <= 3
-          ? 1
-          : activityLevel <= 5
-            ? 3
-            : 6;
+    const count = getStreakCount(activityLevel);
 
     const baseDate = new Date(2025, 0, 1);
     baseDate.setDate(baseDate.getDate() + index);

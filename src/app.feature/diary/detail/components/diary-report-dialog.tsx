@@ -10,6 +10,7 @@ import {
   DialogTitle,
   Text,
 } from '@1d1s/design-system';
+import { cn } from '@module/utils/cn';
 import React, { useState } from 'react';
 
 import { ReportType } from '../../board/type/diary';
@@ -94,21 +95,23 @@ export function DiaryReportDialog({
                   key={rt.type}
                   type="button"
                   onClick={(): void => setSelectedType(rt.type)}
-                  className={`flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors ${
+                  className={cn(
+                    'flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors',
                     selectedType === rt.type
                       ? 'border-main-500 bg-main-50 text-main-900'
                       : 'border-gray-200 text-gray-700 hover:bg-gray-50'
-                  }`}
+                  )}
                 >
                   <Text size="body2" weight="medium">
                     {rt.label}
                   </Text>
                   <div
-                    className={`flex h-4 w-4 items-center justify-center rounded-full border-2 ${
+                    className={cn(
+                      'flex h-4 w-4 items-center justify-center rounded-full border-2',
                       selectedType === rt.type
-                        ? 'border-main-500' // mock a checked inner style
+                        ? 'border-main-500'
                         : 'border-gray-300'
-                    }`}
+                    )}
                   >
                     {selectedType === rt.type && (
                       <div className="bg-main-500 h-2 w-2 rounded-full" />
