@@ -1,5 +1,5 @@
 import { cn, ImagePlaceholder, Tag, Text } from '@1d1s/design-system';
-import { UserRound, Users } from 'lucide-react';
+import { Target, Users } from 'lucide-react';
 import Image from 'next/image';
 import type { ReactNode } from 'react';
 
@@ -42,7 +42,7 @@ export function ChallengeCard({
     maxUserCount <= 1 ? '개인' : `${currentUserCount} / ${maxUserCount}`;
 
   const hasEnded = isInfiniteChallenge ? isEarlyEnded : isEnded;
-  const statusLabel = hasEnded ? '종료됨' : isOngoing ? '진행중' : '모집중';
+  const statusLabel = hasEnded ? '종료됨' : isOngoing ? '진행 중' : '모집 중';
   const statusClassName = hasEnded
     ? 'bg-gray-500'
     : isOngoing
@@ -102,7 +102,7 @@ export function ChallengeCard({
 
         <div className="mt-2 flex w-full items-center justify-between sm:mt-3">
           <div className="flex items-center gap-1.5">
-            <UserRound className="h-3 w-3 text-gray-600 sm:h-3.5 sm:w-3.5" />
+            <Target className="h-3 w-3 text-gray-600 sm:h-3.5 sm:w-3.5" />
             <Text
               size="caption2"
               weight="medium"

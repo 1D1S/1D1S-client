@@ -19,7 +19,7 @@ export default function HomeSectionHeader({
           {title}
         </Text>
         <Button variant="ghost" size="small" onClick={onMoreClick}>
-          더보기 +
+          전체 보기
         </Button>
       </div>
       <Text size="caption3" weight="medium" className="text-gray-600">

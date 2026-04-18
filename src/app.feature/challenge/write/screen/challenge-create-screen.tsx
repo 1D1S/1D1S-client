@@ -27,7 +27,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
         <div className="flex items-start justify-between border-b border-gray-200 pb-5">
           <div className="flex flex-col gap-2">
             <Text size="display1" weight="bold" className="text-gray-900">
-              챌린지 생성
+              챌린지 만들기
             </Text>
             <Text size="body1" weight="regular" className="text-gray-600">
               새 챌린지를 단계별로 설정해보세요.

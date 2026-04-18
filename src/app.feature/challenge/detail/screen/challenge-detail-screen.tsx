@@ -511,7 +511,7 @@ export function ChallengeDetailScreen({
   const handleLeaveChallenge = (): void => {
     leaveChallenge.mutate(challengeId, {
       onSuccess: () => {
-        toast.success('챌린지에서 탈퇴했습니다.');
+        toast.success('챌린지에서 나갔습니다.');
       },
       onError: (error) => {
         notifyApiError(error);
@@ -830,7 +830,7 @@ export function ChallengeDetailScreen({
     <Dialog open={showFreeGoalModal} onOpenChange={setShowFreeGoalModal}>
       <DialogContent className="gap-5 px-6 py-6 sm:max-w-[460px]">
         <DialogHeader>
-          <DialogTitle>나의 목표 입력</DialogTitle>
+          <DialogTitle>내 목표 입력</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-3">
           <Text size="body2" weight="regular" className="text-gray-500">
@@ -859,7 +859,7 @@ export function ChallengeDetailScreen({
             disabled={joinChallenge.isPending}
             onClick={handleFreeGoalSubmit}
           >
-            {joinChallenge.isPending ? '처리 중...' : '신청하기'}
+            {joinChallenge.isPending ? '처리 중...' : '참여 신청'}
           </Button>
         </DialogFooter>
       </DialogContent>

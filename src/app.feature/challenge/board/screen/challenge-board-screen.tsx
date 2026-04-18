@@ -195,14 +195,14 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           <Button
             size="medium"
             onClick={() =>
-              requireAuth('챌린지 생성은 로그인 후 이용할 수 있습니다.', () =>
+              requireAuth('챌린지 만들기는 로그인 후 이용할 수 있습니다.', () =>
                 router.push('/challenge/create')
               )
             }
             className="whitespace-nowrap"
           >
             <span className="flex items-center gap-1">
-              <Icon name="Plus" size={16} />새 챌린지 생성
+              <Icon name="Plus" size={16} />새 챌린지 만들기
             </span>
           </Button>
         </div>

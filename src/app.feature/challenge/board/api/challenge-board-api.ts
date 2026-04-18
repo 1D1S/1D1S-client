@@ -64,7 +64,7 @@ export const challengeBoardApi = {
     );
   },
 
-  // 특정 멤버가 진행중인 챌린지 보기
+  // 특정 멤버가 진행 중인 챌린지 보기
   getMemberChallenges: async (
     params: MemberChallengesParams
   ): Promise<ChallengeListItem[]> => {

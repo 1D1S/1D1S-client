@@ -24,7 +24,7 @@ export function formatChallengeCardTypeLabel(
   maxParticipantCount: number
 ): string {
   if (isIndividualChallenge(maxParticipantCount)) {
-    return '개인 목표';
+    return '개인 챌린지';
   }
 
   return formatChallengeTypeLabel(goalType);
