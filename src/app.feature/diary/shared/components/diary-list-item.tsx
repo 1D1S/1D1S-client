@@ -12,10 +12,10 @@ import React, { useState } from 'react';
 
 type Emotion = 'happy' | 'soso' | 'sad';
 
-const emotionEmojiMap: Record<Emotion, string> = {
-  happy: '😎',
-  soso: '🙂',
-  sad: '🥲',
+const emotionImageMap: Record<Emotion, { src: string; alt: string }> = {
+  happy: { src: '/images/mood-happy.PNG', alt: '행복한 얼굴' },
+  soso: { src: '/images/mood-soso.PNG', alt: '무표정 얼굴' },
+  sad: { src: '/images/mood-sad.PNG', alt: '슬픈 얼굴' },
 };
 
 function Heart(props: React.SVGProps<SVGSVGElement>): React.ReactElement {
@@ -185,10 +185,14 @@ export function DiaryListItem({
         </div>
 
         {/* Emotion */}
-        <div className="absolute top-2 right-2 z-10 text-xl leading-none">
-          <span role="img" aria-label={emotion}>
-            {emotionEmojiMap[emotion]}
-          </span>
+        <div className="absolute top-2 right-2 z-10">
+          <Image
+            src={emotionImageMap[emotion].src}
+            alt={emotionImageMap[emotion].alt}
+            width={36}
+            height={36}
+            className="h-9 w-9"
+          />
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 import { Text } from '@1d1s/design-system';
+import Image from 'next/image';
 import React from 'react';
 
 import type { Feeling } from '../../board/type/diary';
@@ -29,7 +30,12 @@ function MoodOptionButton({
           PICK
         </span>
       ) : null}
-      <span className="text-3xl">{option.emoji}</span>
+      <Image
+        src={option.imageSrc}
+        alt={option.alt}
+        width={52}
+        height={52}
+      />
       <Text size="caption2" weight="medium" className="mt-1">
         {option.label}
       </Text>

@@ -10,9 +10,9 @@ interface MoodToggleProps {
 }
 
 const options = [
-  { id: 'happy' as Mood, src: '/images/emotion-happy.png', alt: '행복한 얼굴' },
-  { id: 'soso' as Mood, src: '/images/emotion-soso.png', alt: '무표정 얼굴' },
-  { id: 'sad' as Mood, src: '/images/emotion-sad.png', alt: '슬픈 얼굴' },
+  { id: 'happy' as Mood, src: '/images/mood-happy.PNG', alt: '행복한 얼굴' },
+  { id: 'soso' as Mood, src: '/images/mood-soso.PNG', alt: '무표정 얼굴' },
+  { id: 'sad' as Mood, src: '/images/mood-sad.PNG', alt: '슬픈 얼굴' },
 ];
 
 export function MoodToggle({

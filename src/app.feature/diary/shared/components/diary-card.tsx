@@ -83,6 +83,12 @@ interface ImageSectionProps {
   onToggleLike(): void;
 }
 
+const EMOTION_IMAGE_MAP: Record<Emotion, { src: string; alt: string }> = {
+  happy: { src: '/images/mood-happy.PNG', alt: '행복한 얼굴' },
+  soso: { src: '/images/mood-soso.PNG', alt: '무표정 얼굴' },
+  sad: { src: '/images/mood-sad.PNG', alt: '슬픈 얼굴' },
+};
+
 function ImageSection({
   imageUrl,
   alt,
@@ -92,11 +98,6 @@ function ImageSection({
   likeCount,
   onToggleLike,
 }: ImageSectionProps): React.ReactElement {
-  const emotionEmojiMap: Record<Emotion, string> = {
-    happy: '😎',
-    soso: '🙂',
-    sad: '🥲',
-  };
   const clampedPercent = Math.min(Math.max(percent, 0), 100);
   const hasImage = Boolean(imageUrl && imageUrl.trim().length > 0);
 
@@ -127,10 +128,14 @@ function ImageSection({
         </div>
       </div>
 
-      <div className="absolute top-3 right-3 z-20 text-2xl leading-none sm:text-3xl">
-        <span role="img" aria-label={emotion}>
-          {emotionEmojiMap[emotion]}
-        </span>
+      <div className="absolute top-3 right-3 z-20">
+        <Image
+          src={EMOTION_IMAGE_MAP[emotion].src}
+          alt={EMOTION_IMAGE_MAP[emotion].alt}
+          width={48}
+          height={48}
+          className="h-11 w-11 sm:h-14 sm:w-14"
+        />
       </div>
 
       <div className="absolute bottom-3 left-3 z-20">
@@ -347,8 +352,8 @@ export function DiaryCard({
         <ImageSection
           imageUrl={imageUrl}
           alt={title}
-          percent={percent}
           emotion={emotion}
+          percent={percent}
           isLiked={isLiked}
           likeCount={likeCount}
           onToggleLike={handleToggleLike}
