@@ -25,7 +25,6 @@ export default function HomeScreen(): React.ReactElement {
     : undefined;
 
   useEffect(() => {
-    console.log('[home-screen] isLoginRequired =', isLoginRequired);
     if (!isLoginRequired) {
       return;
     }
@@ -37,6 +36,7 @@ export default function HomeScreen(): React.ReactElement {
       scroll: false,
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const {
     randomChallenges,
     isChallengesLoading,

@@ -35,38 +35,27 @@ export async function resolveLoginRequiredRedirect(
   const headerStore = await headers();
   const host = headerStore.get('host');
   const referer = headerStore.get('referer');
-  console.log('[resolveLoginRequiredRedirect] host =', host, 'referer =', referer, 'currentPathname =', currentPathname);
 
   if (!referer || !host) {
-    const target = appendLoginRequired(fallbackPath);
-    console.log('[resolveLoginRequiredRedirect] no referer/host -> fallback:', target);
-    return target;
+    return appendLoginRequired(fallbackPath);
   }
 
   let refererUrl: URL;
   try {
     refererUrl = new URL(referer);
   } catch {
-    const target = appendLoginRequired(fallbackPath);
-    console.log('[resolveLoginRequiredRedirect] referer parse failed -> fallback:', target);
-    return target;
+    return appendLoginRequired(fallbackPath);
   }
 
   if (refererUrl.host !== host) {
-    const target = appendLoginRequired(fallbackPath);
-    console.log('[resolveLoginRequiredRedirect] different host -> fallback:', target);
-    return target;
+    return appendLoginRequired(fallbackPath);
   }
 
   // Referer가 현재 보호 경로와 같으면 루프 방지
   if (refererUrl.pathname === currentPathname) {
-    const target = appendLoginRequired(fallbackPath);
-    console.log('[resolveLoginRequiredRedirect] self referer -> fallback:', target);
-    return target;
+    return appendLoginRequired(fallbackPath);
   }
 
   refererUrl.searchParams.set('loginRequired', 'true');
-  const target = `${refererUrl.pathname}${refererUrl.search}${refererUrl.hash}`;
-  console.log('[resolveLoginRequiredRedirect] same-origin referer -> target:', target);
-  return target;
+  return `${refererUrl.pathname}${refererUrl.search}${refererUrl.hash}`;
 }
