@@ -234,7 +234,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
                 <ChallengeCard
                   challengeTitle={challenge.title}
                   challengeType={formatChallengeCardTypeLabel(
-                    challenge.challengeType,
+                    challenge.goalType,
                     challenge.maxParticipantCnt
                   )}
                   challengeCategory={getCategoryLabel(challenge.category)}

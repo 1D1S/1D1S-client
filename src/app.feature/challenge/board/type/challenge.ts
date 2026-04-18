@@ -7,7 +7,8 @@ export type ChallengeCategory =
   | 'STUDY'
   | 'LEISURE'
   | 'ECONOMY';
-export type ChallengeType = 'FIXED' | 'FLEXIBLE';
+export type GoalType = 'FIXED' | 'FLEXIBLE';
+export type ParticipationType = 'INDIVIDUAL' | 'GROUP';
 export type ParticipantStatus =
   | 'NONE'
   | 'PENDING'
@@ -28,11 +29,12 @@ export interface ChallengeSummary {
   startDate: string;
   endDate: string;
   maxParticipantCnt: number;
-  challengeType: ChallengeType;
+  goalType: GoalType;
+  participationType: ParticipationType;
   participantCnt: number;
   likeInfo: LikeInfo;
-  thumbnailImage?: string;
-  allowMidJoin?: boolean;
+  thumbnailImage?: string | null;
+  deleted?: boolean;
 }
 
 export interface ChallengeListItem {
@@ -42,7 +44,8 @@ export interface ChallengeListItem {
   startDate: string;
   endDate: string;
   maxParticipantCnt: number;
-  challengeType: ChallengeType;
+  goalType: GoalType;
+  participationType: ParticipationType;
   participantCnt: number;
   liked: boolean;
   likeCnt: number;
@@ -51,6 +54,7 @@ export interface ChallengeListItem {
 
 export interface ChallengeDetail {
   description: string;
+  allowMidJoin?: boolean;
   myStatus: ParticipantStatus;
   participationRate: number;
   goalCompletionRate: number;
@@ -83,7 +87,8 @@ export interface CreateChallengeRequest {
   startDate: string;
   endDate: string;
   maxParticipantCnt: number;
-  challengeType: ChallengeType;
+  goalType: GoalType;
+  participationType: ParticipationType;
   goals: string[];
   allowMidJoin: boolean;
   thumbnailImage?: string;
@@ -107,7 +112,8 @@ export interface CreateChallengeResponse {
   startDate: string;
   endDate: string;
   maxParticipantCnt: number;
-  challengeType: ChallengeType;
+  goalType: GoalType;
+  participationType: ParticipationType;
   participantCnt: number;
   likeInfo: LikeInfo;
 }

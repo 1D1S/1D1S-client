@@ -100,7 +100,7 @@ export function ChallengePicker({
                   key={challenge.challengeId}
                   challengeTitle={challenge.title}
                   challengeType={formatChallengeTypeLabel(
-                    challenge.challengeType
+                    challenge.goalType
                   )}
                   challengeCategory={getCategoryLabel(challenge.category)}
                   imageUrl={challenge.thumbnailImage}

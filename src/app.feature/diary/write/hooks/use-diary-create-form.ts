@@ -15,7 +15,8 @@ import type {
   ChallengeCategory,
   ChallengeGoal,
   ChallengeListItem,
-  ChallengeType,
+  GoalType,
+  ParticipationType,
 } from '../../../challenge/board/type/challenge';
 import {
   useAllDiaries,
@@ -166,8 +167,14 @@ function normalizeChallengeCategory(category: string): ChallengeCategory {
   return categoryMap[category] ?? 'DEV';
 }
 
-function normalizeChallengeType(challengeType: string): ChallengeType {
-  return challengeType === 'FIXED' ? 'FIXED' : 'FLEXIBLE';
+function normalizeGoalType(goalType: string): GoalType {
+  return goalType === 'FIXED' ? 'FIXED' : 'FLEXIBLE';
+}
+
+function normalizeParticipationType(
+  participationType: string
+): ParticipationType {
+  return participationType === 'GROUP' ? 'GROUP' : 'INDIVIDUAL';
 }
 
 function mapDiaryChallengeToChallengeListItem(
@@ -180,7 +187,8 @@ function mapDiaryChallengeToChallengeListItem(
     startDate: challenge.startDate,
     endDate: challenge.endDate,
     maxParticipantCnt: challenge.maxParticipantCnt,
-    challengeType: normalizeChallengeType(challenge.challengeType),
+    goalType: normalizeGoalType(challenge.goalType),
+    participationType: normalizeParticipationType(challenge.participationType),
     participantCnt: challenge.participantCnt,
     liked: challenge.likeInfo.likedByMe,
     likeCnt: challenge.likeInfo.likeCnt,
@@ -197,7 +205,8 @@ function mapSidebarChallengeToChallengeListItem(
     startDate: challenge.startDate,
     endDate: challenge.endDate,
     maxParticipantCnt: challenge.maxParticipantCnt,
-    challengeType: normalizeChallengeType(challenge.challengeType),
+    goalType: normalizeGoalType(challenge.goalType),
+    participationType: normalizeParticipationType(challenge.participationType),
     participantCnt: challenge.participantCnt,
     liked: challenge.likeInfo.likedByMe,
     likeCnt: challenge.likeInfo.likeCnt,

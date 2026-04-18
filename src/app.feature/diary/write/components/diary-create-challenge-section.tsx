@@ -48,7 +48,7 @@ export function DiaryCreateChallengeSection({
           <ChallengeListItem
             challengeTitle={selectedChallenge.title}
             challengeType={formatChallengeTypeLabel(
-              selectedChallenge.challengeType
+              selectedChallenge.goalType
             )}
             challengeCategory={getCategoryLabel(selectedChallenge.category)}
             imageUrl={selectedChallenge.thumbnailImage}

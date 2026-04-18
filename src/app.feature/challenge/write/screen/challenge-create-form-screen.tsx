@@ -101,8 +101,8 @@ export function ChallengeCreateFormScreen({
           ? values.memberCountNumber
           : values.memberCount
       ),
-      // 싱크가 맞지 않는 부분 존재
-      challengeType: values.goalType,
+      goalType: values.goalType,
+      participationType: values.participationType,
       goals: values.goals.map((goal) => goal.value),
       allowMidJoin:
         values.participationType === 'INDIVIDUAL'

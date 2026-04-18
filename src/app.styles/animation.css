@@ -28,6 +28,24 @@
   }
 }
 
+@keyframes drawCheck {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-draw-check-1 {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: drawCheck 0.18s cubic-bezier(0.6, 0, 0.2, 1) 0.1s forwards;
+}
+
+.animate-draw-check-2 {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: drawCheck 0.22s cubic-bezier(0.4, 0, 0.2, 1) 0.26s forwards;
+}
+
 /* Tailwind 없이 직접 작성한 버전 */
 .fade-in {
   opacity: 0;

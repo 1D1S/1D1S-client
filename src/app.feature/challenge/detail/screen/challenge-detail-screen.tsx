@@ -13,6 +13,7 @@ import {
   ScheduleCalendar,
   type ScheduleCalendarCell,
   Text,
+  TextField,
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
@@ -36,6 +37,7 @@ import {
   CircleAlert,
   Flame,
   Heart,
+  Trash2,
   UserRound,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -64,6 +66,7 @@ import {
   useLikeChallenge,
   useRejectParticipant,
   useUnlikeChallenge,
+  useUpdateChallenge,
   useUpdateParticipantGoal,
 } from '../hooks/use-challenge-mutations';
 import { ChallengeDiaryItem } from '../type/challenge-diary';
@@ -89,8 +92,8 @@ function getMonthLabel(monthDate: Date): string {
   }).format(monthDate);
 }
 
-function getChallengeTypeLabel(challengeType: string): string {
-  return formatChallengeTypeLabel(challengeType);
+function getChallengeTypeLabel(goalType: string): string {
+  return formatChallengeTypeLabel(goalType);
 }
 
 function isEndlessChallengeEndDate(endDate: string): boolean {
@@ -349,6 +352,7 @@ export function ChallengeDetailScreen({
   const unlikeChallenge = useUnlikeChallenge();
   const acceptParticipant = useAcceptParticipant();
   const rejectParticipant = useRejectParticipant();
+  const updateChallenge = useUpdateChallenge();
   const updateParticipantGoal = useUpdateParticipantGoal();
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
@@ -368,6 +372,11 @@ export function ChallengeDetailScreen({
   const [freeGoalInputs, setFreeGoalInputs] = useState<string[]>(['']);
   const [showEditGoalModal, setShowEditGoalModal] = useState(false);
   const [editGoalInputs, setEditGoalInputs] = useState<string[]>(['']);
+  const [showEditChallengeGoalsModal, setShowEditChallengeGoalsModal] =
+    useState(false);
+  const [challengeGoalInputs, setChallengeGoalInputs] = useState<string[]>([
+    '',
+  ]);
 
   const { data: challengeDiariesData, isLoading: isDiariesLoading } =
     useChallengeDiaryList(challengeId, 10);
@@ -405,7 +414,7 @@ export function ChallengeDetailScreen({
   const isPending = myStatus === 'PENDING';
   const isParticipating = PARTICIPATING_STATUS.includes(myStatus);
   const canJoinByStatus = myStatus === 'NONE' || myStatus === 'REJECTED';
-  const isFreeChallenge = summary?.challengeType === 'FLEXIBLE';
+  const isFreeChallenge = summary?.goalType === 'FLEXIBLE';
 
   const monthLabel = useMemo(
     () => getMonthLabel(calendarMonth),
@@ -599,6 +608,34 @@ export function ChallengeDetailScreen({
     );
   };
 
+  const handleOpenEditChallengeGoalsModal = (): void => {
+    const currentGoals = goals.map((goal) => goal.content);
+    setChallengeGoalInputs(currentGoals.length > 0 ? currentGoals : ['']);
+    setShowEditChallengeGoalsModal(true);
+  };
+
+  const handleEditChallengeGoalsSubmit = (): void => {
+    const validGoals = challengeGoalInputs
+      .map((goalInput) => goalInput.trim())
+      .filter(Boolean);
+    if (validGoals.length === 0) {
+      toast.error('목표를 최소 1개 이상 입력해 주세요.');
+      return;
+    }
+    updateChallenge.mutate(
+      { challengeId, data: { goals: validGoals } },
+      {
+        onSuccess: () => {
+          setShowEditChallengeGoalsModal(false);
+          toast.success('챌린지 목표가 수정되었습니다.');
+        },
+        onError: (error) => {
+          notifyApiError(error);
+        },
+      }
+    );
+  };
+
   const handleDiaryLikeToggle = (diary: ChallengeDiaryItem): void => {
     if (!authStorage.hasTokens()) {
       setShowDiaryLikeDialog(true);
@@ -651,21 +688,6 @@ export function ChallengeDetailScreen({
             {isChallengeCurrentlyOngoing
               ? '일지 작성하기'
               : '진행 중일 때만 일지 작성 가능'}
-          </Button>
-        ) : null}
-
-        {/* 자유 목표 참여자 목표 수정 (시작 전) */}
-        {!isHost &&
-        isFreeChallenge &&
-        isParticipating &&
-        !isChallengeStarted ? (
-          <Button
-            variant="outlined"
-            size="large"
-            className="w-full"
-            onClick={handleOpenEditGoalModal}
-          >
-            내 목표 수정
           </Button>
         ) : null}
 
@@ -884,11 +906,91 @@ export function ChallengeDetailScreen({
     </Dialog>
   );
 
+  const editChallengeGoalsModal = (
+    <Dialog
+      open={showEditChallengeGoalsModal}
+      onOpenChange={setShowEditChallengeGoalsModal}
+    >
+      <DialogContent className="gap-5 px-6 py-6 sm:max-w-[460px]">
+        <DialogHeader>
+          <DialogTitle>챌린지 목표 수정</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-3">
+          <Text size="body2" weight="regular" className="text-gray-500">
+            챌린지 시작 전에만 목표를 수정할 수 있습니다.
+          </Text>
+          <div className="flex flex-col gap-2">
+            {challengeGoalInputs.map((goal, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2"
+              >
+                <TextField
+                  value={goal}
+                  onChange={(event) => {
+                    const next = [...challengeGoalInputs];
+                    next[index] = event.target.value;
+                    setChallengeGoalInputs(next);
+                  }}
+                  placeholder="목표를 입력하세요"
+                  className="flex-1"
+                  maxLength={100}
+                />
+                <button
+                  type="button"
+                  aria-label="목표 삭제"
+                  className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-red-600"
+                  onClick={() => {
+                    setChallengeGoalInputs((prev) =>
+                      prev.filter((_, targetIndex) => targetIndex !== index)
+                    );
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+          <Button
+            variant="outlined"
+            size="small"
+            type="button"
+            disabled={challengeGoalInputs.length >= 10}
+            onClick={() =>
+              setChallengeGoalInputs((prev) => [...prev, ''])
+            }
+          >
+            + 목표 추가
+          </Button>
+        </div>
+        <DialogFooter className="flex-row gap-2">
+          <Button
+            size="medium"
+            variant="ghost"
+            className="flex-1"
+            onClick={() => setShowEditChallengeGoalsModal(false)}
+          >
+            취소
+          </Button>
+          <Button
+            size="medium"
+            className="flex-1"
+            disabled={updateChallenge.isPending}
+            onClick={handleEditChallengeGoalsSubmit}
+          >
+            {updateChallenge.isPending ? '저장 중...' : '저장'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <div className="min-h-screen w-full bg-white px-4 py-6 md:px-6 lg:px-8">
       {authDialog}
       {freeGoalModal}
       {editGoalModal}
+      {editChallengeGoalsModal}
       <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6">
         {summary.thumbnailImage && (
           <div className="relative h-[220px] w-full overflow-hidden rounded-3xl md:h-[280px]">
@@ -908,7 +1010,7 @@ export function ChallengeDetailScreen({
                 {getCategoryLabel(summary.category)}
               </span>
               <span className="rounded-1.5 bg-main-200 text-caption1 text-main-800 px-2.5 py-1 font-bold">
-                {getChallengeTypeLabel(summary.challengeType)}
+                {getChallengeTypeLabel(summary.goalType)}
               </span>
             </div>
             <Text size="body2" weight="medium" className="text-gray-600">
@@ -1198,13 +1300,36 @@ export function ChallengeDetailScreen({
             </section>
 
             <section className="rounded-4 border border-gray-200 bg-white p-5">
-              <Text
-                size="heading2"
-                weight="bold"
-                className="block text-gray-900"
-              >
-                챌린지 목표
-              </Text>
+              <div className="flex items-center justify-between">
+                <Text
+                  size="heading2"
+                  weight="bold"
+                  className="block text-gray-900"
+                >
+                  챌린지 목표
+                </Text>
+                {isHost && !isChallengeStarted && !isFreeChallenge ? (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={handleOpenEditChallengeGoalsModal}
+                  >
+                    목표 수정하기
+                  </Button>
+                ) : null}
+                {!isHost &&
+                isFreeChallenge &&
+                isParticipating &&
+                !isChallengeStarted ? (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={handleOpenEditGoalModal}
+                  >
+                    내 목표 수정하기
+                  </Button>
+                ) : null}
+              </div>
               {isFreeChallenge ? (
                 <Text
                   size="body2"

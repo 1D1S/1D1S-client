@@ -1,11 +1,5 @@
+import { CheckContainer, Text } from '@1d1s/design-system';
 import {
-  CheckContainer,
-  Text,
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@1d1s/design-system';
-import {
-  FormControl,
   FormField,
   FormItem,
   FormMessage,
@@ -117,62 +111,32 @@ export function Step2(): React.ReactElement {
       </div>
 
       {participationType === 'GROUP' ? (
-        <>
-          <div className="flex flex-col space-y-3">
-            <Text size="body1" weight="bold" className="text-gray-900">
-              최대 참여 인원
-            </Text>
-            <FormField
-              control={control}
-              name="memberCount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormField
-                    control={control}
-                    name="memberCountNumber"
-                    render={({ field: customField }) => (
-                      <MaxParticipantCountSelect
-                        value={field.value ?? ''}
-                        onValueChange={field.onChange}
-                        customValue={customField.value ?? ''}
-                        onCustomValueChange={customField.onChange}
-                      />
-                    )}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="flex flex-col space-y-3">
-            <Text size="body1" weight="bold" className="text-gray-900">
-              중간 참여 허용
-            </Text>
-            <FormField
-              control={control}
-              name="allowMidJoin"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <ToggleGroup
-                      type="single"
-                      value={field.value ? 'yes' : 'no'}
-                      onValueChange={(value) => {
-                        if (value) { field.onChange(value === 'yes'); }
-                      }}
-                      className="w-fit"
-                    >
-                      <ToggleGroupItem value="yes">허용</ToggleGroupItem>
-                      <ToggleGroupItem value="no">미허용</ToggleGroupItem>
-                    </ToggleGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </>
+        <div className="flex flex-col space-y-3">
+          <Text size="body1" weight="bold" className="text-gray-900">
+            최대 참여 인원
+          </Text>
+          <FormField
+            control={control}
+            name="memberCount"
+            render={({ field }) => (
+              <FormItem>
+                <FormField
+                  control={control}
+                  name="memberCountNumber"
+                  render={({ field: customField }) => (
+                    <MaxParticipantCountSelect
+                      value={field.value ?? ''}
+                      onValueChange={field.onChange}
+                      customValue={customField.value ?? ''}
+                      onCustomValueChange={customField.onChange}
+                    />
+                  )}
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       ) : null}
     </div>
   );

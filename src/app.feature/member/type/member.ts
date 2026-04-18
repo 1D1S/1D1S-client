@@ -7,7 +7,8 @@ export interface SidebarChallenge {
   hasDeadline?: boolean;
   periodType?: 'ENDLESS' | 'LIMITED';
   maxParticipantCnt: number;
-  challengeType: string;
+  goalType: string;
+  participationType: string;
   participantCnt: number;
   likeInfo: {
     likedByMe: boolean;
@@ -49,7 +50,8 @@ export interface MyPageChallenge {
   startDate: string;
   endDate: string;
   maxParticipantCnt: number;
-  challengeType: string;
+  goalType: string;
+  participationType: string;
   participantCnt: number;
   likeInfo: {
     likedByMe: boolean;

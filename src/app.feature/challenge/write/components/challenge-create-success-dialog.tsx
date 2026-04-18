@@ -8,7 +8,6 @@ import {
   DialogTitle,
   Text,
 } from '@1d1s/design-system';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 interface ChallengeCreateSuccessDialogProps
@@ -49,15 +48,35 @@ export function ChallengeCreateSuccessDialog({
         </DialogHeader>
         <div className="flex flex-col items-center">
           <div className="bg-main-900 flex h-20 w-20 items-center justify-center rounded-full">
-            <Image
-              src="/images/check.png"
-              alt="success"
-              width="40"
-              height="40"
-            />
+            <svg
+              viewBox="0 0 40 40"
+              className="h-12 w-12"
+              fill="none"
+              aria-label="success"
+              role="img"
+            >
+              <path
+                d="M9 21 L17 29"
+                stroke="white"
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                pathLength="1"
+                className="animate-draw-check-1"
+              />
+              <path
+                d="M17 29 L32 12"
+                stroke="white"
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                pathLength="1"
+                className="animate-draw-check-2"
+              />
+            </svg>
           </div>
         </div>
-        <DialogFooter className="mb-8 grid w-full grid-cols-2 gap-3">
+        <DialogFooter className="grid w-full grid-cols-2 gap-3">
           <Button
             variant="outlined"
             type="button"

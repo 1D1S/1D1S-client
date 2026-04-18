@@ -1,20 +1,18 @@
-import { type ChallengeType } from '../../board/type/challenge';
+import { type GoalType } from '../../board/type/challenge';
 
-const CHALLENGE_TYPE_LABELS: Record<ChallengeType, string> = {
+const GOAL_TYPE_LABELS: Record<GoalType, string> = {
   FIXED: '고정 목표',
   FLEXIBLE: '자유 목표',
 };
 
 export function formatChallengeTypeLabel(
-  challengeType?: string | null
+  goalType?: string | null
 ): string {
-  if (!challengeType) {
+  if (!goalType) {
     return '-';
   }
 
-  return (
-    CHALLENGE_TYPE_LABELS[challengeType as ChallengeType] ?? challengeType
-  );
+  return GOAL_TYPE_LABELS[goalType as GoalType] ?? goalType;
 }
 
 export function isIndividualChallenge(maxParticipantCount: number): boolean {
@@ -22,13 +20,13 @@ export function isIndividualChallenge(maxParticipantCount: number): boolean {
 }
 
 export function formatChallengeCardTypeLabel(
-  challengeType: string | null | undefined,
+  goalType: string | null | undefined,
   maxParticipantCount: number
 ): string {
   if (isIndividualChallenge(maxParticipantCount)) {
     return '개인 목표';
   }
 
-  return formatChallengeTypeLabel(challengeType);
+  return formatChallengeTypeLabel(goalType);
 }
 
