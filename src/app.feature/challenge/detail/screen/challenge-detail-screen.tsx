@@ -691,21 +691,6 @@ export function ChallengeDetailScreen({
           </Button>
         ) : null}
 
-        {/* 자유 목표 참여자 목표 수정 (시작 전) */}
-        {!isHost &&
-        isFreeChallenge &&
-        isParticipating &&
-        !isChallengeStarted ? (
-          <Button
-            variant="outlined"
-            size="large"
-            className="w-full"
-            onClick={handleOpenEditGoalModal}
-          >
-            내 목표 수정
-          </Button>
-        ) : null}
-
         <Button
           variant={summary!.likeInfo.likedByMe ? 'default' : 'outlined'}
           size="large"
@@ -1330,6 +1315,18 @@ export function ChallengeDetailScreen({
                     onClick={handleOpenEditChallengeGoalsModal}
                   >
                     목표 수정하기
+                  </Button>
+                ) : null}
+                {!isHost &&
+                isFreeChallenge &&
+                isParticipating &&
+                !isChallengeStarted ? (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={handleOpenEditGoalModal}
+                  >
+                    내 목표 수정하기
                   </Button>
                 ) : null}
               </div>
