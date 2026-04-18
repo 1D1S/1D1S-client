@@ -33,7 +33,7 @@ export function ChallengeCreateDialog({
         </Button>
       </DialogTrigger>
       <DialogContent className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-[520px]">
-        <DialogTitle className="sr-only">챌린지 생성 미리보기</DialogTitle>
+        <DialogTitle className="sr-only">챌린지 만들기 미리보기</DialogTitle>
         <div className="min-h-0 flex-1 overflow-y-auto p-6 pt-10">
           <ChallengeCreateDialogContent />
         </div>
@@ -48,7 +48,7 @@ export function ChallengeCreateDialog({
             className="block text-center text-black"
             id="challenge-create-dialog"
           >
-            위와 같이 챌린지를 생성하시겠습니까?
+            위와 같이 챌린지를 만드시겠습니까?
           </Text>
         </DialogDescription>
 
@@ -64,7 +64,7 @@ export function ChallengeCreateDialog({
               type="submit"
               onClick={onConfirm}
             >
-              챌린지 생성
+              챌린지 만들기
             </Button>
           </DialogClose>
         </DialogFooter>

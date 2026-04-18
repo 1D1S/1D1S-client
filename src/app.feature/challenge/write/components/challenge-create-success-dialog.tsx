@@ -41,7 +41,7 @@ export function ChallengeCreateSuccessDialog({
           <DialogTitle>
             <DialogDescription>
               <Text size="heading1" weight="bold" className="text-center text-black">
-                챌린지 생성이 완료되었습니다!
+                챌린지 만들기가 완료되었습니다!
               </Text>
             </DialogDescription>
           </DialogTitle>

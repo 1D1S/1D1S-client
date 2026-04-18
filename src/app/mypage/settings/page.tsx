@@ -288,7 +288,7 @@ export default function AccountSettingsPage(): React.ReactElement {
             >
               <UserMinus className="h-5 w-5" />
               <Text size="body1" weight="medium" className="text-gray-600">
-                회원탈퇴
+                회원 탈퇴
               </Text>
             </button>
           </section>
@@ -333,7 +333,7 @@ export default function AccountSettingsPage(): React.ReactElement {
       >
         <DialogContent className="gap-6 px-8 py-6 sm:max-w-[380px] sm:px-6">
           <DialogHeader className="items-center text-center sm:text-center">
-            <DialogTitle>회원탈퇴 하시겠어요?</DialogTitle>
+            <DialogTitle>회원 탈퇴 하시겠어요?</DialogTitle>
           </DialogHeader>
 
           <DialogDescription className="block w-full text-center">
@@ -356,7 +356,7 @@ export default function AccountSettingsPage(): React.ReactElement {
               onClick={confirmWithdraw}
               disabled={deleteMember.isPending || logout.isPending}
             >
-              {deleteMember.isPending ? '처리 중...' : '회원탈퇴'}
+              {deleteMember.isPending ? '처리 중...' : '회원 탈퇴'}
             </Button>
           </DialogFooter>
         </DialogContent>

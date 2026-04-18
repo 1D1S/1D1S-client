@@ -1,5 +1,5 @@
 import { cn, ImagePlaceholder, Tag, Text } from '@1d1s/design-system';
-import { UserRound, Users } from 'lucide-react';
+import { Target } from 'lucide-react';
 import Image from 'next/image';
 import type { ReactNode } from 'react';
 
@@ -41,7 +41,7 @@ export function ChallengeListItem({
   const isIndividual = maxUserCount <= 1;
 
   const hasEnded = isInfiniteChallenge ? isEarlyEnded : isEnded;
-  const statusLabel = hasEnded ? '종료됨' : isOngoing ? '진행중' : '모집중';
+  const statusLabel = hasEnded ? '종료됨' : isOngoing ? '진행 중' : '모집 중';
   const statusClassName = hasEnded
     ? 'bg-gray-500'
     : isOngoing
@@ -99,11 +99,7 @@ export function ChallengeListItem({
 
         {/* Goal type + participant */}
         <div className="flex items-center gap-1.5">
-          {isIndividual ? (
-            <UserRound className="h-3.5 w-3.5 text-gray-400" />
-          ) : (
-            <Users className="h-3.5 w-3.5 text-gray-400" />
-          )}
+          <Target className="h-3.5 w-3.5 text-gray-400" />
           <Text size="caption3" weight="medium" className="text-gray-500">
             {`${challengeType}`}
             {isIndividual ? '' : ` · ${currentUserCount} / ${maxUserCount}`}

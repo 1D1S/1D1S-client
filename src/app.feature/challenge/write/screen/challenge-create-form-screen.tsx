@@ -160,7 +160,7 @@ export function ChallengeCreateFormScreen({
               <ChallengeCreateDialog
                 onConfirm={() => form.handleSubmit(onSubmit)()}
                 disabled={!isStepValid}
-                triggerText="챌린지 생성"
+                triggerText="챌린지 만들기"
               />
             )}
           </div>
@@ -177,7 +177,7 @@ export function ChallengeCreateFormScreen({
             문제가 발생했습니다
           </DialogTitle>
           <DialogDescription className="text-center text-gray-500">
-            챌린지 생성 중 오류가 발생했습니다.
+            챌린지 만들기 중 오류가 발생했습니다.
             <br />
             잠시 후 다시 시도해주세요.
           </DialogDescription>
