@@ -237,7 +237,7 @@ export default function MemberProfilePage(): React.ReactElement {
                         <DSChallengeCard
                           challengeTitle={ch.title}
                           challengeType={formatChallengeCardTypeLabel(
-                            ch.challengeType,
+                            ch.goalType,
                             ch.maxParticipantCnt
                           )}
                           challengeCategory={getCategoryLabel(ch.category)}

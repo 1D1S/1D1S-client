@@ -386,7 +386,7 @@ function mapDiaryToViewData(
     connectedChallengeCategory:
       getCategoryLabel(summary?.category ?? diary.challenge?.category) || '-',
     connectedChallengeType: formatChallengeTypeLabel(
-      summary?.challengeType ?? diary.challenge?.challengeType ?? '-'
+      summary?.goalType ?? diary.challenge?.goalType ?? '-'
     ),
     connectedChallengeStartDate:
       summary?.startDate ?? diary.challenge?.startDate ?? '',
@@ -396,7 +396,7 @@ function mapDiaryToViewData(
       summary?.participantCnt ?? diary.challenge?.participantCnt ?? 0,
     connectedChallengeMaxUsers:
       summary?.maxParticipantCnt ?? diary.challenge?.maxParticipantCnt ?? 0,
-    connectedChallengeThumbnailImage: summary?.thumbnailImage,
+    connectedChallengeThumbnailImage: summary?.thumbnailImage ?? undefined,
     likedByMe: diary.likeInfo?.likedByMe ?? false,
     likeCount: diary.likeInfo?.likeCnt ?? 0,
     checklistItems,

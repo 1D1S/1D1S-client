@@ -19,7 +19,8 @@ export interface ChallengeSummary {
   startDate: string;
   endDate: string;
   maxParticipantCnt: number;
-  challengeType: string;
+  goalType: string;
+  participationType: string;
   participantCnt: number;
   likeInfo: LikeInfo;
 }

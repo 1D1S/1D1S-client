@@ -58,7 +58,7 @@ export default function HomeRandomChallengesSection({
               <ChallengeCard
                 challengeTitle={challenge.title}
                 challengeType={formatChallengeType(
-                  challenge.challengeType,
+                  challenge.goalType,
                   challenge.maxParticipantCnt
                 )}
                 challengeCategory={getCategoryLabel(challenge.category)}

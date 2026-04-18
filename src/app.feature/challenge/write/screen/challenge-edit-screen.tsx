@@ -56,7 +56,7 @@ export default function ChallengeEditScreen({
     summary?.endDate
   );
   const isGroupChallenge = (summary?.maxParticipantCnt ?? 0) > 1;
-  const isFixedGoal = summary?.challengeType === 'FIXED';
+  const isFixedGoal = summary?.goalType === 'FIXED';
 
   // 폼 상태
   const [title, setTitle] = useState('');
@@ -88,7 +88,7 @@ export default function ChallengeEditScreen({
     setTitle(summary.title);
     setCategory(summary.category);
     setDescription(detail.description ?? '');
-    setAllowMidJoin(summary.allowMidJoin ?? false);
+    setAllowMidJoin(detail.allowMidJoin ?? false);
     const cnt = summary.maxParticipantCnt;
     if (cnt === 2 || cnt === 5 || cnt === 10) {
       setMemberCount(String(cnt));
@@ -167,7 +167,7 @@ export default function ChallengeEditScreen({
     if (description.trim() !== (detail?.description ?? '')) {
       payload.description = description.trim();
     }
-    if (isGroupChallenge && allowMidJoin !== (summary?.allowMidJoin ?? false)) {
+    if (isGroupChallenge && allowMidJoin !== (detail?.allowMidJoin ?? false)) {
       payload.allowMidJoin = allowMidJoin;
     }
     if (isGroupChallenge && !isChallengeStarted) {

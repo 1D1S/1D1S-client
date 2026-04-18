@@ -89,8 +89,8 @@ function getMonthLabel(monthDate: Date): string {
   }).format(monthDate);
 }
 
-function getChallengeTypeLabel(challengeType: string): string {
-  return formatChallengeTypeLabel(challengeType);
+function getChallengeTypeLabel(goalType: string): string {
+  return formatChallengeTypeLabel(goalType);
 }
 
 function isEndlessChallengeEndDate(endDate: string): boolean {
@@ -405,7 +405,7 @@ export function ChallengeDetailScreen({
   const isPending = myStatus === 'PENDING';
   const isParticipating = PARTICIPATING_STATUS.includes(myStatus);
   const canJoinByStatus = myStatus === 'NONE' || myStatus === 'REJECTED';
-  const isFreeChallenge = summary?.challengeType === 'FLEXIBLE';
+  const isFreeChallenge = summary?.goalType === 'FLEXIBLE';
 
   const monthLabel = useMemo(
     () => getMonthLabel(calendarMonth),
@@ -908,7 +908,7 @@ export function ChallengeDetailScreen({
                 {getCategoryLabel(summary.category)}
               </span>
               <span className="rounded-1.5 bg-main-200 text-caption1 text-main-800 px-2.5 py-1 font-bold">
-                {getChallengeTypeLabel(summary.challengeType)}
+                {getChallengeTypeLabel(summary.goalType)}
               </span>
             </div>
             <Text size="body2" weight="medium" className="text-gray-600">
