@@ -32,13 +32,9 @@ export function authMiddleware(req: NextRequest): NextResponse | null {
     return null;
   }
 
-  const token =
-    ACCESS_TOKEN_COOKIE_CANDIDATES
-      .map((cookieName) => req.cookies.get(cookieName)?.value)
-      .find((value): value is string => Boolean(value?.trim())) ??
-    req.cookies.get('JSESSIONID')?.value ??
-    req.cookies.get('SESSION')?.value ??
-    req.cookies.get('session')?.value;
+  const token = ACCESS_TOKEN_COOKIE_CANDIDATES.map(
+    (cookieName) => req.cookies.get(cookieName)?.value
+  ).find((value): value is string => Boolean(value?.trim()));
 
   if (!token) {
     const redirectUrl = new URL(fallback, req.url);

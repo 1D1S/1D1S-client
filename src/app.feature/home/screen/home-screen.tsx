@@ -4,8 +4,8 @@ import { BannerCarousel, PageWatermark } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { HOME_MAIN_BANNERS } from '@constants/consts/home-data';
 import { authStorage } from '@module/utils/auth';
-import { useRouter } from 'next/navigation';
-import React from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import React, { useEffect } from 'react';
 
 import HomeQuickActions from '../components/home-quick-actions';
 import HomeRandomChallengesSection from '../components/home-random-challenges-section';
@@ -15,8 +15,28 @@ import { useHomeRandomDiaryLike } from '../hooks/use-home-random-diary-like';
 
 export default function HomeScreen(): React.ReactElement {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isLoginRequired = searchParams.get('loginRequired') === 'true';
   const { isLikePending, showLoginDialog, setShowLoginDialog, onLikeToggle } =
     useHomeRandomDiaryLike();
+  const loginDialogDescription = isLoginRequired
+    ? '로그인 후 이용할 수 있습니다.'
+    : undefined;
+
+  useEffect(() => {
+    console.log('[home-screen] isLoginRequired =', isLoginRequired);
+    if (!isLoginRequired) {
+      return;
+    }
+    setShowLoginDialog(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('loginRequired');
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const {
     randomChallenges,
     isChallengesLoading,
@@ -33,6 +53,7 @@ export default function HomeScreen(): React.ReactElement {
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}
+        description={loginDialogDescription}
       />
       {/* 메인 콘텐츠 */}
       <div className="flex w-full flex-col pt-6">
