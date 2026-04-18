@@ -2,6 +2,7 @@
 
 import {
   Button,
+  Checkbox,
   GoalAddList,
   ImagePicker,
   Text,
@@ -306,23 +307,6 @@ export default function ChallengeEditScreen({
         {/* 단체 챌린지 전용 옵션 */}
         {isGroupChallenge && (
           <>
-            <div className="flex flex-col gap-2">
-              <Text size="body1" weight="bold" className="text-gray-900">
-                중간 참여 허용
-              </Text>
-              <ToggleGroup
-                type="single"
-                value={allowMidJoin ? 'yes' : 'no'}
-                onValueChange={(value) => {
-                  if (value) { setAllowMidJoin(value === 'yes'); }
-                }}
-                className="w-fit"
-              >
-                <ToggleGroupItem value="yes">허용</ToggleGroupItem>
-                <ToggleGroupItem value="no">미허용</ToggleGroupItem>
-              </ToggleGroup>
-            </div>
-
             {!isChallengeStarted && (
               <div className="flex flex-col gap-2">
                 <Text size="body1" weight="bold" className="text-gray-900">
@@ -336,6 +320,35 @@ export default function ChallengeEditScreen({
                 />
               </div>
             )}
+
+            <div className="rounded-2xl border border-gray-200 bg-gray-100 px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col gap-1">
+                  <Text
+                    size="body2"
+                    weight="bold"
+                    className="text-gray-800"
+                  >
+                    중도 참여 수용{' '}
+                    <span className="text-gray-500">(선택)</span>
+                  </Text>
+                  <Text
+                    size="body2"
+                    weight="regular"
+                    className="text-gray-600"
+                  >
+                    챌린지 시작 후에도 새로운 참여자를 받을 수 있습니다.
+                  </Text>
+                </div>
+                <Checkbox
+                  checked={allowMidJoin}
+                  onCheckedChange={(checked) =>
+                    setAllowMidJoin(Boolean(checked))
+                  }
+                  aria-label="중도 참여 수용"
+                />
+              </div>
+            </div>
           </>
         )}
 
