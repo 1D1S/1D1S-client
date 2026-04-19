@@ -1,5 +1,5 @@
 import { CheckContainer, cn, GoalAddList, Text } from '@1d1s/design-system';
-import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
+import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { Flag, Target } from 'lucide-react';
 import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';

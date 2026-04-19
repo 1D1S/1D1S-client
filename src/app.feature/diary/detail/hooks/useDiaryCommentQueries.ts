@@ -1,7 +1,7 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
-import { DIARY_QUERY_KEYS } from '../../board/consts/query-keys';
-import { diaryCommentApi } from '../api/diary-comment-api';
+import { DIARY_QUERY_KEYS } from '../../board/consts/queryKeys';
+import { diaryCommentApi } from '../api/diaryCommentApi';
 import {
   DiaryComment,
   DiaryCommentListParams,

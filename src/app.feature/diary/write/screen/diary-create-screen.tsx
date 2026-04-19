@@ -10,7 +10,7 @@ import { DiaryCreateGoalsSection } from '../components/diary-create-goals-sectio
 import { DiaryCreateMissingChallengeDialog } from '../components/diary-create-missing-challenge-dialog';
 import { DiaryCreateThumbnailSection } from '../components/diary-create-thumbnail-section';
 import { DiaryCreateUnavailableDialog } from '../components/diary-create-unavailable-dialog';
-import { useDiaryCreateForm } from '../hooks/use-diary-create-form';
+import { useDiaryCreateForm } from '../hooks/useDiaryCreateForm';
 
 export default function DiaryCreateScreen(): React.ReactElement {
   const {

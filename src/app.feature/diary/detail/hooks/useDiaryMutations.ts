@@ -4,9 +4,9 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
-import { CHALLENGE_QUERY_KEYS } from '../../../challenge/board/consts/query-keys';
-import { MEMBER_QUERY_KEYS } from '../../../member/consts/query-keys';
-import { DIARY_QUERY_KEYS } from '../../board/consts/query-keys';
+import { CHALLENGE_QUERY_KEYS } from '../../../challenge/board/consts/queryKeys';
+import { MEMBER_QUERY_KEYS } from '../../../member/consts/queryKeys';
+import { DIARY_QUERY_KEYS } from '../../board/consts/queryKeys';
 import {
   CreateDiaryReportRequest,
   CreateDiaryRequest,
@@ -15,8 +15,8 @@ import {
   UpdateDiaryResponse,
   UploadImageResponse,
 } from '../../board/type/diary';
-import { diaryWriteApi } from '../../write/api/diary-write-api';
-import { diaryDetailApi } from '../api/diary-detail-api';
+import { diaryWriteApi } from '../../write/api/diaryWriteApi';
+import { diaryDetailApi } from '../api/diaryDetailApi';
 
 // 다이어리 생성하기
 export function useCreateDiary(): UseMutationResult<

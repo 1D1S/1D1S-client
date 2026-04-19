@@ -1,6 +1,6 @@
-import { useRandomChallenges } from '@feature/challenge/board/hooks/use-challenge-queries';
+import { useRandomChallenges } from '@feature/challenge/board/hooks/useChallengeQueries';
 import { type ChallengeListItem } from '@feature/challenge/board/type/challenge';
-import { useRandomDiaries } from '@feature/diary/board/hooks/use-diary-queries';
+import { useRandomDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
 import { normalizeApiError } from '@module/api/error';
 

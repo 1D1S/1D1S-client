@@ -1,6 +1,6 @@
 import { CATEGORY_OPTIONS } from '@constants/categories';
 
-import type { SignupFormValues, SignupTopic } from '../hooks/use-sign-up-form';
+import type { SignupFormValues, SignupTopic } from '../hooks/useSignUpForm';
 
 export type SignUpGenderValue = Exclude<SignupFormValues['gender'], undefined>;
 export type SignUpJobValue = Exclude<SignupFormValues['job'], undefined>;

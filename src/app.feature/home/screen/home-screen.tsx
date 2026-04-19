@@ -2,16 +2,16 @@
 
 import { BannerCarousel, PageWatermark } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
-import { HOME_MAIN_BANNERS } from '@constants/consts/home-data';
-import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
+import { HOME_MAIN_BANNERS } from '@constants/consts/homeData';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import HomeQuickActions from '../components/home-quick-actions';
 import HomeRandomChallengesSection from '../components/home-random-challenges-section';
 import HomeRandomDiariesSection from '../components/home-random-diaries-section';
-import { useHomeRandomData } from '../hooks/use-home-random-data';
-import { useHomeRandomDiaryLike } from '../hooks/use-home-random-diary-like';
+import { useHomeRandomData } from '../hooks/useHomeRandomData';
+import { useHomeRandomDiaryLike } from '../hooks/useHomeRandomDiaryLike';
 
 export default function HomeScreen(): React.ReactElement {
   const router = useRouter();

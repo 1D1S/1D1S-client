@@ -12,7 +12,7 @@ import {
   StepIndicator,
 } from '@1d1s/design-system';
 import { Form } from '@component/ui/form';
-import { MEMBER_QUERY_KEYS } from '@feature/member/consts/query-keys';
+import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import { notifyApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import { useQueryClient } from '@tanstack/react-query';
@@ -20,8 +20,8 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { authApi } from '../api/auth-api';
-import { SignupFormValues, useSignUpForm } from '../hooks/use-sign-up-form';
+import { authApi } from '../api/authApi';
+import { SignupFormValues, useSignUpForm } from '../hooks/useSignUpForm';
 import { Step1 } from './step-pages/step1';
 import { Step2 } from './step-pages/step2';
 

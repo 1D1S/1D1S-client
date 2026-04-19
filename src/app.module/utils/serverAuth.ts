@@ -1,6 +1,6 @@
 import { cookies, headers } from 'next/headers';
 
-import { ACCESS_TOKEN_COOKIE_CANDIDATES } from './token-cookie';
+import { ACCESS_TOKEN_COOKIE_CANDIDATES } from './tokenCookie';
 
 /**
  * 서버 컴포넌트에서 접근 토큰 쿠키 존재 여부를 확인한다.

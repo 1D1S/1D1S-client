@@ -1,7 +1,7 @@
 import { Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
 import { type ChallengeListItem } from '@feature/challenge/board/type/challenge';
-import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
+import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challengePeriod';
 import { ChallengeCard } from '@feature/challenge/shared/components/challenge-card';
 import React from 'react';
 
@@ -9,7 +9,7 @@ import {
   formatChallengeType,
   isChallengeEnded,
   isChallengeOngoing,
-} from '../utils/home-formatters';
+} from '../utils/homeFormatters';
 import HomeSectionHeader from './home-section-header';
 
 interface HomeRandomChallengesSectionProps {

@@ -2,7 +2,7 @@ import { ChallengeDetailScreen } from '@feature/challenge/detail/screen/challeng
 import {
   hasServerAccessToken,
   resolveLoginRequiredRedirect,
-} from '@module/utils/server-auth';
+} from '@module/utils/serverAuth';
 import { redirect } from 'next/navigation';
 import React from 'react';
 

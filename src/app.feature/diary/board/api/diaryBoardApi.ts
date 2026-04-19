@@ -5,7 +5,7 @@ import {
   requestData,
 } from '@module/api/request';
 
-import { resolveDiaryImageList } from '../../shared/utils/diary-image-url';
+import { resolveDiaryImageList } from '../../shared/utils/diaryImageUrl';
 import {
   DiaryItem,
   DiaryListParams,

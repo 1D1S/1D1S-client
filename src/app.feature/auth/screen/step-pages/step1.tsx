@@ -30,8 +30,8 @@ import { useFormContext } from 'react-hook-form';
 import {
   SIGN_UP_GENDER_OPTIONS,
   SIGN_UP_OCCUPATION_OPTIONS,
-} from '../../consts/sign-up-options';
-import { SignupFormValues } from '../../hooks/use-sign-up-form';
+} from '../../consts/signUpOptions';
+import { SignupFormValues } from '../../hooks/useSignUpForm';
 import type { GenderType } from '../../type/auth';
 
 const SIGN_UP_LEFT_VISUAL_SIZE = 200;

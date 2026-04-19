@@ -14,7 +14,7 @@ import { cn } from '@module/utils/cn';
 import React, { useState } from 'react';
 
 import { ReportType } from '../../board/type/diary';
-import { useCreateDiaryReport } from '../hooks/use-diary-mutations';
+import { useCreateDiaryReport } from '../hooks/useDiaryMutations';
 
 interface DiaryReportDialogProps {
   diaryId: number;

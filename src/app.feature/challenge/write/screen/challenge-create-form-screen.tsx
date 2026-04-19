@@ -9,14 +9,14 @@ import {
 } from '@1d1s/design-system';
 import { ChallengeCreateDialog } from '@feature/challenge/write/components/challenge-create-dialog';
 import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/components/challenge-create-success-dialog';
-import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
-import { useStepValidation } from '@feature/challenge/write/hooks/use-step-validation';
+import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/useChallengeCreateForm';
+import { useStepValidation } from '@feature/challenge/write/hooks/useStepValidation';
 import { add, format } from 'date-fns';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { CreateChallengeRequest } from '../../board/type/challenge';
-import { useCreateChallenge } from '../../detail/hooks/use-challenge-mutations';
+import { useCreateChallenge } from '../../detail/hooks/useChallengeMutations';
 import { Step1 } from './step-pages/step1';
 import { Step2 } from './step-pages/step2';
 import { Step3 } from './step-pages/step3';

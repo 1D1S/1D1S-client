@@ -1,10 +1,10 @@
-import { DIARY_QUERY_KEYS } from '@feature/diary/board/consts/query-keys';
+import { DIARY_QUERY_KEYS } from '@feature/diary/board/consts/queryKeys';
 import {
   type DiaryDetail,
   type DiaryItem,
 } from '@feature/diary/board/type/diary';
-import { diaryDetailApi } from '@feature/diary/detail/api/diary-detail-api';
-import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
+import { diaryDetailApi } from '@feature/diary/detail/api/diaryDetailApi';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { notifyApiError } from '@module/api/error';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';

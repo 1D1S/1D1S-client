@@ -5,7 +5,7 @@ import { Check } from 'lucide-react';
 import Image from 'next/image';
 import { useFormContext } from 'react-hook-form';
 
-import { ChallengeCreateFormValues } from '../hooks/use-challenge-create-form';
+import { ChallengeCreateFormValues } from '../hooks/useChallengeCreateForm';
 
 /**
  * ChallengeCreateDialogContent

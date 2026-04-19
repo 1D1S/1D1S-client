@@ -8,7 +8,7 @@ import {
   getDiaryAchievementRate,
   mapFeelingToEmotion,
   toRelativeDateLabel,
-} from '../utils/home-formatters';
+} from '../utils/homeFormatters';
 import HomeSectionHeader from './home-section-header';
 
 interface HomeRandomDiariesSectionProps {

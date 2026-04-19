@@ -1,7 +1,7 @@
 import { authStorage } from '@module/utils/auth';
 import { useSyncExternalStore } from 'react';
 
-import { useSidebar } from './use-member-queries';
+import { useSidebar } from './useMemberQueries';
 
 const NOOP_SUBSCRIBE = (): (() => void) => () => {};
 

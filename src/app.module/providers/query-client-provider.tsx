@@ -4,7 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React from 'react';
 
-import { getQueryClient } from '@/app.lib/get-query-client';
+import { getQueryClient } from '@/app.lib/getQueryClient';
 
 export function TanStackQueryProvider({
   children,

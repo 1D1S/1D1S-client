@@ -4,14 +4,14 @@ import { Button, Icon, Text, TextField } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
 import { ChallengeCard } from '@feature/challenge/shared/components/challenge-card';
-import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
-import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
+import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { useChallengeList } from '../hooks/use-challenge-queries';
-import { isInfiniteChallengeEndDate } from '../utils/challenge-period';
+import { useChallengeList } from '../hooks/useChallengeQueries';
+import { isInfiniteChallengeEndDate } from '../utils/challengePeriod';
 
 // async function fetchChallengeList() {
 //   const response = await apiClient('/')

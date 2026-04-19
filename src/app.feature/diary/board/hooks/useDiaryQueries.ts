@@ -6,9 +6,9 @@ import {
   UseQueryResult,
 } from '@tanstack/react-query';
 
-import { diaryDetailApi } from '../../detail/api/diary-detail-api';
-import { diaryBoardApi } from '../api/diary-board-api';
-import { DIARY_QUERY_KEYS } from '../consts/query-keys';
+import { diaryDetailApi } from '../../detail/api/diaryDetailApi';
+import { diaryBoardApi } from '../api/diaryBoardApi';
+import { DIARY_QUERY_KEYS } from '../consts/queryKeys';
 import {
   DiaryDetail,
   DiaryItem,

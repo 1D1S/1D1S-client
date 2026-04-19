@@ -17,15 +17,15 @@ import {
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
-import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
+import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { Feeling } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
-} from '@feature/diary/detail/hooks/use-diary-mutations';
+} from '@feature/diary/detail/hooks/useDiaryMutations';
 import { DiaryCard } from '@feature/diary/shared/components/diary-card';
-import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
-import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
+import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
+import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
 import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/diary-create-unavailable-dialog';
 import { normalizeApiError, notifyApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
@@ -46,20 +46,20 @@ import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { useIsLoggedIn } from '../../../member/hooks/use-is-logged-in';
+import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
 import {
   useChallengeCheckWriteDates,
   useChallengeDetail,
-} from '../../board/hooks/use-challenge-queries';
+} from '../../board/hooks/useChallengeQueries';
 import {
   ChallengeGoal,
   Participant,
   ParticipantStatus,
 } from '../../board/type/challenge';
-import { isChallengeOngoing } from '../../board/utils/challenge-period';
+import { isChallengeOngoing } from '../../board/utils/challengePeriod';
 import { ExpandableText } from '../components/expandable-text';
-import { CHALLENGE_DETAIL_WEEK_LABELS } from '../consts/challenge-detail-data';
-import { useChallengeDiaryList } from '../hooks/use-challenge-diary-queries';
+import { CHALLENGE_DETAIL_WEEK_LABELS } from '../consts/challengeDetailData';
+import { useChallengeDiaryList } from '../hooks/useChallengeDiaryQueries';
 import {
   useAcceptParticipant,
   useJoinChallenge,
@@ -69,8 +69,8 @@ import {
   useUnlikeChallenge,
   useUpdateChallenge,
   useUpdateParticipantGoal,
-} from '../hooks/use-challenge-mutations';
-import { ChallengeDiaryItem } from '../type/challenge-diary';
+} from '../hooks/useChallengeMutations';
+import { ChallengeDiaryItem } from '../type/challengeDiary';
 
 interface ChallengeDetailScreenProps {
   id: string;

@@ -6,9 +6,9 @@ import {
   UseQueryResult,
 } from '@tanstack/react-query';
 
-import { challengeDetailApi } from '../../detail/api/challenge-detail-api';
-import { challengeBoardApi } from '../api/challenge-board-api';
-import { CHALLENGE_QUERY_KEYS } from '../consts/query-keys';
+import { challengeDetailApi } from '../../detail/api/challengeDetailApi';
+import { challengeBoardApi } from '../api/challengeBoardApi';
+import { CHALLENGE_QUERY_KEYS } from '../consts/queryKeys';
 import {
   ChallengeDetailResponse,
   ChallengeListItem,

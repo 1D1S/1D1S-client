@@ -1,7 +1,7 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
-import { authApi } from '../api/auth-api';
-import { AUTH_QUERY_KEYS } from '../consts/query-keys';
+import { authApi } from '../api/authApi';
+import { AUTH_QUERY_KEYS } from '../consts/queryKeys';
 import { OAuthProvider, SocialLoginResponse } from '../type/auth';
 
 // 소셜 로그인 인가 코드로 로그인 처리

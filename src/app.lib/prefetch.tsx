@@ -5,7 +5,7 @@ import {
   QueryKey,
 } from '@tanstack/react-query';
 
-import { getQueryClient } from './get-query-client';
+import { getQueryClient } from './getQueryClient';
 
 interface PrefetchOptions<TData> {
   queryKey: QueryKey;

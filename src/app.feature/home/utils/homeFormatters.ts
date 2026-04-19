@@ -1,11 +1,11 @@
-import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
+import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { type Feeling } from '@feature/diary/board/type/diary';
-import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
+import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
 
 export {
   isChallengeEnded,
   isChallengeOngoing,
-} from '@feature/challenge/board/utils/challenge-period';
+} from '@feature/challenge/board/utils/challengePeriod';
 
 export type DiaryEmotion = 'happy' | 'soso' | 'sad';
 

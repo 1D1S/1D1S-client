@@ -4,8 +4,8 @@ import Image from 'next/image';
 import React from 'react';
 
 import type { Feeling } from '../../board/type/diary';
-import type { MoodOption } from '../consts/diary-create-data';
-import { DIARY_CREATE_MOOD_OPTIONS } from '../consts/diary-create-data';
+import type { MoodOption } from '../consts/diaryCreateData';
+import { DIARY_CREATE_MOOD_OPTIONS } from '../consts/diaryCreateData';
 
 function MoodOptionButton({
   option,

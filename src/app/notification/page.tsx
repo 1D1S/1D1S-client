@@ -1,7 +1,7 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
-import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';

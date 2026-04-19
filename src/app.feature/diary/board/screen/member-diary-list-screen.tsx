@@ -7,18 +7,18 @@ import { DiaryItem,Feeling  } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
-} from '@feature/diary/detail/hooks/use-diary-mutations';
+} from '@feature/diary/detail/hooks/useDiaryMutations';
 import { DiaryCard } from '@feature/diary/shared/components/diary-card';
-import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
-import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
-import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
+import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
+import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
-import { useMemberDiaries } from '../hooks/use-diary-queries';
+import { useMemberDiaries } from '../hooks/useDiaryQueries';
 
 type DiaryEmotion = 'happy' | 'soso' | 'sad';
 

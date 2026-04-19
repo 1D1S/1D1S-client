@@ -18,7 +18,7 @@ import {
 } from '@/app.component/ui/form';
 import { CATEGORY_OPTIONS } from '@/app.constants/categories';
 
-import { ChallengeCreateFormValues } from '../../hooks/use-challenge-create-form';
+import { ChallengeCreateFormValues } from '../../hooks/useChallengeCreateForm';
 
 export function Step1(): React.ReactElement {
   const { control, setValue, getValues } =

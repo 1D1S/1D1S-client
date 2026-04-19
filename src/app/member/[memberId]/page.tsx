@@ -3,16 +3,16 @@
 
 import { CircleAvatar, Streak, Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
-import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
+import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challengePeriod';
 import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/components/challenge-card';
-import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
+import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import {
   useLikeDiary,
   useUnlikeDiary,
-} from '@feature/diary/detail/hooks/use-diary-mutations';
+} from '@feature/diary/detail/hooks/useDiaryMutations';
 import { DiaryCard } from '@feature/diary/shared/components/diary-card';
-import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
-import { useMemberProfile } from '@feature/member/hooks/use-member-queries';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { useMemberProfile } from '@feature/member/hooks/useMemberQueries';
 import type {
   MyPageDiary,
   StreakCalendarItem,

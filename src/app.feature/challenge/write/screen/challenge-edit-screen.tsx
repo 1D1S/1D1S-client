@@ -11,11 +11,11 @@ import {
   ToggleGroupItem,
 } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
-import { useChallengeDetail } from '@feature/challenge/board/hooks/use-challenge-queries';
-import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-period';
-import { useUpdateChallenge } from '@feature/challenge/detail/hooks/use-challenge-mutations';
+import { useChallengeDetail } from '@feature/challenge/board/hooks/useChallengeQueries';
+import { isChallengeOngoing } from '@feature/challenge/board/utils/challengePeriod';
+import { useUpdateChallenge } from '@feature/challenge/detail/hooks/useChallengeMutations';
 import { MaxParticipantCountSelect } from '@feature/challenge/write/components/max-participant-count-select';
-import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { apiClient } from '@module/api/client';
 import { notifyApiError } from '@module/api/error';
 import { requestData } from '@module/api/request';

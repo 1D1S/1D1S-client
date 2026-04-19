@@ -1,4 +1,4 @@
-import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
+import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 

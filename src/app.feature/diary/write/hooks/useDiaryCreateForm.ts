@@ -1,5 +1,5 @@
-import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-period';
-import { useSidebar } from '@feature/member/hooks/use-member-queries';
+import { isChallengeOngoing } from '@feature/challenge/board/utils/challengePeriod';
+import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import type { SidebarChallenge } from '@feature/member/type/member';
 import { toStartOfDay } from '@module/utils/date';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import {
   useChallengeCheckWriteDates,
   useChallengeDetail,
-} from '../../../challenge/board/hooks/use-challenge-queries';
+} from '../../../challenge/board/hooks/useChallengeQueries';
 import type {
   ChallengeCategory,
   ChallengeGoal,
@@ -21,7 +21,7 @@ import type {
 import {
   useAllDiaries,
   useDiaryDetail,
-} from '../../board/hooks/use-diary-queries';
+} from '../../board/hooks/useDiaryQueries';
 import type {
   ChallengeSummary as DiaryChallengeSummary,
   DiaryDetail,
@@ -32,11 +32,11 @@ import {
   useCreateDiary,
   useUpdateDiary,
   useUploadDiaryImage,
-} from '../../detail/hooks/use-diary-mutations';
+} from '../../detail/hooks/useDiaryMutations';
 import {
   resolveDiaryImageList,
   resolveDiaryImageUrl,
-} from '../../shared/utils/diary-image-url';
+} from '../../shared/utils/diaryImageUrl';
 
 function parsePositiveInteger(value: string | null): number | null {
   if (!value) {

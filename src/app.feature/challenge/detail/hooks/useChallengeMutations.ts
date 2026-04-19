@@ -4,8 +4,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
-import { MEMBER_QUERY_KEYS } from '../../../member/consts/query-keys';
-import { CHALLENGE_QUERY_KEYS } from '../../board/consts/query-keys';
+import { MEMBER_QUERY_KEYS } from '../../../member/consts/queryKeys';
+import { CHALLENGE_QUERY_KEYS } from '../../board/consts/queryKeys';
 import {
   CreateChallengeRequest,
   CreateChallengeResponse,
@@ -13,8 +13,8 @@ import {
   JoinChallengeResponse,
   UpdateChallengeRequest,
 } from '../../board/type/challenge';
-import { challengeWriteApi } from '../../write/api/challenge-write-api';
-import { challengeDetailApi } from '../api/challenge-detail-api';
+import { challengeWriteApi } from '../../write/api/challengeWriteApi';
+import { challengeDetailApi } from '../api/challengeDetailApi';
 
 // 챌린지 생성하기
 export function useCreateChallenge(): UseMutationResult<

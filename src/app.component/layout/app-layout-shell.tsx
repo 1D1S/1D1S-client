@@ -7,7 +7,7 @@ import {
   type RightSidebarChallenge,
   type RightSidebarProps,
 } from '@1d1s/design-system';
-import { useSidebar } from '@feature/member/hooks/use-member-queries';
+import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';

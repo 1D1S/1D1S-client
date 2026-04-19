@@ -1,4 +1,4 @@
-import { clearCachedSidebar } from '@feature/member/hooks/use-member-queries';
+import { clearCachedSidebar } from '@feature/member/hooks/useMemberQueries';
 import { authStorage } from '@module/utils/auth';
 import {
   useMutation,
@@ -6,8 +6,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
-import { memberApi } from '../api/member-api';
-import { MEMBER_QUERY_KEYS } from '../consts/query-keys';
+import { memberApi } from '../api/memberApi';
+import { MEMBER_QUERY_KEYS } from '../consts/queryKeys';
 
 export function useUpdateNickname(): UseMutationResult<void, Error, string> {
   const queryClient = useQueryClient();

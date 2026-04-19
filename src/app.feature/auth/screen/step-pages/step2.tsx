@@ -5,8 +5,8 @@ import { FormField, FormItem, FormMessage } from '@component/ui/form';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { SIGN_UP_TOPIC_OPTIONS } from '../../consts/sign-up-options';
-import { SignupFormValues } from '../../hooks/use-sign-up-form';
+import { SIGN_UP_TOPIC_OPTIONS } from '../../consts/signUpOptions';
+import { SignupFormValues } from '../../hooks/useSignUpForm';
 
 const SIGN_UP_LEFT_VISUAL_SLOT_HEIGHT = 280;
 

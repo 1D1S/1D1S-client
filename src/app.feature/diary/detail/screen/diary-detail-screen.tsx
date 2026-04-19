@@ -13,7 +13,7 @@ import {
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
 import { ChallengeListItem } from '@feature/challenge/shared/components/challenge-list-item';
-import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
+import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
 import {
@@ -38,15 +38,15 @@ import React, {
   useState,
 } from 'react';
 
-import { useChallengeDetail } from '../../../challenge/board/hooks/use-challenge-queries';
+import { useChallengeDetail } from '../../../challenge/board/hooks/useChallengeQueries';
 import {
   ChallengeDetailResponse,
   ChallengeGoal,
 } from '../../../challenge/board/type/challenge';
-import { isInfiniteChallengeEndDate } from '../../../challenge/board/utils/challenge-period';
-import { useIsLoggedIn } from '../../../member/hooks/use-is-logged-in';
-import { useSidebar } from '../../../member/hooks/use-member-queries';
-import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
+import { isInfiniteChallengeEndDate } from '../../../challenge/board/utils/challengePeriod';
+import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
+import { useSidebar } from '../../../member/hooks/useMemberQueries';
+import { useDiaryDetail } from '../../board/hooks/useDiaryQueries';
 import {
   AuthorInfo,
   DiaryDetail,
@@ -56,22 +56,22 @@ import {
 import {
   resolveDiaryImageList,
   resolveDiaryImageUrl,
-} from '../../shared/utils/diary-image-url';
+} from '../../shared/utils/diaryImageUrl';
 import { DiaryReportDialog } from '../components/diary-report-dialog';
 import {
   useCreateCommentReply,
   useCreateDiaryComment,
   useDeleteComment,
-} from '../hooks/use-diary-comment-mutations';
+} from '../hooks/useDiaryCommentMutations';
 import {
   useCommentRepliesMap,
   useDiaryComments,
-} from '../hooks/use-diary-comment-queries';
+} from '../hooks/useDiaryCommentQueries';
 import {
   useDeleteDiary,
   useLikeDiary,
   useUnlikeDiary,
-} from '../hooks/use-diary-mutations';
+} from '../hooks/useDiaryMutations';
 import { DiaryComment } from '../type/comment';
 
 interface ChecklistItem {

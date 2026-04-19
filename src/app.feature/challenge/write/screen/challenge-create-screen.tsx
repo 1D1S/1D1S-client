@@ -2,7 +2,7 @@
 
 import { StepIndicator, Text } from '@1d1s/design-system';
 import { Form } from '@component/ui/form';
-import { useChallengeCreateForm } from '@feature/challenge/write/hooks/use-challenge-create-form';
+import { useChallengeCreateForm } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { useState } from 'react';
 
 import { ChallengeCreateFormScreen } from './challenge-create-form-screen';

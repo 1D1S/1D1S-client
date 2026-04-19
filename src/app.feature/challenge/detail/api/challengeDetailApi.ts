@@ -6,7 +6,7 @@ import {
   JoinChallengeRequest,
   JoinChallengeResponse,
 } from '../../board/type/challenge';
-import { ChallengeDiaryListResponse } from '../type/challenge-diary';
+import { ChallengeDiaryListResponse } from '../type/challengeDiary';
 
 export const challengeDetailApi = {
   // 챌린지 상세 조회

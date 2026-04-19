@@ -4,8 +4,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
-import { DIARY_QUERY_KEYS } from '../../board/consts/query-keys';
-import { diaryCommentApi } from '../api/diary-comment-api';
+import { DIARY_QUERY_KEYS } from '../../board/consts/queryKeys';
+import { diaryCommentApi } from '../api/diaryCommentApi';
 import { CreateCommentRequest } from '../type/comment';
 
 function invalidateDiaryCommentQueries(

@@ -1,4 +1,4 @@
-import { clearCachedSidebar } from '@feature/member/hooks/use-member-queries';
+import { clearCachedSidebar } from '@feature/member/hooks/useMemberQueries';
 import { authStorage } from '@module/utils/auth';
 import {
   useMutation,
@@ -6,7 +6,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
-import { authApi } from '../api/auth-api';
+import { authApi } from '../api/authApi';
 import { LogoutResponse } from '../type/auth';
 
 // 로그아웃

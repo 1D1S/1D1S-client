@@ -4,7 +4,7 @@ import { Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
 import { DiaryCard } from '@feature/diary/shared/components/diary-card';
-import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
 import { motion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -13,12 +13,12 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   useLikeDiary,
   useUnlikeDiary,
-} from '../../detail/hooks/use-diary-mutations';
+} from '../../detail/hooks/useDiaryMutations';
 import {
   getDateTimestamp,
   getRelativeDiaryDateLabel,
-} from '../../shared/utils/diary-relative-time';
-import { useDiaryList } from '../hooks/use-diary-queries';
+} from '../../shared/utils/diaryRelativeTime';
+import { useDiaryList } from '../hooks/useDiaryQueries';
 import { type DiaryItem, Feeling } from '../type/diary';
 
 type SortMode = 'latest' | 'likes';

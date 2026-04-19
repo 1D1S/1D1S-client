@@ -4,8 +4,8 @@ import { requestData } from '@module/api/request';
 import { authStorage } from '@module/utils/auth';
 import { isServer, useQuery, UseQueryResult } from '@tanstack/react-query';
 
-import { memberApi } from '../api/member-api';
-import { MEMBER_QUERY_KEYS } from '../consts/query-keys';
+import { memberApi } from '../api/memberApi';
+import { MEMBER_QUERY_KEYS } from '../consts/queryKeys';
 import type { MemberProfileData, MyPageData, SidebarData } from '../type/member';
 
 const SIDEBAR_CACHE_KEY = '1d1s:sidebar';

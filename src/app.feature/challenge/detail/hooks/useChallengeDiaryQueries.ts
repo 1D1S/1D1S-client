@@ -1,8 +1,8 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
-import { CHALLENGE_QUERY_KEYS } from '../../board/consts/query-keys';
-import { challengeDetailApi } from '../api/challenge-detail-api';
-import { ChallengeDiaryListResponse } from '../type/challenge-diary';
+import { CHALLENGE_QUERY_KEYS } from '../../board/consts/queryKeys';
+import { challengeDetailApi } from '../api/challengeDetailApi';
+import { ChallengeDiaryListResponse } from '../type/challengeDiary';
 
 export function useChallengeDiaryList(
   challengeId: number,

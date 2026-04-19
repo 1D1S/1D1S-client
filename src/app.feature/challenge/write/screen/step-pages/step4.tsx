@@ -8,7 +8,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@1d1s/design-system';
-import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
+import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import * as Popover from '@radix-ui/react-popover';
 import { format } from 'date-fns';
 import { CalendarDays, Infinity, Timer } from 'lucide-react';

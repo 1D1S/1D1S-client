@@ -5,7 +5,7 @@ import {
   FormMessage,
 } from '@component/ui/form';
 import { MaxParticipantCountSelect } from '@feature/challenge/write/components/max-participant-count-select';
-import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/use-challenge-create-form';
+import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { cn } from '@module/utils/cn';
 import { User, Users } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
