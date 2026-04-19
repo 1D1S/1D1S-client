@@ -70,19 +70,19 @@ const config: KnipConfig = {
   // 현 시점 baseline (TECH_DEBT — Minor). 새로 추가된 것만 차단된다.
   // 정리 시 이 리스트에서 하나씩 제거.
   ignore: [
-    'src/app.lib/prefetch.tsx',
-    'src/app.component/ui/scroll-area.tsx',
-    'src/app.constants/consts/mypage-data.ts',
-    'src/app.feature/challenge/board/consts/challenge-board-data.ts',
-    'src/app.feature/challenge/detail/components/challenge-goal-toggle.tsx',
-    'src/app.feature/challenge/write/components/challenge-goal-buttons.tsx',
-    'src/app.feature/challenge/write/components/challenge-toggle.tsx',
-    'src/app.feature/challenge/write/components/step-progress.tsx',
-    'src/app.feature/diary/detail/consts/diary-detail-data.ts',
-    'src/app.feature/diary/shared/components/diary-list-item.tsx',
-    'src/app.feature/diary/write/components/bottom-expandable-panel.tsx',
-    'src/app.feature/diary/write/components/diary-content-field.tsx',
-    'src/app.feature/diary/write/components/mood-toggle.tsx',
+    'src/app.lib/Prefetch.tsx',
+    'src/app.component/ui/ScrollArea.tsx',
+    'src/app.constants/consts/mypageData.ts',
+    'src/app.feature/challenge/board/consts/challengeBoardData.ts',
+    'src/app.feature/challenge/detail/components/ChallengeGoalToggle.tsx',
+    'src/app.feature/challenge/write/components/ChallengeGoalButtons.tsx',
+    'src/app.feature/challenge/write/components/ChallengeToggle.tsx',
+    'src/app.feature/challenge/write/components/StepProgress.tsx',
+    'src/app.feature/diary/detail/consts/diaryDetailData.ts',
+    'src/app.feature/diary/shared/components/DiaryListItem.tsx',
+    'src/app.feature/diary/write/components/BottomExpandablePanel.tsx',
+    'src/app.feature/diary/write/components/DiaryContentField.tsx',
+    'src/app.feature/diary/write/components/MoodToggle.tsx',
   ],
 
   // Next.js middleware 의 `export const config` 는 프레임워크 규약
