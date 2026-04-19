@@ -1,4 +1,4 @@
-import { Checkbox, Text } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import React from 'react';
 
 import type { Feeling } from '../../board/type/diary';
@@ -12,8 +12,6 @@ interface DiaryCreateFinishSectionProps {
   challengeStartDate?: string;
   selectedMood: Feeling;
   onMoodChange(mood: Feeling): void;
-  isPublic: boolean;
-  onPublicChange(value: boolean): void;
 }
 
 export function DiaryCreateFinishSection({
@@ -23,8 +21,6 @@ export function DiaryCreateFinishSection({
   challengeStartDate,
   selectedMood,
   onMoodChange,
-  isPublic,
-  onPublicChange,
 }: DiaryCreateFinishSectionProps): React.ReactElement {
   return (
     <section className="border-t border-gray-200 pt-8">
@@ -58,19 +54,6 @@ export function DiaryCreateFinishSection({
             onSelectMood={onMoodChange}
           />
         </div>
-      </div>
-
-      <div className="mt-6 flex items-center gap-2">
-        <Checkbox
-          id="isPublic"
-          checked={isPublic}
-          onCheckedChange={(checked) => onPublicChange(Boolean(checked))}
-        />
-        <label htmlFor="isPublic">
-          <Text size="body2" weight="medium" className="text-gray-700">
-            일지를 공개합니다
-          </Text>
-        </label>
       </div>
     </section>
   );

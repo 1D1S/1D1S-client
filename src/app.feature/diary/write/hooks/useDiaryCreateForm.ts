@@ -281,8 +281,6 @@ interface UseDiaryCreateFormResult {
   setSelectedMood: Dispatch<SetStateAction<Feeling>>;
   achievedDate: Date | undefined;
   setAchievedDate: Dispatch<SetStateAction<Date | undefined>>;
-  isPublic: boolean;
-  setIsPublic: Dispatch<SetStateAction<boolean>>;
   selectedChallenge: ChallengeListItem | null;
   memberChallenges: ChallengeListItem[];
   isMemberChallengesLoading: boolean;
@@ -329,7 +327,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   const [achievedDate, setAchievedDate] = useState<Date | undefined>(
     new Date()
   );
-  const [isPublic, setIsPublic] = useState(true);
   const [selectedChallengeId, setSelectedChallengeId] = useState<number | null>(
     requestedChallengeId
   );
@@ -528,7 +525,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       setTitle(existingDiary.title ?? '');
       setContent(existingDiary.content ?? '');
       setSelectedMood(diaryInfo?.feeling ?? 'NORMAL');
-      setIsPublic(existingDiary.isPublic ?? true);
       setAchievedDate(nextAchievedDate);
       setSelectedChallengeId(existingDiary.challenge?.challengeId ?? null);
       const achievedGoalIds =
@@ -699,7 +695,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
             title: trimmedTitle,
             content,
             feeling: selectedMood,
-            isPublic,
+            isPublic: true,
             achievedDate: achievedDate ? formatDate(achievedDate) : '',
             achievedGoalIds,
           },
@@ -722,7 +718,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         title: trimmedTitle,
         content,
         feeling: selectedMood,
-        isPublic,
+        isPublic: true,
         achievedDate: achievedDate ? formatDate(achievedDate) : '',
         achievedGoalIds,
       });
@@ -746,7 +742,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     createDiary,
     disabledAchievedDateKeySet,
     isEditMode,
-    isPublic,
     isSubmitting,
     router,
     requestedDiaryId,
@@ -775,8 +770,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     setSelectedMood,
     achievedDate,
     setAchievedDate,
-    isPublic,
-    setIsPublic,
     selectedChallenge,
     memberChallenges: ongoingMemberChallenges,
     isMemberChallengesLoading,
