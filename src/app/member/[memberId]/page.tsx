@@ -3,21 +3,22 @@
 
 import { CircleAvatar, Streak, Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
-import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
-import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/components/challenge-card';
-import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
+import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challengePeriod';
+import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/components/ChallengeCard';
+import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import {
   useLikeDiary,
   useUnlikeDiary,
-} from '@feature/diary/detail/hooks/use-diary-mutations';
-import { DiaryCard } from '@feature/diary/shared/components/diary-card';
-import { useMemberProfile } from '@feature/member/hooks/use-member-queries';
+} from '@feature/diary/detail/hooks/useDiaryMutations';
+import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { useMemberProfile } from '@feature/member/hooks/useMemberQueries';
 import type {
   MyPageDiary,
   StreakCalendarItem,
 } from '@feature/member/type/member';
 import { normalizeApiError } from '@module/api/error';
-import { authStorage } from '@module/utils/auth';
+import { cn } from '@module/utils/cn';
 import {
   CheckCircle2,
   FileText,
@@ -55,6 +56,7 @@ export default function MemberProfilePage(): React.ReactElement {
   const params = useParams();
   const memberId = Number(params.memberId);
   const router = useRouter();
+  const isLoggedIn = useIsLoggedIn();
   const { data, isLoading, isError, error } = useMemberProfile(memberId);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
@@ -90,7 +92,7 @@ export default function MemberProfilePage(): React.ReactElement {
   const { nickname, profileUrl, streak, challengeList, diaryList } = data;
 
   const handleDiaryLikeToggle = (diary: MyPageDiary): void => {
-    if (!authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       return;
     }
     if (likeDiary.isPending || unlikeDiary.isPending) {
@@ -335,7 +337,10 @@ function StatCard({
     <article className="rounded-3 border border-gray-200 bg-white p-4">
       <div className="flex items-center gap-2.5">
         <span
-          className={`flex h-5 w-5 shrink-0 items-center justify-center ${iconTone}`}
+          className={cn(
+            'flex h-5 w-5 shrink-0 items-center justify-center',
+            iconTone,
+          )}
         >
           {icon}
         </span>

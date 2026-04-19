@@ -119,7 +119,7 @@
   발생하면 동일 조건에서 반복 리다이렉트가 발생합니다. 세션 만료 사용자는
   실제로 페이지에 진입하지 못할 수 있습니다.
 
-- [P2] Query Key 불일치로 캐시 무효화 누락 — `src/app.feature/diary/write/hooks/use-diary-mutations.ts:28`
+- [P2] Query Key 불일치로 캐시 무효화 누락 — `src/app.feature/diary/write/hooks/useDiaryMutations.ts:28`
   `invalidateQueries`에 사용된 key가 `DIARY_QUERY_KEYS.lists()`와
   다릅니다. 일지 작성 후 목록이 갱신되지 않아 사용자가 새로고침을
   해야 할 수 있습니다.

@@ -1,4 +1,4 @@
-import DiaryCreateScreen from '@feature/diary/write/screen/diary-create-screen';
+import DiaryCreateScreen from '@feature/diary/write/screen/DiaryCreateScreen';
 import { Suspense } from 'react';
 
 export default function DiaryCreatePage(): React.ReactElement {

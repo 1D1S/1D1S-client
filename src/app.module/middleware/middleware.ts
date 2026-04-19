@@ -6,7 +6,7 @@ import { loggingMiddleware } from './logging';
 import { redirectMiddleware } from './redirect';
 import { securityMiddleware } from './security';
 
-export function middleware(req: NextRequest): NextResponse {
+export function proxy(req: NextRequest): NextResponse {
   // 1. 로깅 시작
   const start = loggingMiddleware(req);
 

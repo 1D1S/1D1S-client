@@ -1,25 +1,20 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
-import { authStorage } from '@module/utils/auth';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useSyncExternalStore } from 'react';
+import React, { useEffect } from 'react';
 
 export default function NotificationPage(): React.ReactElement | null {
   const router = useRouter();
-  const hasMounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
-  const isLoggedIn = hasMounted && authStorage.hasTokens();
+  const isLoggedIn = useIsLoggedIn();
 
   useEffect(() => {
-    if (hasMounted && !authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       router.replace('/login');
     }
-  }, [hasMounted, router]);
+  }, [isLoggedIn, router]);
 
   if (!isLoggedIn) {
     return null;

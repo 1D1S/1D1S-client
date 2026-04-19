@@ -3,20 +3,21 @@
 
 import { CircleAvatar, Streak, Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
-import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
-import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/components/challenge-card';
-import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
-import { useMyDiaries } from '@feature/diary/board/hooks/use-diary-queries';
+import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challengePeriod';
+import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/components/ChallengeCard';
+import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
+import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
 import { DiaryItem } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
-} from '@feature/diary/detail/hooks/use-diary-mutations';
-import { DiaryCard } from '@feature/diary/shared/components/diary-card';
-import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
-import { useMyPage } from '@feature/member/hooks/use-member-queries';
+} from '@feature/diary/detail/hooks/useDiaryMutations';
+import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
+import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import type { StreakCalendarItem } from '@feature/member/type/member';
-import { authStorage } from '@module/utils/auth';
+import { cn } from '@module/utils/cn';
 import {
   CheckCircle2,
   FileText,
@@ -29,7 +30,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useSyncExternalStore } from 'react';
+import React, { useEffect } from 'react';
 
 type DiaryEmotion = 'happy' | 'soso' | 'sad';
 type Feeling = 'HAPPY' | 'NORMAL' | 'SAD' | 'NONE';
@@ -108,18 +109,13 @@ function getLongestGoalStreakSummary(
 
 export default function MyPage(): React.ReactElement | null {
   const router = useRouter();
-  const hasMounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
-  const isLoggedIn = hasMounted && authStorage.hasTokens();
+  const isLoggedIn = useIsLoggedIn();
 
   useEffect(() => {
-    if (hasMounted && !authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       router.replace('/login');
     }
-  }, [hasMounted, router]);
+  }, [isLoggedIn, router]);
 
   if (!isLoggedIn) {
     return null;
@@ -130,6 +126,7 @@ export default function MyPage(): React.ReactElement | null {
 
 function MyPageContent(): React.ReactElement {
   const router = useRouter();
+  const isLoggedIn = useIsLoggedIn();
   const { data, isLoading } = useMyPage();
   const { data: myDiariesData } = useMyDiaries(10);
   const myDiaries = myDiariesData?.items ?? [];
@@ -156,7 +153,7 @@ function MyPageContent(): React.ReactElement {
     id: number;
     isLiked: boolean;
   }): void => {
-    if (!authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       return;
     }
     if (likeDiary.isPending || unlikeDiary.isPending) {
@@ -448,7 +445,10 @@ function StatCard({
     <article className="rounded-3 border border-gray-200 bg-white p-4">
       <div className="flex items-center gap-2.5">
         <span
-          className={`flex h-5 w-5 shrink-0 items-center justify-center ${iconTone}`}
+          className={cn(
+            'flex h-5 w-5 shrink-0 items-center justify-center',
+            iconTone,
+          )}
         >
           {icon}
         </span>
@@ -500,7 +500,10 @@ function QuickActionItem({
     >
       <div className="flex items-center gap-3">
         <span
-          className={`flex h-10 w-10 items-center justify-center rounded-full ${iconClass}`}
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-full',
+            iconClass,
+          )}
         >
           {icon}
         </span>

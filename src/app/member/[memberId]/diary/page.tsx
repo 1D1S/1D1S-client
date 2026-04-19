@@ -1,6 +1,6 @@
 'use client';
 
-import { MemberDiaryListScreen } from '@feature/diary/board/screen/member-diary-list-screen';
+import { MemberDiaryListScreen } from '@feature/diary/board/screen/MemberDiaryListScreen';
 import { useParams } from 'next/navigation';
 
 export default function MemberDiaryListPage(): React.ReactElement {

@@ -1,7 +1,7 @@
 // app/layout.tsx
 import '@/app.styles/globals.css';
 
-import AppLayoutShell from '@component/layout/app-layout-shell';
+import AppLayoutShell from '@component/layout/AppLayoutShell';
 import { AppProviders } from '@module/providers';
 import { cn } from '@module/utils/cn';
 import type { Metadata, Viewport } from 'next';
