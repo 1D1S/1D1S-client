@@ -1,6 +1,6 @@
-import { middleware } from '@module/middleware/middleware';
+import { proxy } from '@module/middleware/middleware';
 
-export { middleware };
+export { proxy };
 
 export const config = {
   matcher: [
