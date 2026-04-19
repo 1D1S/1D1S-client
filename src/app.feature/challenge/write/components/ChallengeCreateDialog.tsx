@@ -46,7 +46,7 @@ export function ChallengeCreateDialog({
             size="heading2"
             weight="bold"
             className="block text-center text-black"
-            id="ChallengeCreateDialog"
+            id="challenge-create-dialog"
           >
             위와 같이 챌린지를 만드시겠습니까?
           </Text>
