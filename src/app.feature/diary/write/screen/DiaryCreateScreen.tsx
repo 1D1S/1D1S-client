@@ -23,8 +23,6 @@ export default function DiaryCreateScreen(): React.ReactElement {
     setSelectedMood,
     achievedDate,
     handleAchievedDateChange,
-    isPublic,
-    setIsPublic,
     selectedChallenge,
     memberChallenges,
     isMemberChallengesLoading,
@@ -126,8 +124,6 @@ export default function DiaryCreateScreen(): React.ReactElement {
             }
             selectedMood={selectedMood}
             onMoodChange={setSelectedMood}
-            isPublic={isPublic}
-            onPublicChange={setIsPublic}
           />
         </div>
       </div>

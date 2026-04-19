@@ -1,11 +1,19 @@
 @source "../../node_modules/@1d1s/design-system";
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import 'highlight.js/styles/github.css';
 @import './colors.css';
 @import './typography.css';
 @import './shape.css';
 @import './shadow.css';
 @import './animation.css';
+
+/* highlight.js github 테마는 .hljs에 흰 배경/패딩을 강제한다.
+   배경과 패딩은 코드 블록 wrapper가 제어하도록 토큰 색상만 남긴다. */
+.hljs {
+  background: transparent;
+  padding: 0;
+}
 
 @custom-variant dark (&:is(.dark *));
 

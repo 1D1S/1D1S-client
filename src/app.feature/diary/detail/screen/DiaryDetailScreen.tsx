@@ -6,7 +6,6 @@ import {
   CircleAvatar,
   type CommentNode,
   CommentThread,
-  Tag,
   Text,
   TextArea,
 } from '@1d1s/design-system';
@@ -53,6 +52,7 @@ import {
   DiaryGoalStatus,
   Feeling,
 } from '../../board/type/diary';
+import { DiaryContentRenderer } from '../../shared/components/DiaryContentRenderer';
 import {
   resolveDiaryImageList,
   resolveDiaryImageUrl,
@@ -124,7 +124,6 @@ interface DiaryDetailViewData {
   contentHtml: string;
   hasContentHtml: boolean;
   contentThumbnailUrl: string | null;
-  tags: string[];
   authorName: string | null;
   authorId: number | null;
   authorProfileImage: string | null;
@@ -406,9 +405,6 @@ function mapDiaryToViewData(
     contentHtml: diary.content ?? '',
     hasContentHtml: hasVisibleHtmlContent(diary.content ?? ''),
     contentThumbnailUrl,
-    tags: [diary.challenge?.category, diaryInfo?.feeling]
-      .filter((tag): tag is string => Boolean(tag))
-      .map((tag) => getCategoryLabel(tag) || tag),
     authorName: authorInfo?.nickname ?? null,
     authorId: authorInfo?.id ?? null,
     authorProfileImage: authorInfo?.profileImage ?? null,
@@ -827,10 +823,7 @@ function DiaryDetailView({
               )}
             >
               {diaryData.hasContentHtml ? (
-                <div
-                  className="prose prose-sm max-w-none text-gray-700 [&_img]:max-h-80 [&_img]:rounded-lg [&_li]:mb-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
-                  dangerouslySetInnerHTML={{ __html: diaryData.contentHtml }}
-                />
+                <DiaryContentRenderer html={diaryData.contentHtml} />
               ) : (
                 <Text size="body2" weight="regular" className="text-gray-500">
                   작성된 내용이 없습니다.
@@ -884,15 +877,6 @@ function DiaryDetailView({
               ) : null}
             </div>
 
-            {diaryData.tags.length > 0 ? (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {diaryData.tags.map((tag) => (
-                  <Tag key={tag} size="caption3" weight="medium">
-                    #{tag}
-                  </Tag>
-                ))}
-              </div>
-            ) : null}
           </div>
         </section>
 
