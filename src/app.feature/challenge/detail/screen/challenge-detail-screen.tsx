@@ -28,7 +28,6 @@ import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-ur
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
 import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/diary-create-unavailable-dialog';
 import { normalizeApiError, notifyApiError } from '@module/api/error';
-import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import {
   CalendarDays,
@@ -44,9 +43,10 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useMemo, useState, useSyncExternalStore } from 'react';
+import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useIsLoggedIn } from '../../../member/hooks/use-is-logged-in';
 import {
   useChallengeCheckWriteDates,
   useChallengeDetail,
@@ -358,13 +358,9 @@ export function ChallengeDetailScreen({
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
 
-  const hasMounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
+  const isLoggedIn = useIsLoggedIn();
   const [dismissed, setDismissed] = useState(false);
-  const showAuthDialog = hasMounted && !authStorage.hasTokens() && !dismissed;
+  const showAuthDialog = !isLoggedIn && !dismissed;
   const [showDiaryLikeDialog, setShowDiaryLikeDialog] = useState(false);
   const [showCreateUnavailableDialog, setShowCreateUnavailableDialog] =
     useState(false);
@@ -648,7 +644,7 @@ export function ChallengeDetailScreen({
   };
 
   const handleDiaryLikeToggle = (diary: ChallengeDiaryItem): void => {
-    if (!authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       setShowDiaryLikeDialog(true);
       return;
     }

@@ -1,24 +1,19 @@
 'use client';
 
 import ChallengeCreateScreen from '@feature/challenge/write/screen/challenge-create-screen';
-import { authStorage } from '@module/utils/auth';
+import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useSyncExternalStore } from 'react';
+import React, { useEffect } from 'react';
 
 export default function ChallengeCreatePage(): React.ReactElement | null {
   const router = useRouter();
-  const hasMounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
-  const isLoggedIn = hasMounted && authStorage.hasTokens();
+  const isLoggedIn = useIsLoggedIn();
 
   useEffect(() => {
-    if (hasMounted && !authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       router.replace('/login');
     }
-  }, [hasMounted, router]);
+  }, [isLoggedIn, router]);
 
   if (!isLoggedIn) {
     return null;

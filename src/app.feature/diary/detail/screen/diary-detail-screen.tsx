@@ -15,7 +15,6 @@ import { getCategoryLabel } from '@constants/categories';
 import { ChallengeListItem } from '@feature/challenge/shared/components/challenge-list-item';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { normalizeApiError } from '@module/api/error';
-import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import {
   CalendarDays,
@@ -37,7 +36,6 @@ import React, {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from 'react';
 
 import { useChallengeDetail } from '../../../challenge/board/hooks/use-challenge-queries';
@@ -46,6 +44,7 @@ import {
   ChallengeGoal,
 } from '../../../challenge/board/type/challenge';
 import { isInfiniteChallengeEndDate } from '../../../challenge/board/utils/challenge-period';
+import { useIsLoggedIn } from '../../../member/hooks/use-is-logged-in';
 import { useSidebar } from '../../../member/hooks/use-member-queries';
 import { useDiaryDetail } from '../../board/hooks/use-diary-queries';
 import {
@@ -433,6 +432,7 @@ function DiaryDetailView({
 }): React.ReactElement {
   const router = useRouter();
   const { data: sidebarData } = useSidebar();
+  const isLoggedIn = useIsLoggedIn();
   const currentMemberId = useMemo(
     () => resolveSidebarMemberId(sidebarData),
     [sidebarData]
@@ -531,7 +531,7 @@ function DiaryDetailView({
   }, [commentItems, commentRepliesMap, commentsData?.pageInfo.totalElements]);
 
   const requireAuthAction = (action: () => void): void => {
-    if (!authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       onRequireLogin();
       return;
     }
@@ -967,14 +967,10 @@ function DiaryDetailView({
 
 export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
   const router = useRouter();
-  const hasMounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
+  const isLoggedIn = useIsLoggedIn();
   const [dismissed, setDismissed] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const showAuthDialog = hasMounted && !authStorage.hasTokens() && !dismissed;
+  const showAuthDialog = !isLoggedIn && !dismissed;
   const safeDiaryId = Number.isFinite(id) && id > 0 ? id : 0;
   const deleteDiary = useDeleteDiary();
   const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId, {

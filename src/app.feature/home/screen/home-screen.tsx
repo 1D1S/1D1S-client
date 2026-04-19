@@ -3,9 +3,9 @@
 import { BannerCarousel, PageWatermark } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { HOME_MAIN_BANNERS } from '@constants/consts/home-data';
-import { authStorage } from '@module/utils/auth';
+import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import HomeQuickActions from '../components/home-quick-actions';
 import HomeRandomChallengesSection from '../components/home-random-challenges-section';
@@ -18,24 +18,32 @@ export default function HomeScreen(): React.ReactElement {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isLoginRequired = searchParams.get('loginRequired') === 'true';
+  const isLoggedIn = useIsLoggedIn();
   const { isLikePending, showLoginDialog, setShowLoginDialog, onLikeToggle } =
     useHomeRandomDiaryLike();
   const loginDialogDescription = isLoginRequired
     ? '로그인 후 이용할 수 있습니다.'
     : undefined;
 
+  const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
+  if (isLoginRequired !== prevIsLoginRequired) {
+    setPrevIsLoginRequired(isLoginRequired);
+    if (isLoginRequired) {
+      setShowLoginDialog(true);
+    }
+  }
+
   useEffect(() => {
     if (!isLoginRequired) {
       return;
     }
-    setShowLoginDialog(true);
     const params = new URLSearchParams(searchParams.toString());
     params.delete('loginRequired');
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, {
       scroll: false,
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isLoginRequired, pathname, router, searchParams]);
 
   const {
     randomChallenges,
@@ -93,7 +101,7 @@ export default function HomeScreen(): React.ReactElement {
           errorMessage={challengesErrorMessage}
           onMoreClick={() => router.push('/challenge')}
           onChallengeClick={(challengeId) => {
-            if (!authStorage.hasTokens()) {
+            if (!isLoggedIn) {
               setShowLoginDialog(true);
               return;
             }
@@ -112,7 +120,7 @@ export default function HomeScreen(): React.ReactElement {
           isLikePending={isLikePending}
           onMoreClick={() => router.push('/diary')}
           onDiaryClick={(diaryId) => {
-            if (!authStorage.hasTokens()) {
+            if (!isLoggedIn) {
               setShowLoginDialog(true);
               return;
             }

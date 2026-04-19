@@ -15,10 +15,10 @@ import { useChallengeDetail } from '@feature/challenge/board/hooks/use-challenge
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challenge-period';
 import { useUpdateChallenge } from '@feature/challenge/detail/hooks/use-challenge-mutations';
 import { MaxParticipantCountSelect } from '@feature/challenge/write/components/max-participant-count-select';
+import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
 import { apiClient } from '@module/api/client';
 import { notifyApiError } from '@module/api/error';
 import { requestData } from '@module/api/request';
-import { authStorage } from '@module/utils/auth';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -43,6 +43,7 @@ export default function ChallengeEditScreen({
   id,
 }: ChallengeEditScreenProps): React.ReactElement {
   const router = useRouter();
+  const isLoggedIn = useIsLoggedIn();
   const challengeId = Number(id);
   const { data, isLoading, isError } = useChallengeDetail(challengeId);
   const updateChallenge = useUpdateChallenge();
@@ -147,7 +148,7 @@ export default function ChallengeEditScreen({
   };
 
   const handleSubmit = (): void => {
-    if (!authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       router.replace('/login');
       return;
     }

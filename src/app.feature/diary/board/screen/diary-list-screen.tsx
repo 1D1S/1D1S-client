@@ -4,8 +4,8 @@ import { Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
 import { DiaryCard } from '@feature/diary/shared/components/diary-card';
+import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
 import { normalizeApiError } from '@module/api/error';
-import { authStorage } from '@module/utils/auth';
 import { motion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -136,13 +136,21 @@ export default function DiaryListScreen(): React.ReactElement {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isLoginRequired = searchParams.get('loginRequired') === 'true';
+  const isLoggedIn = useIsLoggedIn();
   const [sortMode] = useState<SortMode>('latest');
-  const [showLoginDialog, setShowLoginDialog] = useState(isLoginRequired);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [loginDialogDescription, setLoginDialogDescription] = useState(
-    isLoginRequired
-      ? '일지 상세는 로그인 후 이용할 수 있습니다.'
-      : '로그인 후 이용할 수 있습니다.'
+    '로그인 후 이용할 수 있습니다.'
   );
+
+  const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
+  if (isLoginRequired !== prevIsLoginRequired) {
+    setPrevIsLoginRequired(isLoginRequired);
+    if (isLoginRequired) {
+      setShowLoginDialog(true);
+      setLoginDialogDescription('일지 상세는 로그인 후 이용할 수 있습니다.');
+    }
+  }
 
   useEffect(() => {
     if (!isLoginRequired) {
@@ -154,7 +162,7 @@ export default function DiaryListScreen(): React.ReactElement {
     router.replace(query ? `${pathname}?${query}` : pathname, {
       scroll: false,
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isLoginRequired, pathname, router, searchParams]);
 
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
@@ -194,7 +202,7 @@ export default function DiaryListScreen(): React.ReactElement {
   const hasLoadedDiaries = sortedDiaries.length > 0;
 
   const handleCardClick = (id: number): void => {
-    if (!authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       setLoginDialogDescription('일지 상세는 로그인 후 이용할 수 있습니다.');
       setShowLoginDialog(true);
       return;
@@ -203,7 +211,7 @@ export default function DiaryListScreen(): React.ReactElement {
   };
 
   const handleLikeToggle = (diary: DiaryItem): void => {
-    if (!authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       setLoginDialogDescription('좋아요 기능은 로그인 후 이용할 수 있습니다.');
       setShowLoginDialog(true);
       return;

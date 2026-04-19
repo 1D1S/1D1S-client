@@ -4,8 +4,8 @@ import {
   type DiaryItem,
 } from '@feature/diary/board/type/diary';
 import { diaryDetailApi } from '@feature/diary/detail/api/diary-detail-api';
+import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
 import { notifyApiError } from '@module/api/error';
-import { authStorage } from '@module/utils/auth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
@@ -69,6 +69,7 @@ function updateDiaryListLikeInfo(
 
 export function useHomeRandomDiaryLike(): UseHomeRandomDiaryLikeResult {
   const queryClient = useQueryClient();
+  const isLoggedIn = useIsLoggedIn();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   const updateCachedDiaryLikes = (
@@ -136,7 +137,7 @@ export function useHomeRandomDiaryLike(): UseHomeRandomDiaryLikeResult {
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
 
   const onLikeToggle = (diary: DiaryItem): void => {
-    if (!authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       setShowLoginDialog(true);
       return;
     }

@@ -11,8 +11,8 @@ import {
 import { DiaryCard } from '@feature/diary/shared/components/diary-card';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diary-image-url';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
+import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
 import { normalizeApiError } from '@module/api/error';
-import { authStorage } from '@module/utils/auth';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -35,6 +35,7 @@ function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
 
 export function MyDiaryListScreen(): React.ReactElement {
   const router = useRouter();
+  const isLoggedIn = useIsLoggedIn();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
@@ -50,7 +51,7 @@ export function MyDiaryListScreen(): React.ReactElement {
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
 
   const handleLikeToggle = (diary: DiaryItem): void => {
-    if (!authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       setShowLoginDialog(true);
       return;
     }

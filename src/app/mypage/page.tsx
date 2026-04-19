@@ -14,9 +14,9 @@ import {
 } from '@feature/diary/detail/hooks/use-diary-mutations';
 import { DiaryCard } from '@feature/diary/shared/components/diary-card';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
+import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
 import type { StreakCalendarItem } from '@feature/member/type/member';
-import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import {
   CheckCircle2,
@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useSyncExternalStore } from 'react';
+import React, { useEffect } from 'react';
 
 type DiaryEmotion = 'happy' | 'soso' | 'sad';
 type Feeling = 'HAPPY' | 'NORMAL' | 'SAD' | 'NONE';
@@ -109,18 +109,13 @@ function getLongestGoalStreakSummary(
 
 export default function MyPage(): React.ReactElement | null {
   const router = useRouter();
-  const hasMounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
-  const isLoggedIn = hasMounted && authStorage.hasTokens();
+  const isLoggedIn = useIsLoggedIn();
 
   useEffect(() => {
-    if (hasMounted && !authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       router.replace('/login');
     }
-  }, [hasMounted, router]);
+  }, [isLoggedIn, router]);
 
   if (!isLoggedIn) {
     return null;
@@ -131,6 +126,7 @@ export default function MyPage(): React.ReactElement | null {
 
 function MyPageContent(): React.ReactElement {
   const router = useRouter();
+  const isLoggedIn = useIsLoggedIn();
   const { data, isLoading } = useMyPage();
   const { data: myDiariesData } = useMyDiaries(10);
   const myDiaries = myDiariesData?.items ?? [];
@@ -157,7 +153,7 @@ function MyPageContent(): React.ReactElement {
     id: number;
     isLiked: boolean;
   }): void => {
-    if (!authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       return;
     }
     if (likeDiary.isPending || unlikeDiary.isPending) {

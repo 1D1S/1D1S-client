@@ -11,13 +11,13 @@ import {
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/use-diary-mutations';
 import { DiaryCard } from '@feature/diary/shared/components/diary-card';
+import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
 import { useMemberProfile } from '@feature/member/hooks/use-member-queries';
 import type {
   MyPageDiary,
   StreakCalendarItem,
 } from '@feature/member/type/member';
 import { normalizeApiError } from '@module/api/error';
-import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import {
   CheckCircle2,
@@ -56,6 +56,7 @@ export default function MemberProfilePage(): React.ReactElement {
   const params = useParams();
   const memberId = Number(params.memberId);
   const router = useRouter();
+  const isLoggedIn = useIsLoggedIn();
   const { data, isLoading, isError, error } = useMemberProfile(memberId);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
@@ -91,7 +92,7 @@ export default function MemberProfilePage(): React.ReactElement {
   const { nickname, profileUrl, streak, challengeList, diaryList } = data;
 
   const handleDiaryLikeToggle = (diary: MyPageDiary): void => {
-    if (!authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       return;
     }
     if (likeDiary.isPending || unlikeDiary.isPending) {

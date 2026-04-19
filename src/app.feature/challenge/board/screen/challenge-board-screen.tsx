@@ -5,7 +5,7 @@ import { LoginRequiredDialog } from '@component/login-required-dialog';
 import { getCategoryLabel } from '@constants/categories';
 import { ChallengeCard } from '@feature/challenge/shared/components/challenge-card';
 import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
-import { authStorage } from '@module/utils/auth';
+import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
 import { X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -59,13 +59,21 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isLoginRequired = searchParams.get('loginRequired') === 'true';
-  const [showLoginDialog, setShowLoginDialog] = useState(isLoginRequired);
+  const isLoggedIn = useIsLoggedIn();
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [loginDialogDescription, setLoginDialogDescription] = useState(
-    isLoginRequired
-      ? '챌린지 상세는 로그인 후 이용할 수 있습니다.'
-      : '로그인 후 이용할 수 있습니다.'
+    '로그인 후 이용할 수 있습니다.'
   );
   const [inputValue, setInputValue] = useState('');
+
+  const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
+  if (isLoginRequired !== prevIsLoginRequired) {
+    setPrevIsLoginRequired(isLoginRequired);
+    if (isLoginRequired) {
+      setShowLoginDialog(true);
+      setLoginDialogDescription('챌린지 상세는 로그인 후 이용할 수 있습니다.');
+    }
+  }
 
   useEffect(() => {
     if (!isLoginRequired) {
@@ -77,11 +85,11 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     router.replace(query ? `${pathname}?${query}` : pathname, {
       scroll: false,
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isLoginRequired, pathname, router, searchParams]);
   const [query, setQuery] = useState('');
 
   const requireAuth = (description: string, action: () => void): void => {
-    if (!authStorage.hasTokens()) {
+    if (!isLoggedIn) {
       setLoginDialogDescription(description);
       setShowLoginDialog(true);
       return;
