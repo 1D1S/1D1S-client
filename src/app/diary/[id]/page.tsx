@@ -1,4 +1,4 @@
-import { DiaryDetailScreen } from '@feature/diary/detail/screen/diary-detail-screen';
+import { DiaryDetailScreen } from '@feature/diary/detail/screen/DiaryDetailScreen';
 import {
   hasServerAccessToken,
   resolveLoginRequiredRedirect,

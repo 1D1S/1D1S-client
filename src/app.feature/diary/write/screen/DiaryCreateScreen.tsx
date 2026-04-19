@@ -3,13 +3,13 @@
 import { Button, Text, TextField } from '@1d1s/design-system';
 import React from 'react';
 
-import { DiaryContentEditor } from '../components/diary-content-editor';
-import { DiaryCreateChallengeSection } from '../components/diary-create-challenge-section';
-import { DiaryCreateFinishSection } from '../components/diary-create-finish-section';
-import { DiaryCreateGoalsSection } from '../components/diary-create-goals-section';
-import { DiaryCreateMissingChallengeDialog } from '../components/diary-create-missing-challenge-dialog';
-import { DiaryCreateThumbnailSection } from '../components/diary-create-thumbnail-section';
-import { DiaryCreateUnavailableDialog } from '../components/diary-create-unavailable-dialog';
+import { DiaryContentEditor } from '../components/DiaryContentEditor';
+import { DiaryCreateChallengeSection } from '../components/DiaryCreateChallengeSection';
+import { DiaryCreateFinishSection } from '../components/DiaryCreateFinishSection';
+import { DiaryCreateGoalsSection } from '../components/DiaryCreateGoalsSection';
+import { DiaryCreateMissingChallengeDialog } from '../components/DiaryCreateMissingChallengeDialog';
+import { DiaryCreateThumbnailSection } from '../components/DiaryCreateThumbnailSection';
+import { DiaryCreateUnavailableDialog } from '../components/DiaryCreateUnavailableDialog';
 import { useDiaryCreateForm } from '../hooks/useDiaryCreateForm';
 
 export default function DiaryCreateScreen(): React.ReactElement {

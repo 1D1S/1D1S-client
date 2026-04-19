@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, CheckContainer, Text } from '@1d1s/design-system';
-import { FormField, FormItem, FormMessage } from '@component/ui/form';
+import { FormField, FormItem, FormMessage } from '@component/ui/Form';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 

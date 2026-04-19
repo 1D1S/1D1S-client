@@ -9,7 +9,7 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from '@/app.component/ui/form';
+} from '@/app.component/ui/Form';
 
 export function Step3(): React.ReactElement {
   const { control, setValue, watch } =

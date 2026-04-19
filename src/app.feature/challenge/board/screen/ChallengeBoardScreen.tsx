@@ -1,9 +1,9 @@
 'use client';
 
 import { Button, Icon, Text, TextField } from '@1d1s/design-system';
-import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { getCategoryLabel } from '@constants/categories';
-import { ChallengeCard } from '@feature/challenge/shared/components/challenge-card';
+import { ChallengeCard } from '@feature/challenge/shared/components/ChallengeCard';
 import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { X } from 'lucide-react';

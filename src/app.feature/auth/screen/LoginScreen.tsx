@@ -3,7 +3,7 @@
 import { Icon, Text } from '@1d1s/design-system';
 import Link from 'next/link';
 
-import { LoginButton } from '../components/login-buttons';
+import { LoginButton } from '../components/LoginButtons';
 
 export function LoginScreen(): React.ReactElement {
   return (

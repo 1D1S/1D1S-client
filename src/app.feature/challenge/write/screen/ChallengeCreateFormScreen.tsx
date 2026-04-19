@@ -7,8 +7,8 @@ import {
   DialogFooter,
   DialogTitle,
 } from '@1d1s/design-system';
-import { ChallengeCreateDialog } from '@feature/challenge/write/components/challenge-create-dialog';
-import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/components/challenge-create-success-dialog';
+import { ChallengeCreateDialog } from '@feature/challenge/write/components/ChallengeCreateDialog';
+import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/components/ChallengeCreateSuccessDialog';
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { useStepValidation } from '@feature/challenge/write/hooks/useStepValidation';
 import { add, format } from 'date-fns';
@@ -17,10 +17,10 @@ import { useFormContext } from 'react-hook-form';
 
 import { CreateChallengeRequest } from '../../board/type/challenge';
 import { useCreateChallenge } from '../../detail/hooks/useChallengeMutations';
-import { Step1 } from './step-pages/step1';
-import { Step2 } from './step-pages/step2';
-import { Step3 } from './step-pages/step3';
-import { Step4 } from './step-pages/step4';
+import { Step1 } from './step-pages/Step1';
+import { Step2 } from './step-pages/Step2';
+import { Step3 } from './step-pages/Step3';
+import { Step4 } from './step-pages/Step4';
 
 const ENDLESS_CHALLENGE_END_DATE = '9999-12-31';
 

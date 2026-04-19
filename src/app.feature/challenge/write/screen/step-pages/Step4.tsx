@@ -20,7 +20,7 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from '@/app.component/ui/form';
+} from '@/app.component/ui/Form';
 
 const PERIOD_OPTIONS: Array<{
   value: '7' | '14' | '30' | '60' | '365' | 'etc';

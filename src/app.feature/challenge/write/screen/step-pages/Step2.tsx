@@ -3,8 +3,8 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from '@component/ui/form';
-import { MaxParticipantCountSelect } from '@feature/challenge/write/components/max-participant-count-select';
+} from '@component/ui/Form';
+import { MaxParticipantCountSelect } from '@feature/challenge/write/components/MaxParticipantCountSelect';
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { cn } from '@module/utils/cn';
 import { User, Users } from 'lucide-react';

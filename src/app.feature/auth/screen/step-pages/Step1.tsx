@@ -18,7 +18,7 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from '@component/ui/form';
+} from '@component/ui/Form';
 import {
   getDayOptions,
   getMonthOptions,

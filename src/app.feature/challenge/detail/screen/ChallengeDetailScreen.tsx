@@ -15,7 +15,7 @@ import {
   Text,
   TextField,
 } from '@1d1s/design-system';
-import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { getCategoryLabel } from '@constants/categories';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { Feeling } from '@feature/diary/board/type/diary';
@@ -23,10 +23,10 @@ import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
-import { DiaryCard } from '@feature/diary/shared/components/diary-card';
+import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
-import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/diary-create-unavailable-dialog';
+import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/DiaryCreateUnavailableDialog';
 import { normalizeApiError, notifyApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
 import {
@@ -57,7 +57,7 @@ import {
   ParticipantStatus,
 } from '../../board/type/challenge';
 import { isChallengeOngoing } from '../../board/utils/challengePeriod';
-import { ExpandableText } from '../components/expandable-text';
+import { ExpandableText } from '../components/ExpandableText';
 import { CHALLENGE_DETAIL_WEEK_LABELS } from '../consts/challengeDetailData';
 import { useChallengeDiaryList } from '../hooks/useChallengeDiaryQueries';
 import {

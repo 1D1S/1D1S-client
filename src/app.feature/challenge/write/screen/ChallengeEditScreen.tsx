@@ -14,7 +14,7 @@ import { getCategoryLabel } from '@constants/categories';
 import { useChallengeDetail } from '@feature/challenge/board/hooks/useChallengeQueries';
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challengePeriod';
 import { useUpdateChallenge } from '@feature/challenge/detail/hooks/useChallengeMutations';
-import { MaxParticipantCountSelect } from '@feature/challenge/write/components/max-participant-count-select';
+import { MaxParticipantCountSelect } from '@feature/challenge/write/components/MaxParticipantCountSelect';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { apiClient } from '@module/api/client';
 import { notifyApiError } from '@module/api/error';

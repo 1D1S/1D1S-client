@@ -11,7 +11,7 @@ import {
   Icon,
   StepIndicator,
 } from '@1d1s/design-system';
-import { Form } from '@component/ui/form';
+import { Form } from '@component/ui/Form';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import { notifyApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
@@ -22,8 +22,8 @@ import { toast } from 'sonner';
 
 import { authApi } from '../api/authApi';
 import { SignupFormValues, useSignUpForm } from '../hooks/useSignUpForm';
-import { Step1 } from './step-pages/step1';
-import { Step2 } from './step-pages/step2';
+import { Step1 } from './step-pages/Step1';
+import { Step2 } from './step-pages/Step2';
 
 type Step = 1 | 2;
 const SIGN_UP_STEPS = [

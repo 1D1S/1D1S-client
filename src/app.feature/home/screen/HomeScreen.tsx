@@ -1,15 +1,15 @@
 'use client';
 
 import { BannerCarousel, PageWatermark } from '@1d1s/design-system';
-import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { HOME_MAIN_BANNERS } from '@constants/consts/homeData';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
-import HomeQuickActions from '../components/home-quick-actions';
-import HomeRandomChallengesSection from '../components/home-random-challenges-section';
-import HomeRandomDiariesSection from '../components/home-random-diaries-section';
+import HomeQuickActions from '../components/HomeQuickActions';
+import HomeRandomChallengesSection from '../components/HomeRandomChallengesSection';
+import HomeRandomDiariesSection from '../components/HomeRandomDiariesSection';
 import { useHomeRandomData } from '../hooks/useHomeRandomData';
 import { useHomeRandomDiaryLike } from '../hooks/useHomeRandomDiaryLike';
 

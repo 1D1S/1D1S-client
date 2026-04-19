@@ -1,6 +1,6 @@
 'use client';
 
-import ChallengeCreateScreen from '@feature/challenge/write/screen/challenge-create-screen';
+import ChallengeCreateScreen from '@feature/challenge/write/screen/ChallengeCreateScreen';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';

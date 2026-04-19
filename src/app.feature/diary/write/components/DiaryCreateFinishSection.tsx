@@ -2,8 +2,8 @@ import { Checkbox, Text } from '@1d1s/design-system';
 import React from 'react';
 
 import type { Feeling } from '../../board/type/diary';
-import { DiaryCreateDatePicker } from './diary-create-date-picker';
-import { DiaryCreateMoodSelector } from './diary-create-mood-selector';
+import { DiaryCreateDatePicker } from './DiaryCreateDatePicker';
+import { DiaryCreateMoodSelector } from './DiaryCreateMoodSelector';
 
 interface DiaryCreateFinishSectionProps {
   achievedDate: Date | undefined;

@@ -1,11 +1,11 @@
 'use client';
 
 import { StepIndicator, Text } from '@1d1s/design-system';
-import { Form } from '@component/ui/form';
+import { Form } from '@component/ui/Form';
 import { useChallengeCreateForm } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { useState } from 'react';
 
-import { ChallengeCreateFormScreen } from './challenge-create-form-screen';
+import { ChallengeCreateFormScreen } from './ChallengeCreateFormScreen';
 
 export default function ChallengeCreateScreen(): React.ReactElement {
   const form = useChallengeCreateForm();

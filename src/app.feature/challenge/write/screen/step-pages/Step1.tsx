@@ -15,7 +15,7 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from '@/app.component/ui/form';
+} from '@/app.component/ui/Form';
 import { CATEGORY_OPTIONS } from '@/app.constants/categories';
 
 import { ChallengeCreateFormValues } from '../../hooks/useChallengeCreateForm';

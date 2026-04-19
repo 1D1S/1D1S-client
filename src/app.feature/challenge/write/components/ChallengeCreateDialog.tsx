@@ -10,7 +10,7 @@ import {
   Text,
 } from '@1d1s/design-system';
 
-import { ChallengeCreateDialogContent } from './challenge-create-dialog-content';
+import { ChallengeCreateDialogContent } from './ChallengeCreateDialogContent';
 
 /**
  * ChallengeCreateDialog
@@ -46,7 +46,7 @@ export function ChallengeCreateDialog({
             size="heading2"
             weight="bold"
             className="block text-center text-black"
-            id="challenge-create-dialog"
+            id="ChallengeCreateDialog"
           >
             위와 같이 챌린지를 만드시겠습니까?
           </Text>

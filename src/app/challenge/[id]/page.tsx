@@ -1,4 +1,4 @@
-import { ChallengeDetailScreen } from '@feature/challenge/detail/screen/challenge-detail-screen';
+import { ChallengeDetailScreen } from '@feature/challenge/detail/screen/ChallengeDetailScreen';
 import {
   hasServerAccessToken,
   resolveLoginRequiredRedirect,

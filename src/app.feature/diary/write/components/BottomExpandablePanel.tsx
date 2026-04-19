@@ -3,7 +3,7 @@ import { cn } from '@module/utils/cn';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
-import { Mood, MoodToggle } from './mood-toggle';
+import { Mood, MoodToggle } from './MoodToggle';
 
 export default function BottomExpandablePanel(): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);

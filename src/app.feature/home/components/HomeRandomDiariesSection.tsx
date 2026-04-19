@@ -1,7 +1,7 @@
 import { Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
-import { DiaryCard } from '@feature/diary/shared/components/diary-card';
+import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
 import React from 'react';
 
 import {
@@ -9,7 +9,7 @@ import {
   mapFeelingToEmotion,
   toRelativeDateLabel,
 } from '../utils/homeFormatters';
-import HomeSectionHeader from './home-section-header';
+import HomeSectionHeader from './HomeSectionHeader';
 
 interface HomeRandomDiariesSectionProps {
   diaries: DiaryItem[];

@@ -1,9 +1,9 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
-import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { getCategoryLabel } from '@constants/categories';
-import { DiaryCard } from '@feature/diary/shared/components/diary-card';
+import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
 import { motion } from 'framer-motion';

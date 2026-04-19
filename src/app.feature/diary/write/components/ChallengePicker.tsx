@@ -7,7 +7,7 @@ import {
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
 } from '@feature/challenge/board/utils/challengePeriod';
-import { ChallengeListItem } from '@feature/challenge/shared/components/challenge-list-item';
+import { ChallengeListItem } from '@feature/challenge/shared/components/ChallengeListItem';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { cn } from '@module/utils/cn';
 import { useEffect, useState } from 'react';

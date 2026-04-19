@@ -1,14 +1,14 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
-import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { getCategoryLabel } from '@constants/categories';
 import { DiaryItem,Feeling  } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
-import { DiaryCard } from '@feature/diary/shared/components/diary-card';
+import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
@@ -18,7 +18,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
-import { useMyDiaries } from '../hooks/useDiaryQueries';
+import { useMemberDiaries } from '../hooks/useDiaryQueries';
 
 type DiaryEmotion = 'happy' | 'soso' | 'sad';
 
@@ -33,7 +33,14 @@ function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
   }
 }
 
-export function MyDiaryListScreen(): React.ReactElement {
+interface MemberDiaryListScreenProps {
+  memberId: string;
+}
+
+export function MemberDiaryListScreen({
+  memberId,
+}: MemberDiaryListScreenProps): React.ReactElement {
+  const memberIdNum = Number(memberId);
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
@@ -44,7 +51,7 @@ export function MyDiaryListScreen(): React.ReactElement {
     isLoading,
     isError,
     error,
-  } = useMyDiaries();
+  } = useMemberDiaries(memberIdNum);
 
   const diaryItems = data?.items ?? [];
   const hasDiaries = diaryItems.length > 0;
@@ -75,17 +82,17 @@ export function MyDiaryListScreen(): React.ReactElement {
         <div className="flex flex-col gap-3 border-b border-gray-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-2">
             <Link
-              href="/mypage"
+              href={`/member/${memberId}`}
               className="inline-flex w-fit items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-gray-700"
             >
               <ArrowLeft className="h-4 w-4" />
-              마이페이지로
+              프로필로
             </Link>
             <Text size="display1" weight="bold" className="text-gray-900">
-              내 일지
+              일지 전체 보기
             </Text>
             <Text size="body1" weight="regular" className="text-gray-600">
-              내가 작성한 일지 전체 목록입니다.
+              작성한 일지 전체 목록입니다.
             </Text>
           </div>
         </div>
@@ -137,7 +144,7 @@ export function MyDiaryListScreen(): React.ReactElement {
                 challengeLabel={
                   diary.challenge?.title ||
                   getCategoryLabel(diary.challenge?.category) ||
-                  '나의 일지'
+                  '일지'
                 }
                 onUserClick={
                   diary.authorInfoDto?.id

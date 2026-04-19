@@ -20,8 +20,8 @@ import React, {
   useSyncExternalStore,
 } from 'react';
 
-import { BetaButton } from '../beta-button';
-import { AppLayoutProvider } from './app-layout-context';
+import { BetaButton } from '../BetaButton';
+import { AppLayoutProvider } from './AppLayoutContext';
 
 const HEADER_HIDDEN_ROUTES = [
   '/auth/login',

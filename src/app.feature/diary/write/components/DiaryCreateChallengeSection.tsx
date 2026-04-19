@@ -5,12 +5,12 @@ import {
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
 } from '@feature/challenge/board/utils/challengePeriod';
-import { ChallengeListItem } from '@feature/challenge/shared/components/challenge-list-item';
+import { ChallengeListItem } from '@feature/challenge/shared/components/ChallengeListItem';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import React from 'react';
 
 import type { ChallengeListItem as ChallengeListItemType } from '../../../challenge/board/type/challenge';
-import { ChallengePicker } from './challenge-picker';
+import { ChallengePicker } from './ChallengePicker';
 
 interface DiaryCreateChallengeSectionProps {
   selectedChallenge: ChallengeListItemType | null;

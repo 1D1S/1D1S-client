@@ -1,4 +1,4 @@
-import { ChallengeDiaryListScreen } from '@feature/challenge/detail/screen/challenge-diary-list-screen';
+import { ChallengeDiaryListScreen } from '@feature/challenge/detail/screen/ChallengeDiaryListScreen';
 import React from 'react';
 
 interface ChallengeDiaryListPageProps {

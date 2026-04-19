@@ -10,9 +10,9 @@ import {
   Text,
   TextArea,
 } from '@1d1s/design-system';
-import { LoginRequiredDialog } from '@component/login-required-dialog';
+import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { getCategoryLabel } from '@constants/categories';
-import { ChallengeListItem } from '@feature/challenge/shared/components/challenge-list-item';
+import { ChallengeListItem } from '@feature/challenge/shared/components/ChallengeListItem';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
@@ -57,7 +57,7 @@ import {
   resolveDiaryImageList,
   resolveDiaryImageUrl,
 } from '../../shared/utils/diaryImageUrl';
-import { DiaryReportDialog } from '../components/diary-report-dialog';
+import { DiaryReportDialog } from '../components/DiaryReportDialog';
 import {
   useCreateCommentReply,
   useCreateDiaryComment,
