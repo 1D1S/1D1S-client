@@ -107,7 +107,7 @@ interface DiaryDetailViewData {
   title: string;
   dateLabel: string;
   weekdayLabel: string;
-  feelingEmoji: string;
+  feelingMoodImage: { src: string; alt: string } | null;
   connectedChallengeId: number | null;
   connectedChallengeTitle: string;
   connectedChallengeCategory: string;
@@ -130,17 +130,19 @@ interface DiaryDetailViewData {
   authorProfileImage: string | null;
 }
 
-function feelingToEmoji(feeling: Feeling): string {
+function feelingToMoodImage(
+  feeling: Feeling
+): { src: string; alt: string } | null {
   switch (feeling) {
     case 'HAPPY':
-      return '😎';
+      return { src: '/images/mood-happy.PNG', alt: '행복한 얼굴' };
     case 'SAD':
-      return '🥲';
+      return { src: '/images/mood-sad.PNG', alt: '슬픈 얼굴' };
     case 'NORMAL':
-      return '🙂';
+      return { src: '/images/mood-soso.PNG', alt: '무표정 얼굴' };
     case 'NONE':
     default:
-      return '📝';
+      return null;
   }
 }
 
@@ -378,7 +380,7 @@ function mapDiaryToViewData(
     title: diary.title || '제목 없는 일지',
     dateLabel,
     weekdayLabel,
-    feelingEmoji: feelingToEmoji(diaryInfo?.feeling ?? 'NONE'),
+    feelingMoodImage: feelingToMoodImage(diaryInfo?.feeling ?? 'NONE'),
     connectedChallengeId:
       summary?.challengeId ?? diary.challenge?.challengeId ?? null,
     connectedChallengeTitle:
@@ -640,9 +642,15 @@ function DiaryDetailView({
               <Text size="display1" weight="bold" className="text-gray-900">
                 {diaryData.title}
               </Text>
-              <span className="text-2xl leading-none">
-                {diaryData.feelingEmoji}
-              </span>
+              {diaryData.feelingMoodImage ? (
+                <Image
+                  src={diaryData.feelingMoodImage.src}
+                  alt={diaryData.feelingMoodImage.alt}
+                  width={44}
+                  height={44}
+                  className="h-11 w-11"
+                />
+              ) : null}
             </div>
 
             <div className="mt-2 flex items-center gap-2 text-gray-500">
