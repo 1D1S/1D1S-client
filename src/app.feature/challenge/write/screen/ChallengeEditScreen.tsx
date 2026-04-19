@@ -41,12 +41,18 @@ interface ChallengeEditScreenProps {
 
 export default function ChallengeEditScreen({
   id,
-}: ChallengeEditScreenProps): React.ReactElement {
+}: ChallengeEditScreenProps): React.ReactElement | null {
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
   const challengeId = Number(id);
   const { data, isLoading, isError } = useChallengeDetail(challengeId);
   const updateChallenge = useUpdateChallenge();
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      router.replace('/login');
+    }
+  }, [isLoggedIn, router]);
 
   const summary = data?.challengeSummary;
   const detail = data?.challengeDetail;
@@ -202,6 +208,10 @@ export default function ChallengeEditScreen({
       }
     );
   };
+
+  if (!isLoggedIn) {
+    return null;
+  }
 
   if (isLoading) {
     return (

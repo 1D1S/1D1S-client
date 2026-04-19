@@ -69,7 +69,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
   if (isLoginRequired !== prevIsLoginRequired) {
     setPrevIsLoginRequired(isLoginRequired);
-    if (isLoginRequired) {
+    if (isLoginRequired && !isLoggedIn) {
       setShowLoginDialog(true);
       setLoginDialogDescription('챌린지 상세는 로그인 후 이용할 수 있습니다.');
     }

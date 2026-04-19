@@ -7,6 +7,7 @@ import { isServer, useQuery, UseQueryResult } from '@tanstack/react-query';
 import { memberApi } from '../api/memberApi';
 import { MEMBER_QUERY_KEYS } from '../consts/queryKeys';
 import type { MemberProfileData, MyPageData, SidebarData } from '../type/member';
+import { useIsLoggedIn } from './useIsLoggedIn';
 
 const SIDEBAR_CACHE_KEY = '1d1s:sidebar';
 const MEMBER_INFO_STALE_TIME = Number.POSITIVE_INFINITY;
@@ -114,10 +115,11 @@ export function useMemberProfile(
 }
 
 export function useMyPage(): UseQueryResult<MyPageData, Error> {
+  const isLoggedIn = useIsLoggedIn();
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.myPage(),
     queryFn: () => memberApi.getMyPage(),
-    enabled: authStorage.hasTokens(),
+    enabled: isLoggedIn,
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
   });

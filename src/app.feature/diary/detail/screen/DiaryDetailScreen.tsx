@@ -1002,6 +1002,11 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
   };
 
   const handleLikeToggle = (): void => {
+    if (!isLoggedIn) {
+      setDismissed(false);
+      return;
+    }
+
     if (!data || isLikePending) {
       return;
     }

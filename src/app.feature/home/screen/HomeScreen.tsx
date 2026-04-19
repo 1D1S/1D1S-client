@@ -28,7 +28,7 @@ export default function HomeScreen(): React.ReactElement {
   const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
   if (isLoginRequired !== prevIsLoginRequired) {
     setPrevIsLoginRequired(isLoginRequired);
-    if (isLoginRequired) {
+    if (isLoginRequired && !isLoggedIn) {
       setShowLoginDialog(true);
     }
   }

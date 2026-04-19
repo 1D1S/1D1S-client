@@ -301,15 +301,13 @@ export default function AppLayoutShell({
     isFetching: isSidebarFetching,
   } = useSidebar();
   /**
-   * 실제 로그인 상태 판정:
-   * - 사이드바 API 응답으로 유효한 사용자 데이터를 받으면 권위 있는 로그인 판정.
-   * - 응답 전 초기 렌더에서는 토큰 힌트(쿠키/플래그)로 깜빡임을 방지.
-   *   단, 힌트만 있고 아직 fetching 중이 아니며 데이터도 없다면
-   *   비로그인으로 취급하여 잘못된 UI 노출을 막는다.
+   * 실제 로그인 상태 판정 (`useIsLoggedIn`과 동일 규칙):
+   * - 토큰 힌트가 없으면 항상 비로그인.
+   * - 힌트 위에서 sidebarData가 있거나 아직 fetching 중이면 잠정 로그인.
+   * - 로그아웃 시 힌트가 먼저 제거되므로 캐시된 sidebarData만으로 로그인 오판 방지.
    */
-  const isLoggedIn = hasMounted && (
-    Boolean(sidebarData) ||
-    (hasTokenHint && (isSidebarLoading || isSidebarFetching))
+  const isLoggedIn = hasMounted && hasTokenHint && (
+    Boolean(sidebarData) || isSidebarLoading || isSidebarFetching
   );
   const isSidebarBusy = hasTokenHint && (isSidebarLoading || isSidebarFetching);
 
