@@ -1,5 +1,5 @@
-import { TanStackQueryProvider } from './query-client-provider';
-import { ToastProvider } from './toast-provider';
+import { TanStackQueryProvider } from './QueryClientProvider';
+import { ToastProvider } from './ToastProvider';
 
 export function AppProviders({
   children,

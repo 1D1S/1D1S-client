@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 
-import { ACCESS_TOKEN_COOKIE_CANDIDATES } from './token-cookie';
+import { ACCESS_TOKEN_COOKIE_CANDIDATES } from './tokenCookie';
 
 const AUTH_SESSION_KEY = '1d1s:isAuthenticated';
 // 서브도메인 간 인증 상태 공유를 위한 힌트 쿠키 (토큰 값 아님, httpOnly 아님)

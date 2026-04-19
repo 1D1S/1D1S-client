@@ -2,7 +2,7 @@ import type {
   GENDER_VALUES,
   JOB_VALUES,
   TOPIC_VALUES,
-} from '../hooks/use-sign-up-form';
+} from '../hooks/useSignUpForm';
 
 export type JobType = (typeof JOB_VALUES)[number];
 export type GenderType = (typeof GENDER_VALUES)[number];

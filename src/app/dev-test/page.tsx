@@ -14,7 +14,7 @@ import {
   Toggle,
 } from '@1d1s/design-system';
 // import { Tag } from '@/components/odos-ui/tag';
-// import { ChallengeCard } from '@/shared/components/odos-ui/challenge-card';
+// import { ChallengeCard } from '@/shared/components/odos-ui/ChallengeCard';
 
 export default function DevTest(): React.ReactElement {
   return (

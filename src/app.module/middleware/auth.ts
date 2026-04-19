@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { ACCESS_TOKEN_COOKIE_CANDIDATES } from '../utils/token-cookie';
+import { ACCESS_TOKEN_COOKIE_CANDIDATES } from '../utils/tokenCookie';
 
 /**
  * 인증 미들웨어

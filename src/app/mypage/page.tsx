@@ -3,19 +3,19 @@
 
 import { CircleAvatar, Streak, Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
-import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challenge-period';
-import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/components/challenge-card';
-import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
-import { useMyDiaries } from '@feature/diary/board/hooks/use-diary-queries';
+import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challengePeriod';
+import { ChallengeCard as DSChallengeCard } from '@feature/challenge/shared/components/ChallengeCard';
+import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
+import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
 import { DiaryItem } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
-} from '@feature/diary/detail/hooks/use-diary-mutations';
-import { DiaryCard } from '@feature/diary/shared/components/diary-card';
-import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-relative-time';
-import { useIsLoggedIn } from '@feature/member/hooks/use-is-logged-in';
-import { useMyPage } from '@feature/member/hooks/use-member-queries';
+} from '@feature/diary/detail/hooks/useDiaryMutations';
+import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
+import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import type { StreakCalendarItem } from '@feature/member/type/member';
 import { cn } from '@module/utils/cn';
 import {

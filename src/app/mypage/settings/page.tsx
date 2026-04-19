@@ -12,13 +12,13 @@ import {
   Text,
   TextField,
 } from '@1d1s/design-system';
-import { useLogout } from '@feature/auth/hooks/use-auth-mutations';
+import { useLogout } from '@feature/auth/hooks/useAuthMutations';
 import {
   useDeleteMember,
   useUpdateNickname,
   useUpdateProfileImage,
-} from '@feature/member/hooks/use-member-mutations';
-import { useMyPage } from '@feature/member/hooks/use-member-queries';
+} from '@feature/member/hooks/useMemberMutations';
+import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import { notifyApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
 import { validateNickname } from '@module/utils/nickname';

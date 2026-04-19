@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
   Text,
 } from '@1d1s/design-system';
-import { INQUIRY_FAQ_ITEMS } from '@constants/consts/inquiry-data';
+import { INQUIRY_FAQ_ITEMS } from '@constants/consts/inquiryData';
 import { Mail } from 'lucide-react';
 import React from 'react';
 

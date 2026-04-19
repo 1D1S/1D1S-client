@@ -1,4 +1,4 @@
-import ChallengeBoardScreen from '@feature/challenge/board/screen/challenge-board-screen';
+import ChallengeBoardScreen from '@feature/challenge/board/screen/ChallengeBoardScreen';
 import React, { Suspense } from 'react';
 
 export default function ChallengeListPage(): React.ReactElement {
