@@ -17,6 +17,7 @@ import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-rel
 import { useMyPage } from '@feature/member/hooks/use-member-queries';
 import type { StreakCalendarItem } from '@feature/member/type/member';
 import { authStorage } from '@module/utils/auth';
+import { cn } from '@module/utils/cn';
 import {
   CheckCircle2,
   FileText,
@@ -448,7 +449,10 @@ function StatCard({
     <article className="rounded-3 border border-gray-200 bg-white p-4">
       <div className="flex items-center gap-2.5">
         <span
-          className={`flex h-5 w-5 shrink-0 items-center justify-center ${iconTone}`}
+          className={cn(
+            'flex h-5 w-5 shrink-0 items-center justify-center',
+            iconTone,
+          )}
         >
           {icon}
         </span>
@@ -500,7 +504,10 @@ function QuickActionItem({
     >
       <div className="flex items-center gap-3">
         <span
-          className={`flex h-10 w-10 items-center justify-center rounded-full ${iconClass}`}
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-full',
+            iconClass,
+          )}
         >
           {icon}
         </span>

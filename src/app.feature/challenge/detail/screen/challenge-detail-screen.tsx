@@ -29,6 +29,7 @@ import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diary-rel
 import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/diary-create-unavailable-dialog';
 import { normalizeApiError, notifyApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
+import { cn } from '@module/utils/cn';
 import {
   CalendarDays,
   Check,
@@ -374,9 +375,17 @@ export function ChallengeDetailScreen({
   const [editGoalInputs, setEditGoalInputs] = useState<string[]>(['']);
   const [showEditChallengeGoalsModal, setShowEditChallengeGoalsModal] =
     useState(false);
-  const [challengeGoalInputs, setChallengeGoalInputs] = useState<string[]>([
-    '',
-  ]);
+  interface ChallengeGoalEntry {
+    id: string;
+    value: string;
+  }
+  const createGoalEntry = (value = ''): ChallengeGoalEntry => ({
+    id: crypto.randomUUID(),
+    value,
+  });
+  const [challengeGoalInputs, setChallengeGoalInputs] = useState<
+    ChallengeGoalEntry[]
+  >(() => [createGoalEntry()]);
 
   const { data: challengeDiariesData, isLoading: isDiariesLoading } =
     useChallengeDiaryList(challengeId, 10);
@@ -609,14 +618,16 @@ export function ChallengeDetailScreen({
   };
 
   const handleOpenEditChallengeGoalsModal = (): void => {
-    const currentGoals = goals.map((goal) => goal.content);
-    setChallengeGoalInputs(currentGoals.length > 0 ? currentGoals : ['']);
+    const currentGoals = goals.map((goal) => createGoalEntry(goal.content));
+    setChallengeGoalInputs(
+      currentGoals.length > 0 ? currentGoals : [createGoalEntry()],
+    );
     setShowEditChallengeGoalsModal(true);
   };
 
   const handleEditChallengeGoalsSubmit = (): void => {
     const validGoals = challengeGoalInputs
-      .map((goalInput) => goalInput.trim())
+      .map((goalInput) => goalInput.value.trim())
       .filter(Boolean);
     if (validGoals.length === 0) {
       toast.error('목표를 최소 1개 이상 입력해 주세요.');
@@ -700,7 +711,10 @@ export function ChallengeDetailScreen({
         >
           <button type="button" onClick={handleToggleLike}>
             <Heart
-              className={`h-4 w-4 ${summary!.likeInfo.likedByMe ? 'fill-current' : ''}`}
+              className={cn(
+                'h-4 w-4',
+                summary!.likeInfo.likedByMe && 'fill-current',
+              )}
             />
             {summary!.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'} (
             {summary!.likeInfo.likeCnt})
@@ -920,17 +934,18 @@ export function ChallengeDetailScreen({
             챌린지 시작 전에만 목표를 수정할 수 있습니다.
           </Text>
           <div className="flex flex-col gap-2">
-            {challengeGoalInputs.map((goal, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2"
-              >
+            {challengeGoalInputs.map((goal) => (
+              <div key={goal.id} className="flex items-center gap-2">
                 <TextField
-                  value={goal}
+                  value={goal.value}
                   onChange={(event) => {
-                    const next = [...challengeGoalInputs];
-                    next[index] = event.target.value;
-                    setChallengeGoalInputs(next);
+                    setChallengeGoalInputs((prev) =>
+                      prev.map((entry) =>
+                        entry.id === goal.id
+                          ? { ...entry, value: event.target.value }
+                          : entry,
+                      ),
+                    );
                   }}
                   placeholder="목표를 입력하세요"
                   className="flex-1"
@@ -942,7 +957,7 @@ export function ChallengeDetailScreen({
                   className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-red-600"
                   onClick={() => {
                     setChallengeGoalInputs((prev) =>
-                      prev.filter((_, targetIndex) => targetIndex !== index)
+                      prev.filter((entry) => entry.id !== goal.id),
                     );
                   }}
                 >
@@ -957,7 +972,7 @@ export function ChallengeDetailScreen({
             type="button"
             disabled={challengeGoalInputs.length >= 10}
             onClick={() =>
-              setChallengeGoalInputs((prev) => [...prev, ''])
+              setChallengeGoalInputs((prev) => [...prev, createGoalEntry()])
             }
           >
             + 목표 추가
@@ -1262,9 +1277,10 @@ export function ChallengeDetailScreen({
                     >
                       <div className="relative">
                         <div
-                          className={`flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border ${
-                            highlighted ? 'border-main-700' : 'border-gray-200'
-                          }`}
+                          className={cn(
+                            'flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border',
+                            highlighted ? 'border-main-700' : 'border-gray-200',
+                          )}
                         >
                           <CircleAvatar
                             imageUrl={participant.profileImg || undefined}

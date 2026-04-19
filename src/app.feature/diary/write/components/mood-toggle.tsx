@@ -1,4 +1,5 @@
 // MoodToggle.tsx
+import { cn } from '@module/utils/cn';
 import Image from 'next/image';
 import React from 'react';
 
@@ -28,9 +29,10 @@ export function MoodToggle({
             key={option.id}
             type="button"
             onClick={() => onSelect(option.id)}
-            className={`relative rounded-lg p-2 transition-colors focus:outline-none ${
-              isActive ? 'bg-main-500' : 'bg-transparent'
-            }`}
+            className={cn(
+              'relative rounded-lg p-2 transition-colors focus:outline-none',
+              isActive ? 'bg-main-500' : 'bg-transparent',
+            )}
           >
             <Image width={60} height={60} src={option.src} alt={option.alt} />
           </button>

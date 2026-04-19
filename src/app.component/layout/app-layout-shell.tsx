@@ -9,6 +9,7 @@ import {
 } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/use-member-queries';
 import { authStorage } from '@module/utils/auth';
+import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, {
@@ -431,7 +432,10 @@ export default function AppLayoutShell({
 
             {/* 데스크톱 사이드바 */}
             <aside
-              className={`sticky ${sidebarStickyTopClass} hidden h-fit min-h-0 shrink-0 self-start pt-3 pr-3 lg:block`}
+              className={cn(
+                'sticky hidden h-fit min-h-0 shrink-0 self-start pt-3 pr-3 lg:block',
+                sidebarStickyTopClass,
+              )}
             >
               {hasMounted ? (
                 <RightSidebar
@@ -460,9 +464,10 @@ export default function AppLayoutShell({
         {isSidebarOverlayMounted && hasMounted ? (
           <div
             ref={sidebarOverlayRef}
-            className={`fixed top-4 right-3 z-50 transition-opacity duration-200 ${
-              isSidebarOverlayOpen ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={cn(
+              'fixed top-4 right-3 z-50 transition-opacity duration-200',
+              isSidebarOverlayOpen ? 'opacity-100' : 'opacity-0',
+            )}
           >
             <RightSidebar
               {...sidebarProps}

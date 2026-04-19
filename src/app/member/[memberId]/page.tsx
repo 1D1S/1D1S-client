@@ -18,6 +18,7 @@ import type {
 } from '@feature/member/type/member';
 import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
+import { cn } from '@module/utils/cn';
 import {
   CheckCircle2,
   FileText,
@@ -335,7 +336,10 @@ function StatCard({
     <article className="rounded-3 border border-gray-200 bg-white p-4">
       <div className="flex items-center gap-2.5">
         <span
-          className={`flex h-5 w-5 shrink-0 items-center justify-center ${iconTone}`}
+          className={cn(
+            'flex h-5 w-5 shrink-0 items-center justify-center',
+            iconTone,
+          )}
         >
           {icon}
         </span>

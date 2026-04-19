@@ -111,7 +111,10 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
               </div>
             ) : (
               values.goals.map((goal, index) => (
-                <div key={index} className="flex items-center gap-2">
+                <div
+                  key={`${index}-${goal.value}`}
+                  className="flex items-center gap-2"
+                >
                   <div className="bg-main-700 flex h-5 w-5 shrink-0 items-center justify-center rounded-full">
                     <Check className="h-3 w-3 text-white" />
                   </div>

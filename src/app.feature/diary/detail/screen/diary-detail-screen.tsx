@@ -16,6 +16,7 @@ import { ChallengeListItem } from '@feature/challenge/shared/components/challeng
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challenge-display';
 import { normalizeApiError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
+import { cn } from '@module/utils/cn';
 import {
   CalendarDays,
   Edit3,
@@ -684,9 +685,10 @@ function DiaryDetailView({
               disabled={isLikePending}
             >
               <Heart
-                className={`mr-1 h-4 w-4 ${
-                  diaryData.likedByMe ? 'fill-current' : ''
-                }`}
+                className={cn(
+                  'mr-1 h-4 w-4',
+                  diaryData.likedByMe && 'fill-current',
+                )}
               />
               좋아요 {diaryData.likeCount}
             </Button>
@@ -818,11 +820,11 @@ function DiaryDetailView({
 
           <div className="rounded-3 border border-gray-200 bg-white p-5">
             <div
-              className={`gap-5 ${
-                diaryData.contentThumbnailUrl
-                  ? 'grid grid-cols-1 items-start md:grid-cols-[minmax(0,1fr)_220px]'
-                  : ''
-              }`}
+              className={cn(
+                'gap-5',
+                diaryData.contentThumbnailUrl &&
+                  'grid grid-cols-1 items-start md:grid-cols-[minmax(0,1fr)_220px]',
+              )}
             >
               {diaryData.hasContentHtml ? (
                 <div
