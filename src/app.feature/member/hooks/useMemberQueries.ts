@@ -9,8 +9,6 @@ import { MEMBER_QUERY_KEYS } from '../consts/queryKeys';
 import type { MemberProfileData, MyPageData, SidebarData } from '../type/member';
 import { useIsLoggedIn } from './useIsLoggedIn';
 
-const AUTH_ROUTE_PREFIXES = ['/login', '/signup', '/auth'];
-
 const SIDEBAR_CACHE_KEY = '1d1s:sidebar';
 const MEMBER_INFO_STALE_TIME = Number.POSITIVE_INFINITY;
 const MEMBER_INFO_GC_TIME = Number.POSITIVE_INFINITY;
@@ -85,13 +83,6 @@ async function fetchSidebarWithRetry(): Promise<SidebarData | null> {
 
 export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
   const cachedSidebar = getCachedSidebar();
-  const pathname = usePathname();
-
-  // 인증 관련 페이지(로그인, 회원가입, OAuth 콜백)에서는 사이드바 쿼리를 실행하지 않음
-  // OAuth 콜백 중 /auth/token 호출이 소셜 로그인 세션을 방해할 수 있음
-  const isAuthRoute = AUTH_ROUTE_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
-  );
 
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.sidebar(),

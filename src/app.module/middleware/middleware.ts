@@ -17,7 +17,7 @@ export function proxy(req: NextRequest): NextResponse {
   }
 
   // 3. 인증 및 권한 검사
-  const authRes = authMiddleware();
+  const authRes = authMiddleware(req);
   if (authRes) {
     return authRes;
   }
