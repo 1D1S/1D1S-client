@@ -1,4 +1,4 @@
-import ChallengeEditScreen from '@feature/challenge/write/screen/challenge-edit-screen';
+import ChallengeEditScreen from '@feature/challenge/write/screen/ChallengeEditScreen';
 import React from 'react';
 
 interface ChallengeEditPageProps {

@@ -8,7 +8,6 @@ import { API_BASE_URL } from './config';
 import { handleAuthError, isUnauthorizedError, notifyApiError } from './error';
 
 export interface ClientOptions {
-  withAuthToken: boolean;
   handleUnauthorized: boolean;
 }
 
@@ -50,14 +49,8 @@ const refreshAccessToken = async (): Promise<void> => {
 
 export const attachInterceptors = (
   client: AxiosInstance,
-  { withAuthToken, handleUnauthorized }: ClientOptions
+  { handleUnauthorized }: ClientOptions
 ): AxiosInstance => {
-  if (withAuthToken) {
-    client.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => config
-    );
-  }
-
   client.interceptors.response.use(
     async (response) => {
       if (!handleUnauthorized) {

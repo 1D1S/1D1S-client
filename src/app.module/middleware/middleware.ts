@@ -6,7 +6,7 @@ import { loggingMiddleware } from './logging';
 import { redirectMiddleware } from './redirect';
 import { securityMiddleware } from './security';
 
-export function middleware(req: NextRequest): NextResponse {
+export function proxy(req: NextRequest): NextResponse {
   // 1. 로깅 시작
   const start = loggingMiddleware(req);
 
@@ -17,7 +17,7 @@ export function middleware(req: NextRequest): NextResponse {
   }
 
   // 3. 인증 및 권한 검사
-  const authRes = authMiddleware();
+  const authRes = authMiddleware(req);
   if (authRes) {
     return authRes;
   }

@@ -114,6 +114,17 @@ export const notifyApiError = (error: unknown): void => {
   toast.error(normalizedError.message);
 };
 
+const PROTECTED_PATH_PREFIXES = [
+  '/mypage',
+  '/diary/create',
+  '/challenge/create',
+];
+const PROTECTED_PATH_PATTERNS = [/^\/challenge\/\d+/, /^\/diary\/\d+/];
+
+const isProtectedRoute = (pathname: string): boolean =>
+  PROTECTED_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+  PROTECTED_PATH_PATTERNS.some((pattern) => pattern.test(pathname));
+
 export const handleAuthError = (error: unknown): void => {
   if (typeof window === 'undefined') {
     return;
@@ -123,13 +134,12 @@ export const handleAuthError = (error: unknown): void => {
     return;
   }
 
+  // 토큰 없음/만료 시 조용히 로그아웃 처리 (토스트 표시하지 않음)
   authStorage.clearTokens();
   localStorage.removeItem('1d1s:sidebar');
 
-  notifyApiError(error);
-
-  if (!isRedirecting && window.location.pathname !== '/login') {
+  if (!isRedirecting && isProtectedRoute(window.location.pathname)) {
     isRedirecting = true;
-    window.location.assign('/login');
+    window.location.assign('/');
   }
 };

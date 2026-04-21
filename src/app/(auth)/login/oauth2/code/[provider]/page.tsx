@@ -1,8 +1,8 @@
 'use client';
 
-import { useSocialLogin } from '@feature/auth/hooks/use-auth-queries';
+import { useSocialLogin } from '@feature/auth/hooks/useAuthQueries';
 import { OAuthProvider } from '@feature/auth/type/auth';
-import { MEMBER_QUERY_KEYS } from '@feature/member/consts/query-keys';
+import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import { authStorage } from '@module/utils/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';

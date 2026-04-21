@@ -12,14 +12,15 @@ import {
   Text,
   TextField,
 } from '@1d1s/design-system';
-import { useLogout } from '@feature/auth/hooks/use-auth-mutations';
+import { useLogout } from '@feature/auth/hooks/useAuthMutations';
 import {
   useDeleteMember,
   useUpdateNickname,
   useUpdateProfileImage,
-} from '@feature/member/hooks/use-member-mutations';
-import { useMyPage } from '@feature/member/hooks/use-member-queries';
+} from '@feature/member/hooks/useMemberMutations';
+import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import { notifyApiError } from '@module/api/error';
+import { cn } from '@module/utils/cn';
 import { validateNickname } from '@module/utils/nickname';
 import { LogOut, UserMinus } from 'lucide-react';
 import Image from 'next/image';
@@ -230,7 +231,11 @@ export default function AccountSettingsPage(): React.ReactElement {
                       const config = PROVIDER_CONFIG[data.provider];
                       return (
                         <span
-                          className={`inline-flex shrink-0 items-center justify-center rounded-lg px-3 py-2 ${config.bg} ${config.textColor}`}
+                          className={cn(
+                            'inline-flex shrink-0 items-center justify-center rounded-lg px-3 py-2',
+                            config.bg,
+                            config.textColor,
+                          )}
                         >
                           {config.icon ? (
                             <Image
@@ -288,7 +293,7 @@ export default function AccountSettingsPage(): React.ReactElement {
             >
               <UserMinus className="h-5 w-5" />
               <Text size="body1" weight="medium" className="text-gray-600">
-                회원탈퇴
+                회원 탈퇴
               </Text>
             </button>
           </section>
@@ -333,7 +338,7 @@ export default function AccountSettingsPage(): React.ReactElement {
       >
         <DialogContent className="gap-6 px-8 py-6 sm:max-w-[380px] sm:px-6">
           <DialogHeader className="items-center text-center sm:text-center">
-            <DialogTitle>회원탈퇴 하시겠어요?</DialogTitle>
+            <DialogTitle>회원 탈퇴 하시겠어요?</DialogTitle>
           </DialogHeader>
 
           <DialogDescription className="block w-full text-center">
@@ -356,7 +361,7 @@ export default function AccountSettingsPage(): React.ReactElement {
               onClick={confirmWithdraw}
               disabled={deleteMember.isPending || logout.isPending}
             >
-              {deleteMember.isPending ? '처리 중...' : '회원탈퇴'}
+              {deleteMember.isPending ? '처리 중...' : '회원 탈퇴'}
             </Button>
           </DialogFooter>
         </DialogContent>
