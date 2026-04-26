@@ -2,33 +2,36 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { ACCESS_TOKEN_COOKIE_CANDIDATES } from '../utils/tokenCookie';
 
+type ProtectedRoute =
+  | { pattern: RegExp; type: 'list-redirect'; fallback: string }
+  | { pattern: RegExp; type: 'login-redirect' };
+
 /**
  * 인증 미들웨어
  * - JWT 토큰을 사용하여 인증 및 권한 검사
- * - 비로그인 시 부모 목록 페이지로 리디렉션 + loginRequired 쿼리 파라미터 전달
+ * - list-redirect: 비로그인 시 부모 목록 + loginRequired 쿼리 파라미터로 리디렉션
+ * - login-redirect: 비로그인 시 /login으로 바로 리디렉션
  *
  * @param req NextRequest
  * @returns NextResponse | null
  */
-const PROTECTED_DETAIL_ROUTES: Array<{
-  pattern: RegExp;
-  fallback: string;
-}> = [
-  { pattern: /^\/challenge\/\d+\/?$/, fallback: '/challenge' },
-  { pattern: /^\/diary\/\d+\/?$/, fallback: '/diary' },
+const PROTECTED_ROUTES: ProtectedRoute[] = [
+  { pattern: /^\/challenge\/\d+\/?$/, type: 'list-redirect', fallback: '/challenge' },
+  { pattern: /^\/diary\/\d+\/?$/,    type: 'list-redirect', fallback: '/diary' },
+
+  { pattern: /^\/challenge\/\d+\/edit\/?$/, type: 'login-redirect' },
+  { pattern: /^\/challenge\/create\/?$/,    type: 'login-redirect' },
+  { pattern: /^\/mypage(\/.*)?$/,           type: 'login-redirect' },
 ];
 
-function getFallbackRoute(pathname: string): string | null {
-  const matched = PROTECTED_DETAIL_ROUTES.find(({ pattern }) =>
-    pattern.test(pathname)
-  );
-  return matched?.fallback ?? null;
+function matchRoute(pathname: string): ProtectedRoute | null {
+  return PROTECTED_ROUTES.find(({ pattern }) => pattern.test(pathname)) ?? null;
 }
 
 export function authMiddleware(req: NextRequest): NextResponse | null {
   const { pathname } = req.nextUrl;
-  const fallback = getFallbackRoute(pathname);
-  if (!fallback) {
+  const matched = matchRoute(pathname);
+  if (!matched) {
     return null;
   }
 
@@ -37,7 +40,10 @@ export function authMiddleware(req: NextRequest): NextResponse | null {
   ).find((value): value is string => Boolean(value?.trim()));
 
   if (!token) {
-    const redirectUrl = new URL(fallback, req.url);
+    if (matched.type === 'login-redirect') {
+      return NextResponse.redirect(new URL('/login', req.url));
+    }
+    const redirectUrl = new URL(matched.fallback, req.url);
     redirectUrl.searchParams.set('loginRequired', 'true');
     return NextResponse.redirect(redirectUrl);
   }
