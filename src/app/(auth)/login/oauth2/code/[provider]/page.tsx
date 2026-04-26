@@ -28,6 +28,7 @@ function OAuthCallbackContent(): React.ReactElement {
 
     if (error) {
       processed.current = true;
+      console.error(`[OAuth] ${provider} 로그인 실패:`, error);
       router.replace('/login');
       return;
     }
@@ -46,7 +47,7 @@ function OAuthCallbackContent(): React.ReactElement {
         router.replace('/');
       }
     }
-  }, [data, error, isSuccess, router, queryClient]);
+  }, [data, error, isSuccess, provider, router, queryClient]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

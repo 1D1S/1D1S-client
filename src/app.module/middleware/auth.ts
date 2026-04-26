@@ -12,7 +12,6 @@ type ProtectedRoute =
  * - list-redirect: 비로그인 시 부모 목록 + loginRequired 쿼리 파라미터로 리디렉션
  * - login-redirect: 비로그인 시 /login으로 바로 리디렉션
  *
- * @param req NextRequest
  * @returns NextResponse | null
  */
 const PROTECTED_ROUTES: ProtectedRoute[] = [
