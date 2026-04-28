@@ -1,9 +1,26 @@
+import { getCategoryLabel } from '@constants/categories';
 import type { DiaryItem } from '@feature/diary/board/type/diary';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
 import type { StreakCalendarItem } from '@feature/member/type/member';
 
 export type DiaryEmotion = 'happy' | 'soso' | 'sad';
 type Feeling = 'HAPPY' | 'NORMAL' | 'SAD' | 'NONE';
+
+export interface DiaryCardViewModel {
+  id: number;
+  title: string;
+  imageUrl: string;
+  percent: number;
+  isLiked: boolean;
+  likes: number;
+  commentCount: number;
+  user: string;
+  userImage: string;
+  challengeLabel: string;
+  challengeId: number | undefined;
+  date: string;
+  emotion: DiaryEmotion;
+}
 
 function toLocalDateKey(date: Date): string {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -42,13 +59,11 @@ export function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
   }
 }
 
-export function toRelativeDateLabel(
-  createdAt: string | undefined
-): string {
+function toRelativeDateLabel(createdAt: string | undefined): string {
   return getRelativeDiaryDateLabel(createdAt ?? '', '최근');
 }
 
-export function resolveDiaryImage(diary: DiaryItem): string {
+function resolveDiaryImage(diary: DiaryItem): string {
   if (Array.isArray(diary.imgUrl) && diary.imgUrl.length > 0) {
     return diary.imgUrl[0] ?? '/images/default-card.png';
   }
@@ -67,4 +82,35 @@ export function getLongestGoalStreakSummary(
     0,
   ];
   return { goalTitle, streakCount };
+}
+
+export function buildDiaryCardViewModels(
+  diaries: DiaryItem[],
+  nickname: string,
+  profileUrl: string
+): DiaryCardViewModel[] {
+  return diaries.map((diary) => {
+    const diaryInfo = diary.diaryInfoDto;
+    const achievementRate =
+      diary.achievementRate ?? diaryInfo?.achievementRate ?? 0;
+
+    return {
+      id: diary.id,
+      title: diary.title || '제목 없는 일지',
+      imageUrl: resolveDiaryImage(diary),
+      percent: Math.min(100, Math.max(0, achievementRate)),
+      isLiked: diary.likeInfo.likedByMe,
+      likes: diary.likeInfo.likeCnt,
+      commentCount: diary.commentCount,
+      user: nickname || '나',
+      userImage: profileUrl || '/images/default-profile.png',
+      challengeLabel:
+        diary.challenge?.title ||
+        getCategoryLabel(diary.challenge?.category) ||
+        '나의 일지',
+      challengeId: diary.challenge?.challengeId,
+      date: toRelativeDateLabel(diaryInfo?.createdAt),
+      emotion: mapFeelingToEmotion(diaryInfo?.feeling ?? 'NONE'),
+    };
+  });
 }
