@@ -5,7 +5,7 @@ import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { HOME_MAIN_BANNERS } from '@constants/consts/homeData';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 import HomeQuickActions from '../components/HomeQuickActions';
 import HomeRandomChallengesSection from '../components/HomeRandomChallengesSection';
@@ -25,25 +25,26 @@ export default function HomeScreen(): React.ReactElement {
     ? '로그인 후 이용할 수 있습니다.'
     : undefined;
 
-  const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
-  if (isLoginRequired !== prevIsLoginRequired) {
-    setPrevIsLoginRequired(isLoginRequired);
+  useEffect(() => {
     if (isLoginRequired && !isLoggedIn) {
       setShowLoginDialog(true);
     }
-  }
+    // 마운트 시에만 로그인 변경 여부를 확인하기 위해 의존성 배열을 비웠습니다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  useEffect(() => {
-    if (!isLoginRequired) {
-      return;
+  const handleDialogOpenChange = (open: boolean): void => {
+    setShowLoginDialog(open);
+    if (!open && isLoginRequired) {
+      // dialog가 닫히는 순간에만 URL 청소
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('loginRequired');
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
     }
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('loginRequired');
-    const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
-    });
-  }, [isLoginRequired, pathname, router, searchParams]);
+  };
 
   const {
     randomChallenges,
@@ -60,7 +61,7 @@ export default function HomeScreen(): React.ReactElement {
     <div className="flex min-h-screen w-full flex-col bg-white">
       <LoginRequiredDialog
         open={showLoginDialog}
-        onOpenChange={setShowLoginDialog}
+        onOpenChange={handleDialogOpenChange}
         description={loginDialogDescription}
       />
       {/* 메인 콘텐츠 */}

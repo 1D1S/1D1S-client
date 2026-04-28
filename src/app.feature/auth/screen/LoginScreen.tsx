@@ -1,5 +1,3 @@
-'use client';
-
 import { Icon, Text } from '@1d1s/design-system';
 import Link from 'next/link';
 
