@@ -144,21 +144,35 @@ export default function AccountSettingsPage(): React.ReactElement {
             <div className="flex flex-col gap-6 px-5 py-5">
               {/* 프로필 사진 */}
               <div className="flex flex-col items-center gap-3">
-                <AvatarImagePicker
-                  size={160}
-                  defaultImageUrl={profilePreview || undefined}
-                  changeLabel="변경"
-                  onChange={handleProfileImageChange}
-                />
-                {updateProfileImage.isPending && (
-                  <Text
-                    size="caption1"
-                    weight="regular"
-                    className="text-gray-400"
-                  >
-                    업로드 중...
-                  </Text>
-                )}
+                <div className="relative" style={{ width: 160, height: 160 }}>
+                  <AvatarImagePicker
+                    size={160}
+                    defaultImageUrl={
+                      updateProfileImage.isPending
+                        ? undefined
+                        : (profilePreview || undefined)
+                    }
+                    changeLabel="변경"
+                    onChange={handleProfileImageChange}
+                  />
+                  {updateProfileImage.isPending && (
+                    <div
+                      className={cn(
+                        'pointer-events-none absolute inset-0 z-20',
+                        'flex items-center justify-center',
+                        'overflow-hidden rounded-full',
+                      )}
+                    >
+                      <Text
+                        size="caption1"
+                        weight="regular"
+                        className="text-gray-400"
+                      >
+                        업로드 중...
+                      </Text>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* 닉네임 */}
@@ -182,6 +196,7 @@ export default function AccountSettingsPage(): React.ReactElement {
                   />
                   <Button
                     size="small"
+                    className="shrink-0"
                     onClick={handleNicknameSave}
                     disabled={
                       updateNickname.isPending ||
