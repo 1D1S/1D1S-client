@@ -1,3 +1,9 @@
+export type NotificationCategory =
+  | 'FRIEND'
+  | 'DIARY'
+  | 'CHALLENGE'
+  | 'SYSTEM';
+
 export type NotificationType =
   | 'FRIEND_REQUEST'
   | 'FRIEND_ACCEPT'
@@ -8,30 +14,55 @@ export type NotificationType =
   | 'CHALLENGE_APPROVED'
   | 'CHALLENGE_REJECTED';
 
+export type NotificationTargetType = 'MEMBER' | 'DIARY' | 'CHALLENGE';
+
 export interface Notification {
   id: number;
+  category: NotificationCategory;
   type: NotificationType;
   message: string;
+  targetType: NotificationTargetType;
+  targetId: number;
   isRead: boolean;
+  groupedCount: number;
+  actorId: number | null;
+  actorNickname: string | null;
+  actorProfileUrl: string | null;
   createdAt: string;
-  actionUrl: string;
-  sender: {
-    id: number;
-    nickname: string;
-    profileImage: string | null;
-  } | null;
 }
 
-export interface NotificationListResponse {
+export interface NotificationListData {
   items: Notification[];
-  pageInfo: {
-    limit: number;
-    hasNextPage: boolean;
-    nextCursor?: string;
-  };
+  currentPage: number;
+  size: number;
+  hasNext: boolean;
 }
 
 export interface NotificationListParams {
+  page?: number;
   size?: number;
-  cursor?: string;
+}
+
+export interface NotificationPreferences {
+  pushEnabled: boolean;
+  friendEnabled: boolean;
+  diaryEnabled: boolean;
+  challengeEnabled: boolean;
+}
+
+export interface NotificationEndpoint {
+  id: number;
+  endpointUrl: string;
+  isActive: boolean;
+  lastSeenAt: string;
+}
+
+export interface WebPushEndpointRequest {
+  endpointUrl: string;
+  p256dh: string;
+  authSecret: string;
+}
+
+export interface UnreadCount {
+  unreadCount: number;
 }

@@ -4,7 +4,10 @@ import { CircleAvatar, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { useRouter } from 'next/navigation';
 
-import { Notification } from '../type/notification';
+import {
+  Notification,
+  NotificationTargetType,
+} from '../type/notification';
 
 interface NotificationListItemProps {
   notification: Notification;
@@ -22,16 +25,34 @@ function formatRelativeTime(createdAt: string): string {
   return `${days}일 전`;
 }
 
+function resolveTargetUrl(
+  targetType: NotificationTargetType,
+  targetId: number
+): string {
+  if (targetType === 'MEMBER') { return `/member/${targetId}`; }
+  if (targetType === 'DIARY') { return `/diary/${targetId}`; }
+  if (targetType === 'CHALLENGE') { return `/challenge/${targetId}`; }
+  return '/';
+}
+
 export function NotificationListItem({
   notification,
   onRead,
-}: NotificationListItemProps) {
+}: NotificationListItemProps): React.ReactElement {
   const router = useRouter();
-  const { id, message, isRead, createdAt, actionUrl, sender } = notification;
+  const {
+    id,
+    message,
+    isRead,
+    createdAt,
+    targetType,
+    targetId,
+    actorProfileUrl,
+  } = notification;
 
-  function handleClick() {
+  function handleClick(): void {
     if (!isRead) { onRead?.(id); }
-    router.push(actionUrl);
+    router.push(resolveTargetUrl(targetType, targetId));
   }
 
   return (
@@ -44,7 +65,7 @@ export function NotificationListItem({
         !isRead && 'bg-blue-50 hover:bg-blue-100'
       )}
     >
-      <CircleAvatar imageUrl={sender?.profileImage ?? null} size="sm" />
+      <CircleAvatar imageUrl={actorProfileUrl} size="sm" />
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <Text size="body1" weight="regular" className="text-gray-900">
