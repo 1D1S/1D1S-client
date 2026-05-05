@@ -1,13 +1,16 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, UseMutationResult, useQueryClient } from '@tanstack/react-query';
 
 import { notificationApi } from '../api/notificationApi';
 import { NOTIFICATION_QUERY_KEYS } from '../consts/queryKeys';
 import {
+  NotificationEndpoint,
   NotificationPreferences,
   WebPushEndpointRequest,
 } from '../type/notification';
 
-export function useMarkAsRead() {
+interface PrefContext { previous: NotificationPreferences | undefined }
+
+export function useMarkAsRead(): UseMutationResult<void, Error, number> {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -24,7 +27,7 @@ export function useMarkAsRead() {
   });
 }
 
-export function useMarkAllAsRead() {
+export function useMarkAllAsRead(): UseMutationResult<void, Error, void> {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -40,7 +43,12 @@ export function useMarkAllAsRead() {
   });
 }
 
-export function useUpdateNotificationPreferences() {
+export function useUpdateNotificationPreferences(): UseMutationResult<
+  NotificationPreferences,
+  Error,
+  NotificationPreferences,
+  PrefContext
+> {
   const queryClient = useQueryClient();
   const prefKey = NOTIFICATION_QUERY_KEYS.preferences();
 
@@ -63,26 +71,16 @@ export function useUpdateNotificationPreferences() {
   });
 }
 
-export function useRegisterEndpoint() {
+export function useRegisterEndpoint(): UseMutationResult<
+  NotificationEndpoint,
+  Error,
+  WebPushEndpointRequest
+> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: WebPushEndpointRequest) =>
       notificationApi.registerEndpoint(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: NOTIFICATION_QUERY_KEYS.endpoints(),
-      });
-    },
-  });
-}
-
-export function useDeleteEndpoint() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (endpointUrl: string) =>
-      notificationApi.deleteEndpoint(endpointUrl),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: NOTIFICATION_QUERY_KEYS.endpoints(),

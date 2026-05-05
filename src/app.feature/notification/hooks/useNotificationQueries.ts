@@ -3,7 +3,6 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { notificationApi } from '../api/notificationApi';
 import { NOTIFICATION_QUERY_KEYS } from '../consts/queryKeys';
 import {
-  NotificationEndpoint,
   NotificationListData,
   NotificationListParams,
   NotificationPreferences,
@@ -41,12 +40,3 @@ export function useNotificationPreferences(): UseQueryResult<
   });
 }
 
-export function useNotificationEndpoints(): UseQueryResult<
-  NotificationEndpoint[],
-  Error
-> {
-  return useQuery({
-    queryKey: NOTIFICATION_QUERY_KEYS.endpoints(),
-    queryFn: () => notificationApi.getEndpoints(),
-  });
-}

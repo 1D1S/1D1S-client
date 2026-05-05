@@ -3,6 +3,7 @@
 import { Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { Bell } from 'lucide-react';
+import React from 'react';
 
 import { NotificationListItem } from '../components/NotificationListItem';
 import {
@@ -11,7 +12,7 @@ import {
 } from '../hooks/useNotificationMutations';
 import { useNotifications } from '../hooks/useNotificationQueries';
 
-export function NotificationScreen() {
+export function NotificationScreen(): React.JSX.Element {
   const { data, isLoading } = useNotifications();
   const { mutate: markAsRead } = useMarkAsRead();
   const { mutate: markAllAsRead } = useMarkAllAsRead();
