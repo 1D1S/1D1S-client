@@ -1,15 +1,28 @@
 self.addEventListener('push', (event) => {
-  if (!event.data) return;
+  console.log('[SW] push event received', event.data?.text());
 
-  const data = event.data.json();
+  if (!event.data) {
+    console.warn('[SW] push event has no data');
+    return;
+  }
+
+  let data;
+  try {
+    data = event.data.json();
+  } catch (err) {
+    console.error('[SW] push data JSON parse failed:', err, event.data.text());
+    return;
+  }
+
   const title = data.title ?? '1D1S 알림';
   const options = {
     body: data.body ?? '',
-    icon: '/images/icon-192x192.png',
-    badge: '/images/icon-192x192.png',
+    icon: '/images/logo.png',
+    badge: '/images/logo.png',
     data: { url: data.url ?? '/notification' },
   };
 
+  console.log('[SW] showNotification', title, options);
   event.waitUntil(self.registration.showNotification(title, options));
 });
 

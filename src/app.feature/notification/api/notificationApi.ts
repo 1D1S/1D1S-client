@@ -1,4 +1,4 @@
-import { apiClient } from '@module/api/client';
+import { apiClient, silentAuthClient } from '@module/api/client';
 import { requestData } from '@module/api/request';
 
 import {
@@ -20,8 +20,9 @@ export const notificationApi = {
       params,
     }),
 
+  // silentAuthClient: 401 시 logout 흐름을 트리거하지 않음 (헤더 뱃지 전용)
   getUnreadCount: async (): Promise<UnreadCount> =>
-    requestData<UnreadCount>(apiClient, {
+    requestData<UnreadCount>(silentAuthClient, {
       url: '/notifications/unread-count',
       method: 'GET',
     }),

@@ -342,9 +342,10 @@ export default function AppLayoutShell({
     const update = (): void => {
       const dot = dotRef.current;
       if (!dot) { return; }
-      const rect = bell.getBoundingClientRect();
-      dot.style.top = `${rect.top + 2}px`;
-      dot.style.left = `${rect.right - 10}px`;
+      const bellRect = bell.getBoundingClientRect();
+      const headerRect = header.getBoundingClientRect();
+      dot.style.top = `${bellRect.top - headerRect.top + 2}px`;
+      dot.style.left = `${bellRect.right - headerRect.left - 10}px`;
     };
 
     update();
@@ -436,6 +437,14 @@ export default function AppLayoutShell({
                 setIsSidebarOverlayOpen(true);
               }}
             />
+            {hasUnread && (
+              <span
+                ref={dotRef}
+                aria-hidden
+                style={{ position: 'absolute' }}
+                className="pointer-events-none z-50 h-2 w-2 rounded-full bg-red-500"
+              />
+            )}
           </header>
         ) : null}
 
@@ -510,15 +519,6 @@ export default function AppLayoutShell({
           </div>
         ) : null}
       </div>
-
-      {hasUnread && (
-        <span
-          ref={dotRef}
-          aria-hidden
-          style={{ position: 'fixed' }}
-          className="pointer-events-none z-50 h-2 w-2 rounded-full bg-red-500"
-        />
-      )}
 
       <BetaButton />
     </AppLayoutProvider>

@@ -21,8 +21,8 @@ export interface Notification {
   category: NotificationCategory;
   type: NotificationType;
   message: string;
-  targetType: NotificationTargetType;
-  targetId: number;
+  targetType: NotificationTargetType | null;
+  targetId: number | null;
   isRead: boolean;
   groupedCount: number;
   actorId: number | null;

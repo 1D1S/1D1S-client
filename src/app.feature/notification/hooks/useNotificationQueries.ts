@@ -26,6 +26,8 @@ export function useUnreadCount(
     queryKey: NOTIFICATION_QUERY_KEYS.unreadCount(),
     queryFn: () => notificationApi.getUnreadCount(),
     enabled: options?.enabled ?? true,
+    retry: false,
+    throwOnError: false,
   });
 }
 

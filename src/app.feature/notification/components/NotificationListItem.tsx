@@ -4,10 +4,7 @@ import { CircleAvatar, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { useRouter } from 'next/navigation';
 
-import {
-  Notification,
-  NotificationTargetType,
-} from '../type/notification';
+import { Notification } from '../type/notification';
 
 interface NotificationListItemProps {
   notification: Notification;
@@ -26,13 +23,14 @@ function formatRelativeTime(createdAt: string): string {
 }
 
 function resolveTargetUrl(
-  targetType: NotificationTargetType,
-  targetId: number
-): string {
+  targetType: Notification['targetType'],
+  targetId: Notification['targetId'],
+): string | null {
+  if (!targetType || !targetId) { return null; }
   if (targetType === 'MEMBER') { return `/member/${targetId}`; }
   if (targetType === 'DIARY') { return `/diary/${targetId}`; }
   if (targetType === 'CHALLENGE') { return `/challenge/${targetId}`; }
-  return '/';
+  return null;
 }
 
 export function NotificationListItem({
@@ -50,9 +48,11 @@ export function NotificationListItem({
     actorProfileUrl,
   } = notification;
 
+  const targetUrl = resolveTargetUrl(targetType, targetId);
+
   function handleClick(): void {
     if (!isRead) { onRead?.(id); }
-    router.push(resolveTargetUrl(targetType, targetId));
+    if (targetUrl) { router.push(targetUrl); }
   }
 
   return (
@@ -62,10 +62,11 @@ export function NotificationListItem({
       className={cn(
         'flex w-full items-start gap-3 px-4 py-3 text-left',
         'transition-colors hover:bg-gray-50',
-        !isRead && 'bg-blue-50 hover:bg-blue-100'
+        !isRead && 'bg-blue-50 hover:bg-blue-100',
+        !targetUrl && 'cursor-default',
       )}
     >
-      <CircleAvatar imageUrl={actorProfileUrl} size="sm" />
+      <CircleAvatar imageUrl={actorProfileUrl ?? undefined} size="sm" />
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <Text size="body1" weight="regular" className="text-gray-900">
