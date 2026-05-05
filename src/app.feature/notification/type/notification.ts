@@ -14,7 +14,12 @@ export type NotificationType =
   | 'CHALLENGE_APPROVED'
   | 'CHALLENGE_REJECTED';
 
-export type NotificationTargetType = 'MEMBER' | 'DIARY' | 'CHALLENGE';
+export type NotificationTargetType =
+  | 'MEMBER'
+  | 'DIARY'
+  | 'DIARY_COMMENT'
+  | 'CHALLENGE'
+  | string;
 
 export interface Notification {
   id: number;

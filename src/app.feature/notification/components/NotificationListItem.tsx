@@ -27,9 +27,11 @@ function resolveTargetUrl(
   targetId: Notification['targetId'],
 ): string | null {
   if (!targetType || !targetId) { return null; }
-  if (targetType === 'MEMBER') { return `/member/${targetId}`; }
-  if (targetType === 'DIARY') { return `/diary/${targetId}`; }
-  if (targetType === 'CHALLENGE') { return `/challenge/${targetId}`; }
+  if (targetType.startsWith('MEMBER') || targetType.startsWith('FRIEND')) {
+    return `/member/${targetId}`;
+  }
+  if (targetType.startsWith('DIARY')) { return `/diary/${targetId}`; }
+  if (targetType.startsWith('CHALLENGE')) { return `/challenge/${targetId}`; }
   return null;
 }
 
