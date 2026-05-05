@@ -42,14 +42,23 @@ export function useMarkAllAsRead() {
 
 export function useUpdateNotificationPreferences() {
   const queryClient = useQueryClient();
+  const prefKey = NOTIFICATION_QUERY_KEYS.preferences();
 
   return useMutation({
     mutationFn: (data: NotificationPreferences) =>
       notificationApi.updatePreferences(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: NOTIFICATION_QUERY_KEYS.preferences(),
-      });
+    onMutate: async (newPrefs) => {
+      await queryClient.cancelQueries({ queryKey: prefKey });
+      const previous =
+        queryClient.getQueryData<NotificationPreferences>(prefKey);
+      queryClient.setQueryData(prefKey, newPrefs);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      queryClient.setQueryData(prefKey, context?.previous);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: prefKey });
     },
   });
 }

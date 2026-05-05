@@ -22,7 +22,7 @@ import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import { notifyApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
 import { validateNickname } from '@module/utils/nickname';
-import { LogOut, UserMinus } from 'lucide-react';
+import { Bell, LogOut, UserMinus } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
@@ -276,6 +276,34 @@ export default function AccountSettingsPage(): React.ReactElement {
                 </div>
               )}
             </div>
+          </section>
+
+          {/* 알림 설정 */}
+          <section className="rounded-4 border border-gray-200 bg-white">
+            <div className="border-b border-gray-100 px-5 py-4">
+              <Text size="body1" weight="bold" className="text-gray-500">
+                알림
+              </Text>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => router.push('/mypage/notification-settings')}
+              className={cn(
+                'flex w-full cursor-pointer items-center justify-between',
+                'px-5 py-4 transition hover:bg-gray-50',
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Bell className="h-5 w-5 text-gray-500" />
+                <Text size="body1" weight="medium" className="text-gray-700">
+                  알림 설정
+                </Text>
+              </div>
+              <Text size="body1" weight="medium" className="text-gray-400">
+                ›
+              </Text>
+            </button>
           </section>
 
           {/* 계정 */}

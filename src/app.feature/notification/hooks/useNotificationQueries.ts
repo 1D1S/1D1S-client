@@ -19,10 +19,13 @@ export function useNotifications(
   });
 }
 
-export function useUnreadCount(): UseQueryResult<UnreadCount, Error> {
+export function useUnreadCount(
+  options?: { enabled?: boolean }
+): UseQueryResult<UnreadCount, Error> {
   return useQuery({
     queryKey: NOTIFICATION_QUERY_KEYS.unreadCount(),
     queryFn: () => notificationApi.getUnreadCount(),
+    enabled: options?.enabled ?? true,
   });
 }
 
