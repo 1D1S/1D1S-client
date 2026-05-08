@@ -8,6 +8,7 @@ import {
   type RightSidebarProps,
 } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
+import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
@@ -240,6 +241,8 @@ export default function AppLayoutShell({
   const [isSidebarOverlayOpen, setIsSidebarOverlayOpen] = useState(false);
   const [isSidebarOverlayMounted, setIsSidebarOverlayMounted] = useState(false);
   const sidebarOverlayRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const dotRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     if (isSidebarOverlayOpen) {
@@ -326,6 +329,30 @@ export default function AppLayoutShell({
     }
   }, [isLoggedIn, sidebarData, pathname, router]);
 
+  const { data: unreadData } = useUnreadCount({ enabled: isLoggedIn });
+  const hasUnread = isLoggedIn && (unreadData?.unreadCount ?? 0) > 0;
+
+  useEffect(() => {
+    if (!hasUnread) { return; }
+    const header = headerRef.current;
+    if (!header) { return; }
+    const bell = header.querySelector<HTMLElement>('button[aria-label="알림"]');
+    if (!bell) { return; }
+
+    const update = (): void => {
+      const dot = dotRef.current;
+      if (!dot) { return; }
+      const bellRect = bell.getBoundingClientRect();
+      const headerRect = header.getBoundingClientRect();
+      dot.style.top = `${bellRect.top - headerRect.top + 2}px`;
+      dot.style.left = `${bellRect.right - headerRect.left - 10}px`;
+    };
+
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [hasUnread]);
+
   const sidebarProps: RightSidebarProps = useMemo(() => {
     if (!sidebarData || !isLoggedIn) {
       return DEFAULT_RIGHT_SIDEBAR_PROPS;
@@ -379,7 +406,7 @@ export default function AppLayoutShell({
     >
       <div className="flex min-h-screen w-full flex-col bg-white">
         {showHeader ? (
-          <header className="sticky top-0 z-30 shrink-0 bg-white px-4 pt-3">
+          <header ref={headerRef} className="sticky top-0 z-30 shrink-0 bg-white px-4 pt-3">
             <AppHeader
               navItems={[...APP_HEADER_NAV_ITEMS]}
               activeKey={activeNavKey}
@@ -410,6 +437,14 @@ export default function AppLayoutShell({
                 setIsSidebarOverlayOpen(true);
               }}
             />
+            {hasUnread && (
+              <span
+                ref={dotRef}
+                aria-hidden
+                style={{ position: 'absolute' }}
+                className="pointer-events-none z-50 h-2 w-2 rounded-full bg-red-500"
+              />
+            )}
           </header>
         ) : null}
 
