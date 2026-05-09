@@ -1,6 +1,6 @@
 'use client';
 
-import { PageWatermark, StreakHero } from '@1d1s/design-system';
+import { PageWatermark } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
@@ -11,6 +11,7 @@ import React, { useState } from 'react';
 import HomeQuickActions from '../components/HomeQuickActions';
 import HomeRandomChallengesSection from '../components/HomeRandomChallengesSection';
 import HomeRandomDiariesSection from '../components/HomeRandomDiariesSection';
+import HomeStreakSlot from '../components/HomeStreakSlot';
 import HomeWarmBanner from '../components/HomeWarmBanner';
 import HomeWarmGreeting from '../components/HomeWarmGreeting';
 import { useHomeRandomData } from '../hooks/useHomeRandomData';
@@ -65,7 +66,6 @@ export default function HomeScreen(): React.ReactElement {
 
   const streakDays = sidebar?.streakCount ?? 0;
   const todayGoalCount = sidebar?.todayGoalCount ?? 0;
-  const showStreakHero = isLoggedIn && Boolean(sidebar);
 
   return (
     <div
@@ -93,20 +93,18 @@ export default function HomeScreen(): React.ReactElement {
         {/* Banner + StreakHero row (데스크탑은 1:1, 태블릿은 1.4:1, 모바일은 1열) */}
         <div
           className={cn(
-            'grid gap-3',
-            showStreakHero && 'sm:grid-cols-[1.4fr_1fr] lg:grid-cols-2',
+            'grid gap-3 sm:grid-cols-[1.4fr_1fr] lg:grid-cols-2',
             'lg:gap-5'
           )}
         >
           <HomeWarmBanner />
-          {showStreakHero ? (
-            <div className="hidden sm:block">
-              <StreakHero
-                days={streakDays}
-                meta={`오늘의 목표 ${todayGoalCount}개`}
-              />
-            </div>
-          ) : null}
+          <div className="hidden sm:block">
+            <HomeStreakSlot
+              isLoggedIn={isLoggedIn}
+              streakDays={streakDays}
+              todayGoalCount={todayGoalCount}
+            />
+          </div>
         </div>
 
         <HomeQuickActions />
