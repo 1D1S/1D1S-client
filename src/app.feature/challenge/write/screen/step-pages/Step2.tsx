@@ -11,7 +11,8 @@ import { User, Users } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 
 export function Step2(): React.ReactElement {
-  const { control, watch } = useFormContext<ChallengeCreateFormValues>();
+  const { control, setValue, watch } =
+    useFormContext<ChallengeCreateFormValues>();
   const participationType = watch('participationType');
 
   return (
@@ -31,6 +32,9 @@ export function Step2(): React.ReactElement {
                   onCheckedChange={(checked) => {
                     if (checked) {
                       field.onChange('INDIVIDUAL');
+                      // 개인 챌린지는 자유 목표를 선택할 수 없으므로 INDIVIDUAL
+                      // 진입 시점에 goalType 을 FIXED 로 동기화한다.
+                      setValue('goalType', 'FIXED', { shouldValidate: true });
                     }
                   }}
                   width="100%"

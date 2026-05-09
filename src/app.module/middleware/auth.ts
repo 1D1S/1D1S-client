@@ -21,6 +21,7 @@ const PROTECTED_ROUTES: ProtectedRoute[] = [
   { pattern: /^\/challenge\/\d+\/edit\/?$/, type: 'login-redirect' },
   { pattern: /^\/challenge\/create\/?$/,    type: 'login-redirect' },
   { pattern: /^\/mypage(\/.*)?$/,           type: 'login-redirect' },
+  { pattern: /^\/notification\/?$/,         type: 'login-redirect' },
 ];
 
 function matchRoute(pathname: string): ProtectedRoute | null {

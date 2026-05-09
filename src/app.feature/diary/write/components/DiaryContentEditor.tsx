@@ -22,7 +22,10 @@ import {
   ListOrdered,
   Underline,
 } from 'lucide-react';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
+
+// lowlight 인스턴스는 컴포넌트 인스턴스마다 동일하므로 모듈 스코프에 1회만 생성.
+const lowlight = createLowlight(common);
 
 interface DiaryContentEditorProps {
   content: string;
@@ -148,7 +151,6 @@ export function DiaryContentEditor({
   onChange,
 }: DiaryContentEditorProps): React.ReactElement {
   const lastSyncedHtmlRef = useRef('');
-  const lowlight = useMemo(() => createLowlight(common), []);
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ codeBlock: false }),

@@ -1,9 +1,9 @@
 'use client';
 
 import { Button, Text, TextField } from '@1d1s/design-system';
+import dynamic from 'next/dynamic';
 import React from 'react';
 
-import { DiaryContentEditor } from '../components/DiaryContentEditor';
 import { DiaryCreateChallengeSection } from '../components/DiaryCreateChallengeSection';
 import { DiaryCreateFinishSection } from '../components/DiaryCreateFinishSection';
 import { DiaryCreateGoalsSection } from '../components/DiaryCreateGoalsSection';
@@ -11,6 +11,24 @@ import { DiaryCreateMissingChallengeDialog } from '../components/DiaryCreateMiss
 import { DiaryCreateThumbnailSection } from '../components/DiaryCreateThumbnailSection';
 import { DiaryCreateUnavailableDialog } from '../components/DiaryCreateUnavailableDialog';
 import { useDiaryCreateForm } from '../hooks/useDiaryCreateForm';
+
+// tiptap(~200KB+)은 일지 작성/편집 진입 시에만 필요하므로 동적 import 로
+// 페이지 청크에서 분리한다. SSR 도 끔 — 에디터는 client-only.
+const DiaryContentEditor = dynamic(
+  () =>
+    import('../components/DiaryContentEditor').then(
+      (mod) => mod.DiaryContentEditor
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="rounded-3 min-h-64 w-full animate-pulse border border-gray-200 bg-gray-50"
+        aria-hidden
+      />
+    ),
+  }
+);
 
 export default function DiaryCreateScreen(): React.ReactElement {
   const {

@@ -1,7 +1,6 @@
 import { CheckContainer, cn, GoalAddList, Text } from '@1d1s/design-system';
 import { ChallengeCreateFormValues } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { Flag, Target } from 'lucide-react';
-import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import {
@@ -12,17 +11,9 @@ import {
 } from '@/app.component/ui/Form';
 
 export function Step3(): React.ReactElement {
-  const { control, setValue, watch } =
-    useFormContext<ChallengeCreateFormValues>();
+  const { control, watch } = useFormContext<ChallengeCreateFormValues>();
   const participationType = watch('participationType');
-  const goalType = watch('goalType');
   const isIndividual = participationType === 'INDIVIDUAL';
-
-  useEffect(() => {
-    if (isIndividual && goalType !== 'FIXED') {
-      setValue('goalType', 'FIXED', { shouldValidate: true });
-    }
-  }, [goalType, isIndividual, setValue]);
 
   return (
     <div className="mx-auto w-full max-w-[980px] space-y-4">

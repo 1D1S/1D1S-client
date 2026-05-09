@@ -20,10 +20,12 @@ import { apiClient } from '@module/api/client';
 import { notifyApiError } from '@module/api/error';
 import { requestData } from '@module/api/request';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import { toast } from 'sonner';
 
 import type { ChallengeCategory, UpdateChallengeRequest } from '../../board/type/challenge';
+
+const NOOP_SUBSCRIBE = (): (() => void) => () => {};
 
 const CATEGORY_OPTIONS: Array<{ value: ChallengeCategory; label: string }> = [
   { value: 'DEV', label: getCategoryLabel('DEV') },
@@ -43,16 +45,23 @@ export default function ChallengeEditScreen({
   id,
 }: ChallengeEditScreenProps): React.ReactElement | null {
   const router = useRouter();
+  // 하이드레이션 직후 useIsLoggedIn 이 일시적으로 false 인 구간에 useEffect 가
+  // /login 으로 라우팅하는 것을 막기 위한 hasMounted 가드.
+  const hasMounted = useSyncExternalStore(
+    NOOP_SUBSCRIBE,
+    () => true,
+    () => false,
+  );
   const isLoggedIn = useIsLoggedIn();
   const challengeId = Number(id);
   const { data, isLoading, isError } = useChallengeDetail(challengeId);
   const updateChallenge = useUpdateChallenge();
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (hasMounted && !isLoggedIn) {
       router.replace('/login');
     }
-  }, [isLoggedIn, router]);
+  }, [hasMounted, isLoggedIn, router]);
 
   const summary = data?.challengeSummary;
   const detail = data?.challengeDetail;

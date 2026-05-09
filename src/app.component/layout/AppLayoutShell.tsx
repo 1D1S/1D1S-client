@@ -38,6 +38,7 @@ const RIGHT_SIDEBAR_HIDDEN_ROUTES = [
   '/diary/create',
   '/mypage',
   '/challenge/create',
+  '/notification',
 ];
 
 const APP_HEADER_NAV_ITEMS = [
@@ -349,8 +350,12 @@ export default function AppLayoutShell({
     };
 
     update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    // 헤더/벨 자체의 크기 변화로 dot 위치를 갱신해야 하므로 글로벌 resize 가
+    // 아닌 ResizeObserver 로 정확히 두 노드만 관찰한다. (중복 resize 등록 회피)
+    const observer = new ResizeObserver(update);
+    observer.observe(header);
+    observer.observe(bell);
+    return () => observer.disconnect();
   }, [hasUnread]);
 
   const sidebarProps: RightSidebarProps = useMemo(() => {

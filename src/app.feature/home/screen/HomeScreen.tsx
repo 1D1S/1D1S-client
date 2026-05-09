@@ -5,7 +5,7 @@ import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { HOME_MAIN_BANNERS } from '@constants/consts/homeData';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 
 import HomeQuickActions from '../components/HomeQuickActions';
 import HomeRandomChallengesSection from '../components/HomeRandomChallengesSection';
@@ -25,13 +25,16 @@ export default function HomeScreen(): React.ReactElement {
     ? '로그인 후 이용할 수 있습니다.'
     : undefined;
 
-  useEffect(() => {
+  // `?loginRequired=true` 진입 시 비로그인 사용자에게만 다이얼로그를 1회 띄운다.
+  // mount-only useEffect 는 hydration 직후 isLoggedIn 이 일시적으로 false 인 구간을
+  // 잡아 잘못된 다이얼로그를 띄울 수 있어, prevState 패턴으로 변경 시점에만 반응한다.
+  const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
+  if (isLoginRequired !== prevIsLoginRequired) {
+    setPrevIsLoginRequired(isLoginRequired);
     if (isLoginRequired && !isLoggedIn) {
       setShowLoginDialog(true);
     }
-    // 마운트 시에만 로그인 변경 여부를 확인하기 위해 의존성 배열을 비웠습니다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }
 
   const handleDialogOpenChange = (open: boolean): void => {
     setShowLoginDialog(open);
