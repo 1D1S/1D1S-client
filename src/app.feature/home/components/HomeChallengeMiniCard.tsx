@@ -29,7 +29,7 @@ export default function HomeChallengeMiniCard({
       type="button"
       onClick={onClick}
       className={cn(
-        'group flex w-full flex-col gap-2.5',
+        'group flex w-full flex-col items-stretch gap-2.5',
         'rounded-3 border border-gray-200 bg-white p-3.5 text-left',
         'transition duration-200 ease-out',
         'hover:border-main-200 hover:shadow-warm hover:-translate-y-0.5'
@@ -53,9 +53,11 @@ export default function HomeChallengeMiniCard({
           <Stripe tone="peach" />
         )}
       </div>
-      <Tag tone="brand" size="xs">
-        {category}
-      </Tag>
+      <div className="flex">
+        <Tag tone="brand" size="xs">
+          {category}
+        </Tag>
+      </div>
       <div
         className={cn(
           'line-clamp-2 min-h-[2.6em] text-[13px] font-extrabold',
