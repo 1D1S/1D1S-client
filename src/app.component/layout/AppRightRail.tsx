@@ -1,6 +1,6 @@
 'use client';
 
-import { Icon } from '@1d1s/design-system';
+import { Icon, StreakHero } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -116,35 +116,10 @@ export default function AppRightRail({
       </div>
 
       {/* Streak hero */}
-      <div
-        className={cn(
-          'rounded-3 border-main-200 border p-4',
-          'from-main-100 via-main-200/40 to-main-200 bg-gradient-to-br'
-        )}
-      >
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-gray-600">
-            현재 스트릭
-          </span>
-          <span aria-hidden className="animate-flame-flicker text-[18px]">
-            🔥
-          </span>
-        </div>
-        <div className="mt-2 flex items-baseline gap-1">
-          <span
-            className={cn(
-              'text-brand text-[28px] leading-none font-extrabold',
-              'tracking-tight tabular-nums'
-            )}
-          >
-            {streakDays}
-          </span>
-          <span className="text-[13px] font-bold text-gray-700">일째</span>
-        </div>
-        <div className="mt-1.5 text-[10px] text-gray-600">
-          오늘의 목표 {todayGoalCount}개
-        </div>
-      </div>
+      <StreakHero
+        days={streakDays}
+        meta={`오늘의 목표 ${todayGoalCount}개`}
+      />
 
       {/* Active challenges */}
       <div>
