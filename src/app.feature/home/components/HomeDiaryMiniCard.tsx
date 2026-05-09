@@ -1,6 +1,6 @@
 'use client';
 
-import { Icon, Stripe } from '@1d1s/design-system';
+import { ChallengeTag, Icon, Stripe } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import Image from 'next/image';
 import React from 'react';
@@ -103,13 +103,10 @@ export default function HomeDiaryMiniCard({
         </span>
       </div>
       <div className="flex flex-col gap-1.5 p-3">
-        <div
-          className={cn(
-            'text-brand truncate text-xs font-semibold',
-            'tracking-tight'
-          )}
-        >
-          · {challengeLabel}
+        <div className="flex">
+          <ChallengeTag size="sm" className="max-w-full truncate">
+            {challengeLabel}
+          </ChallengeTag>
         </div>
         <div
           className={cn(
