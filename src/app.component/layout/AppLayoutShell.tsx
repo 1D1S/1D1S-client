@@ -1,36 +1,33 @@
 'use client';
 
-import {
-  AppHeader,
-  Button,
-  RightSidebar,
-  type RightSidebarChallenge,
-  type RightSidebarProps,
-} from '@1d1s/design-system';
+import { Button } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
 import { authStorage } from '@module/utils/auth';
-import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, {
   useEffect,
   useMemo,
-  useRef,
-  useState,
   useSyncExternalStore,
 } from 'react';
 
 import { BetaButton } from '../BetaButton';
+import AppBottomNav from './AppBottomNav';
 import { AppLayoutProvider } from './AppLayoutContext';
+import AppRightRail from './AppRightRail';
+import AppTopNav from './AppTopNav';
 
-const HEADER_HIDDEN_ROUTES = [
+type Viewport = 'mobile' | 'tablet' | 'desktop';
+
+const TOP_NAV_HIDDEN_ROUTES = [
   '/auth/login',
   '/login',
   '/auth/signup',
   '/signup',
 ];
-const RIGHT_SIDEBAR_HIDDEN_ROUTES = [
+
+const RIGHT_RAIL_HIDDEN_ROUTES = [
   '/auth/login',
   '/login',
   '/auth/signup',
@@ -41,24 +38,19 @@ const RIGHT_SIDEBAR_HIDDEN_ROUTES = [
   '/notification',
 ];
 
-const APP_HEADER_NAV_ITEMS = [
-  { key: 'home', label: '홈' },
-  { key: 'explore', label: '챌린지' },
-  { key: 'community', label: '일지' },
-] as const;
+const BOTTOM_NAV_HIDDEN_ROUTES = [
+  '/auth/login',
+  '/login',
+  '/auth/signup',
+  '/signup',
+  '/diary/create',
+  '/challenge/create',
+  '/onboarding',
+];
 
-const APP_HEADER_ROUTE_BY_KEY: Record<string, string> = {
-  home: '/',
-  explore: '/challenge',
-  community: '/diary',
-};
-
-const DEFAULT_RIGHT_SIDEBAR_PROPS: RightSidebarProps = {
-  userName: '사용자',
-  userSubtitle: '로그인이 필요한 서비스입니다.',
-  streakDays: 0,
-  challenges: [],
-};
+const NOOP_SUBSCRIBE = (): (() => void) => () => {};
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+const ENDLESS_MIN_YEAR = 2090;
 
 function matchesRoute(pathname: string, routes: readonly string[]): boolean {
   return routes.some(
@@ -66,15 +58,16 @@ function matchesRoute(pathname: string, routes: readonly string[]): boolean {
   );
 }
 
-function resolveActiveNavKey(pathname: string): string {
+function resolveActiveNavId(pathname: string): string {
   if (pathname.startsWith('/challenge')) {
-    return 'explore';
+    return 'challenge';
   }
-
   if (pathname.startsWith('/diary')) {
-    return 'community';
+    return 'diary';
   }
-
+  if (pathname.startsWith('/mypage')) {
+    return 'mypage';
+  }
   return 'home';
 }
 
@@ -82,26 +75,12 @@ function isChallengeDetailRoute(pathname: string): boolean {
   if (!pathname.startsWith('/challenge/')) {
     return false;
   }
-
   const segments = pathname.split('/').filter(Boolean);
   if (segments.length < 2) {
     return false;
   }
-
   return segments[1] !== 'create';
 }
-
-/**
- * 패널 사이드바 없이 헤더 프로필 → 오버레이 방식을 사용하는 경로.
- * 이 경로에서는 데스크톱 너비여도 오버레이를 자동으로 닫지 않습니다.
- *
- * 추가 방법:
- *   - 고정 경로: OVERLAY_SIDEBAR_ROUTES 배열에 추가
- *   - 동적 경로: isOverlaySidebarRoute 함수 내 조건 추가 (예: isDiaryDetailRoute)
- */
-const OVERLAY_SIDEBAR_ROUTES: readonly string[] = [
-  // 예: '/diary/' 형태의 일지 상세는 추후 아래에 추가
-];
 
 function needsBackButton(pathname: string): boolean {
   if (isChallengeDetailRoute(pathname)) {
@@ -128,17 +107,6 @@ function needsBackButton(pathname: string): boolean {
   return false;
 }
 
-function isOverlaySidebarRoute(pathname: string): boolean {
-  return (
-    isChallengeDetailRoute(pathname) ||
-    matchesRoute(pathname, OVERLAY_SIDEBAR_ROUTES)
-  );
-}
-
-const NOOP_SUBSCRIBE = (): (() => void) => () => {};
-const MS_PER_DAY = 1000 * 60 * 60 * 24;
-const ENDLESS_MIN_YEAR = 2090;
-
 function isLikelyLegacyEndless(challenge: {
   title?: string;
   startDate?: string;
@@ -147,23 +115,13 @@ function isLikelyLegacyEndless(challenge: {
   if (!challenge.title?.includes('무기한')) {
     return false;
   }
-
   const start = new Date(challenge.startDate ?? '').getTime();
   const end = new Date(challenge.endDate ?? '').getTime();
   if (Number.isNaN(start) || Number.isNaN(end) || end <= start) {
     return false;
   }
-
   const durationDays = Math.ceil((end - start) / MS_PER_DAY);
   return durationDays === 7;
-}
-
-let mountTimestamp = 0;
-function getMountTimestamp(): number {
-  if (mountTimestamp === 0) {
-    mountTimestamp = Date.now();
-  }
-  return mountTimestamp;
 }
 
 function resolveHasDeadline(challenge: {
@@ -176,25 +134,20 @@ function resolveHasDeadline(challenge: {
   if (typeof challenge.hasDeadline === 'boolean') {
     return challenge.hasDeadline;
   }
-
   if (challenge.periodType === 'ENDLESS') {
     return false;
   }
-
   if (isLikelyLegacyEndless(challenge)) {
     return false;
   }
-
   const endDate = challenge.endDate?.trim();
   if (!endDate) {
     return false;
   }
-
   const parsedEnd = new Date(endDate);
   if (Number.isNaN(parsedEnd.getTime())) {
     return false;
   }
-
   return parsedEnd.getUTCFullYear() < ENDLESS_MIN_YEAR;
 }
 
@@ -205,14 +158,36 @@ function calculateProgress(
 ): number {
   const start = new Date(startDate).getTime();
   const end = new Date(endDate).getTime();
-
   if (Number.isNaN(start) || Number.isNaN(end) || end <= start || now <= 0) {
     return 0;
   }
-
   const total = Math.max(1, Math.ceil((end - start) / MS_PER_DAY));
   const elapsed = Math.max(0, Math.ceil((now - start) / MS_PER_DAY));
   return Math.min(100, Math.round((elapsed / total) * 100));
+}
+
+let mountTimestamp = 0;
+function getMountTimestamp(): number {
+  if (mountTimestamp === 0) {
+    mountTimestamp = Date.now();
+  }
+  return mountTimestamp;
+}
+
+function readViewport(): Viewport {
+  const width = window.innerWidth;
+  if (width < 640) {
+    return 'mobile';
+  }
+  if (width < 1024) {
+    return 'tablet';
+  }
+  return 'desktop';
+}
+
+function subscribeViewport(callback: () => void): () => void {
+  window.addEventListener('resize', callback);
+  return () => window.removeEventListener('resize', callback);
 }
 
 export default function AppLayoutShell({
@@ -230,90 +205,24 @@ export default function AppLayoutShell({
   );
   const now = useSyncExternalStore(NOOP_SUBSCRIBE, getMountTimestamp, () => 0);
 
-  const hasTokenHint = hasMounted && authStorage.hasTokens();
-  const isMobile = useSyncExternalStore(
-    (callback) => {
-      window.addEventListener('resize', callback);
-      return () => window.removeEventListener('resize', callback);
-    },
-    () => window.innerWidth < 1024,
-    () => true
+  const viewport = useSyncExternalStore<Viewport>(
+    subscribeViewport,
+    readViewport,
+    () => 'desktop'
   );
-  const [isSidebarOverlayOpen, setIsSidebarOverlayOpen] = useState(false);
-  const [isSidebarOverlayMounted, setIsSidebarOverlayMounted] = useState(false);
-  const sidebarOverlayRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLElement>(null);
-  const dotRef = useRef<HTMLSpanElement>(null);
 
-  useEffect(() => {
-    if (isSidebarOverlayOpen) {
-      const timerId = window.setTimeout(
-        () => setIsSidebarOverlayMounted(true),
-        0
-      );
-      return () => window.clearTimeout(timerId);
-    }
-    const timerId = window.setTimeout(
-      () => setIsSidebarOverlayMounted(false),
-      200
-    );
-    return () => window.clearTimeout(timerId);
-  }, [isSidebarOverlayOpen]);
+  const hasTokenHint = hasMounted && authStorage.hasTokens();
 
-  useEffect(() => {
-    const timerId = window.setTimeout(() => setIsSidebarOverlayOpen(false), 0);
-    return () => window.clearTimeout(timerId);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (!isMobile && isSidebarOverlayOpen && !isOverlaySidebarRoute(pathname)) {
-      const timerId = window.setTimeout(() => {
-        setIsSidebarOverlayOpen(false);
-      }, 0);
-      return () => window.clearTimeout(timerId);
-    }
-    return undefined;
-  }, [isMobile, isSidebarOverlayOpen, pathname]);
-
-  useEffect(() => {
-    if (!isSidebarOverlayOpen) {
-      return;
-    }
-    const handleClickOutside = (event: MouseEvent): void => {
-      if (
-        sidebarOverlayRef.current &&
-        !sidebarOverlayRef.current.contains(event.target as Node)
-      ) {
-        setIsSidebarOverlayOpen(false);
-      }
-    };
-    const handleKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
-        setIsSidebarOverlayOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isSidebarOverlayOpen]);
   const {
     data: sidebarData,
     isLoading: isSidebarLoading,
     isFetching: isSidebarFetching,
   } = useSidebar();
-  /**
-   * 실제 로그인 상태 판정 (`useIsLoggedIn`과 동일 규칙):
-   * - 토큰 힌트가 없으면 항상 비로그인.
-   * - 힌트 위에서 sidebarData가 있거나 아직 fetching 중이면 잠정 로그인.
-   * - 로그아웃 시 힌트가 먼저 제거되므로 캐시된 sidebarData만으로 로그인 오판 방지.
-   */
-  const isLoggedIn = hasMounted && hasTokenHint && (
-    Boolean(sidebarData) || isSidebarLoading || isSidebarFetching
-  );
-  const isSidebarBusy = hasTokenHint && (isSidebarLoading || isSidebarFetching);
+
+  const isLoggedIn =
+    hasMounted &&
+    hasTokenHint &&
+    (Boolean(sidebarData) || isSidebarLoading || isSidebarFetching);
 
   useEffect(() => {
     if (
@@ -333,196 +242,89 @@ export default function AppLayoutShell({
   const { data: unreadData } = useUnreadCount({ enabled: isLoggedIn });
   const hasUnread = isLoggedIn && (unreadData?.unreadCount ?? 0) > 0;
 
-  useEffect(() => {
-    if (!hasUnread) { return; }
-    const header = headerRef.current;
-    if (!header) { return; }
-    const bell = header.querySelector<HTMLElement>('button[aria-label="알림"]');
-    if (!bell) { return; }
-
-    const update = (): void => {
-      const dot = dotRef.current;
-      if (!dot) { return; }
-      const bellRect = bell.getBoundingClientRect();
-      const headerRect = header.getBoundingClientRect();
-      dot.style.top = `${bellRect.top - headerRect.top + 2}px`;
-      dot.style.left = `${bellRect.right - headerRect.left - 10}px`;
-    };
-
-    update();
-    // 헤더/벨 자체의 크기 변화로 dot 위치를 갱신해야 하므로 글로벌 resize 가
-    // 아닌 ResizeObserver 로 정확히 두 노드만 관찰한다. (중복 resize 등록 회피)
-    const observer = new ResizeObserver(update);
-    observer.observe(header);
-    observer.observe(bell);
-    return () => observer.disconnect();
-  }, [hasUnread]);
-
-  const sidebarProps: RightSidebarProps = useMemo(() => {
-    if (!sidebarData || !isLoggedIn) {
-      return DEFAULT_RIGHT_SIDEBAR_PROPS;
+  const railChallenges = useMemo(() => {
+    if (!sidebarData) {
+      return [];
     }
+    return sidebarData.challengeList.map((ch) => {
+      const hasDeadline = resolveHasDeadline(ch);
+      return {
+        id: String(ch.challengeId),
+        title: ch.title,
+        progress: hasDeadline
+          ? calculateProgress(ch.startDate, ch.endDate, now)
+          : 0,
+        hasDeadline,
+      };
+    });
+  }, [sidebarData, now]);
 
-    const challenges: RightSidebarChallenge[] = sidebarData.challengeList.map(
-      (ch) => {
-        const hasDeadline = resolveHasDeadline(ch);
-        return {
-          id: String(ch.challengeId),
-          title: ch.title,
-          progress: hasDeadline
-            ? calculateProgress(ch.startDate, ch.endDate, now)
-            : 0,
-          hasDeadline,
-        };
-      }
-    );
-
-    return {
-      userName: sidebarData.nickname,
-      userSubtitle: `오늘의 목표 ${sidebarData.todayGoalCount}개`,
-      userImage: sidebarData.profileUrl,
-      streakDays: sidebarData.streakCount,
-      challenges,
-    };
-  }, [sidebarData, isLoggedIn, now]);
-  const showHeader = !matchesRoute(pathname, HEADER_HIDDEN_ROUTES);
+  const showTopNav = !matchesRoute(pathname, TOP_NAV_HIDDEN_ROUTES);
   const showBackButton = needsBackButton(pathname);
-  const showRightSidebar =
-    !matchesRoute(pathname, RIGHT_SIDEBAR_HIDDEN_ROUTES) &&
+  const isContentRouteForRail =
+    !matchesRoute(pathname, RIGHT_RAIL_HIDDEN_ROUTES) &&
     !isChallengeDetailRoute(pathname);
-  const activeNavKey = resolveActiveNavKey(pathname);
-  const sidebarStickyTopClass = showHeader ? 'top-28' : 'top-6';
-  const handleSidebarChallengeClick = (
-    challenge: RightSidebarChallenge
-  ): void => {
-    if (!challenge.id) {
-      return;
-    }
-    setIsSidebarOverlayOpen(false);
-    router.push(`/challenge/${challenge.id}`);
-  };
+  const showRightRail = viewport === 'desktop' && isContentRouteForRail;
+  const showBottomNav =
+    viewport === 'mobile' && !matchesRoute(pathname, BOTTOM_NAV_HIDDEN_ROUTES);
+  const activeNavId = resolveActiveNavId(pathname);
 
   return (
     <AppLayoutProvider
       value={{
-        hasRightSidebar: showRightSidebar,
+        hasRightSidebar: showRightRail,
         isRightSidebarCollapsed: false,
       }}
     >
-      <div className="flex min-h-screen w-full flex-col bg-white">
-        {showHeader ? (
-          <header ref={headerRef} className="sticky top-0 z-30 shrink-0 bg-white px-4 pt-3">
-            <AppHeader
-              navItems={[...APP_HEADER_NAV_ITEMS]}
-              activeKey={activeNavKey}
-              showProfile={
-                (isMobile || (isLoggedIn && !showRightSidebar)) &&
-                pathname !== '/mypage'
+      <div className="flex min-h-screen w-full flex-col bg-gray-50">
+        {showTopNav ? (
+          <AppTopNav
+            activeId={activeNavId}
+            isLoggedIn={isLoggedIn}
+            mode={viewport}
+            hasUnread={hasUnread}
+            streakDays={sidebarData?.streakCount ?? 0}
+            profileImageUrl={sidebarData?.profileUrl}
+            onProfileClick={() => {
+              if (!isLoggedIn) {
+                router.push('/login');
+                return;
               }
-              profileImage={
-                isLoggedIn
-                  ? sidebarProps.userImage || '/images/default-profile.png'
-                  : undefined
-              }
-              onLogoClick={() => router.push('/')}
-              onNavChange={(key) => {
-                const route = APP_HEADER_ROUTE_BY_KEY[key];
-                if (route) {
-                  router.push(route);
-                }
-              }}
-              showBackButton={showBackButton && isMobile}
-              onBackClick={() => router.back()}
-              onNotificationClick={() => router.push('/notification')}
-              onProfileClick={() => {
-                if (!isLoggedIn) {
-                  router.push('/login');
-                  return;
-                }
-                setIsSidebarOverlayOpen(true);
-              }}
-            />
-            {hasUnread && (
-              <span
-                ref={dotRef}
-                aria-hidden
-                style={{ position: 'absolute' }}
-                className="pointer-events-none z-50 h-2 w-2 rounded-full bg-red-500"
-              />
-            )}
-          </header>
+              router.push('/mypage');
+            }}
+          />
         ) : null}
 
-        {showBackButton && (
-          <div className="hidden shrink-0 px-6 pt-3 lg:flex">
+        {showBackButton ? (
+          <div className="hidden shrink-0 px-7 pt-3 lg:flex">
             <Button variant="ghost" size="small" onClick={() => router.back()}>
               <ArrowLeft className="mr-1 h-4 w-4" />
               뒤로가기
             </Button>
           </div>
-        )}
-
-        {showRightSidebar ? (
-          <div className="flex min-h-0 flex-1 gap-4">
-            <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden">
-              {children}
-            </main>
-
-            {/* 데스크톱 사이드바 */}
-            <aside
-              className={cn(
-                'sticky hidden h-fit min-h-0 shrink-0 self-start pt-3 pr-3 lg:block',
-                sidebarStickyTopClass,
-              )}
-            >
-              {hasMounted ? (
-                <RightSidebar
-                  {...sidebarProps}
-                  isLoggedIn={isLoggedIn}
-                  isLoading={isSidebarBusy}
-                  fixed={false}
-                  onWriteDiary={() => router.push('/diary/create')}
-                  onGoMyPage={() => router.push('/mypage')}
-                  onOpenSettings={() => router.push('/mypage/settings')}
-                  onLogin={() => router.push('/login')}
-                  onJoinChallenge={() => router.push('/challenge')}
-                  onCreateChallenge={() => router.push('/challenge/create')}
-                  onChallengeClick={handleSidebarChallengeClick}
-                />
-              ) : (
-                <div className="w-69" />
-              )}
-            </aside>
-          </div>
-        ) : (
-          <main className="min-h-0 min-w-0 flex-1">{children}</main>
-        )}
-
-        {/* 사이드바 오버레이 (모바일 + 프로필 클릭 공통) */}
-        {isSidebarOverlayMounted && hasMounted ? (
-          <div
-            ref={sidebarOverlayRef}
-            className={cn(
-              'fixed top-4 right-3 z-50 transition-opacity duration-200',
-              isSidebarOverlayOpen ? 'opacity-100' : 'opacity-0',
-            )}
-          >
-            <RightSidebar
-              {...sidebarProps}
-              isLoggedIn={isLoggedIn}
-              isLoading={isSidebarBusy}
-              fixed={false}
-              onCollapseClick={() => setIsSidebarOverlayOpen(false)}
-              onWriteDiary={() => router.push('/diary/create')}
-              onGoMyPage={() => router.push('/mypage')}
-              onOpenSettings={() => router.push('/mypage/settings')}
-              onLogin={() => router.push('/login')}
-              onJoinChallenge={() => router.push('/challenge')}
-              onCreateChallenge={() => router.push('/challenge/create')}
-              onChallengeClick={handleSidebarChallengeClick}
-            />
-          </div>
         ) : null}
+
+        <div className="flex min-h-0 flex-1">
+          <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden">
+            {children}
+          </main>
+          {showRightRail && hasMounted ? (
+            <AppRightRail
+              isLoggedIn={isLoggedIn}
+              nickname={sidebarData?.nickname ?? '사용자'}
+              handle={
+                sidebarData?.nickname ? `@${sidebarData.nickname}` : undefined
+              }
+              profileImageUrl={sidebarData?.profileUrl}
+              streakDays={sidebarData?.streakCount ?? 0}
+              todayGoalCount={sidebarData?.todayGoalCount ?? 0}
+              challenges={railChallenges}
+              onChallengeClick={(id) => router.push(`/challenge/${id}`)}
+            />
+          ) : null}
+        </div>
+
+        {showBottomNav ? <AppBottomNav activeId={activeNavId} /> : null}
       </div>
 
       <BetaButton />
