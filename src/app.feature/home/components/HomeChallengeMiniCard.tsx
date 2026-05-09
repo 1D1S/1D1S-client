@@ -28,18 +28,16 @@ export default function HomeChallengeMiniCard({
     <button
       type="button"
       onClick={onClick}
-      style={{ flex: '0 0 200px', width: 200, maxWidth: 200 }}
       className={cn(
-        'group flex flex-col gap-2.5',
-        'rounded-4 border border-gray-200 bg-white p-3.5 text-left',
+        'group flex w-full flex-col gap-2.5',
+        'rounded-3 border border-gray-200 bg-white p-3.5 text-left',
         'transition duration-200 ease-out',
         'hover:border-main-200 hover:shadow-warm hover:-translate-y-0.5'
       )}
     >
       <div
-        style={{ height: 100 }}
         className={cn(
-          'rounded-2.5 relative w-full overflow-hidden',
+          'rounded-2.5 relative h-[110px] w-full overflow-hidden',
           'bg-main-100'
         )}
       >

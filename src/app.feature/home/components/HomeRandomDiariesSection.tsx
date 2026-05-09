@@ -1,4 +1,4 @@
-import { Text } from '@1d1s/design-system';
+import { SectionHeader, Text } from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
 import React from 'react';
@@ -9,7 +9,6 @@ import {
   toRelativeDateLabel,
 } from '../utils/homeFormatters';
 import HomeDiaryMiniCard from './HomeDiaryMiniCard';
-import HomeSectionHeader from './HomeSectionHeader';
 
 interface HomeRandomDiariesSectionProps {
   diaries: DiaryItem[];
@@ -33,30 +32,33 @@ export default function HomeRandomDiariesSection({
   onLikeToggle,
 }: HomeRandomDiariesSectionProps): React.ReactElement {
   return (
-    <>
-      <HomeSectionHeader
-        title="오늘의 일지"
+    <section className="w-full">
+      <SectionHeader
+        title="오늘의 응원 한 마디"
         subtitle="응원의 ❤️ 한 번씩 눌러주세요"
-        emoji="📖"
-        onMoreClick={onMoreClick}
+        actionLabel="전체보기 →"
+        onActionClick={onMoreClick}
       />
-      <div className="h-3" />
       {isLoading ? (
-        <div className="flex w-full justify-center px-5 py-8">
+        <div className="flex w-full justify-center py-8">
           <Text size="body2" weight="medium" className="text-gray-500">
             일지를 불러오는 중입니다.
           </Text>
         </div>
       ) : null}
       {isError ? (
-        <div className="flex w-full justify-center px-5 py-8">
+        <div className="flex w-full justify-center py-8">
           <Text size="body2" weight="medium" className="text-red-600">
             {errorMessage ?? '일지를 불러오지 못했습니다.'}
           </Text>
         </div>
       ) : null}
       {!isLoading && !isError && diaries.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3 px-5 pb-1 sm:grid-cols-3 xl:grid-cols-4">
+        <div
+          className={
+            'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'
+          }
+        >
           {diaries.slice(0, 8).map((item) => (
             <HomeDiaryMiniCard
               key={item.id}
@@ -90,12 +92,12 @@ export default function HomeRandomDiariesSection({
         </div>
       ) : null}
       {!isLoading && !isError && diaries.length === 0 ? (
-        <div className="flex w-full justify-center px-5 py-8">
+        <div className="flex w-full justify-center py-8">
           <Text size="body2" weight="medium" className="text-gray-500">
             표시할 일지가 없습니다.
           </Text>
         </div>
       ) : null}
-    </>
+    </section>
   );
 }

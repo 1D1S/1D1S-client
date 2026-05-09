@@ -38,7 +38,7 @@ export default function HomeWarmBanner({
   const current = banners[index];
 
   return (
-    <div className="w-full px-5">
+    <div className="w-full">
       <Banner
         key={current.id}
         kind={current.kind}

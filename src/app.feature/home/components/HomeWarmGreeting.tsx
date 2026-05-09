@@ -13,7 +13,7 @@ export default function HomeWarmGreeting(): React.ReactElement {
     : '안녕하세요';
 
   return (
-    <div className="w-full px-5">
+    <div className="w-full">
       <div className="flex items-end justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">

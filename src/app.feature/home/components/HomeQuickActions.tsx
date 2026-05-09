@@ -6,7 +6,7 @@ import React from 'react';
 
 export default function HomeQuickActions(): React.ReactElement {
   return (
-    <div className="w-full px-5">
+    <div className="w-full">
       <Link
         href="/inquiry"
         className={cn(
