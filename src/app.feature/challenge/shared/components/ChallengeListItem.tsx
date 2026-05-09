@@ -89,10 +89,10 @@ export function ChallengeListItem({
 
         {/* Category + Status tags */}
         <div className="flex flex-wrap items-center gap-1.5">
-          <Tag size="caption3" weight="medium">
+          <Tag size="sm">
             {challengeCategory ?? challengeType}
           </Tag>
-          <Tag size="caption3" weight="bold" className={statusClassName}>
+          <Tag size="sm" className={statusClassName}>
             {statusLabel}
           </Tag>
         </div>

@@ -40,3 +40,24 @@ export function getDiaryAchievementRate(
   const rate = achievementRate ?? fallbackAchievementRate ?? 0;
   return Math.min(100, Math.max(0, rate));
 }
+
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+export function formatChallengeRemainingLabel(
+  endDate: string,
+  isInfinite: boolean,
+  isEnded: boolean
+): string {
+  if (isInfinite) {
+    return '무제한';
+  }
+  if (isEnded) {
+    return '종료';
+  }
+  const end = new Date(endDate).getTime();
+  if (Number.isNaN(end)) {
+    return '';
+  }
+  const days = Math.max(0, Math.ceil((end - Date.now()) / MS_PER_DAY));
+  return `${days}일 남음`;
+}

@@ -170,6 +170,14 @@
   [class~='aspect-4/5'][class*='w-full'] {
     min-height: 220px;
   }
+
+  /* 가로 스크롤 영역에서 스크롤바를 숨겨 워밍 톤 가독성 유지 */
+  .scrollbar-hide {
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Diary 페이지 컨테이너 너비 기반 6/4/3/2 컬럼 */

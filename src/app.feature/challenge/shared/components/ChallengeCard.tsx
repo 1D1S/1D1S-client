@@ -81,10 +81,10 @@ export function ChallengeCard({
         ) : null}
 
         <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5">
-          <Tag size="caption2" weight="bold">
+          <Tag size="md">
             {challengeCategory ?? challengeType}
           </Tag>
-          <Tag size="caption2" weight="bold" className={statusClassName}>
+          <Tag size="md" className={statusClassName}>
             {statusLabel}
           </Tag>
         </div>

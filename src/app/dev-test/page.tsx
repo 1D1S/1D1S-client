@@ -109,8 +109,8 @@ export default function DevTest(): React.ReactElement {
         </SelectContent>
       </Select>
 
-      <Toggle>토글 태그</Toggle>
-      <Toggle icon="💻">개발 태그</Toggle>
+      <Toggle label="토글 태그" />
+      <Toggle label="개발 태그" />
       <TextField placeholder="텍스트 필드" />
       <TextField label="라벨" placeholder="텍스트 필드" />
       <TextField

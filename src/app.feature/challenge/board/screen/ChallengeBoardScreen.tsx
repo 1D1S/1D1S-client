@@ -169,7 +169,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           <div className="flex w-full max-w-[560px] gap-2">
             <div className="relative w-full">
               <TextField
-                variant="search"
+                iconLeft={<Icon name="Search" />}
                 className="w-full pr-8"
                 placeholder="챌린지 검색 (이름, 설명)"
                 value={inputValue}
