@@ -1,8 +1,7 @@
 'use client';
 
-import { BannerCarousel, PageWatermark } from '@1d1s/design-system';
+import { PageWatermark } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
-import { HOME_MAIN_BANNERS } from '@constants/consts/homeData';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { cn } from '@module/utils/cn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -11,6 +10,7 @@ import React, { useState } from 'react';
 import HomeQuickActions from '../components/HomeQuickActions';
 import HomeRandomChallengesSection from '../components/HomeRandomChallengesSection';
 import HomeRandomDiariesSection from '../components/HomeRandomDiariesSection';
+import HomeWarmBanner from '../components/HomeWarmBanner';
 import HomeWarmGreeting from '../components/HomeWarmGreeting';
 import { useHomeRandomData } from '../hooks/useHomeRandomData';
 import { useHomeRandomDiaryLike } from '../hooks/useHomeRandomDiaryLike';
@@ -82,23 +82,7 @@ export default function HomeScreen(): React.ReactElement {
         <div className="h-4" />
 
         {/* 메인 배너 영역 */}
-        <div className="w-full px-4">
-          <BannerCarousel
-            items={HOME_MAIN_BANNERS}
-            autoSlideIntervalMs={5000}
-            enableLoop
-            showIndicators
-            aspectRatioClassName="aspect-[5/1]"
-            minHeightPx={140}
-            onItemClick={(_, index) => {
-              const route = HOME_MAIN_BANNERS[index]?.href;
-
-              if (route) {
-                router.push(route);
-              }
-            }}
-          />
-        </div>
+        <HomeWarmBanner />
 
         <div className="h-4" />
 
