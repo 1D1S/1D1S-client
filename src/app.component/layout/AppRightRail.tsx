@@ -45,28 +45,38 @@ export default function AppRightRail({
           'bg-white p-5'
         )}
       >
-        <div
+        <button
+          type="button"
+          onClick={() => router.push('/login')}
+          aria-label="로그인 페이지로 이동"
           className={cn(
-            'rounded-3 border-main-200 bg-main-100 border p-5',
-            'text-center'
+            'group flex flex-col items-stretch gap-3 p-5 text-center',
+            'rounded-3 border-main-200 bg-main-100 border',
+            'transition hover:brightness-105'
           )}
         >
-          <div className="text-[13px] font-bold text-gray-900">게스트</div>
-          <p className="mt-1 text-[11px] text-gray-600">
-            로그인 후 스트릭과 오늘의 목표를 확인할 수 있어요.
-          </p>
-          <button
-            type="button"
-            onClick={() => router.push('/login')}
+          <span aria-hidden className="text-[28px]">
+            🔥
+          </span>
+          <span className="text-[13px] font-extrabold text-gray-900">
+            게스트
+          </span>
+          <span className="text-[11px] leading-relaxed text-gray-600">
+            로그인 후 스트릭과 오늘의 목표를
+            <br />
+            확인할 수 있어요.
+          </span>
+          <span
             className={cn(
-              'rounded-2 bg-brand mt-4 w-full py-2',
-              'text-[12px] font-bold text-white transition',
-              'hover:brightness-105'
+              'mt-1 inline-flex w-full items-center justify-center',
+              'rounded-2 bg-brand px-3 py-2',
+              'text-[12px] font-bold text-white',
+              'transition group-hover:brightness-105'
             )}
           >
             로그인하고 시작하기
-          </button>
-        </div>
+          </span>
+        </button>
       </aside>
     );
   }

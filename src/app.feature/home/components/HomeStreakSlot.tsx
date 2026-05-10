@@ -29,14 +29,18 @@ export default function HomeStreakSlot({
   }
 
   return (
-    <div
+    <button
+      type="button"
+      onClick={() => router.push('/login')}
+      aria-label="로그인하고 스트릭 시작하기"
       className={cn(
-        'flex h-full flex-col justify-between gap-3 p-5',
-        'rounded-3 border-main-200 border',
-        'from-main-100 via-main-200/40 to-main-200 bg-gradient-to-br'
+        'group flex h-full w-full flex-col justify-between gap-3 p-5',
+        'rounded-3 border-main-200 border text-left',
+        'from-main-100 via-main-200/40 to-main-200 bg-gradient-to-br',
+        'transition hover:brightness-105'
       )}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex w-full items-center justify-between">
         <span className="text-[11px] font-bold text-gray-600">
           현재 스트릭
         </span>
@@ -59,18 +63,16 @@ export default function HomeStreakSlot({
           오늘의 기록이 쌓이면 스트릭이 됩니다.
         </span>
       </div>
-      <button
-        type="button"
-        onClick={() => router.push('/login')}
+      <span
         className={cn(
-          'mt-1 inline-flex items-center justify-center self-start',
+          'inline-flex items-center justify-center self-start',
           'rounded-2 bg-brand px-4 py-2',
-          'text-[12px] font-bold text-white transition',
-          'hover:brightness-105'
+          'text-[12px] font-bold text-white',
+          'transition group-hover:brightness-105'
         )}
       >
         로그인하기 →
-      </button>
-    </div>
+      </span>
+    </button>
   );
 }
