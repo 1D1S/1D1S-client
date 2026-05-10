@@ -5,7 +5,7 @@ import { cn } from '@module/utils/cn';
 import Image from 'next/image';
 import React from 'react';
 
-interface HomeChallengeMiniCardProps {
+export interface ChallengeCardProps {
   title: string;
   category: string;
   imageUrl?: string;
@@ -13,9 +13,10 @@ interface HomeChallengeMiniCardProps {
   maxParticipantCount: number;
   remainingLabel: string;
   onClick?(): void;
+  className?: string;
 }
 
-export default function HomeChallengeMiniCard({
+export default function ChallengeCard({
   title,
   category,
   imageUrl,
@@ -23,7 +24,8 @@ export default function HomeChallengeMiniCard({
   maxParticipantCount,
   remainingLabel,
   onClick,
-}: HomeChallengeMiniCardProps): React.ReactElement {
+  className,
+}: ChallengeCardProps): React.ReactElement {
   return (
     <button
       type="button"
@@ -31,8 +33,10 @@ export default function HomeChallengeMiniCard({
       className={cn(
         'group flex w-full flex-col overflow-hidden text-left',
         'rounded-3 border border-gray-200 bg-white',
-        'transition duration-200 ease-out',
-        'hover:border-main-200 hover:shadow-warm hover:-translate-y-0.5'
+        'transition-[transform,box-shadow,border-color] duration-200 ease-out',
+        'hover:border-main-200 hover:-translate-y-1',
+        'hover:shadow-[0_10px_28px_rgba(255,87,34,0.18)]',
+        className
       )}
     >
       <div className="bg-main-100 relative h-[110px] w-full">

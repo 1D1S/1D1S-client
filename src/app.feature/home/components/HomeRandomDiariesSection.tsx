@@ -1,4 +1,5 @@
 import { SectionHeader, Text } from '@1d1s/design-system';
+import DiaryCard from '@component/cards/DiaryCard';
 import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
 import React from 'react';
@@ -8,7 +9,6 @@ import {
   mapFeelingToEmotion,
   toRelativeDateLabel,
 } from '../utils/homeFormatters';
-import HomeDiaryMiniCard from './HomeDiaryMiniCard';
 
 interface HomeRandomDiariesSectionProps {
   diaries: DiaryItem[];
@@ -60,7 +60,7 @@ export default function HomeRandomDiariesSection({
           }
         >
           {diaries.slice(0, 8).map((item) => (
-            <HomeDiaryMiniCard
+            <DiaryCard
               key={item.id}
               imageUrl={item.imgUrl?.[0]}
               percent={getDiaryAchievementRate(

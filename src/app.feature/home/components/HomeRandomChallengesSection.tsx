@@ -1,4 +1,5 @@
 import { SectionHeader, Text } from '@1d1s/design-system';
+import ChallengeCard from '@component/cards/ChallengeCard';
 import { getCategoryLabel } from '@constants/categories';
 import { type ChallengeListItem } from '@feature/challenge/board/type/challenge';
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challengePeriod';
@@ -8,7 +9,6 @@ import {
   formatChallengeRemainingLabel,
   isChallengeEnded,
 } from '../utils/homeFormatters';
-import HomeChallengeMiniCard from './HomeChallengeMiniCard';
 
 interface HomeRandomChallengesSectionProps {
   challenges: ChallengeListItem[];
@@ -65,7 +65,7 @@ export default function HomeRandomChallengesSection({
             );
 
             return (
-              <HomeChallengeMiniCard
+              <ChallengeCard
                 key={challenge.challengeId}
                 title={challenge.title}
                 category={getCategoryLabel(challenge.category)}

@@ -5,7 +5,7 @@ import { cn } from '@module/utils/cn';
 import Image from 'next/image';
 import React from 'react';
 
-import { type DiaryEmotion } from '../utils/homeFormatters';
+export type DiaryEmotion = 'happy' | 'soso' | 'sad';
 
 const EMOTION_EMOJI: Record<DiaryEmotion, string> = {
   happy: '😊',
@@ -13,7 +13,7 @@ const EMOTION_EMOJI: Record<DiaryEmotion, string> = {
   sad: '😔',
 };
 
-interface HomeDiaryMiniCardProps {
+export interface DiaryCardProps {
   imageUrl?: string;
   percent: number;
   isLiked: boolean;
@@ -25,9 +25,10 @@ interface HomeDiaryMiniCardProps {
   emotion: DiaryEmotion;
   onClick?(): void;
   onLikeToggle?(): void;
+  className?: string;
 }
 
-export default function HomeDiaryMiniCard({
+export default function DiaryCard({
   imageUrl,
   percent,
   isLiked,
@@ -39,7 +40,8 @@ export default function HomeDiaryMiniCard({
   emotion,
   onClick,
   onLikeToggle,
-}: HomeDiaryMiniCardProps): React.ReactElement {
+  className,
+}: DiaryCardProps): React.ReactElement {
   const handleCardKeyDown = (
     event: React.KeyboardEvent<HTMLDivElement>
   ): void => {
@@ -64,9 +66,11 @@ export default function HomeDiaryMiniCard({
       onKeyDown={handleCardKeyDown}
       className={cn(
         'group flex w-full cursor-pointer flex-col overflow-hidden',
-        'rounded-4 border border-gray-200 bg-white text-left',
-        'transition duration-200 ease-out',
-        'hover:border-main-200 hover:shadow-warm hover:-translate-y-0.5'
+        'rounded-3 border border-gray-200 bg-white text-left',
+        'transition-[transform,box-shadow,border-color] duration-200 ease-out',
+        'hover:border-main-200 hover:-translate-y-1',
+        'hover:shadow-[0_10px_28px_rgba(255,87,34,0.18)]',
+        className
       )}
     >
       <div className="bg-main-100 relative aspect-[4/5] w-full">
@@ -75,7 +79,7 @@ export default function HomeDiaryMiniCard({
             src={imageUrl}
             alt={title}
             fill
-            sizes="(min-width: 640px) 240px, 50vw"
+            sizes="(min-width: 1024px) 280px, 50vw"
             className="object-cover"
           />
         ) : (
@@ -135,9 +139,7 @@ export default function HomeDiaryMiniCard({
               size={13}
               className={cn(
                 'transition',
-                isLiked
-                  ? 'animate-heart-pop text-red-500'
-                  : 'text-gray-400'
+                isLiked ? 'animate-heart-pop text-red-500' : 'text-gray-400'
               )}
             />
             {likes}
