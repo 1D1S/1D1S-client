@@ -1,9 +1,9 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
+import DiaryCard from '@component/cards/DiaryCard';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { getCategoryLabel } from '@constants/categories';
-import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
@@ -289,32 +289,16 @@ export default function DiaryListScreen(): React.ReactElement {
                   transition={{ type: 'spring', stiffness: 280, damping: 30 }}
                 >
                   <DiaryCard
-                    imageUrl={item.imgUrl?.[0] ?? '/images/default-card.png'}
+                    imageUrl={item.imgUrl?.[0]}
                     percent={getDiaryAchievementRate(item)}
                     isLiked={item.likeInfo.likedByMe}
                     likes={item.likeInfo.likeCnt}
                     title={item.title}
                     user={authorInfo?.nickname ?? '익명'}
-                    userImage={
-                      authorInfo?.profileImage ??
-                      '/images/default-profile.png'
-                    }
                     challengeLabel={
                       item.challenge?.title ||
                       getCategoryLabel(item.challenge?.category) ||
                       '챌린지'
-                    }
-                    onUserClick={
-                      authorInfo?.id
-                        ? () => router.push(`/member/${authorInfo.id}`)
-                        : undefined
-                    }
-                    onChallengeClick={() =>
-                      router.push(
-                        item.challenge
-                          ? `/challenge/${item.challenge.challengeId}`
-                          : '/challenge'
-                      )
                     }
                     date={getRelativeDiaryDateLabel(
                       diaryInfo?.createdAt ?? ''
@@ -322,7 +306,6 @@ export default function DiaryListScreen(): React.ReactElement {
                     emotion={mapFeelingToEmotion(
                       diaryInfo?.feeling ?? 'NONE'
                     )}
-                    commentCount={item.commentCount}
                     onLikeToggle={() => handleLikeToggle(item)}
                     onClick={() => handleCardClick(item.id)}
                   />
