@@ -1,6 +1,6 @@
 'use client';
 
-import { Icon, Stripe, Tag } from '@1d1s/design-system';
+import { Card, Icon, Stripe, Tag } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import Image from 'next/image';
 import React from 'react';
@@ -26,20 +26,29 @@ export default function ChallengeCard({
   onClick,
   className,
 }: ChallengeCardProps): React.ReactElement {
+  const handleKeyDown = (
+    event: React.KeyboardEvent<HTMLDivElement>
+  ): void => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onClick?.();
+    }
+  };
+
   return (
-    <button
-      type="button"
+    <Card
+      interactive
+      radius="md"
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
       className={cn(
-        'group flex w-full flex-col overflow-hidden text-left',
-        'rounded-3 border border-gray-200 bg-white',
-        'transition-[transform,box-shadow,border-color] duration-200 ease-out',
-        'hover:border-main-200 hover:-translate-y-1',
         'hover:shadow-[0_10px_28px_rgba(255,87,34,0.18)]',
         className
       )}
     >
-      <div className="bg-main-100 relative h-[110px] w-full">
+      <Card.Thumb className="bg-main-100 h-[110px]">
         {imageUrl ? (
           <Image
             src={imageUrl}
@@ -51,34 +60,22 @@ export default function ChallengeCard({
         ) : (
           <Stripe tone="peach" />
         )}
-      </div>
-      <div className="flex flex-col gap-2 p-3.5">
+      </Card.Thumb>
+      <Card.Body>
         <div className="flex">
           <Tag tone="brand" size="xs">
             {category}
           </Tag>
         </div>
-        <div
-          className={cn(
-            'line-clamp-2 min-h-[2.6em] text-[13px] font-extrabold',
-            'leading-snug tracking-tight text-gray-900'
-          )}
-        >
-          {title}
-        </div>
-        <div
-          className={cn(
-            'flex items-center justify-between',
-            'text-[11px] text-gray-500'
-          )}
-        >
+        <Card.Title className="min-h-[2.6em]">{title}</Card.Title>
+        <Card.Meta>
           <span className="inline-flex items-center gap-1">
             <Icon name="People" size={11} />
             {currentParticipantCount}/{maxParticipantCount}
           </span>
           <span className="text-brand font-bold">{remainingLabel}</span>
-        </div>
-      </div>
-    </button>
+        </Card.Meta>
+      </Card.Body>
+    </Card>
   );
 }
