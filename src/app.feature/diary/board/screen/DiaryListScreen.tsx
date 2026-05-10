@@ -6,6 +6,7 @@ import { getCategoryLabel } from '@constants/categories';
 import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
+import { cn } from '@module/utils/cn';
 import { motion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -230,35 +231,25 @@ export default function DiaryListScreen(): React.ReactElement {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white p-4">
+    <div className="min-h-screen w-full bg-white">
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}
         description={loginDialogDescription}
       />
-      <section className="rounded-3 w-full bg-white p-2">
-        <div className="flex items-start justify-between border-b border-gray-200 pb-5">
-          <div className="flex flex-col gap-2">
-            <Text size="display1" weight="bold" className="text-gray-900">
-              일지
-            </Text>
-            <Text size="body1" weight="regular" className="text-gray-600">
-              다른 챌린저의 일지를 보며 동기부여를 얻어보세요
-            </Text>
-          </div>
-
-          {/* <button
-            type="button"
-            className="mt-1 flex items-center gap-1 rounded-full px-3 py-2 text-gray-600 transition hover:bg-gray-200"
-            onClick={() =>
-              setSortMode((prev) => (prev === 'latest' ? 'likes' : 'latest'))
-            }
-          >
-            <ArrowUpDown className="h-4 w-4" />
-            <Text size="body2" weight="medium">
-              {sortMode === 'latest' ? '최신순' : '좋아요순'}
-            </Text>
-          </button> */}
+      <div
+        className={cn(
+          'mx-auto w-full max-w-[1200px]',
+          'px-5 py-7 lg:px-8 lg:py-10'
+        )}
+      >
+        <div className="flex flex-col gap-2 pb-1">
+          <Text size="display1" weight="bold" className="text-gray-900">
+            일지
+          </Text>
+          <Text size="body1" weight="regular" className="text-gray-600">
+            다른 챌린저의 일지를 보며 동기부여를 얻어보세요.
+          </Text>
         </div>
 
         {isLoading ? (
@@ -280,60 +271,64 @@ export default function DiaryListScreen(): React.ReactElement {
         ) : null}
 
         {!isLoading && hasLoadedDiaries ? (
-          <div className="diary-grid-container mt-6">
-            <div className="diary-card-grid grid grid-cols-2 gap-4">
-              {sortedDiaries.map((item) => {
-                const diaryInfo = getDiaryInfo(item);
-                const authorInfo = getDiaryAuthorInfo(item);
+          <div
+            className={cn(
+              'mt-6 grid gap-4',
+              'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
+            )}
+          >
+            {sortedDiaries.map((item) => {
+              const diaryInfo = getDiaryInfo(item);
+              const authorInfo = getDiaryAuthorInfo(item);
 
-                return (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    transition={{ type: 'spring', stiffness: 280, damping: 30 }}
-                  >
-                    <DiaryCard
-                      imageUrl={item.imgUrl?.[0] ?? '/images/default-card.png'}
-                      percent={getDiaryAchievementRate(item)}
-                      isLiked={item.likeInfo.likedByMe}
-                      likes={item.likeInfo.likeCnt}
-                      title={item.title}
-                      user={authorInfo?.nickname ?? '익명'}
-                      userImage={
-                        authorInfo?.profileImage ??
-                        '/images/default-profile.png'
-                      }
-                      challengeLabel={
-                        item.challenge?.title ||
-                        getCategoryLabel(item.challenge?.category) ||
-                        '챌린지'
-                      }
-                      onUserClick={
-                        authorInfo?.id
-                          ? () => router.push(`/member/${authorInfo.id}`)
-                          : undefined
-                      }
-                      onChallengeClick={() =>
-                        router.push(
-                          item.challenge
-                            ? `/challenge/${item.challenge.challengeId}`
-                            : '/challenge'
-                        )
-                      }
-                      date={getRelativeDiaryDateLabel(
-                        diaryInfo?.createdAt ?? ''
-                      )}
-                      emotion={mapFeelingToEmotion(
-                        diaryInfo?.feeling ?? 'NONE'
-                      )}
-                      commentCount={item.commentCount}
-                      onLikeToggle={() => handleLikeToggle(item)}
-                      onClick={() => handleCardClick(item.id)}
-                    />
-                  </motion.div>
-                );
-              })}
-            </div>
+              return (
+                <motion.div
+                  key={item.id}
+                  layout
+                  className="min-w-0 self-start"
+                  transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+                >
+                  <DiaryCard
+                    imageUrl={item.imgUrl?.[0] ?? '/images/default-card.png'}
+                    percent={getDiaryAchievementRate(item)}
+                    isLiked={item.likeInfo.likedByMe}
+                    likes={item.likeInfo.likeCnt}
+                    title={item.title}
+                    user={authorInfo?.nickname ?? '익명'}
+                    userImage={
+                      authorInfo?.profileImage ??
+                      '/images/default-profile.png'
+                    }
+                    challengeLabel={
+                      item.challenge?.title ||
+                      getCategoryLabel(item.challenge?.category) ||
+                      '챌린지'
+                    }
+                    onUserClick={
+                      authorInfo?.id
+                        ? () => router.push(`/member/${authorInfo.id}`)
+                        : undefined
+                    }
+                    onChallengeClick={() =>
+                      router.push(
+                        item.challenge
+                          ? `/challenge/${item.challenge.challengeId}`
+                          : '/challenge'
+                      )
+                    }
+                    date={getRelativeDiaryDateLabel(
+                      diaryInfo?.createdAt ?? ''
+                    )}
+                    emotion={mapFeelingToEmotion(
+                      diaryInfo?.feeling ?? 'NONE'
+                    )}
+                    commentCount={item.commentCount}
+                    onLikeToggle={() => handleLikeToggle(item)}
+                    onClick={() => handleCardClick(item.id)}
+                  />
+                </motion.div>
+              );
+            })}
           </div>
         ) : null}
 
@@ -347,7 +342,7 @@ export default function DiaryListScreen(): React.ReactElement {
 
         <div
           ref={ref}
-          className="mt-4 flex h-10 w-full items-center justify-center"
+          className="mt-6 flex h-10 w-full items-center justify-center"
         >
           {isFetchingNextPage ? (
             <Text size="body2" className="text-gray-400">
@@ -367,7 +362,7 @@ export default function DiaryListScreen(): React.ReactElement {
             </Text>
           ) : null}
         </div>
-      </section>
+      </div>
     </div>
   );
 }

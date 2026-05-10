@@ -79,7 +79,6 @@ const config: KnipConfig = {
     'src/app.feature/challenge/write/components/ChallengeToggle.tsx',
     'src/app.feature/challenge/write/components/StepProgress.tsx',
     'src/app.feature/diary/detail/consts/diaryDetailData.ts',
-    'src/app.feature/diary/shared/components/DiaryListItem.tsx',
     'src/app.feature/diary/write/components/BottomExpandablePanel.tsx',
     'src/app.feature/diary/write/components/DiaryContentField.tsx',
     'src/app.feature/diary/write/components/MoodToggle.tsx',
