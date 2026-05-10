@@ -1,21 +1,24 @@
 'use client';
 
 import { Button, Icon, Text, TextField } from '@1d1s/design-system';
+import ChallengeCard from '@component/cards/ChallengeCard';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { getCategoryLabel } from '@constants/categories';
-import { ChallengeCard } from '@feature/challenge/shared/components/ChallengeCard';
-import { formatChallengeCardTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { cn } from '@module/utils/cn';
 import { X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
+import ChallengeBoardFilters from '../components/ChallengeBoardFilters';
+import { toCategoryParam } from '../consts/categoryFilters';
 import { useChallengeList } from '../hooks/useChallengeQueries';
-import { isInfiniteChallengeEndDate } from '../utils/challengePeriod';
-
-// async function fetchChallengeList() {
-//   const response = await apiClient('/')
-// }
+import type { ChallengeCategory } from '../type/challenge';
+import {
+  formatChallengeRemainingLabel,
+  isChallengeEnded,
+  isInfiniteChallengeEndDate,
+} from '../utils/challengePeriod';
 
 function useInViewObserver(): {
   ref: React.RefObject<HTMLDivElement | null>;
@@ -60,18 +63,23 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   const searchParams = useSearchParams();
   const isLoginRequired = searchParams.get('loginRequired') === 'true';
   const isLoggedIn = useIsLoggedIn();
+
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [loginDialogDescription, setLoginDialogDescription] = useState(
     '로그인 후 이용할 수 있습니다.'
   );
   const [inputValue, setInputValue] = useState('');
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState<ChallengeCategory>('ALL');
 
   const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
   if (isLoginRequired !== prevIsLoginRequired) {
     setPrevIsLoginRequired(isLoginRequired);
     if (isLoginRequired && !isLoggedIn) {
       setShowLoginDialog(true);
-      setLoginDialogDescription('챌린지 상세는 로그인 후 이용할 수 있습니다.');
+      setLoginDialogDescription(
+        '챌린지 상세는 로그인 후 이용할 수 있습니다.'
+      );
     }
   }
 
@@ -81,12 +89,9 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     }
     const params = new URLSearchParams(searchParams.toString());
     params.delete('loginRequired');
-    const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
-    });
+    const next = params.toString();
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
   }, [isLoginRequired, pathname, router, searchParams]);
-  const [query, setQuery] = useState('');
 
   const requireAuth = (description: string, action: () => void): void => {
     if (!isLoggedIn) {
@@ -96,7 +101,6 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     }
     action();
   };
-  // const [selectedCategory, setSelectedCategory] = useState<ChallengeCategory>('ALL');
 
   const handleSearch = (): void => {
     setQuery(inputValue);
@@ -106,14 +110,12 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     setInputValue('');
     setQuery('');
   };
-  // const [currentPage, setCurrentPage] = useState(1);
 
-  // useChallengeList 무한 스크롤 데이터
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useChallengeList({
-      limit: 10,
+      limit: 12,
       keyword: query || undefined,
-      category: undefined,
+      category: toCategoryParam(category),
     });
 
   const { ref, inView } = useInViewObserver();
@@ -124,73 +126,82 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // InfiniteQuery로 가져온 pages 배열을 flatten
-  const filteredChallenges = useMemo(
+  const challenges = useMemo(
     () => data?.pages?.flatMap((page) => page?.data?.items ?? []) ?? [],
     [data]
   );
 
-  // 페이지네이션 우선 제거
-
-  // const totalPages = Math.max(
-  //   1,
-  //   Math.ceil(filteredChallenges.length / CHALLENGE_BOARD_ITEMS_PER_PAGE)
-  // );
-  // const safeCurrentPage = Math.min(currentPage, totalPages);
-
-  // const paginatedChallenges = useMemo(() => {
-  //   const start = (safeCurrentPage - 1) * CHALLENGE_BOARD_ITEMS_PER_PAGE;
-  //   return filteredChallenges.slice(
-  //     start,
-  //     start + CHALLENGE_BOARD_ITEMS_PER_PAGE
-  //   );
-  // }, [filteredChallenges, safeCurrentPage]);
-
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white p-4">
+    <div className="w-full bg-white">
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}
         description={loginDialogDescription}
       />
-      <section className="rounded-3 w-full bg-white p-2">
-        <div className="flex items-start justify-between border-b border-gray-200 pb-5">
-          <div className="flex flex-col gap-2">
-            <Text size="display1" weight="bold" className="text-gray-900">
-              전체 챌린지
+
+      <div className="mx-auto w-full max-w-[1200px] px-5 py-7 lg:px-8 lg:py-10">
+        <header
+          className={cn(
+            'flex flex-col gap-4 border-b border-gray-100 pb-5',
+            'sm:flex-row sm:items-end sm:justify-between'
+          )}
+        >
+          <div className="flex flex-col gap-1.5">
+            <Text
+              size="pageTitle"
+              weight="extrabold"
+              className="tracking-tight text-gray-900"
+            >
+              챌린지 보드
             </Text>
-            <Text size="body1" weight="regular" className="text-gray-600">
+            <Text size="body2" weight="regular" className="text-gray-500">
               새로운 습관을 만들고 함께 성장할 챌린지를 찾아보세요.
             </Text>
           </div>
-        </div>
+          <Button
+            size="medium"
+            onClick={() =>
+              requireAuth(
+                '챌린지 만들기는 로그인 후 이용할 수 있습니다.',
+                () => router.push('/challenge/create')
+              )
+            }
+            className="self-start whitespace-nowrap sm:self-auto"
+          >
+            <span className="flex items-center gap-1">
+              <Icon name="Plus" size={16} />
+              새 챌린지
+            </span>
+          </Button>
+        </header>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex w-full max-w-[560px] gap-2">
-            <div className="relative w-full">
+        <div className="mt-6 flex flex-col gap-4">
+          <div className="flex w-full max-w-[480px] gap-2">
+            <div className="w-full">
               <TextField
-                iconLeft={<Icon name="Search" />}
-                className="w-full pr-8"
-                placeholder="챌린지 검색 (이름, 설명)"
+                className="w-full"
+                placeholder="챌린지 검색"
                 value={inputValue}
-                onChange={(event) => {
-                  setInputValue(event.target.value);
-                }}
+                iconLeft={<Icon name="Search" size={15} />}
+                iconRight={
+                  inputValue ? (
+                    <button
+                      type="button"
+                      aria-label="검색어 지우기"
+                      onClick={handleClear}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  ) : undefined
+                }
+                onChange={(event) => setInputValue(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') {
                     handleSearch();
                   }
                 }}
               />
-              {inputValue ? (
-                <button
-                  type="button"
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  onClick={handleClear}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              ) : null}
             </div>
             <Button
               size="medium"
@@ -200,109 +211,76 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               검색
             </Button>
           </div>
-          <Button
-            size="medium"
-            onClick={() =>
-              requireAuth('챌린지 만들기는 로그인 후 이용할 수 있습니다.', () =>
-                router.push('/challenge/create')
-              )
-            }
-            className="whitespace-nowrap"
-          >
-            <span className="flex items-center gap-1">
-              <Icon name="Plus" size={16} />새 챌린지 만들기
-            </span>
-          </Button>
-        </div>
 
-        {/* <div className="mt-4 flex flex-wrap gap-2">
-          {CHALLENGE_BOARD_CATEGORY_FILTERS.map((filter) => (
-            <Toggle
-              key={filter.key}
-              shape="rounded"
-              icon={filter.icon}
-              pressed={selectedCategory === filter.key}
-              onPressedChange={(pressed) => {
-                if (pressed) {
-                  setSelectedCategory(filter.key);
-                  // setCurrentPage(1);
-                }
-              }}
-              className="h-10 px-4"
-            >
-              {filter.label}
-            </Toggle>
-          ))}
-        </div> */}
-
-        <div className="challenge-grid-container mt-8">
-          <div className="challenge-card-grid grid grid-cols-1 gap-4">
-            {filteredChallenges.map((challenge) => (
-              <div key={challenge.challengeId} className="min-w-0">
-                <ChallengeCard
-                  challengeTitle={challenge.title}
-                  challengeType={formatChallengeCardTypeLabel(
-                    challenge.goalType,
-                    challenge.maxParticipantCnt
-                  )}
-                  challengeCategory={getCategoryLabel(challenge.category)}
-                  imageUrl={challenge.thumbnailImage}
-                  currentUserCount={challenge.participantCnt}
-                  maxUserCount={challenge.maxParticipantCnt}
-                  startDate={challenge.startDate}
-                  endDate={challenge.endDate}
-                  isInfiniteChallenge={isInfiniteChallengeEndDate(
-                    challenge.endDate
-                  )}
-                  isOngoing={/*challenge.status === 'closingSoon'*/ true}
-                  isEnded={/*challenge.status === 'ended'*/ false}
-                  className="h-full"
-                  onClick={() =>
-                    requireAuth(
-                      '챌린지 상세는 로그인 후 이용할 수 있습니다.',
-                      () => router.push(`/challenge/${challenge.challengeId}`)
-                    )
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div
-          ref={ref}
-          className="mt-4 flex h-10 w-full items-center justify-center"
-        >
-          {isFetchingNextPage ? (
-            <Text size="body2" className="text-gray-400">
-              데이터를 불러오는 중...
-            </Text>
-          ) : hasNextPage ? (
-            <div />
-          ) : filteredChallenges.length > 0 ? (
-            <Text size="body2" className="text-gray-400">
-              마지막 챌린지입니다.
-            </Text>
-          ) : null}
-        </div>
-
-        {filteredChallenges.length === 0 ? (
-          <div className="mt-8 flex w-full justify-center py-10">
-            <Text size="body1" weight="medium" className="text-gray-500">
-              조건에 맞는 챌린지가 없습니다.
-            </Text>
-          </div>
-        ) : null}
-
-        {/* 페이지네이션 우선 제거 */}
-        {/* <div className="mt-10 flex items-center justify-center">
-          <Pagination
-            currentPage={safeCurrentPage}
-            totalPages={totalPages}
-            onPageChange={(page) => setCurrentPage(page)}
+          <ChallengeBoardFilters
+            selected={category}
+            onSelect={(next) => setCategory(next)}
           />
-        </div> */}
-      </section>
+        </div>
+
+        <div className="mt-6">
+          {challenges.length > 0 ? (
+            <div
+              className={cn(
+                'grid gap-4',
+                'grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4'
+              )}
+            >
+              {challenges.map((challenge) => {
+                const isInfinite = isInfiniteChallengeEndDate(
+                  challenge.endDate
+                );
+                const ended = isChallengeEnded(challenge.endDate);
+                const remainingLabel = formatChallengeRemainingLabel(
+                  challenge.endDate,
+                  isInfinite,
+                  ended
+                );
+
+                return (
+                  <ChallengeCard
+                    key={challenge.challengeId}
+                    title={challenge.title}
+                    category={getCategoryLabel(challenge.category)}
+                    imageUrl={challenge.thumbnailImage}
+                    currentParticipantCount={challenge.participantCnt}
+                    maxParticipantCount={challenge.maxParticipantCnt}
+                    remainingLabel={remainingLabel}
+                    onClick={() =>
+                      requireAuth(
+                        '챌린지 상세는 로그인 후 이용할 수 있습니다.',
+                        () =>
+                          router.push(`/challenge/${challenge.challengeId}`)
+                      )
+                    }
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex w-full justify-center py-16">
+              <Text size="body2" weight="medium" className="text-gray-500">
+                조건에 맞는 챌린지가 없습니다.
+              </Text>
+            </div>
+          )}
+
+          <div
+            ref={ref}
+            className="mt-6 flex h-10 w-full items-center justify-center"
+          >
+            {isFetchingNextPage ? (
+              <Text size="body2" className="text-gray-400">
+                데이터를 불러오는 중...
+              </Text>
+            ) : !hasNextPage && challenges.length > 0 ? (
+              <Text size="body2" className="text-gray-400">
+                마지막 챌린지입니다.
+              </Text>
+            ) : null}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
