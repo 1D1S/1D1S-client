@@ -3,22 +3,18 @@
 import { Text } from '@1d1s/design-system';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
-import {
-  PencilLine,
-  Plus,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { MyPageChallengeSection } from '../components/MyPageChallengeSection';
+import { MyPageActiveChallenges } from '../components/MyPageActiveChallenges';
+import { MyPageActivityHeatmap } from '../components/MyPageActivityHeatmap';
+import { MyPageBadgesSection } from '../components/MyPageBadgesSection';
 import { MyPageDiarySection } from '../components/MyPageDiarySection';
+import { MyPageHeroBanner } from '../components/MyPageHeroBanner';
 import { MyPageProfileCard } from '../components/MyPageProfileCard';
 import { MyPageStatSection } from '../components/MyPageStatSection';
-import { MyPageStreakSection } from '../components/MyPageStreakSection';
-import { QuickActionItem } from '../components/QuickActionItem';
+import { MyPageStreakHeroCard } from '../components/MyPageStreakHeroCard';
 
 export default function MyPageScreen(): React.ReactElement {
-  const router = useRouter();
   const { data, isLoading } = useMyPage();
 
   if (isLoading || !data) {
@@ -31,61 +27,63 @@ export default function MyPageScreen(): React.ReactElement {
     );
   }
 
-  const { nickname, profileUrl, streak, challengeList } = data;
+  const { nickname, profileUrl, email, streak, challengeList } = data;
 
   return (
-    <div className="min-h-screen w-full bg-white p-4">
+    <div className="min-h-screen w-full bg-gray-50 pb-12">
+      {/* Full-bleed gradient banner */}
+      <MyPageHeroBanner />
+
+      {/* Centered content container */}
       <div
         className={cn(
-          'mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-4',
-          'xl:grid-cols-[minmax(0,1fr)_320px]',
+          'mx-auto w-full max-w-[1200px]',
+          'px-5 lg:px-8',
         )}
       >
-        <aside className="space-y-4 xl:order-last">
-          <div
-            className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1"
-          >
-            <MyPageProfileCard
-              nickname={nickname}
-              profileUrl={profileUrl}
-            />
+        <MyPageProfileCard
+          nickname={nickname}
+          profileUrl={profileUrl}
+          email={email}
+          totalDiaryCount={streak.totalDiaryCount}
+          totalChallengeCount={streak.totalChallengeCount ?? 0}
+          completedFiniteChallengeCount={
+            streak.completedFiniteChallengeCount ?? 0
+          }
+        />
 
-            <section
-              className="rounded-4 border border-gray-200 bg-white p-5"
-            >
-              <Text
-                size="body1"
-                weight="medium"
-                className="text-gray-600"
-              >
-                빠른 실행
-              </Text>
-              <div className="mt-4 space-y-2">
-                <QuickActionItem
-                  icon={<PencilLine className="h-5 w-5" />}
-                  title="일지 작성하기"
-                  onClick={() => router.push('/diary/create')}
-                />
-                <QuickActionItem
-                  icon={<Plus className="h-5 w-5" />}
-                  title="챌린지 만들기"
-                  onClick={() => router.push('/challenge/create')}
-                  tone="blue"
-                />
-              </div>
-            </section>
-          </div>
-        </aside>
+        {/* Streak hero + Heatmap (1:1 grid on desktop) */}
+        <div
+          className={cn(
+            'mt-6 grid grid-cols-1 gap-4',
+            'lg:grid-cols-2 lg:gap-5',
+          )}
+        >
+          <MyPageStreakHeroCard
+            currentStreak={streak.currentStreak}
+            maxStreak={streak.maxStreak}
+          />
+          <MyPageActivityHeatmap calendar={streak.calendar} />
+        </div>
 
-        <main className="space-y-4 xl:order-first">
+        <div className="mt-8">
           <MyPageStatSection streak={streak} />
-          <MyPageStreakSection calendar={streak.calendar} />
-          <MyPageChallengeSection challengeList={challengeList} />
+        </div>
+
+        <div className="mt-8">
+          <MyPageBadgesSection streak={streak} />
+        </div>
+
+        <div className="mt-8">
+          <MyPageActiveChallenges challengeList={challengeList} />
+        </div>
+
+        <div className="mt-8">
           <MyPageDiarySection
             nickname={nickname}
             profileUrl={profileUrl}
           />
-        </main>
+        </div>
       </div>
     </div>
   );
