@@ -23,6 +23,7 @@ export default function HomeStreakSlot({
       <StreakHero
         days={streakDays}
         meta={`오늘의 목표 ${todayGoalCount}개`}
+        className="h-full"
       />
     );
   }

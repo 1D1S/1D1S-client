@@ -38,7 +38,7 @@ export default function HomeWarmBanner({
   const current = banners[index];
 
   return (
-    <div className="w-full">
+    <div className="relative h-full w-full">
       <Banner
         key={current.id}
         kind={current.kind}
@@ -49,26 +49,35 @@ export default function HomeWarmBanner({
         role="link"
         onClick={() => current.href && router.push(current.href)}
         className={cn(
-          'shadow-warm cursor-pointer transition',
+          'shadow-warm h-full cursor-pointer transition',
           'hover:brightness-105'
         )}
       />
-      <div className="mt-3 flex justify-center gap-1.5">
-        {banners.map((banner, i) => (
-          <button
-            key={banner.id}
-            type="button"
-            aria-label={`${i + 1}번째 배너로 이동`}
-            onClick={() => setIndex(i)}
-            className={cn(
-              'h-1.5 rounded-full transition-all duration-300',
-              i === index
-                ? 'bg-brand w-5'
-                : 'w-1.5 bg-gray-300 hover:bg-gray-400'
-            )}
-          />
-        ))}
-      </div>
+      {banners.length > 1 ? (
+        <div
+          className={cn(
+            'absolute right-4 bottom-3 flex items-center gap-1.5'
+          )}
+        >
+          {banners.map((banner, i) => (
+            <button
+              key={banner.id}
+              type="button"
+              aria-label={`${i + 1}번째 배너로 이동`}
+              onClick={(event) => {
+                event.stopPropagation();
+                setIndex(i);
+              }}
+              className={cn(
+                'h-1.5 rounded-full transition-all duration-300',
+                i === index
+                  ? 'w-4 bg-white'
+                  : 'w-1.5 bg-white/50 hover:bg-white/75'
+              )}
+            />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
