@@ -31,11 +31,13 @@ interface MyPageProfileCardProps {
   totalDiaryCount: number;
   totalChallengeCount: number;
   completedFiniteChallengeCount: number;
+  /** 우측 액션 영역 — 미지정 시 기본 (프로필 편집 + 설정) 사용 */
+  actions?: React.ReactNode;
 }
 
 /**
  * 배너에 -60px 마진으로 겹쳐 올라오는 프로필 카드.
- * 좌측 96px 아바타 + 닉네임/핸들/스탯 + 프로필 편집 / 설정.
+ * 좌측 96px 아바타 + 닉네임/핸들/스탯 + 우측 액션.
  */
 export function MyPageProfileCard({
   nickname,
@@ -44,11 +46,34 @@ export function MyPageProfileCard({
   totalDiaryCount,
   totalChallengeCount,
   completedFiniteChallengeCount,
+  actions,
 }: MyPageProfileCardProps): React.ReactElement {
   const router = useRouter();
   const handle = email
     ? `@${email.split('@')[0]}`
     : `@${nickname}`;
+  const defaultActions = (
+    <>
+      <Button
+        variant="default"
+        size="medium"
+        onClick={() => router.push('/mypage/settings')}
+      >
+        프로필 편집
+      </Button>
+      <button
+        type="button"
+        aria-label="설정"
+        onClick={() => router.push('/mypage/notification-settings')}
+        className={cn(
+          'rounded-2 flex h-10 w-10 items-center justify-center',
+          'bg-gray-100 text-gray-600 transition hover:bg-gray-200',
+        )}
+      >
+        <Settings className="h-4 w-4" />
+      </button>
+    </>
+  );
 
   return (
     <section
@@ -104,24 +129,7 @@ export function MyPageProfileCard({
           'justify-center sm:justify-end',
         )}
       >
-        <Button
-          variant="default"
-          size="medium"
-          onClick={() => router.push('/mypage/settings')}
-        >
-          프로필 편집
-        </Button>
-        <button
-          type="button"
-          aria-label="설정"
-          onClick={() => router.push('/mypage/notification-settings')}
-          className={cn(
-            'rounded-2 flex h-10 w-10 items-center justify-center',
-            'bg-gray-100 text-gray-600 transition hover:bg-gray-200',
-          )}
-        >
-          <Settings className="h-4 w-4" />
-        </button>
+        {actions ?? defaultActions}
       </div>
     </section>
   );

@@ -7,7 +7,7 @@ import {
   type CommentNode,
   CommentThread,
   Text,
-  TextArea,
+  TextField,
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { getCategoryLabel } from '@constants/categories';
@@ -859,7 +859,7 @@ function DiaryCommentSection({
     >
       <div className="p-4 lg:p-5">
         <Text size="body1" weight="bold" className="mb-3 block text-gray-900">
-          응원 댓글 {totalCommentCount}
+          응원 댓글 {totalCommentCount}개
         </Text>
 
         {isCommentsLoading ? (
@@ -885,24 +885,28 @@ function DiaryCommentSection({
           />
         )}
 
-        <div className="mt-4">
-          <TextArea
+        <div className="mt-3 flex items-center gap-1.5">
+          <TextField
             id="diary-comment-content"
-            className="w-full resize-none text-[14px]"
-            rows={3}
+            size="sm"
+            className="flex-1"
             value={commentContent}
             onChange={(event) => setCommentContent(event.target.value)}
             placeholder="응원의 말을 남겨주세요"
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                handleCreateComment();
+              }
+            }}
           />
-          <div className="mt-2 flex justify-end">
-            <Button
-              size="small"
-              onClick={handleCreateComment}
-              disabled={isCommentPending || !commentContent.trim()}
-            >
-              등록
-            </Button>
-          </div>
+          <Button
+            size="small"
+            onClick={handleCreateComment}
+            disabled={isCommentPending || !commentContent.trim()}
+          >
+            등록
+          </Button>
         </div>
       </div>
     </div>
@@ -997,7 +1001,7 @@ function DiaryDetailView({
   const isHundredPercent = diaryData.achievementPercent === 100;
 
   return (
-    <div className="min-h-screen w-full bg-white">
+    <div className="min-h-screen w-full">
       <div
         className={cn(
           'mx-auto w-full max-w-[1200px]',

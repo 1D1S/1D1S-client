@@ -1,6 +1,5 @@
 import localFont from 'next/font/local';
 
-// define a custom local font
 const pretendard = localFont({
   src: [
     {
@@ -29,17 +28,4 @@ const pretendard = localFont({
   fallback: ['system-ui', 'sans-serif'],
 });
 
-const suite = localFont({
-  src: [
-    {
-      path: '../../public/fonts/suite/SUITE-Variable.woff2',
-      weight: '100 900',
-      style: 'normal',
-    },
-  ],
-  variable: '--font-suite',
-  display: 'swap',
-  fallback: ['system-ui', 'sans-serif'],
-});
-
-export { pretendard, suite };
+export { pretendard };

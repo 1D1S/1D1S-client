@@ -1,6 +1,7 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
+import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
 import React from 'react';
@@ -16,6 +17,7 @@ import { MyPageStreakHeroCard } from '../components/MyPageStreakHeroCard';
 
 export default function MyPageScreen(): React.ReactElement {
   const { data, isLoading } = useMyPage();
+  const { data: myDiariesData } = useMyDiaries(10);
 
   if (isLoading || !data) {
     return (
@@ -28,6 +30,8 @@ export default function MyPageScreen(): React.ReactElement {
   }
 
   const { nickname, profileUrl, email, streak, challengeList } = data;
+  const myDiaries = myDiariesData?.items ?? [];
+  const hasMoreDiaries = myDiariesData?.pageInfo.hasNextPage ?? false;
 
   return (
     <div className="min-h-screen w-full bg-gray-50 pb-12">
@@ -80,8 +84,11 @@ export default function MyPageScreen(): React.ReactElement {
 
         <div className="mt-8">
           <MyPageDiarySection
+            title="내 일지"
+            diaries={myDiaries}
             nickname={nickname}
-            profileUrl={profileUrl}
+            hasMore={hasMoreDiaries}
+            viewAllHref="/mypage/diary"
           />
         </div>
       </div>

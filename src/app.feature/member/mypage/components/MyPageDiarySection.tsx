@@ -1,12 +1,12 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
-import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
+import DiaryCard from '@component/cards/DiaryCard';
+import type { DiaryItem } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
-import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { cn } from '@module/utils/cn';
 import Link from 'next/link';
@@ -16,23 +16,28 @@ import React from 'react';
 import { buildDiaryCardViewModels } from '../utils/mypageUtils';
 
 interface MyPageDiarySectionProps {
+  title: string;
+  diaries: DiaryItem[];
   nickname: string;
-  profileUrl: string;
+  hasMore: boolean;
+  viewAllHref: string;
+  emptyMessage?: string;
 }
 
 export function MyPageDiarySection({
+  title,
+  diaries,
   nickname,
-  profileUrl,
+  hasMore,
+  viewAllHref,
+  emptyMessage = '작성한 일지가 없습니다.',
 }: MyPageDiarySectionProps): React.ReactElement {
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
-  const { data: myDiariesData } = useMyDiaries(10);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
 
-  const myDiaries = myDiariesData?.items ?? [];
-  const hasMoreDiaries = myDiariesData?.pageInfo.hasNextPage ?? false;
-  const diaryCards = buildDiaryCardViewModels(myDiaries, nickname, profileUrl);
+  const diaryCards = buildDiaryCardViewModels(diaries, nickname);
 
   const handleLikeToggle = (id: number, isLiked: boolean): void => {
     if (!isLoggedIn || likeDiary.isPending || unlikeDiary.isPending) {
@@ -49,11 +54,11 @@ export function MyPageDiarySection({
     <section>
       <div className="flex items-center justify-between">
         <Text size="display2" weight="bold" className="text-gray-900">
-          내 일지
+          {title}
         </Text>
-        {hasMoreDiaries && (
+        {hasMore && (
           <Link
-            href="/mypage/diary"
+            href={viewAllHref}
             className="text-main-800 text-sm font-semibold hover:underline"
           >
             전체 보기
@@ -68,7 +73,7 @@ export function MyPageDiarySection({
           )}
         >
           <Text size="body1" weight="medium" className="text-gray-500">
-            작성한 일지가 없습니다.
+            {emptyMessage}
           </Text>
         </div>
       ) : (
@@ -83,18 +88,9 @@ export function MyPageDiarySection({
                   likes={diary.likes}
                   title={diary.title}
                   user={diary.user}
-                  userImage={diary.userImage}
                   challengeLabel={diary.challengeLabel}
-                  onChallengeClick={() =>
-                    router.push(
-                      diary.challengeId
-                        ? `/challenge/${diary.challengeId}`
-                        : '/challenge'
-                    )
-                  }
                   date={diary.date}
                   emotion={diary.emotion}
-                  commentCount={diary.commentCount}
                   onLikeToggle={() =>
                     handleLikeToggle(diary.id, diary.isLiked)
                   }

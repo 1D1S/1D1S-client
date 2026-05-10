@@ -14,6 +14,7 @@ interface ChallengeDiaryGridProps {
   isLoading: boolean;
   onDiaryClick(diaryId: number): void;
   onLikeToggle(diary: ChallengeDiaryItem): void;
+  gridClassName?: string;
 }
 
 function mapFeelingToEmotion(feeling: Feeling): 'happy' | 'soso' | 'sad' {
@@ -31,6 +32,7 @@ export function ChallengeDiaryGrid({
   isLoading,
   onDiaryClick,
   onLikeToggle,
+  gridClassName = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4',
 }: ChallengeDiaryGridProps): React.ReactElement {
   if (isLoading) {
     return (
@@ -53,7 +55,7 @@ export function ChallengeDiaryGrid({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+    <div className={gridClassName}>
       {diaries.map((diary) => (
         <DiaryCard
           key={diary.id}

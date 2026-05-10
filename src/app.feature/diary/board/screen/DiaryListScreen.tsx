@@ -231,7 +231,7 @@ export default function DiaryListScreen(): React.ReactElement {
   };
 
   return (
-    <div className="min-h-screen w-full bg-white">
+    <div className="min-h-screen w-full">
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}

@@ -6,7 +6,7 @@ import { AppProviders } from '@module/providers';
 import { cn } from '@module/utils/cn';
 import type { Metadata, Viewport } from 'next';
 
-import { pretendard, suite } from '@/app.lib/font';
+import { pretendard } from '@/app.lib/font';
 
 function resolveSiteUrl(): URL {
   const rawUrl =
@@ -78,8 +78,7 @@ export default function RootLayout({
       <body
         className={cn(
           pretendard.variable,
-          suite.variable,
-          'font-suite bg-white text-gray-900'
+          'font-pretendard bg-white text-gray-900'
         )}
       >
         <AppProviders>

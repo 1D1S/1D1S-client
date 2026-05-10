@@ -71,25 +71,13 @@ function resolveActiveNavId(pathname: string): string {
   return 'home';
 }
 
-function isChallengeDetailRoute(pathname: string): boolean {
-  if (!pathname.startsWith('/challenge/')) {
-    return false;
-  }
-  const segments = pathname.split('/').filter(Boolean);
-  if (segments.length < 2) {
-    return false;
-  }
-  return segments[1] !== 'create';
-}
-
 function needsBackButton(pathname: string): boolean {
-  if (isChallengeDetailRoute(pathname)) {
+  // 메인 챌린지/일지 상세는 글로벌 nav만 사용 — back 버튼 숨김.
+  // 하위 라우트(`/challenge/{id}/diary` 등)는 깊이가 있어 back 버튼 유지.
+  if (/^\/challenge\/\d+\/.+/.test(pathname)) {
     return true;
   }
   if (pathname === '/challenge/create') {
-    return true;
-  }
-  if (/^\/diary\/\d+/.test(pathname)) {
     return true;
   }
   if (pathname === '/diary/create') {
@@ -261,9 +249,10 @@ export default function AppLayoutShell({
 
   const showTopNav = !matchesRoute(pathname, TOP_NAV_HIDDEN_ROUTES);
   const showBackButton = needsBackButton(pathname);
-  const isContentRouteForRail =
-    !matchesRoute(pathname, RIGHT_RAIL_HIDDEN_ROUTES) &&
-    !isChallengeDetailRoute(pathname);
+  const isContentRouteForRail = !matchesRoute(
+    pathname,
+    RIGHT_RAIL_HIDDEN_ROUTES
+  );
   const showRightRail = viewport === 'desktop' && isContentRouteForRail;
   const showBottomNav =
     viewport === 'mobile' && !matchesRoute(pathname, BOTTOM_NAV_HIDDEN_ROUTES);

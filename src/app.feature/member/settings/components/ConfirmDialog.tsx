@@ -1,15 +1,12 @@
 'use client';
 
 import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  ConfirmDialog as DSConfirmDialog,
+  type IconName,
 } from '@1d1s/design-system';
 import React from 'react';
+
+type ConfirmTone = 'brand' | 'danger' | 'mint';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -22,6 +19,8 @@ interface ConfirmDialogProps {
   isDisabled: boolean;
   onCancel(): void;
   onConfirm(): void;
+  tone?: ConfirmTone;
+  icon?: IconName;
 }
 
 export function ConfirmDialog({
@@ -35,42 +34,28 @@ export function ConfirmDialog({
   isDisabled,
   onCancel,
   onConfirm,
+  tone = 'brand',
+  icon = 'Flag',
 }: ConfirmDialogProps): React.ReactElement {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="gap-6 px-8 py-6 sm:max-w-[380px] sm:px-6"
-      >
-        <DialogHeader
-          className="items-center text-center sm:text-center"
-        >
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-
-        <DialogDescription className="block w-full text-center">
-          {description}
-        </DialogDescription>
-
-        <DialogFooter className="flex-row gap-2">
-          <Button
-            size="medium"
-            variant="ghost"
-            className="flex-1"
-            onClick={onCancel}
-            disabled={isDisabled}
-          >
-            취소
-          </Button>
-          <Button
-            size="medium"
-            className="flex-1"
-            onClick={onConfirm}
-            disabled={isDisabled}
-          >
-            {isPending ? pendingLabel : confirmLabel}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DSConfirmDialog
+      open={open}
+      onOpenChange={(next) => {
+        // 처리 중에는 닫기 요청을 무시 — 무심결의 더블 클릭/외부 클릭으로
+        // 인한 dialog 닫힘을 방지한다.
+        if (!next && isPending) {
+          return;
+        }
+        onOpenChange(next);
+      }}
+      tone={tone}
+      icon={icon}
+      title={title}
+      description={description}
+      confirmLabel={isPending ? pendingLabel : confirmLabel}
+      cancelLabel="취소"
+      onConfirm={isPending || isDisabled ? () => undefined : onConfirm}
+      onCancel={onCancel}
+    />
   );
 }

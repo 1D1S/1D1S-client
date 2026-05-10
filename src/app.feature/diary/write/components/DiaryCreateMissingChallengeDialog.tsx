@@ -1,13 +1,12 @@
 import {
   Button,
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Text,
 } from '@1d1s/design-system';
 import React from 'react';
 
@@ -22,24 +21,16 @@ export function DiaryCreateMissingChallengeDialog({
 }: DiaryCreateMissingChallengeDialogProps): React.ReactElement {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-[420px] gap-6 p-6">
-        <DialogHeader className="items-center">
-          <DialogTitle>
-            <Text size="heading1" weight="bold" className="text-black">
-              챌린지를 찾을 수 없습니다.
-            </Text>
-          </DialogTitle>
+      <DialogContent size="sm">
+        <DialogHeader>
+          <DialogTitle>챌린지를 찾을 수 없습니다.</DialogTitle>
         </DialogHeader>
-
-        <DialogDescription className="text-center">
-          <Text size="body1" weight="regular" className="text-gray-600">
-            내 일지 리스트에서 요청한 챌린지를 찾지 못했습니다.
-          </Text>
-        </DialogDescription>
-
-        <DialogFooter className="justify-center">
+        <DialogBody>
+          내 일지 리스트에서 요청한 챌린지를 찾지 못했습니다.
+        </DialogBody>
+        <DialogFooter>
           <DialogClose asChild>
-            <Button type="button" size="medium" className="w-32">
+            <Button type="button" size="medium">
               확인
             </Button>
           </DialogClose>

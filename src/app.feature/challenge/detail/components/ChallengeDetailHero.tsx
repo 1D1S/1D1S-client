@@ -18,6 +18,7 @@ interface ChallengeDetailHeroProps {
   imageUrl?: string | null;
   accent: string;
   gradient: string;
+  bleed?: boolean;
 }
 
 export function ChallengeDetailHero({
@@ -28,11 +29,13 @@ export function ChallengeDetailHero({
   imageUrl,
   accent,
   gradient,
+  bleed = false,
 }: ChallengeDetailHeroProps): React.ReactElement {
   return (
     <div
       className={cn(
-        'rounded-4 relative h-[200px] w-full overflow-hidden md:h-[220px]'
+        'relative h-[200px] w-full overflow-hidden md:h-[220px]',
+        !bleed && 'rounded-4'
       )}
       style={{ background: gradient }}
     >

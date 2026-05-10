@@ -19,7 +19,7 @@ import {
 export default function DevTest(): React.ReactElement {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2 p-24">
-      <h1 className="font-suite text-2xl font-bold">Dev Test 수트</h1>
+      <h1 className="font-pretendard text-2xl font-bold">Dev Test</h1>
       <p className="text-main-700 font-pretendard">
         This is a test page for development purposes.
       </p>

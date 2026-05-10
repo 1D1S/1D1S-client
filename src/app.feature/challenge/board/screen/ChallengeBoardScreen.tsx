@@ -132,7 +132,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   );
 
   return (
-    <div className="w-full bg-white">
+    <div className="w-full">
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}

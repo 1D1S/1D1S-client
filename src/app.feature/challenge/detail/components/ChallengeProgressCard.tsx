@@ -2,6 +2,7 @@
 
 import { Button, Card, ProgressBar, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import { Heart } from 'lucide-react';
 import React from 'react';
 
 interface ChallengeProgressCardProps {
@@ -14,6 +15,10 @@ interface ChallengeProgressCardProps {
   ctaVariant?: 'default' | 'outlined';
   showCta?: boolean;
   isInfinite?: boolean;
+  likeCount?: number;
+  likedByMe?: boolean;
+  onToggleLike?(): void;
+  isLikePending?: boolean;
 }
 
 export function ChallengeProgressCard({
@@ -26,61 +31,89 @@ export function ChallengeProgressCard({
   ctaVariant = 'default',
   showCta = true,
   isInfinite = false,
+  likeCount,
+  likedByMe = false,
+  onToggleLike,
+  isLikePending = false,
 }: ChallengeProgressCardProps): React.ReactElement {
   const clamped = Math.min(100, Math.max(0, progressPercent));
+  const showLikeButton = onToggleLike != null;
 
   return (
-    <Card radius="lg" className="p-5 md:p-6">
-      <div
-        className={cn(
-          'flex flex-col gap-4',
-          'md:flex-row md:items-center md:gap-6'
-        )}
-      >
-        <div className="flex min-w-0 flex-1 flex-col gap-3">
-          <div className="flex items-center justify-between gap-3">
-            <Text size="caption1" weight="bold" className="text-gray-500">
-              현재 진행률
-            </Text>
-            <Text size="caption2" weight="medium" className="text-gray-500">
-              {participantsLabel} · {remainingLabel}
-            </Text>
-          </div>
-          <div className="flex items-baseline gap-1">
-            <Text
-              size="display2"
-              weight="extrabold"
-              className="text-brand tracking-[-0.6px]"
-            >
-              {isInfinite ? '∞' : clamped}
-            </Text>
-            {isInfinite ? null : (
-              <Text size="body1" weight="bold" className="text-gray-500">
-                %
-              </Text>
+    <Card radius="lg" className="p-[18px]">
+      <div className="flex items-center justify-between">
+        <Text size="caption1" weight="bold" className="text-gray-500">
+          현재 진행률
+        </Text>
+        {showLikeButton ? (
+          <button
+            type="button"
+            onClick={onToggleLike}
+            disabled={isLikePending}
+            aria-label={likedByMe ? '좋아요 취소' : '좋아요'}
+            className={cn(
+              'flex items-center gap-1 rounded-full px-2 py-1',
+              'text-[11px] font-bold transition-colors',
+              'disabled:opacity-50',
+              likedByMe
+                ? 'text-main-800 bg-main-200 hover:bg-main-300/70'
+                : 'text-gray-500 hover:bg-gray-100'
             )}
-          </div>
-          <ProgressBar
-            value={clamped}
-            size="md"
-            infinite={isInfinite}
-            showValueText={false}
-          />
-        </div>
-        {showCta ? (
-          <div className="md:w-[180px] md:shrink-0">
-            <Button
-              size="large"
-              variant={ctaVariant}
-              className="w-full"
-              onClick={onCtaClick}
-              disabled={ctaDisabled}
-            >
-              {ctaLabel}
-            </Button>
-          </div>
+          >
+            <Heart
+              className={cn(
+                'h-3 w-3',
+                likedByMe && 'fill-current'
+              )}
+            />
+            {likeCount ?? 0}
+          </button>
         ) : null}
       </div>
+      <div className="mt-1.5 flex items-baseline gap-1">
+        <Text
+          size="display2"
+          weight="extrabold"
+          className="text-main-800 leading-none tracking-[-0.6px]"
+        >
+          {isInfinite ? '∞' : clamped}
+        </Text>
+        {isInfinite ? null : (
+          <Text size="body1" weight="bold" className="text-gray-500">
+            %
+          </Text>
+        )}
+      </div>
+      <div className="mt-2.5">
+        <ProgressBar
+          value={clamped}
+          size="sm"
+          infinite={isInfinite}
+          showValueText={false}
+        />
+      </div>
+      <div
+        className={cn(
+          'mt-3 flex items-center justify-between gap-2',
+          'text-[12px] text-gray-500'
+        )}
+      >
+        <span>{participantsLabel}</span>
+        <span>{remainingLabel}</span>
+      </div>
+      {showCta ? (
+        <div className="mt-3.5">
+          <Button
+            size="medium"
+            variant={ctaVariant}
+            fullWidth
+            onClick={onCtaClick}
+            disabled={ctaDisabled}
+          >
+            {ctaLabel}
+          </Button>
+        </div>
+      ) : null}
     </Card>
   );
 }

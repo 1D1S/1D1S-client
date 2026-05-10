@@ -1,4 +1,4 @@
-import { Streak, Text } from '@1d1s/design-system';
+import { Heatmap, Text } from '@1d1s/design-system';
 import type { StreakCalendarItem } from '@feature/member/type/member';
 import { cn } from '@module/utils/cn';
 import React from 'react';
@@ -10,13 +10,12 @@ interface MyPageActivityHeatmapProps {
 }
 
 /**
- * 최근 20주 (140일) 활동 잔디.
- * DS Streak (size=12, gap=3) 사용 — 데이터가 7행 컬럼 우선으로 쌓이도록 정렬.
+ * 최근 20주 (140일) 활동 잔디. DS Heatmap (7×20) 사용.
  */
 export function MyPageActivityHeatmap({
   calendar,
 }: MyPageActivityHeatmapProps): React.ReactElement {
-  const data = buildHeatmapData(calendar);
+  const cells = buildHeatmapData(calendar).map((item) => item.count);
 
   return (
     <div
@@ -28,8 +27,8 @@ export function MyPageActivityHeatmap({
       <Text size="caption1" weight="bold" className="text-gray-500">
         최근 20주 활동
       </Text>
-      <div className="mt-4 flex flex-1 items-center overflow-x-auto">
-        <Streak data={data} size={12} gap={3} />
+      <div className="mt-4 flex flex-1 items-center">
+        <Heatmap cells={cells} cols={20} tone="main" />
       </div>
     </div>
   );

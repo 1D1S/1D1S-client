@@ -32,15 +32,12 @@ export interface MyPageBadge {
 export interface DiaryCardViewModel {
   id: number;
   title: string;
-  imageUrl: string;
+  imageUrl: string | undefined;
   percent: number;
   isLiked: boolean;
   likes: number;
-  commentCount: number;
   user: string;
-  userImage: string;
   challengeLabel: string;
-  challengeId: number | undefined;
   date: string;
   emotion: DiaryEmotion;
 }
@@ -68,11 +65,11 @@ function toRelativeDateLabel(createdAt: string | undefined): string {
   return getRelativeDiaryDateLabel(createdAt ?? '', '최근');
 }
 
-function resolveDiaryImage(diary: DiaryItem): string {
+function resolveDiaryImage(diary: DiaryItem): string | undefined {
   if (Array.isArray(diary.imgUrl) && diary.imgUrl.length > 0) {
-    return diary.imgUrl[0] ?? '/images/default-card.png';
+    return diary.imgUrl[0];
   }
-  return '/images/default-card.png';
+  return undefined;
 }
 
 export function getLongestGoalStreakSummary(
@@ -228,8 +225,7 @@ export function getChallengeProgressInfo(
 
 export function buildDiaryCardViewModels(
   diaries: DiaryItem[],
-  nickname: string,
-  profileUrl: string
+  nickname: string
 ): DiaryCardViewModel[] {
   return diaries.map((diary) => {
     const diaryInfo = diary.diaryInfoDto;
@@ -243,14 +239,11 @@ export function buildDiaryCardViewModels(
       percent: Math.min(100, Math.max(0, achievementRate)),
       isLiked: diary.likeInfo.likedByMe,
       likes: diary.likeInfo.likeCnt,
-      commentCount: diary.commentCount,
       user: nickname || '나',
-      userImage: profileUrl || '/images/default-profile.png',
       challengeLabel:
         diary.challenge?.title ||
         getCategoryLabel(diary.challenge?.category) ||
         '나의 일지',
-      challengeId: diary.challenge?.challengeId,
       date: toRelativeDateLabel(diaryInfo?.createdAt),
       emotion: mapFeelingToEmotion(diaryInfo?.feeling ?? 'NONE'),
     };

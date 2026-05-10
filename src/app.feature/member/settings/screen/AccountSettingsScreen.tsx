@@ -334,6 +334,8 @@ export default function AccountSettingsScreen(): React.ReactElement {
       <ConfirmDialog
         open={isLogoutDialogOpen}
         onOpenChange={setIsLogoutDialogOpen}
+        tone="brand"
+        icon="LogIn"
         title="로그아웃 하시겠어요?"
         description="현재 계정에서 로그아웃됩니다."
         confirmLabel="로그아웃"
@@ -347,6 +349,8 @@ export default function AccountSettingsScreen(): React.ReactElement {
       <ConfirmDialog
         open={isWithdrawDialogOpen}
         onOpenChange={setIsWithdrawDialogOpen}
+        tone="danger"
+        icon="Close"
         title="회원 탈퇴 하시겠어요?"
         description="회원 탈퇴 요청 후 계정 삭제는 7일 뒤 처리됩니다."
         confirmLabel="회원 탈퇴"
