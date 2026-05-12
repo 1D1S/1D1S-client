@@ -1,6 +1,7 @@
 'use client';
 
 import { FilterChip } from '@1d1s/design-system';
+import { cn } from '@module/utils/cn';
 import React from 'react';
 
 import {
@@ -19,16 +20,22 @@ export default function ChallengeBoardFilters({
   onSelect,
 }: ChallengeBoardFiltersProps): React.ReactElement {
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div
+      className={cn(
+        'scrollbar-hide -mx-5 flex gap-1.5 overflow-x-auto px-5',
+        'sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0'
+      )}
+    >
       {CHALLENGE_CATEGORY_FILTERS.map((filter: ChallengeCategoryFilter) => (
-        <FilterChip
-          key={filter.key}
-          size="md"
-          active={selected === filter.key}
-          onClick={() => onSelect(filter.key)}
-        >
-          {filter.label}
-        </FilterChip>
+        <div key={filter.key} className="shrink-0 sm:shrink">
+          <FilterChip
+            size="md"
+            active={selected === filter.key}
+            onClick={() => onSelect(filter.key)}
+          >
+            {filter.label}
+          </FilterChip>
+        </div>
       ))}
     </div>
   );

@@ -2,12 +2,15 @@ import { SectionHeader, Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
+import {
+  resolveDiaryImageList,
+  resolveDiaryImageUrl,
+} from '@feature/diary/shared/utils/diaryImageUrl';
 import React from 'react';
 
 import {
   getDiaryAchievementRate,
   mapFeelingToEmotion,
-  toRelativeDateLabel,
 } from '../utils/homeFormatters';
 
 interface HomeRandomDiariesSectionProps {
@@ -62,7 +65,11 @@ export default function HomeRandomDiariesSection({
           {diaries.slice(0, 8).map((item) => (
             <DiaryCard
               key={item.id}
-              imageUrl={item.imgUrl?.[0]}
+              imageUrl={resolveDiaryImageList(item.imgUrl)?.[0]}
+              profileImageUrl={
+                resolveDiaryImageUrl(item.authorInfoDto?.profileImage) ??
+                undefined
+              }
               percent={getDiaryAchievementRate(
                 item.achievementRate,
                 item.diaryInfoDto?.achievementRate
@@ -71,7 +78,6 @@ export default function HomeRandomDiariesSection({
               likes={item.likeInfo.likeCnt}
               title={item.title}
               user={item.authorInfoDto?.nickname ?? '익명'}
-              date={toRelativeDateLabel(item.diaryInfoDto?.createdAt ?? '')}
               challengeLabel={
                 item.challenge?.title ||
                 getCategoryLabel(item.challenge?.category) ||

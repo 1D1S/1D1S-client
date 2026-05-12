@@ -1,8 +1,13 @@
 import { SectionHeader, Text } from '@1d1s/design-system';
 import ChallengeCard from '@component/cards/ChallengeCard';
-import { getCategoryLabel } from '@constants/categories';
+import {
+  getCategoryIcon,
+  getCategoryLabel,
+  getCategoryStripeTone,
+} from '@constants/categories';
 import { type ChallengeListItem } from '@feature/challenge/board/type/challenge';
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challengePeriod';
+import { cn } from '@module/utils/cn';
 import React from 'react';
 
 import {
@@ -51,9 +56,12 @@ export default function HomeRandomChallengesSection({
       ) : null}
       {!isLoading && !isError && challenges.length > 0 ? (
         <div
-          className={
-            'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'
-          }
+          className={cn(
+            '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5',
+            'scrollbar-hide',
+            'sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0',
+            'lg:grid-cols-4'
+          )}
         >
           {challenges.map((challenge) => {
             const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
@@ -65,16 +73,28 @@ export default function HomeRandomChallengesSection({
             );
 
             return (
-              <ChallengeCard
+              <div
                 key={challenge.challengeId}
-                title={challenge.title}
-                category={getCategoryLabel(challenge.category)}
-                imageUrl={challenge.thumbnailImage}
-                currentParticipantCount={challenge.participantCnt}
-                maxParticipantCount={challenge.maxParticipantCnt}
-                remainingLabel={remainingLabel}
-                onClick={() => onChallengeClick(challenge.challengeId)}
-              />
+                className="w-[200px] shrink-0 sm:w-auto sm:shrink"
+              >
+                <ChallengeCard
+                  title={challenge.title}
+                  category={getCategoryLabel(challenge.category)}
+                  categoryIcon={getCategoryIcon(challenge.category)}
+                  stripeTone={getCategoryStripeTone(challenge.category)}
+                  imageUrl={challenge.thumbnailImage}
+                  currentParticipantCount={challenge.participantCnt}
+                  maxParticipantCount={challenge.maxParticipantCnt}
+                  remainingLabel={remainingLabel}
+                  startDate={challenge.startDate}
+                  endDate={challenge.endDate}
+                  isInfinite={isInfinite}
+                  goalType={challenge.goalType}
+                  isGroup={challenge.participationType === 'GROUP'}
+                  isEnded={ended}
+                  onClick={() => onChallengeClick(challenge.challengeId)}
+                />
+              </div>
             );
           })}
         </div>

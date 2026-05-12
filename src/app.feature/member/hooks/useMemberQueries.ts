@@ -3,6 +3,7 @@ import { isUnauthorizedError } from '@module/api/error';
 import { requestData } from '@module/api/request';
 import { authStorage } from '@module/utils/auth';
 import { isServer, useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useSyncExternalStore } from 'react';
 
 import { memberApi } from '../api/memberApi';
 import { MEMBER_QUERY_KEYS } from '../consts/queryKeys';
@@ -14,13 +15,21 @@ const MEMBER_INFO_STALE_TIME = Number.POSITIVE_INFINITY;
 const MEMBER_INFO_GC_TIME = Number.POSITIVE_INFINITY;
 const SIDEBAR_MAX_RETRIES = 2;
 
+let cachedSidebarRaw: string | null = null;
+let cachedSidebarValue: SidebarData | undefined = undefined;
+
 function getCachedSidebar(): SidebarData | undefined {
   if (typeof window === 'undefined') {
     return undefined;
   }
   try {
     const raw = localStorage.getItem(SIDEBAR_CACHE_KEY);
-    return raw ? (JSON.parse(raw) as SidebarData) : undefined;
+    if (raw === cachedSidebarRaw) {
+      return cachedSidebarValue;
+    }
+    cachedSidebarRaw = raw;
+    cachedSidebarValue = raw ? (JSON.parse(raw) as SidebarData) : undefined;
+    return cachedSidebarValue;
   } catch {
     return undefined;
   }
@@ -81,8 +90,18 @@ async function fetchSidebarWithRetry(): Promise<SidebarData | null> {
   return null;
 }
 
+// localStorage 캐시를 placeholderData로 쓰면 SSR(null)과 CSR 첫 렌더가
+// 달라져 hydration mismatch가 발생한다. 서버 스냅샷을 undefined로 고정해
+// 첫 렌더 결과를 일치시키고, 하이드레이션 이후에만 캐시를 노출한다.
+const subscribeNoop = (): (() => void) => () => undefined;
+const getServerSidebarSnapshot = (): SidebarData | undefined => undefined;
+
 export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
-  const cachedSidebar = getCachedSidebar();
+  const cachedSidebar = useSyncExternalStore(
+    subscribeNoop,
+    getCachedSidebar,
+    getServerSidebarSnapshot
+  );
 
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.sidebar(),

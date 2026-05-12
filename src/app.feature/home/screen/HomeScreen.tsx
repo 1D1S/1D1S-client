@@ -70,8 +70,8 @@ export default function HomeScreen(): React.ReactElement {
   return (
     <div
       className={cn(
-        'flex min-h-screen w-full flex-col',
-        'from-main-100 bg-gradient-to-b via-white to-white'
+        'flex min-h-screen w-full flex-col bg-white',
+        'lg:from-main-100 lg:bg-gradient-to-b lg:via-white lg:to-white'
       )}
     >
       <LoginRequiredDialog
@@ -90,7 +90,16 @@ export default function HomeScreen(): React.ReactElement {
           <HomeWarmGreeting />
         </div>
 
-        {/* Banner + StreakHero row (데스크탑은 1:1, 태블릿은 1.4:1, 모바일은 1열) */}
+        {/* 모바일: 스트릭 슬롯을 배너 위로 올림 */}
+        <div className="sm:hidden">
+          <HomeStreakSlot
+            isLoggedIn={isLoggedIn}
+            streakDays={streakDays}
+            todayGoalCount={todayGoalCount}
+          />
+        </div>
+
+        {/* Banner + StreakHero row (데스크탑은 1:1, 태블릿은 1.4:1) */}
         <div
           className={cn(
             'grid gap-3 sm:grid-cols-[1.4fr_1fr] lg:grid-cols-2',

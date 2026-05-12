@@ -1,6 +1,5 @@
 'use client';
 
-import { StreakHero } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -20,11 +19,37 @@ export default function HomeStreakSlot({
 
   if (isLoggedIn) {
     return (
-      <StreakHero
-        days={streakDays}
-        meta={`오늘의 목표 ${todayGoalCount}개`}
-        className="h-full"
-      />
+      <div
+        className={cn(
+          'rounded-3 border-main-200 flex h-full flex-col border p-4',
+          'bg-[linear-gradient(135deg,#fff8f5,#ffe9e0)]'
+        )}
+      >
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-[11px] font-bold text-gray-600">
+            현재 스트릭
+          </span>
+          <span aria-hidden className="animate-flame-flicker text-[18px]">
+            🔥
+          </span>
+        </div>
+        <div className="flex items-baseline gap-1">
+          <span
+            className={cn(
+              'text-main-800 text-[28px] leading-none font-extrabold',
+              'tracking-[-0.6px] tabular-nums'
+            )}
+          >
+            {streakDays}
+          </span>
+          <span className="text-[13px] font-bold text-gray-700">일째</span>
+        </div>
+        <div className="mt-1.5 text-[10px] text-gray-600">
+          {todayGoalCount > 0
+            ? `오늘의 목표 ${todayGoalCount}개`
+            : '오늘도 한 걸음 함께해요'}
+        </div>
+      </div>
     );
   }
 

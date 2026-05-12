@@ -7,6 +7,7 @@ import {
   ImagePlaceholder,
   Text,
 } from '@1d1s/design-system';
+import { ChallengeChip } from '@feature/challenge/shared/components/ChallengeChip';
 import Image from 'next/image';
 import React, { useState } from 'react';
 
@@ -193,25 +194,23 @@ function TextSection({
         {title}
       </Text>
 
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          onChallengeClick?.();
-        }}
-        className={cn(
-          'rounded-1 block w-full cursor-pointer px-1 py-0.5 text-left transition-colors',
-          'hover:bg-gray-100'
-        )}
-      >
-        <Text
-          size="caption1"
-          weight="medium"
-          className="block w-full truncate text-blue-500 sm:text-lg"
-        >
-          {challengeLabel}
-        </Text>
-      </button>
+      {onChallengeClick ? (
+        <ChallengeChip
+          title={challengeLabel}
+          size="sm"
+          className="self-start"
+          onClick={(event) => {
+            event.stopPropagation();
+            onChallengeClick();
+          }}
+        />
+      ) : (
+        <ChallengeChip
+          title={challengeLabel}
+          size="sm"
+          className="self-start"
+        />
+      )}
 
       <div className="h-px w-full bg-gray-200" />
 

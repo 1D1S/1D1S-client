@@ -1,5 +1,6 @@
 import { Icon, Stripe, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import Link from 'next/link';
 
 interface BrandPanelProps {
   heading: string;
@@ -46,20 +47,28 @@ export function BrandPanel({
         )}
       />
 
-      <div className="relative flex items-center gap-3">
-        <div
+      <Link
+        href="/"
+        aria-label="홈으로 이동"
+        className={cn(
+          'relative flex w-fit items-center gap-3 rounded-[12px]',
+          'transition-opacity hover:opacity-90 focus-visible:outline-none',
+          'focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2',
+          'focus-visible:ring-offset-transparent'
+        )}
+      >
+        <span
           className={cn(
             'flex h-9 w-9 items-center justify-center rounded-[10px]',
-            'bg-white/25 text-base font-extrabold tracking-tight text-white',
-            'shadow-[0_6px_18px_rgba(0,0,0,0.18)]'
+            'bg-white/25 text-white shadow-[0_6px_18px_rgba(0,0,0,0.18)]'
           )}
         >
-          1D
-        </div>
+          <Icon name="Logo" size={20} className="text-white" />
+        </span>
         <Text size="heading2" weight="extrabold" className="text-white">
           1Day 1Streak
         </Text>
-      </div>
+      </Link>
 
       <div className="relative">
         <div

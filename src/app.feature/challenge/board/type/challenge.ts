@@ -86,7 +86,7 @@ export interface CreateChallengeRequest {
   description: string;
   startDate: string;
   endDate: string;
-  maxParticipantCnt: number;
+  maxParticipantCnt: number | null;
   goalType: GoalType;
   participationType: ParticipationType;
   goals: string[];

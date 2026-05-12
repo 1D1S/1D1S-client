@@ -18,8 +18,14 @@ export function ChallengeRulesCard({
   onEdit,
 }: ChallengeRulesCardProps): React.ReactElement {
   return (
-    <section>
-      <div className="mb-2.5 flex items-center justify-between gap-2">
+    <section
+      className={cn(
+        'rounded-[14px] border border-gray-100 bg-gray-50',
+        'lg:border-gray-200 lg:bg-white',
+        'p-4 sm:p-5 lg:p-6'
+      )}
+    >
+      <div className="mb-3 flex items-center justify-between gap-2">
         <Text
           as="h2"
           size="heading2"
@@ -62,7 +68,8 @@ export function ChallengeRulesCard({
               key={`${goal}-${index}`}
               className={cn(
                 'flex items-start gap-2.5 rounded-[10px]',
-                'border border-gray-200 bg-white px-3.5 py-2.5'
+                'border border-gray-100 bg-white px-3.5 py-2.5',
+                'lg:bg-gray-50'
               )}
             >
               <Text

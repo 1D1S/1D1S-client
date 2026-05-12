@@ -89,7 +89,6 @@ export function MyPageDiarySection({
                   title={diary.title}
                   user={diary.user}
                   challengeLabel={diary.challengeLabel}
-                  date={diary.date}
                   emotion={diary.emotion}
                   onLikeToggle={() =>
                     handleLikeToggle(diary.id, diary.isLiked)

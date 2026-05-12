@@ -27,12 +27,20 @@ const TOP_NAV_HIDDEN_ROUTES = [
   '/signup',
 ];
 
+// 데스크탑 미만(모바일/태블릿)에서 글로벌 top-nav를 숨긴다. 이런 라우트는
+// 자체 sticky 헤더를 가지거나 (보드/생성/작성), 자체 floating 뒤로가기
+// 버튼을 가진다 (상세). 자체 헤더가 `lg:hidden`이므로 태블릿에서도 동일하게
+// 글로벌 nav를 숨겨야 헤더가 이중으로 나오지 않는다.
+const TOP_NAV_BELOW_DESKTOP_HIDDEN_ROUTES = [
+  '/diary/create',
+  '/challenge/create',
+];
+
 const RIGHT_RAIL_HIDDEN_ROUTES = [
   '/auth/login',
   '/login',
   '/auth/signup',
   '/signup',
-  '/diary/create',
   '/mypage',
   '/challenge/create',
   '/notification',
@@ -56,6 +64,44 @@ function matchesRoute(pathname: string, routes: readonly string[]): boolean {
   return routes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
+}
+
+function isBottomNavHidden(pathname: string): boolean {
+  if (matchesRoute(pathname, BOTTOM_NAV_HIDDEN_ROUTES)) {
+    return true;
+  }
+  // 챌린지/일지 상세는 자체 sticky CTA를 사용하므로 바텀 네비를 숨긴다.
+  if (/^\/challenge\/\d+/.test(pathname)) {
+    return true;
+  }
+  if (/^\/diary\/\d+/.test(pathname)) {
+    return true;
+  }
+  return false;
+}
+
+function isTopNavBelowDesktopHidden(pathname: string): boolean {
+  if (matchesRoute(pathname, TOP_NAV_BELOW_DESKTOP_HIDDEN_ROUTES)) {
+    return true;
+  }
+  // 챌린지/일지 보드 — 페이지에 자체 sticky 헤더가 있음.
+  if (pathname === '/challenge' || pathname === '/diary') {
+    return true;
+  }
+  // 챌린지/일지 상세 — 페이지에 자체 헤더/뒤로가기 버튼이 있음.
+  if (/^\/challenge\/\d+(?:\/.*)?$/.test(pathname)) {
+    return true;
+  }
+  if (/^\/diary\/\d+(?:\/.*)?$/.test(pathname)) {
+    return true;
+  }
+  return false;
+}
+
+function isTopNavMobileOnlyHidden(pathname: string): boolean {
+  // 마이페이지 메인 — 모바일에서만 자체 프로필 카드가 헤더 역할을 대신한다.
+  // 태블릿/데스크탑에서는 글로벌 nav가 필요하다.
+  return pathname === '/mypage';
 }
 
 function resolveActiveNavId(pathname: string): string {
@@ -84,6 +130,12 @@ function needsBackButton(pathname: string): boolean {
     return true;
   }
   if (pathname === '/mypage/settings') {
+    return true;
+  }
+  if (pathname === '/mypage/settings/profile') {
+    return true;
+  }
+  if (pathname === '/mypage/settings/notifications') {
     return true;
   }
   if (pathname === '/notification') {
@@ -247,15 +299,17 @@ export default function AppLayoutShell({
     });
   }, [sidebarData, now]);
 
-  const showTopNav = !matchesRoute(pathname, TOP_NAV_HIDDEN_ROUTES);
+  const showTopNav =
+    !matchesRoute(pathname, TOP_NAV_HIDDEN_ROUTES) &&
+    !(viewport !== 'desktop' && isTopNavBelowDesktopHidden(pathname)) &&
+    !(viewport === 'mobile' && isTopNavMobileOnlyHidden(pathname));
   const showBackButton = needsBackButton(pathname);
   const isContentRouteForRail = !matchesRoute(
     pathname,
     RIGHT_RAIL_HIDDEN_ROUTES
   );
   const showRightRail = viewport === 'desktop' && isContentRouteForRail;
-  const showBottomNav =
-    viewport === 'mobile' && !matchesRoute(pathname, BOTTOM_NAV_HIDDEN_ROUTES);
+  const showBottomNav = viewport === 'mobile' && !isBottomNavHidden(pathname);
   const activeNavId = resolveActiveNavId(pathname);
 
   return (
@@ -265,7 +319,7 @@ export default function AppLayoutShell({
         isRightSidebarCollapsed: false,
       }}
     >
-      <div className="flex min-h-screen w-full flex-col bg-gray-50">
+      <div className="flex min-h-screen w-full flex-col bg-white lg:bg-gray-50">
         {showTopNav ? (
           <AppTopNav
             activeId={activeNavId}

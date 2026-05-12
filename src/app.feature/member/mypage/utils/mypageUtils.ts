@@ -1,5 +1,6 @@
 import { getCategoryLabel } from '@constants/categories';
 import type { DiaryItem } from '@feature/diary/board/type/diary';
+import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
 import type {
   MyPageStreak,
@@ -33,6 +34,7 @@ export interface DiaryCardViewModel {
   id: number;
   title: string;
   imageUrl: string | undefined;
+  profileImageUrl: string | undefined;
   percent: number;
   isLiked: boolean;
   likes: number;

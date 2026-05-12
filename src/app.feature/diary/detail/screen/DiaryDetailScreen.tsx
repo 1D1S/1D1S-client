@@ -11,10 +11,17 @@ import {
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { getCategoryLabel } from '@constants/categories';
+import {
+  isChallengeEnded,
+  isChallengeOngoing,
+  isInfiniteChallengeEndDate,
+} from '@feature/challenge/board/utils/challengePeriod';
+import { ChallengeListItem } from '@feature/challenge/shared/components/ChallengeListItem';
+import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
 import {
-  ChevronRight,
+  ArrowLeft,
   Edit3,
   Flag,
   Heart,
@@ -37,6 +44,7 @@ import { useChallengeDetail } from '../../../challenge/board/hooks/useChallengeQ
 import {
   ChallengeDetailResponse,
   ChallengeGoal,
+  ChallengeSummary,
 } from '../../../challenge/board/type/challenge';
 import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
 import { useSidebar } from '../../../member/hooks/useMemberQueries';
@@ -125,7 +133,7 @@ interface DiaryDetailViewData {
   achievementPercent: number;
   connectedChallengeId: number | null;
   connectedChallengeTitle: string;
-  connectedChallengeCategory: string;
+  connectedChallengeSummary: ChallengeSummary | null;
   likedByMe: boolean;
   likeCount: number;
   checklistItems: ChecklistItem[];
@@ -376,8 +384,7 @@ function mapDiaryToViewData(
       summary?.challengeId ?? diary.challenge?.challengeId ?? null,
     connectedChallengeTitle:
       summary?.title ?? diary.challenge?.title ?? '연동된 챌린지가 없습니다.',
-    connectedChallengeCategory:
-      getCategoryLabel(summary?.category ?? diary.challenge?.category) || '-',
+    connectedChallengeSummary: summary ?? null,
     likedByMe: diary.likeInfo?.likedByMe ?? false,
     likeCount: diary.likeInfo?.likeCnt ?? 0,
     checklistItems,
@@ -391,37 +398,48 @@ function mapDiaryToViewData(
   };
 }
 
-function DiaryChallengeTag({
-  title,
+function DiaryConnectedChallengeCard({
+  summary,
   onClick,
 }: {
-  title: string;
-  onClick?(): void;
+  summary: ChallengeSummary;
+  onClick(): void;
 }): React.ReactElement {
-  const baseClass = cn(
-    'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5',
-    'border-main-200 bg-main-100 text-main-800 border text-xs font-bold'
-  );
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        className={cn(
-          baseClass,
-          'hover:bg-main-200/50 cursor-pointer transition-colors'
-        )}
-      >
-        <Flag className="h-3 w-3" />
-        <span className="truncate">{title}</span>
-      </button>
-    );
-  }
   return (
-    <span className={baseClass}>
-      <Flag className="h-3 w-3" />
-      <span className="truncate">{title}</span>
-    </span>
+    <ChallengeListItem
+      challengeTitle={summary.title}
+      challengeType={formatChallengeTypeLabel(summary.goalType)}
+      challengeCategory={getCategoryLabel(summary.category)}
+      imageUrl={summary.thumbnailImage ?? undefined}
+      currentUserCount={summary.participantCnt}
+      maxUserCount={summary.maxParticipantCnt}
+      startDate={summary.startDate}
+      endDate={summary.endDate}
+      isInfiniteChallenge={isInfiniteChallengeEndDate(summary.endDate)}
+      isOngoing={isChallengeOngoing(summary.startDate, summary.endDate)}
+      isEnded={isChallengeEnded(summary.endDate)}
+      onClick={onClick}
+    />
+  );
+}
+
+function DiaryConnectedChallengeFallback({
+  title,
+}: {
+  title: string;
+}): React.ReactElement {
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-2 rounded-[14px] border border-dashed',
+        'border-gray-200 bg-gray-50 px-3.5 py-3 text-gray-500'
+      )}
+    >
+      <Flag className="h-3.5 w-3.5" />
+      <Text size="caption1" weight="medium" className="text-gray-500">
+        {title}
+      </Text>
+    </div>
   );
 }
 
@@ -484,9 +502,11 @@ function DiaryGoalsCard({
   const handleNoop = (): void => {};
 
   return (
-    <div
+    <section
       className={cn(
-        'rounded-2xl border border-gray-200 bg-gray-50 p-4'
+        'rounded-[14px] border border-gray-100 bg-gray-50',
+        'lg:border-gray-200 lg:bg-white',
+        'p-4 sm:p-5'
       )}
     >
       <div className="mb-3 flex items-baseline justify-between">
@@ -509,7 +529,7 @@ function DiaryGoalsCard({
           달성 목표 데이터가 없습니다.
         </Text>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -598,25 +618,39 @@ function DiaryActionToolbar({
   onShare(): void;
 }): React.ReactElement {
   return (
-    <div className="mt-6 flex flex-wrap gap-2 border-t border-gray-200 pt-5">
-      <Button
-        variant={diaryData.likedByMe ? 'default' : 'outlined'}
-        size="medium"
+    <div className="mt-1 flex flex-wrap items-center gap-2">
+      <button
+        type="button"
         onClick={onLikeToggle}
         disabled={isLikePending}
+        className={cn(
+          'inline-flex items-center gap-1.5 rounded-full border px-4 py-2',
+          'text-[13px] font-bold transition-colors disabled:opacity-60',
+          diaryData.likedByMe
+            ? 'border-main-800 bg-main-100 text-main-800'
+            : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+        )}
       >
         <Heart
           className={cn(
-            'mr-1 h-4 w-4',
+            'h-3.5 w-3.5',
             diaryData.likedByMe && 'fill-current'
           )}
         />
         좋아요 {diaryData.likeCount}
-      </Button>
-      <Button variant="outlined" size="medium" onClick={onShare}>
-        <Share2 className="mr-1 h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={onShare}
+        className={cn(
+          'inline-flex items-center gap-1.5 rounded-full border px-4 py-2',
+          'border-gray-200 bg-white text-[13px] font-bold text-gray-700',
+          'transition-colors hover:bg-gray-50'
+        )}
+      >
+        <Share2 className="h-3.5 w-3.5" />
         공유
-      </Button>
+      </button>
       <div className="ml-auto flex items-center gap-1 text-gray-500">
         <MessageCircle className="h-4 w-4" />
         <Text size="caption1" weight="medium" className="text-gray-500">
@@ -853,11 +887,11 @@ function DiaryCommentSection({
   return (
     <div
       className={cn(
-        'rounded-2xl border border-gray-200 bg-white',
+        'lg:rounded-[14px] lg:border lg:border-gray-200 lg:bg-white',
         'lg:sticky lg:top-5'
       )}
     >
-      <div className="p-4 lg:p-5">
+      <div className="lg:p-5">
         <Text size="body1" weight="bold" className="mb-3 block text-gray-900">
           응원 댓글 {totalCommentCount}개
         </Text>
@@ -882,10 +916,14 @@ function DiaryCommentSection({
             }
             onReplySubmit={handleReplySubmit}
             onDelete={handleDeleteComment}
+            className={cn(
+              '[&_button]:shrink-0 [&_button]:whitespace-nowrap',
+              '[&_ul]:!pl-1.5'
+            )}
           />
         )}
 
-        <div className="mt-3 flex items-center gap-1.5">
+        <div className="mt-3 hidden items-center gap-1.5 lg:flex">
           <TextField
             id="diary-comment-content"
             size="sm"
@@ -909,6 +947,62 @@ function DiaryCommentSection({
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function DiaryMobileCommentBar({
+  diaryId,
+  isLoggedIn,
+  onRequireLogin,
+}: {
+  diaryId: number;
+  isLoggedIn: boolean;
+  onRequireLogin(): void;
+}): React.ReactElement {
+  const [content, setContent] = useState('');
+  const createComment = useCreateDiaryComment(diaryId);
+  const disabled = createComment.isPending || !content.trim();
+
+  const handleSubmit = (): void => {
+    if (!isLoggedIn) {
+      onRequireLogin();
+      return;
+    }
+    if (disabled) {
+      return;
+    }
+    createComment.mutate(
+      { content: content.trim() },
+      { onSuccess: () => setContent('') }
+    );
+  };
+
+  return (
+    <div
+      className={cn(
+        'fixed right-0 bottom-0 left-0 z-20 lg:hidden',
+        'border-t border-gray-100 bg-white',
+        'flex items-center gap-2 px-4 py-2.5'
+      )}
+    >
+      <TextField
+        id="diary-comment-content-mobile"
+        size="sm"
+        className="flex-1"
+        value={content}
+        onChange={(event) => setContent(event.target.value)}
+        placeholder="응원의 말을 남겨주세요"
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            handleSubmit();
+          }
+        }}
+      />
+      <Button size="small" onClick={handleSubmit} disabled={disabled}>
+        등록
+      </Button>
     </div>
   );
 }
@@ -1001,41 +1095,69 @@ function DiaryDetailView({
   const isHundredPercent = diaryData.achievementPercent === 100;
 
   return (
-    <div className="min-h-screen w-full">
+    <div
+      className={cn(
+        'min-h-screen w-full bg-white pb-[72px]',
+        'lg:bg-gray-50/60 lg:pb-0'
+      )}
+    >
+      {/* 모바일 sticky 헤더 — ← + 일지 */}
+      <div
+        className={cn(
+          'sticky top-0 z-30 flex h-14 items-center gap-3',
+          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
+          'lg:hidden'
+        )}
+      >
+        <button
+          type="button"
+          aria-label="뒤로가기"
+          onClick={() => router.back()}
+          className={cn(
+            'flex h-8 w-8 items-center justify-center rounded-lg',
+            'text-gray-700 transition-colors hover:bg-gray-100'
+          )}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <Text
+          size="body1"
+          weight="extrabold"
+          className="flex-1 tracking-[-0.3px] text-gray-900"
+        >
+          일지
+        </Text>
+      </div>
+
       <div
         className={cn(
           'mx-auto w-full max-w-[1200px]',
-          'px-5 py-7 lg:px-8 lg:py-10'
+          'px-4 py-3 sm:px-5 sm:py-7 lg:px-8 lg:py-10'
         )}
       >
-        <div className="mb-4 flex items-center gap-1.5 text-gray-500">
-          <Text size="caption2" weight="regular" className="text-gray-500">
-            일지
-          </Text>
-          <ChevronRight className="h-3 w-3" />
-          <Text
-            size="caption2"
-            weight="bold"
-            className="truncate text-gray-900"
-          >
-            {diaryData.title}
-          </Text>
-        </div>
-
         <div
           className={cn(
-            'grid gap-7',
+            'grid gap-4 lg:gap-7',
             'lg:grid-cols-[minmax(0,1fr)_320px]'
           )}
         >
-          <article>
-            <div className="flex items-start gap-3">
-              <DiaryAuthorRow
-                authorName={diaryData.authorName}
-                authorId={diaryData.authorId}
-                authorProfileImage={diaryData.authorProfileImage}
-                relativeDateLabel={diaryData.relativeDateLabel}
-              />
+          <article className="flex min-w-0 flex-col gap-3.5">
+            {/* Card 1 — Author + actions */}
+            <section
+              className={cn(
+                'flex items-center gap-3',
+                'lg:rounded-[14px] lg:border lg:border-gray-200',
+                'lg:bg-white lg:p-4'
+              )}
+            >
+              <div className="min-w-0 flex-1">
+                <DiaryAuthorRow
+                  authorName={diaryData.authorName}
+                  authorId={diaryData.authorId}
+                  authorProfileImage={diaryData.authorProfileImage}
+                  relativeDateLabel={diaryData.relativeDateLabel}
+                />
+              </div>
               <div className="flex shrink-0 items-center gap-2">
                 {!isOwner ? (
                   <Button
@@ -1056,90 +1178,7 @@ function DiaryDetailView({
                   />
                 ) : null}
               </div>
-            </div>
-
-            <div className="mt-4">
-              <DiaryChallengeTag
-                title={diaryData.connectedChallengeTitle}
-                onClick={
-                  diaryData.connectedChallengeId
-                    ? () =>
-                        router.push(
-                          `/challenge/${diaryData.connectedChallengeId}`
-                        )
-                    : undefined
-                }
-              />
-            </div>
-
-            <Text
-              as="h1"
-              size="display1"
-              weight="bold"
-              className="mt-4 block text-gray-900"
-            >
-              {diaryData.title}
-            </Text>
-
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              {diaryData.feelingMoodImage ? (
-                <Image
-                  src={diaryData.feelingMoodImage.src}
-                  alt={diaryData.feelingMoodImage.alt}
-                  width={28}
-                  height={28}
-                  className="h-7 w-7"
-                />
-              ) : (
-                <span className="text-2xl" aria-hidden>
-                  {diaryData.feelingEmoji}
-                </span>
-              )}
-              <Text size="caption1" weight="regular" className="text-gray-500">
-                오늘의 기분 · {diaryData.feelingLabel}
-              </Text>
-              <div className="ml-auto">
-                <span
-                  className={cn(
-                    'inline-flex items-center rounded-full',
-                    'px-2.5 py-1 text-xs font-bold text-white',
-                    isHundredPercent ? 'bg-green-500' : 'bg-main-800'
-                  )}
-                >
-                  {diaryData.achievementPercent}% 달성
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <DiaryGoalsCard
-                checklistItems={diaryData.checklistItems}
-                checkedChecklistIds={diaryData.checkedChecklistIds}
-              />
-            </div>
-
-            {diaryData.contentImageUrl ? (
-              <div className="mt-5">
-                <DiaryHeroImage
-                  imageUrl={diaryData.contentImageUrl}
-                  title={diaryData.title}
-                  onOpen={() => setIsImageOpen(true)}
-                />
-              </div>
-            ) : null}
-
-            <div className="mt-6">
-              {diaryData.hasContentHtml ? (
-                <DiaryContentRenderer
-                  html={diaryData.contentHtml}
-                  className="text-[15px] leading-[1.9]"
-                />
-              ) : (
-                <Text size="body2" weight="regular" className="text-gray-500">
-                  작성된 내용이 없습니다.
-                </Text>
-              )}
-            </div>
+            </section>
 
             <DiaryActionToolbar
               diaryData={diaryData}
@@ -1148,6 +1187,169 @@ function DiaryDetailView({
               onLikeToggle={onLikeToggle}
               onShare={() => void handleShare()}
             />
+
+            {/* 연동된 챌린지 카드 — 풀 리스트 아이템 */}
+            {diaryData.connectedChallengeSummary &&
+            diaryData.connectedChallengeId ? (
+              <DiaryConnectedChallengeCard
+                summary={diaryData.connectedChallengeSummary}
+                onClick={() =>
+                  router.push(`/challenge/${diaryData.connectedChallengeId}`)
+                }
+              />
+            ) : (
+              <DiaryConnectedChallengeFallback
+                title={diaryData.connectedChallengeTitle}
+              />
+            )}
+
+            {/* Card 2 — Title + Emotion meter */}
+            <section
+              className={cn(
+                'lg:rounded-[14px] lg:border lg:border-gray-200',
+                'lg:bg-white lg:p-6'
+              )}
+            >
+              <Text
+                as="h1"
+                size="display1"
+                weight="bold"
+                className="block leading-[1.3] tracking-[-0.4px] text-gray-900"
+              >
+                {diaryData.title}
+              </Text>
+
+              {/* 모바일: 인라인 이모지 + 기분 라벨 + 달성 뱃지 */}
+              <div className="mt-3 flex items-center gap-2 lg:hidden">
+                {diaryData.feelingMoodImage ? (
+                  <Image
+                    src={diaryData.feelingMoodImage.src}
+                    alt={diaryData.feelingMoodImage.alt}
+                    width={20}
+                    height={20}
+                    className="h-5 w-5"
+                  />
+                ) : (
+                  <span className="text-lg leading-none" aria-hidden>
+                    {diaryData.feelingEmoji}
+                  </span>
+                )}
+                <Text
+                  size="caption1"
+                  weight="medium"
+                  className="text-gray-600"
+                >
+                  오늘의 기분 · {diaryData.feelingLabel}
+                </Text>
+                <span
+                  className={cn(
+                    'ml-auto inline-flex items-center rounded-full',
+                    'px-2 py-0.5 text-[10px] font-extrabold text-white',
+                    isHundredPercent ? 'bg-green-500' : 'bg-main-800'
+                  )}
+                >
+                  {diaryData.achievementPercent}%
+                </span>
+              </div>
+
+              {/* 데스크탑: gray-50 톤 emotion 메터 */}
+              <div
+                className={cn(
+                  'mt-3.5 hidden flex-wrap items-center gap-2.5',
+                  'rounded-[10px] bg-gray-50 px-3.5 py-2.5 lg:flex'
+                )}
+              >
+                {diaryData.feelingMoodImage ? (
+                  <Image
+                    src={diaryData.feelingMoodImage.src}
+                    alt={diaryData.feelingMoodImage.alt}
+                    width={24}
+                    height={24}
+                    className="h-6 w-6"
+                  />
+                ) : (
+                  <span className="text-xl leading-none" aria-hidden>
+                    {diaryData.feelingEmoji}
+                  </span>
+                )}
+                <Text
+                  size="caption1"
+                  weight="medium"
+                  className="text-gray-600"
+                >
+                  오늘의 기분 · {diaryData.feelingLabel}
+                </Text>
+                <span
+                  className={cn(
+                    'ml-auto inline-flex items-center rounded-full',
+                    'px-2.5 py-1 text-[10px] font-extrabold text-white',
+                    isHundredPercent ? 'bg-green-500' : 'bg-main-800'
+                  )}
+                >
+                  {diaryData.achievementPercent}% 달성
+                </span>
+              </div>
+            </section>
+
+            {/* Card 3 — Goals (DiaryGoalsCard is itself the card) */}
+            <DiaryGoalsCard
+              checklistItems={diaryData.checklistItems}
+              checkedChecklistIds={diaryData.checkedChecklistIds}
+            />
+
+            {/* 모바일: 이미지 단독 블록 */}
+            {diaryData.contentImageUrl ? (
+              <div className="lg:hidden">
+                <DiaryHeroImage
+                  imageUrl={diaryData.contentImageUrl}
+                  title={diaryData.title}
+                  onOpen={() => setIsImageOpen(true)}
+                />
+              </div>
+            ) : null}
+
+            {/* Card 4 — Today's record (label + image + body) */}
+            <section
+              className={cn(
+                'rounded-[14px] border border-gray-200 bg-white',
+                'p-4 sm:p-5 lg:p-6'
+              )}
+            >
+              <Text
+                size="caption2"
+                weight="extrabold"
+                className={cn(
+                  'block tracking-[0.4px] text-gray-500 uppercase'
+                )}
+              >
+                오늘의 기록
+              </Text>
+              {diaryData.contentImageUrl ? (
+                <div className="mt-3.5 hidden lg:block">
+                  <DiaryHeroImage
+                    imageUrl={diaryData.contentImageUrl}
+                    title={diaryData.title}
+                    onOpen={() => setIsImageOpen(true)}
+                  />
+                </div>
+              ) : null}
+              <div className="mt-4">
+                {diaryData.hasContentHtml ? (
+                  <DiaryContentRenderer
+                    html={diaryData.contentHtml}
+                    className="text-[15px] leading-[1.9]"
+                  />
+                ) : (
+                  <Text
+                    size="body2"
+                    weight="regular"
+                    className="text-gray-500"
+                  >
+                    작성된 내용이 없습니다.
+                  </Text>
+                )}
+              </div>
+            </section>
           </article>
 
           <aside>
@@ -1173,6 +1375,12 @@ function DiaryDetailView({
         diaryId={diaryData.id}
         open={isReportOpen}
         onOpenChange={setIsReportOpen}
+      />
+
+      <DiaryMobileCommentBar
+        diaryId={diaryData.id}
+        isLoggedIn={isLoggedIn}
+        onRequireLogin={onRequireLogin}
       />
     </div>
   );

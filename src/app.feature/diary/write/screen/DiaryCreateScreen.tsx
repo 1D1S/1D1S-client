@@ -1,7 +1,10 @@
 'use client';
 
-import { Button, Text, TextField } from '@1d1s/design-system';
+import { Button, Text } from '@1d1s/design-system';
+import { cn } from '@module/utils/cn';
+import { ArrowLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { DiaryCreateChallengeSection } from '../components/DiaryCreateChallengeSection';
@@ -31,6 +34,7 @@ const DiaryContentEditor = dynamic(
 );
 
 export default function DiaryCreateScreen(): React.ReactElement {
+  const router = useRouter();
   const {
     isEditMode,
     title,
@@ -65,55 +69,137 @@ export default function DiaryCreateScreen(): React.ReactElement {
     handleSubmit,
   } = useDiaryCreateForm();
 
+  const totalGoalCount = isSelectedChallengeConfirmed ? goals.length : 0;
+  const achievedGoalCount = isSelectedChallengeConfirmed
+    ? achievedGoalIds.length
+    : 0;
+  const percent =
+    totalGoalCount > 0
+      ? Math.round((achievedGoalCount / totalGoalCount) * 100)
+      : 0;
+  const isHundredPercent = percent === 100 && totalGoalCount > 0;
+
   return (
-    <div className="min-h-screen w-full bg-white">
-      <div className="mx-auto w-full max-w-[1080px] px-4 py-8 pb-28">
-        <div className="flex flex-col gap-2">
-          <Text size="display2" weight="bold" className="text-gray-900">
+    <div className="flex min-h-screen w-full flex-col">
+      {/* 모바일 sticky 헤더 — ← + 제목 + % 뱃지 */}
+      <div
+        className={cn(
+          'sticky top-0 z-30 flex h-14 items-center gap-3',
+          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
+          'lg:hidden'
+        )}
+      >
+        <button
+          type="button"
+          aria-label="뒤로가기"
+          onClick={() => router.back()}
+          className={cn(
+            'flex h-8 w-8 items-center justify-center rounded-lg',
+            'text-gray-700 transition-colors hover:bg-gray-100'
+          )}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <Text
+          size="body1"
+          weight="extrabold"
+          className="flex-1 tracking-[-0.3px] text-gray-900"
+        >
+          {isEditMode ? '일지 수정' : '일지 작성'}
+        </Text>
+        {totalGoalCount > 0 ? (
+          <span
+            className={cn(
+              'inline-flex items-center rounded-full px-2.5 py-1',
+              'text-[10px] font-extrabold text-white',
+              isHundredPercent ? 'bg-green-500' : 'bg-main-800'
+            )}
+          >
+            {percent}%
+          </span>
+        ) : null}
+      </div>
+
+      <div
+        className={cn(
+          'mx-auto w-full max-w-[1200px]',
+          'px-5 py-5 lg:px-8 lg:py-10'
+        )}
+      >
+        <div className="hidden flex-col gap-1.5 pb-6 lg:flex lg:pb-8">
+          <Text size="display1" weight="bold" className="text-gray-900">
             {isEditMode ? '일지 수정' : '일지 작성'}
           </Text>
-          <Text size="body1" weight="regular" className="text-gray-600">
+          <Text size="body2" weight="regular" className="text-gray-500">
             {isEditMode
               ? '기록을 최신 상태로 업데이트해보세요.'
-              : '오늘 하루의 도전을 기록하고 마무리하세요.'}
+              : '오늘 챌린지를 어떻게 실천하셨나요?'}
           </Text>
         </div>
 
-        <div className="mt-12 flex flex-col gap-12">
-          <section>
-            <Text size="heading2" weight="bold" className="text-gray-900">
-              일지 제목
-            </Text>
-            <TextField
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="일지 제목을 입력해주세요."
-              className="mt-2 w-full"
+        <div className="mx-auto w-full max-w-[860px]">
+          <div className="flex flex-col gap-7">
+            <DiaryCreateChallengeSection
+              selectedChallenge={
+                isSelectedChallengeConfirmed ? selectedChallenge : null
+              }
+              isInitialChallengeLoading={isInitialChallengeLoading}
+              isCheckingAvailability={
+                Boolean(selectedChallenge) && !isSelectedChallengeConfirmed
+              }
+              challenges={memberChallenges}
+              isChallengesLoading={isMemberChallengesLoading}
+              onSelectChallenge={handleSelectChallenge}
+              onClearChallenge={handleClearChallenge}
             />
-          </section>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-stretch">
-            <div className="flex min-w-0 flex-col gap-6">
-              <DiaryCreateChallengeSection
-                selectedChallenge={
-                  isSelectedChallengeConfirmed ? selectedChallenge : null
-                }
-                isInitialChallengeLoading={isInitialChallengeLoading}
-                isCheckingAvailability={
-                  Boolean(selectedChallenge) && !isSelectedChallengeConfirmed
-                }
-                challenges={memberChallenges}
-                isChallengesLoading={isMemberChallengesLoading}
-                onSelectChallenge={handleSelectChallenge}
-                onClearChallenge={handleClearChallenge}
+            <section>
+              <input
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="제목을 입력하세요"
+                className={cn(
+                  'w-full border-0 border-b-2 border-gray-200 bg-transparent',
+                  'px-0 py-3 text-2xl font-extrabold tracking-tight',
+                  'text-gray-900 placeholder:text-gray-400',
+                  'focus:border-main-800 transition-colors outline-none',
+                  'lg:text-[26px]'
+                )}
               />
+            </section>
 
-              <DiaryCreateGoalsSection
-                goals={isSelectedChallengeConfirmed ? goals : []}
-                achievedGoalIds={achievedGoalIds}
-                onGoalIdsChange={handleGoalIdsChange}
-              />
-            </div>
+            <DiaryCreateGoalsSection
+              goals={isSelectedChallengeConfirmed ? goals : []}
+              achievedGoalIds={achievedGoalIds}
+              onGoalIdsChange={handleGoalIdsChange}
+            />
+
+            <DiaryCreateFinishSection
+              achievedDate={achievedDate}
+              onAchievedDateChange={handleAchievedDateChange}
+              disabledAchievedDateKeys={
+                isSelectedChallengeConfirmed ? disabledAchievedDateKeys : []
+              }
+              challengeStartDate={
+                isSelectedChallengeConfirmed
+                  ? selectedChallenge?.startDate
+                  : undefined
+              }
+              selectedMood={selectedMood}
+              onMoodChange={setSelectedMood}
+            />
+
+            <section>
+              <Text
+                size="caption1"
+                weight="bold"
+                className="mb-2 block text-gray-600"
+              >
+                오늘 이야기
+              </Text>
+              <DiaryContentEditor content={content} onChange={setContent} />
+            </section>
+
             <DiaryCreateThumbnailSection
               thumbnailPreviewUrl={thumbnailPreviewUrl}
               hasThumbnail={Boolean(thumbnailFile)}
@@ -121,40 +207,45 @@ export default function DiaryCreateScreen(): React.ReactElement {
               onClearThumbnail={clearThumbnail}
             />
           </div>
-
-          <section>
-            <Text size="heading2" weight="bold" className="mb-6 text-gray-900">
-              상세 내용
-            </Text>
-            <DiaryContentEditor content={content} onChange={setContent} />
-          </section>
-
-          <DiaryCreateFinishSection
-            achievedDate={achievedDate}
-            onAchievedDateChange={handleAchievedDateChange}
-            disabledAchievedDateKeys={
-              isSelectedChallengeConfirmed ? disabledAchievedDateKeys : []
-            }
-            challengeStartDate={
-              isSelectedChallengeConfirmed
-                ? selectedChallenge?.startDate
-                : undefined
-            }
-            selectedMood={selectedMood}
-            onMoodChange={setSelectedMood}
-          />
         </div>
       </div>
 
-      <div className="sticky bottom-0 z-20 border-t border-gray-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-[1080px] items-center justify-end px-4 py-4">
-          <Button
-            size="large"
-            onClick={() => void handleSubmit()}
-            disabled={!canSubmit}
-          >
-            {submitButtonLabel}
-          </Button>
+      <div
+        className={cn(
+          'sticky bottom-0 z-20 mt-auto border-t border-gray-200',
+          'bg-white/95 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] backdrop-blur'
+        )}
+      >
+        <div
+          className={cn(
+            'mx-auto flex w-full max-w-[1200px] items-center gap-3',
+            'px-4 py-3 lg:px-8'
+          )}
+        >
+          {totalGoalCount > 0 ? (
+            <Text
+              size="caption1"
+              weight="bold"
+              className={cn(
+                'hidden lg:inline',
+                isHundredPercent ? 'text-green-600' : 'text-main-800'
+              )}
+            >
+              {isHundredPercent
+                ? '🎉 오늘 목표 완료!'
+                : `${achievedGoalCount}/${totalGoalCount} 달성 · ${percent}%`}
+            </Text>
+          ) : null}
+          <div className="w-full lg:ml-auto lg:w-auto">
+            <Button
+              size="large"
+              className="w-full lg:w-auto"
+              onClick={() => void handleSubmit()}
+              disabled={!canSubmit}
+            >
+              {submitButtonLabel}
+            </Button>
+          </div>
         </div>
       </div>
 

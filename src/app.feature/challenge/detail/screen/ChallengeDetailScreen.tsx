@@ -23,7 +23,14 @@ import {
 import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/DiaryCreateUnavailableDialog';
 import { normalizeApiError, notifyApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
-import { Check, CircleAlert, Trash2, UserRound } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  CircleAlert,
+  Trash2,
+  UserRound,
+} from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
@@ -829,7 +836,12 @@ export function ChallengeDetailScreen({
   );
 
   return (
-    <div className="min-h-screen w-full pb-12">
+    <div
+      className={cn(
+        'min-h-screen w-full bg-white lg:bg-gray-50/60',
+        ctaConfig.show ? 'pb-[100px] lg:pb-12' : 'pb-12'
+      )}
+    >
       {authDialog}
       {freeGoalModal}
       {editGoalModal}
@@ -843,21 +855,117 @@ export function ChallengeDetailScreen({
         onOpenChange={setShowDiaryLikeDialog}
       />
 
-      {/* 히어로는 main 영역을 가득 채우는 edge-to-edge */}
-      <ChallengeDetailHero
-        title={summary.title}
-        categoryLabel={getCategoryLabel(summary.category)}
-        typeLabel={`${getChallengeTypeLabel(summary.goalType)} 챌린지`}
-        metaLabel={heroMetaLabel}
-        imageUrl={summary.thumbnailImage ?? undefined}
-        accent={accentColor}
-        gradient={heroGradient}
-        bleed
-      />
+      {/* 히어로 + 모바일 floating 뒤로가기 */}
+      <div className="relative">
+        <ChallengeDetailHero
+          title={summary.title}
+          categoryLabel={getCategoryLabel(summary.category)}
+          typeLabel={`${getChallengeTypeLabel(summary.goalType)} 챌린지`}
+          metaLabel={heroMetaLabel}
+          imageUrl={summary.thumbnailImage ?? undefined}
+          accent={accentColor}
+          gradient={heroGradient}
+          bleed
+          hideTextOnMobile
+        />
+        <button
+          type="button"
+          aria-label="뒤로가기"
+          onClick={() => router.back()}
+          className={cn(
+            'absolute top-3.5 left-3.5 z-10 flex h-9 w-9',
+            'items-center justify-center rounded-full bg-white/90',
+            'text-gray-700 shadow-sm backdrop-blur',
+            'transition hover:bg-white lg:hidden'
+          )}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* 모바일 컨텐츠 헤더 — 히어로 위로 오버레이 */}
+      <div
+        className={cn(
+          'relative z-10 -mt-5 rounded-t-[20px] bg-white px-5 pt-5 pb-1',
+          'lg:hidden'
+        )}
+      >
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Tag tone="brand" size="sm">
+            {getCategoryLabel(summary.category)}
+          </Tag>
+          <Tag tone="gray" size="sm">
+            {getChallengeTypeLabel(summary.goalType)}
+          </Tag>
+        </div>
+        <Text
+          as="h1"
+          size="heading1"
+          weight="extrabold"
+          className="mt-2.5 block tracking-[-0.5px] break-keep text-gray-900"
+        >
+          {summary.title}
+        </Text>
+        <Text
+          size="caption1"
+          weight="regular"
+          className="mt-1.5 block text-gray-500"
+        >
+          {heroMetaLabel}
+        </Text>
+
+        {activeParticipants.length > 0 ? (
+          <div
+            className={cn(
+              'mt-4 flex items-center gap-2.5 rounded-[12px]',
+              'bg-main-100 px-3.5 py-3'
+            )}
+          >
+            <div className="flex">
+              {activeParticipants.slice(0, 4).map((participant, idx) => (
+                <div
+                  key={participant.participantId}
+                  className={cn(
+                    'h-7 w-7 overflow-hidden rounded-full',
+                    'border-2 border-white bg-gray-200',
+                    idx > 0 && '-ml-2.5'
+                  )}
+                  style={{
+                    backgroundColor: !participant.profileImg
+                      ? accentColor
+                      : undefined,
+                  }}
+                >
+                  {participant.profileImg ? (
+                    <Image
+                      src={participant.profileImg}
+                      alt=""
+                      width={28}
+                      height={28}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </div>
+              ))}
+            </div>
+            <Text
+              size="caption1"
+              weight="regular"
+              className="text-gray-700"
+            >
+              <span className="font-extrabold">
+                {activeParticipants.length}명
+              </span>
+              이 함께 도전 중이에요
+            </Text>
+          </div>
+        ) : null}
+      </div>
 
       <div
         className={cn(
-          'flex w-full flex-col gap-6 px-4 pt-7 md:px-6 lg:px-8 lg:pt-8'
+          'relative z-10 flex w-full flex-col gap-3 px-5 pt-3',
+          'sm:pt-6 md:px-6 lg:gap-4 lg:px-8 lg:pt-8'
         )}
       >
         {isHost && pendingParticipants.length > 0 ? (
@@ -904,31 +1012,39 @@ export function ChallengeDetailScreen({
 
         <div
           className={cn(
-            'grid grid-cols-1 gap-7',
-            'lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8'
+            'grid grid-cols-1 gap-4',
+            'lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-7'
           )}
         >
           {/* 메인 콘텐츠: 소개 → 인증 규칙 → 참여자 일지 */}
-          <div className="flex min-w-0 flex-col gap-7">
-            <section>
-              <Text
-                as="h2"
-                size="heading2"
-                weight="extrabold"
-                className="mb-2.5 block tracking-[-0.3px] text-gray-900"
+          <div className="flex min-w-0 flex-col gap-3.5 lg:gap-4">
+            {detail.description?.trim() ? (
+              <section
+                className={cn(
+                  'rounded-[14px] border border-gray-100 bg-gray-50',
+                  'lg:border-gray-200 lg:bg-white',
+                  'p-4 sm:p-5 lg:p-6'
+                )}
               >
-                챌린지 소개
-              </Text>
-              <ExpandableText>{detail.description}</ExpandableText>
-              <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                <Tag tone="brand" size="sm">
-                  {getCategoryLabel(summary.category)}
-                </Tag>
-                <Tag tone="gray" size="sm">
-                  {getChallengeTypeLabel(summary.goalType)}
-                </Tag>
-              </div>
-            </section>
+                <Text
+                  as="h2"
+                  size="heading2"
+                  weight="extrabold"
+                  className="mb-3 block tracking-[-0.3px] text-gray-900"
+                >
+                  챌린지 소개
+                </Text>
+                <ExpandableText>{detail.description}</ExpandableText>
+                <div className="mt-3 hidden flex-wrap items-center gap-1.5 lg:flex">
+                  <Tag tone="brand" size="sm">
+                    {getCategoryLabel(summary.category)}
+                  </Tag>
+                  <Tag tone="gray" size="sm">
+                    {getChallengeTypeLabel(summary.goalType)}
+                  </Tag>
+                </div>
+              </section>
+            ) : null}
 
             <ChallengeRulesCard
               goals={goals.map((goal) => goal.content)}
@@ -955,8 +1071,14 @@ export function ChallengeDetailScreen({
               }
             />
 
-            <section>
-              <div className="mb-2.5 flex items-baseline justify-between gap-2">
+            <section
+              className={cn(
+                'rounded-[14px] border border-gray-100 bg-gray-50',
+                'lg:border-gray-200 lg:bg-white',
+                'p-4 sm:p-5 lg:p-6'
+              )}
+            >
+              <div className="mb-3 flex items-baseline justify-between gap-2">
                 <Text
                   as="h2"
                   size="heading2"
@@ -989,7 +1111,12 @@ export function ChallengeDetailScreen({
                 isLoading={isDiariesLoading}
                 onDiaryClick={(diaryId) => router.push(`/diary/${diaryId}`)}
                 onLikeToggle={handleDiaryLikeToggle}
-                gridClassName="grid grid-cols-1 gap-2.5 sm:grid-cols-2"
+                gridClassName={cn(
+                  'scrollbar-hide flex gap-3 overflow-x-auto',
+                  'sm:grid sm:gap-2.5 sm:overflow-visible',
+                  'sm:grid-cols-[repeat(auto-fill,minmax(160px,200px))]'
+                )}
+                itemClassName="w-[170px] shrink-0 sm:w-auto"
               />
             </section>
           </div>
@@ -1001,21 +1128,23 @@ export function ChallengeDetailScreen({
               'lg:sticky lg:top-6 lg:self-start'
             )}
           >
-            <ChallengeProgressCard
-              progressPercent={participationRate}
-              participantsLabel={participantsLabel}
-              remainingLabel={dateRangeText}
-              ctaLabel={ctaConfig.label}
-              onCtaClick={ctaConfig.onClick}
-              ctaDisabled={ctaConfig.disabled}
-              ctaVariant={ctaConfig.variant}
-              showCta={ctaConfig.show}
-              isInfinite={isEndless}
-              likeCount={summary.likeInfo.likeCnt}
-              likedByMe={summary.likeInfo.likedByMe}
-              onToggleLike={handleToggleLike}
-              isLikePending={isActionLoading}
-            />
+            <div className="hidden lg:block">
+              <ChallengeProgressCard
+                progressPercent={participationRate}
+                participantsLabel={participantsLabel}
+                remainingLabel={dateRangeText}
+                ctaLabel={ctaConfig.label}
+                onCtaClick={ctaConfig.onClick}
+                ctaDisabled={ctaConfig.disabled}
+                ctaVariant={ctaConfig.variant}
+                showCta={ctaConfig.show}
+                isInfinite={isEndless}
+                likeCount={summary.likeInfo.likeCnt}
+                likedByMe={summary.likeInfo.likedByMe}
+                onToggleLike={handleToggleLike}
+                isLikePending={isActionLoading}
+              />
+            </div>
 
             <ChallengeLeaderboardCard
               entries={activeParticipants.map((participant) => ({
@@ -1047,6 +1176,27 @@ export function ChallengeDetailScreen({
           </aside>
         </div>
       </div>
+
+      {/* 모바일 sticky bottom CTA */}
+      {ctaConfig.show ? (
+        <div
+          className={cn(
+            'fixed right-0 bottom-0 left-0 z-20 lg:hidden',
+            'border-t border-gray-100 bg-white/95 backdrop-blur',
+            'px-5 pt-3 pb-5'
+          )}
+        >
+          <Button
+            size="medium"
+            variant={ctaConfig.variant}
+            fullWidth
+            onClick={ctaConfig.onClick}
+            disabled={ctaConfig.disabled}
+          >
+            {ctaConfig.label}
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

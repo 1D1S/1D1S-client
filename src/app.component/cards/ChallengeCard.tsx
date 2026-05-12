@@ -1,28 +1,117 @@
 'use client';
 
-import { Card, Icon, Stripe, Tag } from '@1d1s/design-system';
+import { Card, CircleAvatar, Stripe } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import { CalendarDays, Target, Users } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
+
+export type ChallengeCardGoalType = 'FIXED' | 'FLEXIBLE';
 
 export interface ChallengeCardProps {
   title: string;
   category: string;
+  categoryIcon?: string;
+  stripeTone?: string;
   imageUrl?: string;
   currentParticipantCount: number;
-  maxParticipantCount: number;
+  maxParticipantCount?: number;
   remainingLabel: string;
+  startDate?: string;
+  endDate?: string;
+  isInfinite?: boolean;
+  goalType?: ChallengeCardGoalType;
+  isGroup?: boolean;
+  isEnded?: boolean;
   onClick?(): void;
   className?: string;
+}
+
+const AVATAR_TONES = ['peach', 'rose', 'peach'] as const;
+
+const GOAL_TYPE_LABELS: Record<ChallengeCardGoalType, string> = {
+  FIXED: '고정 목표',
+  FLEXIBLE: '자유 목표',
+};
+
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+function pad2(value: number): string {
+  return value < 10 ? `0${value}` : `${value}`;
+}
+
+function formatFullDate(date: Date): string {
+  return `${date.getFullYear()}.${pad2(date.getMonth() + 1)}.${pad2(
+    date.getDate()
+  )}`;
+}
+
+function formatShortDate(date: Date): string {
+  return `${pad2(date.getMonth() + 1)}.${pad2(date.getDate())}`;
+}
+
+interface PeriodInfo {
+  rangeLabel: string;
+  durationLabel: string | null;
+}
+
+function buildPeriodInfo(
+  startDate?: string,
+  endDate?: string,
+  isInfinite?: boolean
+): PeriodInfo | null {
+  if (!startDate) {
+    return null;
+  }
+
+  const start = new Date(startDate);
+  if (Number.isNaN(start.getTime())) {
+    return null;
+  }
+
+  const startLabel = formatFullDate(start);
+
+  if (isInfinite) {
+    return { rangeLabel: `${startLabel} ~ 무제한`, durationLabel: null };
+  }
+
+  if (!endDate) {
+    return { rangeLabel: startLabel, durationLabel: null };
+  }
+
+  const end = new Date(endDate);
+  if (Number.isNaN(end.getTime())) {
+    return { rangeLabel: startLabel, durationLabel: null };
+  }
+
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const endLabel = sameYear ? formatShortDate(end) : formatFullDate(end);
+  const days = Math.max(
+    1,
+    Math.round((end.getTime() - start.getTime()) / MS_PER_DAY) + 1
+  );
+
+  return {
+    rangeLabel: `${startLabel} ~ ${endLabel}`,
+    durationLabel: `${days}일`,
+  };
 }
 
 export default function ChallengeCard({
   title,
   category,
+  categoryIcon,
+  stripeTone = 'var(--main-600)',
   imageUrl,
   currentParticipantCount,
   maxParticipantCount,
   remainingLabel,
+  startDate,
+  endDate,
+  isInfinite = false,
+  goalType,
+  isGroup = true,
+  isEnded = false,
   onClick,
   className,
 }: ChallengeCardProps): React.ReactElement {
@@ -35,6 +124,18 @@ export default function ChallengeCard({
     }
   };
 
+  const stripeLabel = categoryIcon ?? category;
+  const participationLabel = isGroup ? '단체' : '개인';
+  const goalLabel = goalType ? GOAL_TYPE_LABELS[goalType] : null;
+  const visibleAvatars = Math.min(3, Math.max(0, currentParticipantCount));
+  const extraCount = Math.max(0, currentParticipantCount - visibleAvatars);
+  const period = buildPeriodInfo(startDate, endDate, isInfinite);
+  const hasMaxCount =
+    typeof maxParticipantCount === 'number' && maxParticipantCount > 0;
+  const participantCountLabel = hasMaxCount
+    ? `${currentParticipantCount}/${maxParticipantCount}명`
+    : `${currentParticipantCount}명`;
+
   return (
     <Card
       interactive
@@ -44,34 +145,127 @@ export default function ChallengeCard({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={cn(
+        'transition-all duration-300 ease-out',
         'hover:shadow-[0_10px_28px_rgba(255,87,34,0.18)]',
+        isEnded && 'opacity-60',
         className
       )}
     >
-      <Card.Thumb className="bg-main-100 h-[110px]">
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt={title}
-            fill
-            sizes="(min-width: 1024px) 280px, 50vw"
-            className="object-cover"
-          />
-        ) : (
-          <Stripe tone="peach" />
-        )}
+      <Card.Thumb className="px-3 pt-3">
+        <div className="bg-main-100 relative aspect-[3/2] overflow-hidden rounded-2xl">
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={title}
+              fill
+              sizes="(min-width: 1024px) 280px, 50vw"
+              className="object-cover"
+            />
+          ) : (
+            <>
+              <Stripe tone={stripeTone} />
+              {stripeLabel ? (
+                <span
+                  className={cn(
+                    'absolute inset-0 flex items-center justify-center',
+                    'pointer-events-none'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'rounded-[3px] bg-white px-1.5 py-0.5',
+                      'font-mono text-[10px] tracking-[0.3px] text-black/45'
+                    )}
+                  >
+                    {stripeLabel}
+                  </span>
+                </span>
+              ) : null}
+            </>
+          )}
+          <div
+            className={cn(
+              'absolute top-2 right-2 z-10 flex items-center gap-1'
+            )}
+          >
+            {goalLabel ? (
+              <span
+                className={cn(
+                  'inline-flex items-center rounded-full bg-white/95',
+                  'px-2 py-1 text-[10px] font-bold text-gray-700',
+                  'shadow-sm'
+                )}
+              >
+                {goalLabel}
+              </span>
+            ) : null}
+            <span
+              className={cn(
+                'inline-flex items-center rounded-full px-2.5 py-1',
+                'text-[11px] font-bold shadow-sm',
+                isGroup
+                  ? 'bg-main-800 text-white'
+                  : 'bg-white text-gray-900'
+              )}
+            >
+              {participationLabel}
+            </span>
+          </div>
+        </div>
       </Card.Thumb>
       <Card.Body>
-        <div className="flex">
-          <Tag tone="brand" size="xs">
-            {category}
-          </Tag>
-        </div>
         <Card.Title className="min-h-[2.6em]">{title}</Card.Title>
-        <Card.Meta>
-          <span className="inline-flex items-center gap-1">
-            <Icon name="People" size={11} />
-            {currentParticipantCount}/{maxParticipantCount}
+        <ul
+          className={cn(
+            'mt-1 flex flex-col gap-1 text-[11px] text-gray-500',
+            'sm:text-xs'
+          )}
+        >
+          {period ? (
+            <li className="flex items-center gap-1.5">
+              <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">
+                {period.rangeLabel}
+                {period.durationLabel ? (
+                  <span className="text-gray-400">
+                    {' · '}
+                    {period.durationLabel}
+                  </span>
+                ) : null}
+              </span>
+            </li>
+          ) : null}
+          <li className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">
+              <span className="font-semibold text-gray-700">
+                {participantCountLabel}
+              </span>{' '}
+              참여중
+            </span>
+          </li>
+          {goalLabel ? (
+            <li className="flex items-center gap-1.5 sm:hidden">
+              <Target className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{goalLabel}</span>
+            </li>
+          ) : null}
+        </ul>
+        <Card.Meta className="mt-2 border-t border-gray-100 pt-2">
+          <span className="inline-flex items-center gap-2">
+            <span className="flex -space-x-2">
+              {Array.from({ length: visibleAvatars }).map((_, index) => (
+                <CircleAvatar
+                  key={index}
+                  size="sm"
+                  tone={AVATAR_TONES[index % AVATAR_TONES.length]}
+                  ring
+                />
+              ))}
+            </span>
+            {extraCount > 0 ? (
+              <span className="text-gray-500">+{extraCount}</span>
+            ) : null}
           </span>
           <span className="text-brand font-bold">{remainingLabel}</span>
         </Card.Meta>

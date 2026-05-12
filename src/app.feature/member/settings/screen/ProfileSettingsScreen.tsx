@@ -6,24 +6,15 @@ import {
   Text,
   TextField,
 } from '@1d1s/design-system';
-import { useLogout } from '@feature/auth/hooks/useAuthMutations';
 import {
-  useDeleteMember,
   useUpdateNickname,
   useUpdateProfileImage,
 } from '@feature/member/hooks/useMemberMutations';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
-import {
-  ConfirmDialog,
-} from '@feature/member/settings/components/ConfirmDialog';
-import { notifyApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
 import { validateNickname } from '@module/utils/nickname';
-import { LogOut, UserMinus } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 
 const PROVIDER_CONFIG = {
   KAKAO: {
@@ -46,27 +37,20 @@ const PROVIDER_CONFIG = {
   },
 } as const;
 
-export default function AccountSettingsScreen(): React.ReactElement {
-  const router = useRouter();
-  const logout = useLogout();
+export default function ProfileSettingsScreen(): React.ReactElement {
   const { data } = useMyPage();
 
-  const [editedNickname, setEditedNickname] = useState<
-    string | undefined
-  >();
+  const [editedNickname, setEditedNickname] = useState<string | undefined>();
   const [nicknameError, setNicknameError] = useState('');
   const [localProfilePreview, setLocalProfilePreview] = useState<
     string | undefined
   >();
-  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
-  const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
 
   const nickname = editedNickname ?? data?.nickname ?? '';
   const profilePreview = localProfilePreview ?? data?.profileUrl ?? '';
 
   const updateNickname = useUpdateNickname();
   const updateProfileImage = useUpdateProfileImage();
-  const deleteMember = useDeleteMember();
 
   const handleProfileImageChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -98,56 +82,24 @@ export default function AccountSettingsScreen(): React.ReactElement {
     updateNickname.mutate(trimmed);
   };
 
-  const confirmLogout = (): void => {
-    logout.mutate(undefined, {
-      onSettled: () => {
-        setIsLogoutDialogOpen(false);
-        router.replace('/login');
-      },
-    });
-  };
-
-  const confirmWithdraw = (): void => {
-    deleteMember.mutate(undefined, {
-      onSuccess: (response) => {
-        setIsWithdrawDialogOpen(false);
-        toast.success(
-          response.message ?? '회원 탈퇴가 완료되었습니다.'
-        );
-        router.replace('/login');
-      },
-      onError: (error) => {
-        notifyApiError(error);
-      },
-    });
-  };
-
-  const isAnySending = logout.isPending || deleteMember.isPending;
-
   return (
     <div className="flex min-h-screen w-full flex-col bg-white p-4">
-      <section
-        className="rounded-3 mx-auto w-full max-w-[980px] bg-white p-2"
-      >
+      <section className="rounded-3 mx-auto w-full max-w-[980px] bg-white p-2">
         <div
           className={cn(
             'flex items-start justify-between',
-            'border-b border-gray-200 pb-5',
+            'border-b border-gray-200 pb-5'
           )}
         >
           <Text size="display1" weight="bold" className="text-gray-900">
-            계정 설정
+            프로필 설정
           </Text>
         </div>
 
         <div className="mt-6 flex flex-col gap-3">
           <section className="rounded-4 border border-gray-200 bg-white">
             <div className="border-b border-gray-100 px-5 py-4">
-              <Text
-                size="body1"
-                weight="bold"
-                className="text-gray-500"
-              >
+              <Text size="body1" weight="bold" className="text-gray-500">
                 프로필
               </Text>
             </div>
@@ -172,11 +124,7 @@ export default function AccountSettingsScreen(): React.ReactElement {
               </div>
 
               <div className="flex flex-col gap-2">
-                <Text
-                  size="body1"
-                  weight="medium"
-                  className="text-gray-700"
-                >
+                <Text size="body1" weight="medium" className="text-gray-700">
                   닉네임
                 </Text>
                 <div className="flex gap-2">
@@ -235,11 +183,7 @@ export default function AccountSettingsScreen(): React.ReactElement {
 
               {data?.provider && (
                 <div className="flex flex-col gap-2">
-                  <Text
-                    size="body1"
-                    weight="medium"
-                    className="text-gray-700"
-                  >
+                  <Text size="body1" weight="medium" className="text-gray-700">
                     연동 계정
                   </Text>
                   <div className="flex items-center gap-2">
@@ -251,7 +195,7 @@ export default function AccountSettingsScreen(): React.ReactElement {
                             'inline-flex shrink-0 items-center',
                             'justify-center rounded-lg px-3 py-2',
                             config.bg,
-                            config.textColor,
+                            config.textColor
                           )}
                         >
                           {config.icon ? (
@@ -279,87 +223,8 @@ export default function AccountSettingsScreen(): React.ReactElement {
               )}
             </div>
           </section>
-
-          <section className="rounded-4 border border-gray-200 bg-white">
-            <div className="border-b border-gray-100 px-5 py-4">
-              <Text
-                size="body1"
-                weight="bold"
-                className="text-gray-500"
-              >
-                계정
-              </Text>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsLogoutDialogOpen(true)}
-              disabled={isAnySending}
-              className={cn(
-                'flex w-full cursor-pointer items-center gap-3',
-                'px-5 py-4 text-red-500 transition hover:bg-red-50',
-                'disabled:opacity-50',
-              )}
-            >
-              <LogOut className="h-5 w-5" />
-              <Text size="body1" weight="medium">
-                {logout.isPending ? '로그아웃 중...' : '로그아웃'}
-              </Text>
-            </button>
-
-            <div className="h-px w-full bg-gray-100" />
-
-            <button
-              type="button"
-              onClick={() => setIsWithdrawDialogOpen(true)}
-              disabled={isAnySending}
-              className={cn(
-                'flex w-full cursor-pointer items-center gap-3',
-                'px-5 py-4 text-gray-500 transition hover:bg-gray-50',
-              )}
-            >
-              <UserMinus className="h-5 w-5" />
-              <Text
-                size="body1"
-                weight="medium"
-                className="text-gray-600"
-              >
-                회원 탈퇴
-              </Text>
-            </button>
-          </section>
         </div>
       </section>
-
-      <ConfirmDialog
-        open={isLogoutDialogOpen}
-        onOpenChange={setIsLogoutDialogOpen}
-        tone="brand"
-        icon="LogIn"
-        title="로그아웃 하시겠어요?"
-        description="현재 계정에서 로그아웃됩니다."
-        confirmLabel="로그아웃"
-        pendingLabel="로그아웃 중..."
-        isPending={logout.isPending}
-        isDisabled={isAnySending}
-        onCancel={() => setIsLogoutDialogOpen(false)}
-        onConfirm={confirmLogout}
-      />
-
-      <ConfirmDialog
-        open={isWithdrawDialogOpen}
-        onOpenChange={setIsWithdrawDialogOpen}
-        tone="danger"
-        icon="Close"
-        title="회원 탈퇴 하시겠어요?"
-        description="회원 탈퇴 요청 후 계정 삭제는 7일 뒤 처리됩니다."
-        confirmLabel="회원 탈퇴"
-        pendingLabel="처리 중..."
-        isPending={deleteMember.isPending}
-        isDisabled={isAnySending}
-        onCancel={() => setIsWithdrawDialogOpen(false)}
-        onConfirm={confirmWithdraw}
-      />
     </div>
   );
 }

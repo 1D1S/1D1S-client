@@ -86,8 +86,10 @@ export default function MemberProfilePage(): React.ReactElement {
   const hasMoreDiaries = memberDiariesData?.pageInfo.hasNextPage ?? false;
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 pb-12">
-      <MyPageHeroBanner />
+    <div className="min-h-screen w-full bg-white pb-12 lg:bg-gray-50">
+      <div className="hidden lg:block">
+        <MyPageHeroBanner />
+      </div>
 
       <div
         className={cn(

@@ -20,15 +20,22 @@ export function ChallengeCreateDialog({
   onConfirm,
   disabled,
   triggerText = '완료',
+  triggerClassName,
 }: {
   onConfirm?(): void;
   disabled?: boolean;
   triggerText?: string;
+  triggerClassName?: string;
 }): React.ReactElement {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default" type="button" disabled={disabled}>
+        <Button
+          variant="default"
+          type="button"
+          disabled={disabled}
+          className={triggerClassName}
+        >
           {triggerText}
         </Button>
       </DialogTrigger>

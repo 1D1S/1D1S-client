@@ -4,7 +4,10 @@ import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import { getCategoryLabel } from '@constants/categories';
 import { Feeling } from '@feature/diary/board/type/diary';
-import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
+import {
+  resolveDiaryImageList,
+  resolveDiaryImageUrl,
+} from '@feature/diary/shared/utils/diaryImageUrl';
 import React from 'react';
 
 import { ChallengeDiaryItem } from '../type/challengeDiary';
@@ -15,6 +18,7 @@ interface ChallengeDiaryGridProps {
   onDiaryClick(diaryId: number): void;
   onLikeToggle(diary: ChallengeDiaryItem): void;
   gridClassName?: string;
+  itemClassName?: string;
 }
 
 function mapFeelingToEmotion(feeling: Feeling): 'happy' | 'soso' | 'sad' {
@@ -33,6 +37,7 @@ export function ChallengeDiaryGrid({
   onDiaryClick,
   onLikeToggle,
   gridClassName = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4',
+  itemClassName,
 }: ChallengeDiaryGridProps): React.ReactElement {
   if (isLoading) {
     return (
@@ -57,31 +62,30 @@ export function ChallengeDiaryGrid({
   return (
     <div className={gridClassName}>
       {diaries.map((diary) => (
-        <DiaryCard
-          key={diary.id}
-          imageUrl={diary.imgUrl?.[0]}
-          percent={Math.min(
-            100,
-            Math.max(0, diary.diaryInfo?.achievementRate ?? 0)
-          )}
-          isLiked={diary.likeInfo.likedByMe}
-          likes={diary.likeInfo.likeCnt}
-          title={diary.title}
-          user={diary.author?.nickname || '익명'}
-          challengeLabel={
-            diary.challenge?.title ||
-            getCategoryLabel(diary.challenge?.category) ||
-            '챌린지'
-          }
-          date={getRelativeDiaryDateLabel(
-            diary.diaryInfo?.createdAt ??
-              diary.diaryInfo?.challengedDate ??
-              ''
-          )}
-          emotion={mapFeelingToEmotion(diary.diaryInfo?.feeling ?? 'NONE')}
-          onClick={() => onDiaryClick(diary.id)}
-          onLikeToggle={() => onLikeToggle(diary)}
-        />
+        <div key={diary.id} className={itemClassName}>
+          <DiaryCard
+            imageUrl={resolveDiaryImageList(diary.imgUrl)?.[0]}
+            profileImageUrl={
+              resolveDiaryImageUrl(diary.author?.profileImage) ?? undefined
+            }
+            percent={Math.min(
+              100,
+              Math.max(0, diary.diaryInfo?.achievementRate ?? 0)
+            )}
+            isLiked={diary.likeInfo.likedByMe}
+            likes={diary.likeInfo.likeCnt}
+            title={diary.title}
+            user={diary.author?.nickname || '익명'}
+            challengeLabel={
+              diary.challenge?.title ||
+              getCategoryLabel(diary.challenge?.category) ||
+              '챌린지'
+            }
+            emotion={mapFeelingToEmotion(diary.diaryInfo?.feeling ?? 'NONE')}
+            onClick={() => onDiaryClick(diary.id)}
+            onLikeToggle={() => onLikeToggle(diary)}
+          />
+        </div>
       ))}
     </div>
   );

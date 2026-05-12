@@ -15,10 +15,8 @@ import {
   useLikeDiary,
   useUnlikeDiary,
 } from '../../detail/hooks/useDiaryMutations';
-import {
-  getDateTimestamp,
-  getRelativeDiaryDateLabel,
-} from '../../shared/utils/diaryRelativeTime';
+import { resolveDiaryImageUrl } from '../../shared/utils/diaryImageUrl';
+import { getDateTimestamp } from '../../shared/utils/diaryRelativeTime';
 import { useDiaryList } from '../hooks/useDiaryQueries';
 import { type DiaryItem, Feeling } from '../type/diary';
 
@@ -237,20 +235,49 @@ export default function DiaryListScreen(): React.ReactElement {
         onOpenChange={setShowLoginDialog}
         description={loginDialogDescription}
       />
+
+      {/* 모바일 sticky 헤더 — 일지 */}
+      <div
+        className={cn(
+          'sticky top-0 z-20 border-b border-gray-100',
+          'bg-white/95 px-5 pt-3.5 pb-3 backdrop-blur lg:hidden'
+        )}
+      >
+        <Text
+          as="h1"
+          size="heading1"
+          weight="extrabold"
+          className="tracking-[-0.5px] text-gray-900"
+        >
+          일지
+        </Text>
+      </div>
+
       <div
         className={cn(
           'mx-auto w-full max-w-[1200px]',
-          'px-5 py-7 lg:px-8 lg:py-10'
+          'px-5 py-5 lg:px-8 lg:py-10'
         )}
       >
-        <div className="flex flex-col gap-2 pb-1">
-          <Text size="display1" weight="bold" className="text-gray-900">
-            일지
-          </Text>
-          <Text size="body1" weight="regular" className="text-gray-600">
-            다른 챌린저의 일지를 보며 동기부여를 얻어보세요.
-          </Text>
-        </div>
+        <header
+          className={cn(
+            'hidden flex-col gap-4 border-b border-gray-100 pb-5',
+            'lg:flex lg:flex-row lg:items-end lg:justify-between'
+          )}
+        >
+          <div className="flex flex-col gap-1.5">
+            <Text
+              size="pageTitle"
+              weight="extrabold"
+              className="tracking-tight text-gray-900"
+            >
+              일지 보드
+            </Text>
+            <Text size="body2" weight="regular" className="text-gray-500">
+              다른 챌린저의 일지를 보며 동기부여를 얻어보세요.
+            </Text>
+          </div>
+        </header>
 
         {isLoading ? (
           <div className="mt-10 flex w-full justify-center py-10">
@@ -290,6 +317,10 @@ export default function DiaryListScreen(): React.ReactElement {
                 >
                   <DiaryCard
                     imageUrl={item.imgUrl?.[0]}
+                    profileImageUrl={
+                      resolveDiaryImageUrl(authorInfo?.profileImage) ??
+                      undefined
+                    }
                     percent={getDiaryAchievementRate(item)}
                     isLiked={item.likeInfo.likedByMe}
                     likes={item.likeInfo.likeCnt}
@@ -300,9 +331,6 @@ export default function DiaryListScreen(): React.ReactElement {
                       getCategoryLabel(item.challenge?.category) ||
                       '챌린지'
                     }
-                    date={getRelativeDiaryDateLabel(
-                      diaryInfo?.createdAt ?? ''
-                    )}
                     emotion={mapFeelingToEmotion(
                       diaryInfo?.feeling ?? 'NONE'
                     )}

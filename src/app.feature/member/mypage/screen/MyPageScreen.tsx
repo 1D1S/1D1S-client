@@ -34,15 +34,17 @@ export default function MyPageScreen(): React.ReactElement {
   const hasMoreDiaries = myDiariesData?.pageInfo.hasNextPage ?? false;
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 pb-12">
-      {/* Full-bleed gradient banner */}
-      <MyPageHeroBanner />
+    <div className="min-h-screen w-full bg-white pb-12 lg:bg-gray-50">
+      {/* Full-bleed gradient banner — 모바일에서는 프로필 카드가 자체 gradient를 가짐 */}
+      <div className="hidden lg:block">
+        <MyPageHeroBanner />
+      </div>
 
       {/* Centered content container */}
       <div
         className={cn(
           'mx-auto w-full max-w-[1200px]',
-          'px-5 lg:px-8',
+          'lg:px-8',
         )}
       >
         <MyPageProfileCard
@@ -54,42 +56,47 @@ export default function MyPageScreen(): React.ReactElement {
           completedFiniteChallengeCount={
             streak.completedFiniteChallengeCount ?? 0
           }
+          currentStreak={streak.currentStreak}
         />
 
-        {/* Streak hero + Heatmap (1:1 grid on desktop) */}
-        <div
-          className={cn(
-            'mt-6 grid grid-cols-1 gap-4',
-            'lg:grid-cols-2 lg:gap-5',
-          )}
-        >
-          <MyPageStreakHeroCard
-            currentStreak={streak.currentStreak}
-            maxStreak={streak.maxStreak}
-          />
-          <MyPageActivityHeatmap calendar={streak.calendar} />
-        </div>
+        {/* 모바일 이후 컨텐츠 인셋 */}
+        <div className="px-5 lg:px-0">
+          {/* Streak hero + Heatmap — 모바일에서는 숨김 */}
+          <div
+            className={cn(
+              'mt-6 hidden grid-cols-1 gap-4',
+              'lg:grid lg:grid-cols-2 lg:gap-5',
+            )}
+          >
+            <MyPageStreakHeroCard
+              currentStreak={streak.currentStreak}
+              maxStreak={streak.maxStreak}
+            />
+            <MyPageActivityHeatmap calendar={streak.calendar} />
+          </div>
 
-        <div className="mt-8">
-          <MyPageStatSection streak={streak} />
-        </div>
+          {/* 통계 섹션 — 모바일에서는 프로필 카드 내부 grid로 대체 */}
+          <div className="mt-8 hidden lg:block">
+            <MyPageStatSection streak={streak} />
+          </div>
 
-        <div className="mt-8">
-          <MyPageBadgesSection streak={streak} />
-        </div>
+          <div className="mt-8">
+            <MyPageBadgesSection streak={streak} />
+          </div>
 
-        <div className="mt-8">
-          <MyPageActiveChallenges challengeList={challengeList} />
-        </div>
+          <div className="mt-8">
+            <MyPageActiveChallenges challengeList={challengeList} />
+          </div>
 
-        <div className="mt-8">
-          <MyPageDiarySection
-            title="내 일지"
-            diaries={myDiaries}
-            nickname={nickname}
-            hasMore={hasMoreDiaries}
-            viewAllHref="/mypage/diary"
-          />
+          <div className="mt-8">
+            <MyPageDiarySection
+              title="내 일지"
+              diaries={myDiaries}
+              nickname={nickname}
+              hasMore={hasMoreDiaries}
+              viewAllHref="/mypage/diary"
+            />
+          </div>
         </div>
       </div>
     </div>

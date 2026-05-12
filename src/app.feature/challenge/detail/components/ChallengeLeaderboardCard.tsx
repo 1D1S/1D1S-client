@@ -27,13 +27,15 @@ export function ChallengeLeaderboardCard({
 
   return (
     <Card radius="lg" className="p-5">
-      <div className="mb-3 flex items-center gap-1.5">
-        <span aria-hidden className="text-base leading-none">
-          🏆
-        </span>
+      <div className="mb-3 flex items-baseline justify-between gap-2">
         <Text size="heading2" weight="extrabold" className="text-gray-900">
-          리더보드
+          참여자
         </Text>
+        {rows.length > 0 ? (
+          <Text size="caption2" weight="medium" className="text-gray-500">
+            {rows.length}명
+          </Text>
+        ) : null}
       </div>
 
       {rows.length === 0 ? (
@@ -48,8 +50,6 @@ export function ChallengeLeaderboardCard({
       ) : (
         <ul className="flex flex-col">
           {rows.map((entry, index) => {
-            const rank = index + 1;
-            const isFirst = rank === 1;
             const isLast = index === rows.length - 1;
 
             return (
@@ -71,14 +71,6 @@ export function ChallengeLeaderboardCard({
                     'hover:bg-gray-50'
                   )}
                 >
-                  <span
-                    className={cn(
-                      'w-6 text-center text-[12px] font-extrabold',
-                      isFirst ? 'text-[#ff9800]' : 'text-gray-500'
-                    )}
-                  >
-                    {rank}
-                  </span>
                   <CircleAvatar
                     size="sm"
                     imageUrl={entry.profileImg ?? undefined}

@@ -19,6 +19,8 @@ interface ChallengeDetailHeroProps {
   accent: string;
   gradient: string;
   bleed?: boolean;
+  // 모바일에서는 콘텐츠 헤더가 카드 안으로 이동하므로 텍스트를 숨긴다.
+  hideTextOnMobile?: boolean;
 }
 
 export function ChallengeDetailHero({
@@ -30,6 +32,7 @@ export function ChallengeDetailHero({
   accent,
   gradient,
   bleed = false,
+  hideTextOnMobile = false,
 }: ChallengeDetailHeroProps): React.ReactElement {
   return (
     <div
@@ -68,8 +71,9 @@ export function ChallengeDetailHero({
       ) : null}
       <div
         className={cn(
-          'absolute inset-0 flex flex-col justify-end gap-2.5',
-          'p-6 text-white md:p-8'
+          'absolute inset-0 flex-col justify-end gap-2.5',
+          'p-6 text-white md:p-8',
+          hideTextOnMobile ? 'hidden lg:flex' : 'flex'
         )}
       >
         <div className="flex flex-wrap items-center gap-1.5">
