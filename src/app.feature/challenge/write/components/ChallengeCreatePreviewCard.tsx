@@ -1,6 +1,7 @@
 import { Stripe, Tag, Text } from '@1d1s/design-system';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { cn } from '@module/utils/cn';
+import { formatDateKR } from '@module/utils/date';
 import { add } from 'date-fns';
 import Image from 'next/image';
 import { useFormContext } from 'react-hook-form';
@@ -16,10 +17,6 @@ const CATEGORY_TONE: Record<string, string> = {
   LEISURE: 'sky',
   ECONOMY: 'gray',
 };
-
-function formatDateKR(date: Date): string {
-  return `${date.getMonth() + 1}월 ${date.getDate()}일`;
-}
 
 function resolveDays(values: ChallengeCreateFormValues): number {
   if (values.periodType !== 'LIMITED') {

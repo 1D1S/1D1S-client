@@ -2,13 +2,16 @@ import { getCategoryLabel } from '@constants/categories';
 import type { DiaryItem } from '@feature/diary/board/type/diary';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
+import {
+  type DiaryEmotion,
+  mapFeelingToEmotion,
+} from '@feature/diary/shared/utils/feeling';
 import type {
   MyPageStreak,
   StreakCalendarItem,
 } from '@feature/member/type/member';
 
-export type DiaryEmotion = 'happy' | 'soso' | 'sad';
-type Feeling = 'HAPPY' | 'NORMAL' | 'SAD' | 'NONE';
+export type { DiaryEmotion };
 
 const HEATMAP_ROWS = 7;
 const HEATMAP_COLS = 20;
@@ -48,19 +51,6 @@ function toLocalDateKey(date: Date): string {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
   return `${date.getFullYear()}-${mm}-${dd}`;
-}
-
-export function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
-  switch (feeling) {
-    case 'HAPPY':
-      return 'happy';
-    case 'SAD':
-      return 'sad';
-    case 'NORMAL':
-    case 'NONE':
-    default:
-      return 'soso';
-  }
 }
 
 function toRelativeDateLabel(createdAt: string | undefined): string {
@@ -238,6 +228,8 @@ export function buildDiaryCardViewModels(
       id: diary.id,
       title: diary.title || '제목 없는 일지',
       imageUrl: resolveDiaryImage(diary),
+      profileImageUrl:
+        resolveDiaryImageUrl(diary.authorInfoDto?.profileImage) ?? undefined,
       percent: Math.min(100, Math.max(0, achievementRate)),
       isLiked: diary.likeInfo.likedByMe,
       likes: diary.likeInfo.likeCnt,

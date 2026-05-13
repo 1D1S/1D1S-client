@@ -347,7 +347,7 @@ export function DiaryCard({
       className={cn('block w-full', onClick && 'cursor-pointer')}
       onClick={onClick}
     >
-      <div className="rounded-4 overflow-hidden border border-gray-200 bg-white transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
+      <div className="rounded-4 overflow-hidden border border-gray-200 bg-white transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg">
         <ImageSection
           imageUrl={imageUrl}
           alt={title}

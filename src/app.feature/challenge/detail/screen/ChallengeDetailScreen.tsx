@@ -23,17 +23,12 @@ import {
 import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/DiaryCreateUnavailableDialog';
 import { normalizeApiError, notifyApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
-import {
-  ArrowLeft,
-  Check,
-  CircleAlert,
-  Trash2,
-  UserRound,
-} from 'lucide-react';
+import { formatDateISO } from '@module/utils/date';
+import { ArrowLeft, CircleAlert, Heart, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
@@ -46,13 +41,17 @@ import {
   Participant,
   ParticipantStatus,
 } from '../../board/type/challenge';
-import { isChallengeOngoing } from '../../board/utils/challengePeriod';
+import {
+  isChallengeOngoing,
+  isInfiniteChallengeEndDate,
+} from '../../board/utils/challengePeriod';
 import { ChallengeDetailHero } from '../components/ChallengeDetailHero';
 import { ChallengeDiaryGrid } from '../components/ChallengeDiaryGrid';
 import { ChallengeLeaderboardCard } from '../components/ChallengeLeaderboardCard';
 import { ChallengeProgressCard } from '../components/ChallengeProgressCard';
 import { ChallengeRulesCard } from '../components/ChallengeRulesCard';
 import { ExpandableText } from '../components/ExpandableText';
+import { PendingMemberItem } from '../components/PendingMemberItem';
 import { useChallengeDiaryList } from '../hooks/useChallengeDiaryQueries';
 import {
   useAcceptParticipant,
@@ -81,29 +80,11 @@ const PARTICIPATING_STATUS: ParticipantStatus[] = [
 ];
 const EMPTY_GOALS: ChallengeGoal[] = [];
 const EMPTY_PARTICIPANTS: Participant[] = [];
-const ENDLESS_MIN_YEAR = 2090;
 const ENDLESS_LABEL = '무한!';
-
-function getChallengeTypeLabel(goalType: string): string {
-  return formatChallengeTypeLabel(goalType);
-}
-
-function isEndlessChallengeEndDate(endDate: string): boolean {
-  if (!endDate) {
-    return false;
-  }
-
-  const parsedEndDate = new Date(endDate);
-  if (Number.isNaN(parsedEndDate.getTime())) {
-    return false;
-  }
-
-  return parsedEndDate.getUTCFullYear() >= ENDLESS_MIN_YEAR;
-}
 
 function formatDateRange(startDate: string, endDate: string): string {
   const format = (date: string): string => date.replaceAll('-', '.');
-  if (isEndlessChallengeEndDate(endDate)) {
+  if (isInfiniteChallengeEndDate(endDate)) {
     return `${format(startDate)} ~ ${ENDLESS_LABEL}`;
   }
 
@@ -111,7 +92,7 @@ function formatDateRange(startDate: string, endDate: string): string {
 }
 
 function getDdayLabel(endDate: string): string {
-  if (isEndlessChallengeEndDate(endDate)) {
+  if (isInfiniteChallengeEndDate(endDate)) {
     return ENDLESS_LABEL;
   }
 
@@ -145,14 +126,6 @@ function getRemainingLabel(endDate: string): string {
   return '챌린지 종료';
 }
 
-function formatDateKey(date: Date): string {
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
-
-  return `${yyyy}-${mm}-${dd}`;
-}
-
 function hasSelectableDiaryDate(disabledDateKeys: string[]): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -161,7 +134,7 @@ function hasSelectableDiaryDate(disabledDateKeys: string[]): boolean {
     const candidate = new Date(today);
     candidate.setDate(today.getDate() - dayOffset);
 
-    if (!disabledDateKeys.includes(formatDateKey(candidate))) {
+    if (!disabledDateKeys.includes(formatDateISO(candidate))) {
       return true;
     }
   }
@@ -178,75 +151,6 @@ function formatRelativeJoinedText(status: ParticipantStatus): string {
     default:
       return '참여 중';
   }
-}
-
-function PendingMemberItem({
-  name,
-  joinedAt,
-  onAccept,
-  onReject,
-  isLoading,
-}: {
-  name: string;
-  joinedAt: string;
-  onAccept(): void;
-  onReject(): void;
-  isLoading: boolean;
-}): React.ReactElement {
-  return (
-    <div
-      className={cn(
-        'rounded-2 flex items-center justify-between',
-        'border border-gray-200 bg-gray-100 px-3 py-2.5'
-      )}
-    >
-      <div className="flex items-center gap-2">
-        <div
-          className={cn(
-            'flex h-10 w-10 items-center justify-center',
-            'rounded-full bg-gray-200 text-gray-500'
-          )}
-        >
-          <UserRound className="h-5 w-5" />
-        </div>
-        <div className="flex flex-col">
-          <Text size="body2" weight="bold" className="text-gray-900">
-            {name}
-          </Text>
-          <Text size="caption2" weight="regular" className="text-gray-500">
-            {joinedAt}
-          </Text>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className={cn(
-            'bg-main-200 text-main-800 flex h-8 w-8',
-            'cursor-pointer items-center justify-center rounded-xl'
-          )}
-          aria-label="참여 승인"
-          onClick={onAccept}
-          disabled={isLoading}
-        >
-          <Check className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          className={cn(
-            'flex h-8 w-8 cursor-pointer items-center justify-center',
-            'rounded-xl bg-gray-200 text-gray-500'
-          )}
-          aria-label="참여 거절"
-          onClick={onReject}
-          disabled={isLoading}
-        >
-          ×
-        </button>
-      </div>
-    </div>
-  );
 }
 
 export function ChallengeDetailScreen({
@@ -271,6 +175,20 @@ export function ChallengeDetailScreen({
   const isLoggedIn = useIsLoggedIn();
   const [dismissed, setDismissed] = useState(false);
   const showAuthDialog = !isLoggedIn && !dismissed;
+  // 모바일에서 히어로가 스크롤로 사라지면 상단 sticky 헤더(뒤로가기 + 타이틀)
+  // 를 페이드인한다. 히어로 높이(200px)보다 살짝 일찍 노출되도록 임계값을
+  // 140px로 둔다.
+  const [isCompactHeaderVisible, setIsCompactHeaderVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = (): void => {
+      setIsCompactHeaderVisible(window.scrollY > 140);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const [showDiaryLikeDialog, setShowDiaryLikeDialog] = useState(false);
   const [showCreateUnavailableDialog, setShowCreateUnavailableDialog] =
     useState(false);
@@ -293,7 +211,7 @@ export function ChallengeDetailScreen({
   >(() => [createGoalEntry()]);
 
   const { data: challengeDiariesData, isLoading: isDiariesLoading } =
-    useChallengeDiaryList(challengeId, 8);
+    useChallengeDiaryList(challengeId, 5);
 
   const summary = data?.challengeSummary;
   const detail = data?.challengeDetail;
@@ -334,7 +252,7 @@ export function ChallengeDetailScreen({
     summaryStartDate,
     summaryEndDate
   );
-  const isEndless = isEndlessChallengeEndDate(summaryEndDate);
+  const isEndless = isInfiniteChallengeEndDate(summaryEndDate);
   // 챌린지 시작 여부 (시작일이 오늘 이전이면 시작된 것으로 간주)
   const isChallengeStarted =
     isChallengeCurrentlyOngoing ||
@@ -855,12 +773,45 @@ export function ChallengeDetailScreen({
         onOpenChange={setShowDiaryLikeDialog}
       />
 
+      {/* 모바일 sliver-style sticky 헤더 — 스크롤 시 페이드인 */}
+      <div
+        className={cn(
+          'fixed top-0 right-0 left-0 z-30 flex h-14 items-center',
+          'gap-3 border-b border-gray-100 bg-white/95 px-4',
+          'backdrop-blur transition-all duration-200 lg:hidden',
+          isCompactHeaderVisible
+            ? 'translate-y-0 opacity-100'
+            : 'pointer-events-none -translate-y-full opacity-0'
+        )}
+      >
+        <button
+          type="button"
+          aria-label="뒤로가기"
+          onClick={() => router.back()}
+          className={cn(
+            'flex h-8 w-8 shrink-0 items-center justify-center',
+            'rounded-lg text-gray-700 transition-colors hover:bg-gray-100'
+          )}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <Text
+          size="body1"
+          weight="extrabold"
+          className={cn(
+            'line-clamp-1 min-w-0 flex-1 tracking-[-0.3px] text-gray-900'
+          )}
+        >
+          {summary.title}
+        </Text>
+      </div>
+
       {/* 히어로 + 모바일 floating 뒤로가기 */}
       <div className="relative">
         <ChallengeDetailHero
           title={summary.title}
           categoryLabel={getCategoryLabel(summary.category)}
-          typeLabel={`${getChallengeTypeLabel(summary.goalType)} 챌린지`}
+          typeLabel={`${formatChallengeTypeLabel(summary.goalType)} 챌린지`}
           metaLabel={heroMetaLabel}
           imageUrl={summary.thumbnailImage ?? undefined}
           accent={accentColor}
@@ -895,7 +846,7 @@ export function ChallengeDetailScreen({
             {getCategoryLabel(summary.category)}
           </Tag>
           <Tag tone="gray" size="sm">
-            {getChallengeTypeLabel(summary.goalType)}
+            {formatChallengeTypeLabel(summary.goalType)}
           </Tag>
         </div>
         <Text
@@ -906,13 +857,38 @@ export function ChallengeDetailScreen({
         >
           {summary.title}
         </Text>
-        <Text
-          size="caption1"
-          weight="regular"
-          className="mt-1.5 block text-gray-500"
-        >
-          {heroMetaLabel}
-        </Text>
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <Text
+            size="caption1"
+            weight="regular"
+            className="min-w-0 flex-1 text-gray-500"
+          >
+            {heroMetaLabel}
+          </Text>
+          <button
+            type="button"
+            onClick={handleToggleLike}
+            disabled={isActionLoading}
+            aria-label={
+              summary.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'
+            }
+            className={cn(
+              'flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1',
+              'text-[12px] font-bold transition-colors disabled:opacity-50',
+              summary.likeInfo.likedByMe
+                ? 'text-main-800 bg-main-100 hover:bg-main-200/70'
+                : 'text-gray-500 hover:bg-gray-100'
+            )}
+          >
+            <Heart
+              className={cn(
+                'h-3.5 w-3.5',
+                summary.likeInfo.likedByMe && 'fill-current'
+              )}
+            />
+            {summary.likeInfo.likeCnt}
+          </button>
+        </div>
 
         {activeParticipants.length > 0 ? (
           <div
@@ -1040,7 +1016,7 @@ export function ChallengeDetailScreen({
                     {getCategoryLabel(summary.category)}
                   </Tag>
                   <Tag tone="gray" size="sm">
-                    {getChallengeTypeLabel(summary.goalType)}
+                    {formatChallengeTypeLabel(summary.goalType)}
                   </Tag>
                 </div>
               </section>

@@ -2,6 +2,7 @@
 
 import { Text } from '@1d1s/design-system';
 import { useMemberDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
+import { MemberFriendActionButton } from '@feature/friend/components/MemberFriendActionButton';
 import { useMemberProfile } from '@feature/member/hooks/useMemberQueries';
 import { MyPageActiveChallenges } from '@feature/member/mypage/components/MyPageActiveChallenges';
 import { MyPageActivityHeatmap } from '@feature/member/mypage/components/MyPageActivityHeatmap';
@@ -13,39 +14,8 @@ import { MyPageStatSection } from '@feature/member/mypage/components/MyPageStatS
 import { MyPageStreakHeroCard } from '@feature/member/mypage/components/MyPageStreakHeroCard';
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
-import { UserPlus } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import React from 'react';
-
-function MemberProfileActions(): React.ReactElement {
-  return (
-    <div className="group relative">
-      <button
-        type="button"
-        disabled
-        className={cn(
-          'flex cursor-not-allowed items-center gap-2 rounded-xl',
-          'border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-400',
-        )}
-      >
-        <UserPlus className="h-4 w-4" />
-        <Text size="body1" weight="bold">
-          친구 추가
-        </Text>
-      </button>
-      <div
-        className={cn(
-          'pointer-events-none absolute bottom-full left-1/2 mb-2',
-          '-translate-x-1/2 rounded-lg bg-gray-800 px-3 py-1.5',
-          'text-xs whitespace-nowrap text-white opacity-0',
-          'transition-opacity group-hover:opacity-100',
-        )}
-      >
-        곧 추가될 기능입니다!
-      </div>
-    </div>
-  );
-}
 
 export default function MemberProfilePage(): React.ReactElement {
   const params = useParams();
@@ -105,7 +75,7 @@ export default function MemberProfilePage(): React.ReactElement {
           completedFiniteChallengeCount={
             streak.completedFiniteChallengeCount ?? 0
           }
-          actions={<MemberProfileActions />}
+          actions={<MemberFriendActionButton memberId={memberId} />}
         />
 
         <div

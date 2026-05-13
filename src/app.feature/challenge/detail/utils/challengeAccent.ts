@@ -1,17 +1,5 @@
+import { getCategoryStripeTone } from '@constants/categories';
 import { type ChallengeCategory } from '@feature/challenge/board/type/challenge';
-
-const CATEGORY_ACCENT: Record<ChallengeCategory, string> = {
-  ALL: '#ff7043',
-  EXERCISE: '#ff7043',
-  DEV: '#7c3aed',
-  BOOK: '#3eb489',
-  MUSIC: '#1666ba',
-  STUDY: '#a78bfa',
-  LEISURE: '#ff9800',
-  ECONOMY: '#3eb489',
-};
-
-const DEFAULT_ACCENT = '#ff7043';
 
 function shade(hex: string, amount: number): string {
   const cleaned = hex.replace('#', '');
@@ -29,10 +17,7 @@ function shade(hex: string, amount: number): string {
 export function getCategoryAccent(
   category?: ChallengeCategory | null
 ): string {
-  if (!category) {
-    return DEFAULT_ACCENT;
-  }
-  return CATEGORY_ACCENT[category] ?? DEFAULT_ACCENT;
+  return getCategoryStripeTone(category);
 }
 
 export function buildHeroGradient(accent: string): string {

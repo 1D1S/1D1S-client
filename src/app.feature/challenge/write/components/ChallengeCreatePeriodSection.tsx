@@ -1,5 +1,6 @@
 import { DatePicker, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import { formatDateKR } from '@module/utils/date';
 import { add } from 'date-fns';
 import { type ChangeEvent } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -27,10 +28,6 @@ const PERIOD_OPTIONS: Array<{
   { value: '365', label: '1년' },
   { value: 'etc', label: '직접 입력' },
 ];
-
-function formatDateKR(date: Date): string {
-  return `${date.getMonth() + 1}월 ${date.getDate()}일`;
-}
 
 export function ChallengeCreatePeriodSection(): React.ReactElement {
   const { control, watch } = useFormContext<ChallengeCreateFormValues>();

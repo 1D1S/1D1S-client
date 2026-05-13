@@ -83,6 +83,7 @@ export function MyPageDiarySection({
               <div key={diary.id} className="w-[240px] shrink-0">
                 <DiaryCard
                   imageUrl={diary.imageUrl}
+                  profileImageUrl={diary.profileImageUrl}
                   percent={diary.percent}
                   isLiked={diary.isLiked}
                   likes={diary.likes}

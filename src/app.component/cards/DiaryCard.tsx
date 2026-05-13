@@ -91,6 +91,7 @@ export default function DiaryCard({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={cn(
+        'transition-all duration-300 ease-out',
         'hover:shadow-[0_10px_28px_rgba(255,87,34,0.18)]',
         className
       )}

@@ -1,41 +1,68 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
+import DiaryCard from '@component/cards/DiaryCard';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
-import { getCategoryLabel } from '@constants/categories';
-import { DiaryItem,Feeling  } from '@feature/diary/board/type/diary';
+import { DiaryItem } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
-import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
-import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
-import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { normalizeApiError } from '@module/api/error';
+import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { useMyDiaries } from '../hooks/useDiaryQueries';
+import { buildDiaryCardViewModels } from '../../../member/mypage/utils/mypageUtils';
+import { useMyDiariesInfinite } from '../hooks/useDiaryQueries';
 
-type DiaryEmotion = 'happy' | 'soso' | 'sad';
+const MY_DIARY_PAGE_SIZE = 12;
 
-function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
-  switch (feeling) {
-    case 'HAPPY':
-      return 'happy';
-    case 'SAD':
-      return 'sad';
-    default:
-      return 'soso';
-  }
+function useInViewObserver(): {
+  ref: React.RefObject<HTMLDivElement | null>;
+  inView: boolean;
+} {
+  const ref = useRef<HTMLDivElement>(null);
+  const [observedInView, setObservedInView] = useState(false);
+  const isIntersectionObserverUnsupported =
+    typeof window !== 'undefined' &&
+    typeof IntersectionObserver === 'undefined';
+
+  useEffect(() => {
+    const target = ref.current;
+
+    if (!target || typeof window === 'undefined') {
+      return;
+    }
+
+    if (typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setObservedInView(entry.isIntersecting);
+    });
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const inView = isIntersectionObserverUnsupported ? true : observedInView;
+
+  return { ref, inView };
 }
 
 export function MyDiaryListScreen(): React.ReactElement {
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
+  const { data: sidebar } = useSidebar();
+  const nickname = sidebar?.nickname ?? '나';
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
@@ -44,13 +71,36 @@ export function MyDiaryListScreen(): React.ReactElement {
     isLoading,
     isError,
     error,
-  } = useMyDiaries();
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useMyDiariesInfinite(MY_DIARY_PAGE_SIZE);
+  const { ref, inView } = useInViewObserver();
 
-  const diaryItems = data?.items ?? [];
-  const hasDiaries = diaryItems.length > 0;
+  const diaryItems = useMemo(() => {
+    const flattened = data?.pages?.flatMap((page) => page?.items ?? []) ?? [];
+    const diaryMap = new Map<number, DiaryItem>();
+    flattened.forEach((diary) => {
+      diaryMap.set(diary.id, diary);
+    });
+    return Array.from(diaryMap.values());
+  }, [data]);
+
+  const diaryCards = useMemo(
+    () => buildDiaryCardViewModels(diaryItems, nickname),
+    [diaryItems, nickname],
+  );
+
+  const hasDiaries = diaryCards.length > 0;
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
 
-  const handleLikeToggle = (diary: DiaryItem): void => {
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const handleLikeToggle = (id: number, isLiked: boolean): void => {
     if (!isLoggedIn) {
       setShowLoginDialog(true);
       return;
@@ -58,37 +108,73 @@ export function MyDiaryListScreen(): React.ReactElement {
     if (isLikePending) {
       return;
     }
-    if (diary.likeInfo.likedByMe) {
-      unlikeDiary.mutate(diary.id);
+    if (isLiked) {
+      unlikeDiary.mutate(id);
     } else {
-      likeDiary.mutate(diary.id);
+      likeDiary.mutate(id);
     }
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white p-4">
+    <div className="min-h-screen w-full">
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}
       />
-      <section className="rounded-3 w-full bg-white p-2">
-        <div className="flex flex-col gap-3 border-b border-gray-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex flex-col gap-2">
-            <Link
-              href="/mypage"
-              className="inline-flex w-fit items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-gray-700"
+
+      {/* 모바일 sticky 헤더 — ← + 내 일지 */}
+      <div
+        className={cn(
+          'sticky top-0 z-30 flex h-14 items-center gap-3',
+          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
+          'lg:hidden',
+        )}
+      >
+        <button
+          type="button"
+          aria-label="뒤로가기"
+          onClick={() => router.back()}
+          className={cn(
+            'flex h-8 w-8 items-center justify-center rounded-lg',
+            'text-gray-700 transition-colors hover:bg-gray-100',
+          )}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <Text
+          size="body1"
+          weight="extrabold"
+          className="flex-1 tracking-[-0.3px] text-gray-900"
+        >
+          내 일지
+        </Text>
+      </div>
+
+      <div
+        className={cn(
+          'mx-auto w-full max-w-[1200px]',
+          'px-5 py-5 lg:px-8 lg:py-10',
+        )}
+      >
+        <header
+          className={cn(
+            'hidden flex-col gap-4 border-b border-gray-100 pb-5',
+            'lg:flex lg:flex-row lg:items-end lg:justify-between',
+          )}
+        >
+          <div className="flex flex-col gap-1.5">
+            <Text
+              size="pageTitle"
+              weight="extrabold"
+              className="tracking-tight text-gray-900"
             >
-              <ArrowLeft className="h-4 w-4" />
-              마이페이지로
-            </Link>
-            <Text size="display1" weight="bold" className="text-gray-900">
               내 일지
             </Text>
-            <Text size="body1" weight="regular" className="text-gray-600">
+            <Text size="body2" weight="regular" className="text-gray-500">
               내가 작성한 일지 전체 목록입니다.
             </Text>
           </div>
-        </div>
+        </header>
 
         {isLoading ? (
           <div className="mt-10 flex w-full justify-center py-10">
@@ -98,7 +184,7 @@ export function MyDiaryListScreen(): React.ReactElement {
           </div>
         ) : null}
 
-        {isError ? (
+        {isError && !hasDiaries ? (
           <div className="mt-10 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-red-600">
               {error
@@ -108,61 +194,29 @@ export function MyDiaryListScreen(): React.ReactElement {
           </div>
         ) : null}
 
-        {!isLoading && !isError && hasDiaries ? (
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            {diaryItems.map((diary) => (
+        {!isLoading && hasDiaries ? (
+          <div
+            className={cn(
+              'mt-6 grid gap-4',
+              'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
+            )}
+          >
+            {diaryCards.map((diary) => (
               <DiaryCard
                 key={diary.id}
-                imageUrl={
-                  resolveDiaryImageUrl(diary.imgUrl?.[0]) ||
-                  '/images/default-card.png'
-                }
-                percent={Math.min(
-                  100,
-                  Math.max(
-                    0,
-                    diary.achievementRate ??
-                      diary.diaryInfoDto?.achievementRate ??
-                      0
-                  )
-                )}
-                isLiked={diary.likeInfo.likedByMe}
-                likes={diary.likeInfo.likeCnt}
+                imageUrl={diary.imageUrl}
+                profileImageUrl={diary.profileImageUrl}
+                percent={diary.percent}
+                isLiked={diary.isLiked}
+                likes={diary.likes}
                 title={diary.title}
-                user={diary.authorInfoDto?.nickname ?? '익명'}
-                userImage={
-                  resolveDiaryImageUrl(diary.authorInfoDto?.profileImage) ||
-                  '/images/default-profile.png'
-                }
-                challengeLabel={
-                  diary.challenge?.title ||
-                  getCategoryLabel(diary.challenge?.category) ||
-                  '나의 일지'
-                }
-                onUserClick={
-                  diary.authorInfoDto?.id
-                    ? () =>
-                        router.push(`/member/${diary.authorInfoDto!.id}`)
-                    : undefined
-                }
-                onChallengeClick={() => {
-                  if (diary.challenge?.challengeId) {
-                    router.push(
-                      `/challenge/${diary.challenge.challengeId}`
-                    );
-                  }
-                }}
-                date={getRelativeDiaryDateLabel(
-                  diary.diaryInfoDto?.createdAt ??
-                    diary.diaryInfoDto?.challengedDate ??
-                    ''
-                )}
-                emotion={mapFeelingToEmotion(
-                  diary.diaryInfoDto?.feeling ?? 'NONE'
-                )}
-                commentCount={diary.commentCount}
-                onLikeToggle={() => handleLikeToggle(diary)}
+                user={diary.user}
+                challengeLabel={diary.challengeLabel}
+                emotion={diary.emotion}
                 onClick={() => router.push(`/diary/${diary.id}`)}
+                onLikeToggle={() =>
+                  handleLikeToggle(diary.id, diary.isLiked)
+                }
               />
             ))}
           </div>
@@ -175,7 +229,30 @@ export function MyDiaryListScreen(): React.ReactElement {
             </Text>
           </div>
         ) : null}
-      </section>
+
+        <div
+          ref={ref}
+          className="mt-6 flex h-10 w-full items-center justify-center"
+        >
+          {isFetchingNextPage ? (
+            <Text size="body2" className="text-gray-400">
+              데이터를 불러오는 중...
+            </Text>
+          ) : isError && hasDiaries ? (
+            <Text size="body2" className="text-red-500">
+              {error
+                ? normalizeApiError(error).message
+                : '추가 일지를 불러오지 못했습니다.'}
+            </Text>
+          ) : hasNextPage ? (
+            <div />
+          ) : hasDiaries ? (
+            <Text size="body2" className="text-gray-400">
+              마지막 일지입니다.
+            </Text>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

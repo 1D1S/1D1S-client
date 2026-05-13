@@ -3,11 +3,11 @@
 import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import { getCategoryLabel } from '@constants/categories';
-import { Feeling } from '@feature/diary/board/type/diary';
 import {
   resolveDiaryImageList,
   resolveDiaryImageUrl,
 } from '@feature/diary/shared/utils/diaryImageUrl';
+import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import React from 'react';
 
 import { ChallengeDiaryItem } from '../type/challengeDiary';
@@ -19,16 +19,6 @@ interface ChallengeDiaryGridProps {
   onLikeToggle(diary: ChallengeDiaryItem): void;
   gridClassName?: string;
   itemClassName?: string;
-}
-
-function mapFeelingToEmotion(feeling: Feeling): 'happy' | 'soso' | 'sad' {
-  if (feeling === 'HAPPY') {
-    return 'happy';
-  }
-  if (feeling === 'SAD') {
-    return 'sad';
-  }
-  return 'soso';
 }
 
 export function ChallengeDiaryGrid({

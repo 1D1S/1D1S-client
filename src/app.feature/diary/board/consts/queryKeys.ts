@@ -11,8 +11,10 @@ export const DIARY_QUERY_KEYS = {
     [...DIARY_QUERY_KEYS.all, 'random', params] as const,
   allDiaries: () => [...DIARY_QUERY_KEYS.all, 'all'] as const,
   my: () => [...DIARY_QUERY_KEYS.all, 'my'] as const,
-  myDiaries: (params?: { size?: number }) =>
+  myDiaries: (params?: { page?: number; size?: number }) =>
     [...DIARY_QUERY_KEYS.my(), params] as const,
+  myDiariesInfinite: (params?: { size?: number }) =>
+    [...DIARY_QUERY_KEYS.my(), 'infinite', params] as const,
   memberDiaries: (memberId: number, params?: { size?: number }) =>
     [...DIARY_QUERY_KEYS.all, 'member', memberId, params] as const,
   comments: () => [...DIARY_QUERY_KEYS.all, 'comments'] as const,

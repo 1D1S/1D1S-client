@@ -17,28 +17,15 @@ import {
 } from '../../detail/hooks/useDiaryMutations';
 import { resolveDiaryImageUrl } from '../../shared/utils/diaryImageUrl';
 import { getDateTimestamp } from '../../shared/utils/diaryRelativeTime';
+import { mapFeelingToEmotion } from '../../shared/utils/feeling';
 import { useDiaryList } from '../hooks/useDiaryQueries';
-import { type DiaryItem, Feeling } from '../type/diary';
+import { type DiaryItem } from '../type/diary';
 
 type SortMode = 'latest' | 'likes';
-type DiaryEmotion = 'happy' | 'soso' | 'sad';
 type DiaryItemWithAliases = DiaryItem & {
   author?: DiaryItem['authorInfoDto'] | null;
   diaryInfo?: DiaryItem['diaryInfoDto'] | null;
 };
-
-function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
-  switch (feeling) {
-    case 'HAPPY':
-      return 'happy';
-    case 'SAD':
-      return 'sad';
-    case 'NORMAL':
-    case 'NONE':
-    default:
-      return 'soso';
-  }
-}
 
 function sortDiaries(items: DiaryItem[], sortMode: SortMode): DiaryItem[] {
   const sorted = [...items];

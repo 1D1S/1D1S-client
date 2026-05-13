@@ -104,15 +104,11 @@ export function MyPageProfileCard({
         <div className="mt-1 flex items-center gap-3.5">
           <div
             className={cn(
-              'h-18 w-18 overflow-hidden rounded-full',
+              'h-18 w-18 shrink-0 overflow-hidden rounded-full',
               'border-[3px] border-white',
             )}
           >
-            <CircleAvatar
-              imageUrl={profileUrl}
-              size="xl"
-              className="h-full w-full"
-            />
+            <CircleAvatar imageUrl={profileUrl} size={66} />
           </div>
           <div className="min-w-0 flex-1">
             <Text size="heading1" weight="extrabold" className="text-gray-900">
@@ -175,11 +171,7 @@ export function MyPageProfileCard({
               'border-white shadow-md',
             )}
           >
-            <CircleAvatar
-              imageUrl={profileUrl}
-              size="xl"
-              className="h-full w-full"
-            />
+            <CircleAvatar imageUrl={profileUrl} size={88} />
           </div>
         </div>
 

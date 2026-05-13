@@ -2,6 +2,7 @@
 
 import { Text } from '@1d1s/design-system';
 import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
+import { MyPageFriendsEntry } from '@feature/friend/components/MyPageFriendsEntry';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
 import React from 'react';
@@ -17,7 +18,7 @@ import { MyPageStreakHeroCard } from '../components/MyPageStreakHeroCard';
 
 export default function MyPageScreen(): React.ReactElement {
   const { data, isLoading } = useMyPage();
-  const { data: myDiariesData } = useMyDiaries(10);
+  const { data: myDiariesData } = useMyDiaries(5);
 
   if (isLoading || !data) {
     return (
@@ -78,6 +79,10 @@ export default function MyPageScreen(): React.ReactElement {
           {/* 통계 섹션 — 모바일에서는 프로필 카드 내부 grid로 대체 */}
           <div className="mt-8 hidden lg:block">
             <MyPageStatSection streak={streak} />
+          </div>
+
+          <div className="mt-6">
+            <MyPageFriendsEntry />
           </div>
 
           <div className="mt-8">

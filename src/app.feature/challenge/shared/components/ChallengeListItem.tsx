@@ -76,7 +76,7 @@ export function ChallengeListItem({
       className={cn(
         'flex gap-3 overflow-hidden p-0 sm:gap-4',
         onClick &&
-          'hover:shadow-[0_10px_28px_rgba(255,87,34,0.18)]',
+          'transition-all duration-200 hover:shadow-[0_10px_28px_rgba(255,87,34,0.18)]',
         className
       )}
     >

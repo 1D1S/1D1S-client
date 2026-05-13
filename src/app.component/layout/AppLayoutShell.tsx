@@ -34,6 +34,9 @@ const TOP_NAV_HIDDEN_ROUTES = [
 const TOP_NAV_BELOW_DESKTOP_HIDDEN_ROUTES = [
   '/diary/create',
   '/challenge/create',
+  '/notification',
+  '/mypage/settings',
+  '/mypage/friend',
 ];
 
 const RIGHT_RAIL_HIDDEN_ROUTES = [
@@ -54,6 +57,9 @@ const BOTTOM_NAV_HIDDEN_ROUTES = [
   '/diary/create',
   '/challenge/create',
   '/onboarding',
+  '/notification',
+  '/mypage/settings',
+  '/mypage/friend',
 ];
 
 const NOOP_SUBSCRIBE = (): (() => void) => () => {};
@@ -127,18 +133,6 @@ function needsBackButton(pathname: string): boolean {
     return true;
   }
   if (pathname === '/diary/create') {
-    return true;
-  }
-  if (pathname === '/mypage/settings') {
-    return true;
-  }
-  if (pathname === '/mypage/settings/profile') {
-    return true;
-  }
-  if (pathname === '/mypage/settings/notifications') {
-    return true;
-  }
-  if (pathname === '/notification') {
     return true;
   }
   if (pathname === '/onboarding') {
@@ -348,7 +342,7 @@ export default function AppLayoutShell({
         ) : null}
 
         <div className="flex min-h-0 flex-1">
-          <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden">
+          <main className="min-h-0 min-w-0 flex-1 overflow-x-clip">
             {children}
           </main>
           {showRightRail && hasMounted ? (

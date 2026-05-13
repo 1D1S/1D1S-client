@@ -9,20 +9,20 @@ export const CATEGORY_OPTIONS = [
 ];
 
 const CATEGORY_STRIPE_TONES: Record<string, string> = {
-  DEV: 'var(--blue-400)',
-  EXERCISE: 'var(--main-600)',
-  BOOK: 'var(--main-400)',
-  MUSIC: 'var(--red-400)',
-  STUDY: 'var(--blue-300)',
-  LEISURE: 'var(--mint-400)',
-  ECONOMY: 'var(--gray-400)',
-  HEALTH: 'var(--mint-400)',
-  HOBBY: 'var(--red-400)',
-  OTHER: 'var(--main-400)',
-  ALL: 'var(--main-400)',
+  ALL: '#ff7043',
+  DEV: '#7c3aed',
+  EXERCISE: '#ff7043',
+  BOOK: '#3eb489',
+  MUSIC: '#1666ba',
+  STUDY: '#a78bfa',
+  LEISURE: '#ff9800',
+  ECONOMY: '#3eb489',
+  HEALTH: '#3eb489',
+  HOBBY: '#ff9800',
+  OTHER: '#ff7043',
 };
 
-const DEFAULT_STRIPE_TONE = 'var(--main-600)';
+const DEFAULT_STRIPE_TONE = '#ff7043';
 
 const EXTRA_CATEGORY_LABELS: Record<string, string> = {
   ALL: '전체',

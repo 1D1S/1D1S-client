@@ -923,10 +923,12 @@ function DiaryCommentSection({
           />
         )}
 
-        <div className="mt-3 hidden items-center gap-1.5 lg:flex">
+        <div className="mt-3 hidden items-end gap-1.5 lg:flex">
           <TextField
             id="diary-comment-content"
             size="sm"
+            multiline
+            rows={2}
             className="flex-1"
             value={commentContent}
             onChange={(event) => setCommentContent(event.target.value)}
@@ -940,6 +942,7 @@ function DiaryCommentSection({
           />
           <Button
             size="small"
+            className="shrink-0 whitespace-nowrap"
             onClick={handleCreateComment}
             disabled={isCommentPending || !commentContent.trim()}
           >
@@ -983,12 +986,14 @@ function DiaryMobileCommentBar({
       className={cn(
         'fixed right-0 bottom-0 left-0 z-20 lg:hidden',
         'border-t border-gray-100 bg-white',
-        'flex items-center gap-2 px-4 py-2.5'
+        'flex items-end gap-2 px-4 py-2.5'
       )}
     >
       <TextField
         id="diary-comment-content-mobile"
         size="sm"
+        multiline
+        rows={2}
         className="flex-1"
         value={content}
         onChange={(event) => setContent(event.target.value)}
@@ -1000,7 +1005,12 @@ function DiaryMobileCommentBar({
           }
         }}
       />
-      <Button size="small" onClick={handleSubmit} disabled={disabled}>
+      <Button
+        size="small"
+        className="shrink-0 whitespace-nowrap"
+        onClick={handleSubmit}
+        disabled={disabled}
+      >
         등록
       </Button>
     </div>

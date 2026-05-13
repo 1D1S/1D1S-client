@@ -3,7 +3,7 @@
 import { Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { getCategoryLabel } from '@constants/categories';
-import { DiaryItem,Feeling  } from '@feature/diary/board/type/diary';
+import { DiaryItem } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
@@ -11,6 +11,7 @@ import {
 import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
+import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
 import { ArrowLeft } from 'lucide-react';
@@ -19,19 +20,6 @@ import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 import { useMemberDiaries } from '../hooks/useDiaryQueries';
-
-type DiaryEmotion = 'happy' | 'soso' | 'sad';
-
-function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
-  switch (feeling) {
-    case 'HAPPY':
-      return 'happy';
-    case 'SAD':
-      return 'sad';
-    default:
-      return 'soso';
-  }
-}
 
 interface MemberDiaryListScreenProps {
   memberId: string;

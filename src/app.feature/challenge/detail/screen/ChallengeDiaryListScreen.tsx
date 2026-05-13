@@ -3,7 +3,6 @@
 import { Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { getCategoryLabel } from '@constants/categories';
-import { Feeling } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
@@ -11,33 +10,58 @@ import {
 import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
+import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { useChallengeDiaryList } from '../hooks/useChallengeDiaryQueries';
+import { useChallengeDiaryListInfinite } from '../hooks/useChallengeDiaryQueries';
 import { ChallengeDiaryItem } from '../type/challengeDiary';
 
-type DiaryEmotion = 'happy' | 'soso' | 'sad';
+const CHALLENGE_DIARY_PAGE_SIZE = 12;
 
 interface ChallengeDiaryListScreenProps {
   id: string;
 }
 
-function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
-  switch (feeling) {
-    case 'HAPPY':
-      return 'happy';
-    case 'SAD':
-      return 'sad';
-    case 'NORMAL':
-    case 'NONE':
-    default:
-      return 'soso';
-  }
+function useInViewObserver(): {
+  ref: React.RefObject<HTMLDivElement | null>;
+  inView: boolean;
+} {
+  const ref = useRef<HTMLDivElement>(null);
+  const [observedInView, setObservedInView] = useState(false);
+  const isIntersectionObserverUnsupported =
+    typeof window !== 'undefined' &&
+    typeof IntersectionObserver === 'undefined';
+
+  useEffect(() => {
+    const target = ref.current;
+
+    if (!target || typeof window === 'undefined') {
+      return;
+    }
+
+    if (typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setObservedInView(entry.isIntersecting);
+    });
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const inView = isIntersectionObserverUnsupported ? true : observedInView;
+
+  return { ref, inView };
 }
 
 export function ChallengeDiaryListScreen({
@@ -50,15 +74,33 @@ export function ChallengeDiaryListScreen({
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
   const {
-    data: diaries,
+    data,
     isLoading,
     isError,
     error,
-  } = useChallengeDiaryList(challengeId);
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useChallengeDiaryListInfinite(challengeId, CHALLENGE_DIARY_PAGE_SIZE);
+  const { ref, inView } = useInViewObserver();
 
-  const diaryItems = diaries?.items ?? [];
+  const diaryItems = useMemo(() => {
+    const flattened = data?.pages?.flatMap((page) => page?.items ?? []) ?? [];
+    const diaryMap = new Map<number, ChallengeDiaryItem>();
+    flattened.forEach((diary) => {
+      diaryMap.set(diary.id, diary);
+    });
+    return Array.from(diaryMap.values());
+  }, [data]);
+
   const hasDiaries = diaryItems.length > 0;
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleLikeToggle = (diary: ChallengeDiaryItem): void => {
     if (!isLoggedIn) {
@@ -109,7 +151,7 @@ export function ChallengeDiaryListScreen({
           </div>
         ) : null}
 
-        {isError ? (
+        {isError && !hasDiaries ? (
           <div className="mt-10 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-red-600">
               {error
@@ -119,7 +161,7 @@ export function ChallengeDiaryListScreen({
           </div>
         ) : null}
 
-        {!isLoading && !isError && hasDiaries ? (
+        {!isLoading && hasDiaries ? (
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {diaryItems.map((diary) => (
               <DiaryCard
@@ -180,6 +222,29 @@ export function ChallengeDiaryListScreen({
             </Text>
           </div>
         ) : null}
+
+        <div
+          ref={ref}
+          className="mt-6 flex h-10 w-full items-center justify-center"
+        >
+          {isFetchingNextPage ? (
+            <Text size="body2" className="text-gray-400">
+              데이터를 불러오는 중...
+            </Text>
+          ) : isError && hasDiaries ? (
+            <Text size="body2" className="text-red-500">
+              {error
+                ? normalizeApiError(error).message
+                : '추가 일지를 불러오지 못했습니다.'}
+            </Text>
+          ) : hasNextPage ? (
+            <div />
+          ) : hasDiaries ? (
+            <Text size="body2" className="text-gray-400">
+              마지막 일지입니다.
+            </Text>
+          ) : null}
+        </div>
       </section>
     </div>
   );
