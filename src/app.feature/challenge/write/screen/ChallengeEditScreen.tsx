@@ -226,26 +226,26 @@ function ChallengeEditScreenContent({
         </Text>
       </div>
 
-      <div
-        className={cn(
-          'mx-auto w-full max-w-[1200px]',
-          'px-5 py-5 lg:px-8 lg:py-10'
-        )}
-      >
-        <header className="hidden flex-col gap-1.5 pb-6 lg:flex lg:pb-8">
-          <Text
-            size="pageTitle"
-            weight="extrabold"
-            className="tracking-tight text-gray-900"
-          >
-            챌린지 수정하기
-          </Text>
-          <Text size="body2" weight="regular" className="text-gray-500">
-            진행 중인 챌린지의 일부 정보를 다듬어보세요.
-          </Text>
-        </header>
+      <Form {...form}>
+        <div
+          className={cn(
+            'mx-auto w-full max-w-[1200px]',
+            'px-5 py-5 lg:px-8 lg:py-10'
+          )}
+        >
+          <header className="hidden flex-col gap-1.5 pb-6 lg:flex lg:pb-8">
+            <Text
+              size="pageTitle"
+              weight="extrabold"
+              className="tracking-tight text-gray-900"
+            >
+              챌린지 수정하기
+            </Text>
+            <Text size="body2" weight="regular" className="text-gray-500">
+              진행 중인 챌린지의 일부 정보를 다듬어보세요.
+            </Text>
+          </header>
 
-        <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className={cn(
@@ -294,47 +294,47 @@ function ChallengeEditScreenContent({
               </div>
             </aside>
           </form>
-        </Form>
-      </div>
+        </div>
 
-      <div
-        className={cn(
-          'fixed inset-x-0 bottom-0 z-20 border-t border-gray-200',
-          'bg-white/95 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] backdrop-blur'
-        )}
-      >
         <div
           className={cn(
-            'mx-auto flex w-full max-w-[1200px] items-center gap-3',
-            'px-4 py-3 lg:px-8'
+            'fixed inset-x-0 bottom-0 z-20 border-t border-gray-200',
+            'bg-white/95 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] backdrop-blur'
           )}
         >
-          <Text
-            size="caption1"
-            weight="medium"
+          <div
             className={cn(
-              'hidden text-gray-600 lg:inline',
-              canSubmit && 'text-main-800 font-bold'
+              'mx-auto flex w-full max-w-[1200px] items-center gap-3',
+              'px-4 py-3 lg:px-8'
             )}
           >
-            {canSubmit
-              ? '✓ 변경 사항을 저장할 수 있어요'
-              : '필수 항목을 확인해 주세요'}
-          </Text>
-          <div className="w-full lg:ml-auto lg:w-auto">
-            <ChallengeEditDialog
-              onConfirm={() => form.handleSubmit(onSubmit)()}
-              disabled={!canSubmit}
-              startDate={startDate}
-              endDate={endDate}
-              triggerText={
-                updateChallenge.isPending ? '저장 중...' : '수정 완료'
-              }
-              triggerClassName="w-full lg:w-auto"
-            />
+            <Text
+              size="caption1"
+              weight="medium"
+              className={cn(
+                'hidden text-gray-600 lg:inline',
+                canSubmit && 'text-main-800 font-bold'
+              )}
+            >
+              {canSubmit
+                ? '✓ 변경 사항을 저장할 수 있어요'
+                : '필수 항목을 확인해 주세요'}
+            </Text>
+            <div className="w-full lg:ml-auto lg:w-auto">
+              <ChallengeEditDialog
+                onConfirm={() => form.handleSubmit(onSubmit)()}
+                disabled={!canSubmit}
+                startDate={startDate}
+                endDate={endDate}
+                triggerText={
+                  updateChallenge.isPending ? '저장 중...' : '수정 완료'
+                }
+                triggerClassName="w-full lg:w-auto"
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </Form>
 
       <ChallengeEditSuccessDialog
         open={successOpen}
