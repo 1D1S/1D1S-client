@@ -3,8 +3,8 @@
 import {
   Button,
   Dialog,
+  DialogBody,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -26,33 +26,28 @@ export function BetaButton(): React.ReactElement {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="gap-4 p-6 sm:max-w-[420px]">
-          <DialogHeader className="items-center text-center">
-            <DialogTitle>
-              <Text size="heading1" weight="bold" className="text-black">
-                베타 테스트 안내
-              </Text>
-            </DialogTitle>
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle>베타 테스트 안내</DialogTitle>
           </DialogHeader>
 
-          <DialogDescription asChild>
-            <div className="flex flex-col gap-3 text-center">
-              <Text size="body1" weight="regular" className="text-gray-700">
+          <DialogBody>
+            <div className="flex flex-col gap-3">
+              <Text size="body2" weight="regular" className="text-gray-700">
                 1D1S는 현재 베타 테스트 기간 입니다. 문제가 발생하거나
                 추가됐으면 하는 기능이 있다면 문의를 남겨주세요.
               </Text>
-              <Text size="body2" weight="regular" className="text-gray-500">
+              <Text size="caption1" weight="regular" className="text-gray-500">
                 추가로 피드백 작성시 추첨을 통해 5분께 스타벅스 아이스
                 아메리카노 쿠폰을 드리고 있으니 많은 관심 부탁드립니다!
               </Text>
             </div>
-          </DialogDescription>
+          </DialogBody>
 
-          <DialogFooter className="mt-2">
+          <DialogFooter>
             <Button
               variant="default"
               type="button"
-              className="w-full"
               onClick={() => {
                 setOpen(false);
                 window.open('https://forms.gle/yxgnTJdYViRmb2zR6', '_blank');

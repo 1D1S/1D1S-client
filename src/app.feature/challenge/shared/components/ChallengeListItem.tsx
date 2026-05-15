@@ -1,13 +1,18 @@
-import { cn, ImagePlaceholder, Tag, Text } from '@1d1s/design-system';
-import { Target } from 'lucide-react';
+import {
+  Card,
+  cn,
+  Icon,
+  Stripe,
+  Tag,
+  type TagProps,
+  Text,
+} from '@1d1s/design-system';
 import Image from 'next/image';
-import type { ReactNode } from 'react';
 
 export interface ChallengeListItemProps {
   challengeTitle: string;
   challengeType: string;
   challengeCategory?: string;
-  challengeIcon?: ReactNode;
   imageUrl?: string;
   currentUserCount: number;
   maxUserCount: number;
@@ -20,6 +25,8 @@ export interface ChallengeListItemProps {
   className?: string;
   onClick?(): void;
 }
+
+type StatusTone = NonNullable<TagProps['tone']>;
 
 export function ChallengeListItem({
   challengeTitle,
@@ -42,79 +49,97 @@ export function ChallengeListItem({
 
   const hasEnded = isInfiniteChallenge ? isEarlyEnded : isEnded;
   const statusLabel = hasEnded ? '종료됨' : isOngoing ? '진행 중' : '모집 중';
-  const statusClassName = hasEnded
-    ? 'bg-gray-500'
+  const statusTone: StatusTone = hasEnded
+    ? 'gray'
     : isOngoing
-      ? 'bg-green-500'
-      : 'bg-blue-500';
+      ? 'mint'
+      : 'blue';
+
   const dateLabel = isInfiniteChallenge
-    ? `${startDate} - 무한!`
-    : `${startDate} - ${endDate}`;
+    ? `${startDate} · 무한`
+    : `${startDate} ~ ${endDate}`;
 
   return (
-    <div
+    <Card
+      interactive={Boolean(onClick)}
+      radius="md"
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (!onClick) {return;}
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }}
       className={cn(
-        'rounded-4 hover:shadow-default flex gap-3 overflow-hidden border border-gray-200 bg-white p-3 transition-all duration-200 ease-in-out hover:-translate-y-1 sm:gap-4 sm:p-4',
-        onClick && 'cursor-pointer',
+        'flex gap-3 overflow-hidden p-0 sm:gap-4',
+        onClick &&
+          'transition-all duration-200 hover:shadow-[0_10px_28px_rgba(255,87,34,0.18)]',
         className
       )}
-      onClick={onClick}
     >
-      {/* Thumbnail */}
-      <div className="relative -mb-3 -ml-3 w-[120px] shrink-0 self-stretch overflow-hidden bg-gray-100 sm:-mt-4 sm:-mb-4 sm:-ml-4 sm:w-[140px]">
+      <div
+        className={cn(
+          'bg-main-100 relative h-[104px] w-[104px] shrink-0 overflow-hidden',
+          'sm:h-[120px] sm:w-[120px]'
+        )}
+      >
         {hasImage ? (
           <Image
             src={imageUrl as string}
             alt={challengeTitle}
-            width={96}
-            height={96}
-            className="h-full w-full object-cover"
+            fill
+            sizes="120px"
+            className="object-cover"
           />
         ) : (
-          <ImagePlaceholder className="h-full w-full" logoSize="sm" />
+          <Stripe tone="peach" />
         )}
       </div>
 
-      {/* Content */}
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        {/* Title */}
+      <div
+        className={cn(
+          'flex min-w-0 flex-1 flex-col justify-center gap-1.5',
+          'py-3 pr-3 sm:py-4 sm:pr-4'
+        )}
+      >
         <Text
           as="p"
-          size="caption1"
-          weight="bold"
-          className="truncate text-gray-900 sm:text-lg"
+          size="body2"
+          weight="extrabold"
+          className="truncate text-gray-900 sm:text-[17px]"
         >
           {challengeTitle}
         </Text>
 
-        {/* Category + Status tags */}
         <div className="flex flex-wrap items-center gap-1.5">
-          <Tag size="caption3" weight="medium">
-            {challengeCategory ?? challengeType}
-          </Tag>
-          <Tag size="caption3" weight="bold" className={statusClassName}>
+          {challengeCategory && (
+            <Tag tone="brand" size="xs">
+              {challengeCategory}
+            </Tag>
+          )}
+          <Tag tone={statusTone} size="xs">
             {statusLabel}
           </Tag>
         </div>
 
-        {/* Goal type + participant */}
-        <div className="flex items-center gap-1.5">
-          <Target className="h-3.5 w-3.5 text-gray-400" />
-          <Text size="caption3" weight="medium" className="text-gray-500">
-            {`${challengeType}`}
-            {isIndividual ? '' : ` · ${currentUserCount} / ${maxUserCount}`}
+        <div className="flex items-center gap-1.5 text-gray-500">
+          <Icon name="Target" size={13} className="text-main-800" />
+          <Text size="caption2" weight="medium" className="text-gray-500">
+            {challengeType}
+            {isIndividual ? '' : ` · ${currentUserCount}/${maxUserCount}`}
           </Text>
         </div>
 
-        {/* Date */}
-        <Text
-          size="caption3"
-          weight="regular"
-          className="hidden text-gray-400 sm:block"
-        >
-          {dateLabel}
-        </Text>
+        <div className="hidden items-center gap-1.5 text-gray-400 sm:flex">
+          <Icon name="Calendar" size={12} />
+          <Text size="caption3" weight="regular" className="text-gray-400">
+            {dateLabel}
+          </Text>
+        </div>
       </div>
-    </div>
+    </Card>
   );
 }

@@ -1,10 +1,9 @@
+import type { LikeInfo } from '@module/api/types';
+
+export type { LikeInfo };
+
 export type Feeling = 'SAD' | 'NORMAL' | 'HAPPY' | 'NONE';
 export type ReportType = 'BAD_TITLE_CONTENT' | 'BAD_IMAGE' | 'ETC';
-
-export interface LikeInfo {
-  likedByMe: boolean;
-  likeCnt: number;
-}
 
 export interface AuthorInfo {
   id: number;

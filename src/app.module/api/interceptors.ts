@@ -5,7 +5,8 @@ import axios, {
 } from 'axios';
 
 import { API_BASE_URL } from './config';
-import { handleAuthError, isUnauthorizedError, notifyApiError } from './error';
+import { isUnauthorizedError } from './error';
+import { handleAuthError, notifyApiError } from './errorNotify';
 
 export interface ClientOptions {
   handleUnauthorized: boolean;

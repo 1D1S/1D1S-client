@@ -2,36 +2,26 @@
 
 import { Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
-import { DiaryItem,Feeling  } from '@feature/diary/board/type/diary';
+import { DiaryItem } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
 import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
-import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
+import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
+import { cn } from '@module/utils/cn';
+import { getRelativeTimeLabel } from '@module/utils/date';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 import { useMemberDiaries } from '../hooks/useDiaryQueries';
-
-type DiaryEmotion = 'happy' | 'soso' | 'sad';
-
-function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
-  switch (feeling) {
-    case 'HAPPY':
-      return 'happy';
-    case 'SAD':
-      return 'sad';
-    default:
-      return 'soso';
-  }
-}
 
 interface MemberDiaryListScreenProps {
   memberId: string;
@@ -98,11 +88,13 @@ export function MemberDiaryListScreen({
         </div>
 
         {isLoading ? (
-          <div className="mt-10 flex w-full justify-center py-10">
-            <Text size="body1" weight="medium" className="text-gray-500">
-              일지를 불러오는 중입니다.
-            </Text>
-          </div>
+          <DiaryCardSkeletonGrid
+            count={12}
+            className={cn(
+              'mt-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
+              'lg:grid-cols-4 xl:grid-cols-6'
+            )}
+          />
         ) : null}
 
         {isError ? (
@@ -116,7 +108,12 @@ export function MemberDiaryListScreen({
         ) : null}
 
         {!isLoading && !isError && hasDiaries ? (
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          <div
+            className={cn(
+              'data-fade-in mt-6 grid grid-cols-1 gap-4',
+              'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
+            )}
+          >
             {diaryItems.map((diary) => (
               <DiaryCard
                 key={diary.id}
@@ -159,7 +156,7 @@ export function MemberDiaryListScreen({
                     );
                   }
                 }}
-                date={getRelativeDiaryDateLabel(
+                date={getRelativeTimeLabel(
                   diary.diaryInfoDto?.createdAt ??
                     diary.diaryInfoDto?.challengedDate ??
                     ''

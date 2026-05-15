@@ -7,48 +7,12 @@ import {
   ImagePlaceholder,
   Text,
 } from '@1d1s/design-system';
+import { ChallengeChip } from '@feature/challenge/shared/components/ChallengeChip';
+import { Heart } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState } from 'react';
 
 type Emotion = 'happy' | 'soso' | 'sad';
-
-function Heart(props: React.SVGProps<SVGSVGElement>): React.ReactElement {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
-      <path
-        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-        stroke="currentColor"
-        strokeWidth="2"
-        fill="none"
-      />
-    </svg>
-  );
-}
-
-function HeartFilled(props: React.SVGProps<SVGSVGElement>): React.ReactElement {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
-      <path
-        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
 
 function CommentIcon(
   props: React.SVGProps<SVGSVGElement>
@@ -147,11 +111,12 @@ function ImageSection({
           }}
           className="bg-main-800 hover:bg-main-900 inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-1.5 text-white shadow-[0_4px_10px_rgba(34,34,34,0.25)] transition-colors"
         >
-          {isLiked ? (
-            <HeartFilled width={14} height={14} className="text-white" />
-          ) : (
-            <Heart width={14} height={14} className="text-white" />
-          )}
+          <Heart
+            className={cn(
+              'h-3.5 w-3.5 text-white',
+              isLiked && 'fill-current'
+            )}
+          />
           <Text size="body2" weight="bold" className="text-white">
             {likeCount}
           </Text>
@@ -193,25 +158,23 @@ function TextSection({
         {title}
       </Text>
 
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          onChallengeClick?.();
-        }}
-        className={cn(
-          'rounded-1 block w-full cursor-pointer px-1 py-0.5 text-left transition-colors',
-          'hover:bg-gray-100'
-        )}
-      >
-        <Text
-          size="caption1"
-          weight="medium"
-          className="block w-full truncate text-blue-500 sm:text-lg"
-        >
-          {challengeLabel}
-        </Text>
-      </button>
+      {onChallengeClick ? (
+        <ChallengeChip
+          title={challengeLabel}
+          size="sm"
+          className="self-start"
+          onClick={(event) => {
+            event.stopPropagation();
+            onChallengeClick();
+          }}
+        />
+      ) : (
+        <ChallengeChip
+          title={challengeLabel}
+          size="sm"
+          className="self-start"
+        />
+      )}
 
       <div className="h-px w-full bg-gray-200" />
 
@@ -348,7 +311,7 @@ export function DiaryCard({
       className={cn('block w-full', onClick && 'cursor-pointer')}
       onClick={onClick}
     >
-      <div className="rounded-4 overflow-hidden border border-gray-200 bg-white transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
+      <div className="rounded-4 overflow-hidden border border-gray-200 bg-white transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg">
         <ImageSection
           imageUrl={imageUrl}
           alt={title}

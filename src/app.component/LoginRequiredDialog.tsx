@@ -1,12 +1,4 @@
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@1d1s/design-system';
+import { ConfirmDialog } from '@1d1s/design-system';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -26,37 +18,16 @@ export function LoginRequiredDialog({
   const router = useRouter();
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-6 px-8 py-6 sm:max-w-[380px] sm:px-6">
-        <DialogHeader className="items-center text-center sm:text-center">
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-
-        <DialogDescription className="block w-full text-center">
-          {description}
-        </DialogDescription>
-
-        <DialogFooter className="flex-row gap-2">
-          <Button
-            size="medium"
-            variant="ghost"
-            className="flex-1"
-            onClick={() => onOpenChange(false)}
-          >
-            닫기
-          </Button>
-          <Button
-            size="medium"
-            className="flex-1"
-            onClick={() => {
-              onOpenChange(false);
-              router.push('/login');
-            }}
-          >
-            로그인
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      tone="brand"
+      icon="LogIn"
+      title={title}
+      description={description}
+      confirmLabel="로그인"
+      cancelLabel="닫기"
+      onConfirm={() => router.push('/login')}
+    />
   );
 }

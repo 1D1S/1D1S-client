@@ -1,88 +1,140 @@
-import { Icon, Text } from '@1d1s/design-system';
-import Link from 'next/link';
+'use client';
 
-import { LoginButton } from '../components/LoginButtons';
+import { Text } from '@1d1s/design-system';
+import { cn } from '@module/utils/cn';
+import Link from 'next/link';
+import React from 'react';
+
+import { BrandPanel } from '../components/BrandPanel';
+import { getLastOAuthProvider, LoginButton } from '../components/LoginButtons';
+import { LoginMobileView } from '../components/LoginMobileView';
+import {
+  getOrderedProviders,
+  PROVIDER_META,
+} from '../consts/providerMeta';
+import { OAuthProvider } from '../type/auth';
 
 export function LoginScreen(): React.ReactElement {
+  const [recommended, setRecommended] = React.useState<OAuthProvider | null>(
+    null
+  );
+
+  React.useEffect(() => {
+    setRecommended(getLastOAuthProvider());
+  }, []);
+
+  const providers = getOrderedProviders(recommended);
+
   return (
-    <div className="grid min-h-screen w-full grid-cols-1 bg-white lg:grid-cols-[1.05fr_1fr]">
-      <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#FF6D2D] via-[#FF8F3F] to-[#FFBC63] px-12 py-10 text-white lg:flex lg:flex-col">
-        <div className="pointer-events-none absolute -right-24 -bottom-24 h-80 w-80 rounded-full bg-white/20 blur-3xl" />
-        <div className="pointer-events-none absolute -top-20 -left-20 h-64 w-64 rounded-full bg-[#FFC789]/40 blur-3xl" />
+    <>
+      <div className="lg:hidden">
+        <LoginMobileView providers={providers} recommended={recommended} />
+      </div>
 
-        <Link href="/" className="relative z-10 flex w-fit items-center gap-3">
-          <div className="rounded-2 flex h-8 w-8 items-center justify-center bg-white/20">
-            <Icon name="Logo" size={18} className="text-white" />
-          </div>
-          <Text size="heading2" weight="bold" className="text-white">
-            1D1S
-          </Text>
-        </Link>
+      <div
+        className={cn(
+          'hidden min-h-screen w-full bg-white',
+          'lg:grid lg:grid-cols-[1.05fr_1fr]'
+        )}
+      >
+        <BrandPanel
+          heading={'매일 한 걸음,\n오늘도 함께해요'}
+          subtitle={
+            '챌린저 12,847명이 지금\n각자의 작은 목표를 지키는 중이에요.'
+          }
+        />
 
-        <div className="relative z-10 flex flex-1 items-center">
-          <div className="max-w-xl">
-            <Text
-              size="display1"
-              weight="bold"
-              className="leading-tight text-white"
+        <section
+          className={cn(
+            'relative flex items-center justify-center px-6 py-10',
+            'lg:px-16'
+          )}
+        >
+          <div
+            className={cn(
+              'absolute top-7 right-8 hidden text-[13px] text-gray-600',
+              'lg:block'
+            )}
+          >
+            한국어 / KR
+            <span className="mx-3 text-gray-300">|</span>
+            <Link
+              href="/help"
+              className="font-semibold text-gray-700 hover:text-gray-900"
             >
-              &quot;불가능을 이루는 단 하나의 방법은, 그것이 가능하다고 믿는
-              것입니다.&quot;
+              도움말
+            </Link>
+          </div>
+
+          <div className="w-full max-w-[400px]">
+            <Text
+              size="caption2"
+              weight="extrabold"
+              className="text-main-800 mb-2 block tracking-[0.2em]"
+            >
+              WELCOME BACK
+            </Text>
+            <Text
+              size="display2"
+              weight="extrabold"
+              as="h1"
+              className="block tracking-tight text-gray-900"
+            >
+              다시 만나서 반가워요
+            </Text>
+            <Text
+              size="body2"
+              weight="regular"
+              as="p"
+              className="mt-3 block text-gray-500"
+            >
+              27일 스트릭이 기다리고 있어요 🔥
+              <br />
+              가입할 때 사용한 SNS로 로그인해주세요.
+            </Text>
+
+            <div className="mt-8 flex flex-col gap-2.5">
+              {providers.map((provider, index) => {
+                const meta = PROVIDER_META[provider];
+                return (
+                  <LoginButton
+                    key={provider}
+                    provider={provider}
+                    img={meta.img}
+                    text={meta.text}
+                    size="large"
+                    recentBadge={index === 0 && recommended === provider}
+                    className={cn('h-13 text-[15px]', meta.className)}
+                  />
+                );
+              })}
+            </div>
+
+            <Text
+              size="caption2"
+              weight="regular"
+              as="p"
+              className="mt-6 block text-center text-gray-500"
+            >
+              로그인하면{' '}
+              <Link
+                href="/terms"
+                className="text-gray-700 underline hover:text-gray-900"
+              >
+                이용약관
+              </Link>
+              과{' '}
+              <Link
+                href="/privacy"
+                className="text-gray-700 underline hover:text-gray-900"
+              >
+                개인정보처리방침
+              </Link>
+              에 동의한 것으로 간주됩니다.
             </Text>
           </div>
-        </div>
-      </section>
-
-      <section className="relative flex items-center justify-center px-6 py-10 lg:px-16">
-        <Link
-          href="/"
-          className="text-main-600 absolute top-6 left-6 flex items-center gap-2 lg:hidden"
-        >
-          <div className="rounded-2 bg-main-100 flex h-8 w-8 items-center justify-center">
-            <Icon name="Logo" size={18} className="text-main-600" />
-          </div>
-          <Text size="heading2" weight="bold" className="text-main-600">
-            1D1S
-          </Text>
-        </Link>
-
-        <div className="w-full max-w-[460px]">
-          <Text size="display2" weight="bold" className="block text-gray-900">
-            1D1S와 함께 챌린지를 시작해봐요!
-          </Text>
-
-          <Text
-            size="body1"
-            weight="regular"
-            className="mt-4 block text-gray-600"
-          >
-            챌린저들과 매일매일 목표 달성에 도전해봐요!
-          </Text>
-
-          <div className="mt-10 flex flex-col gap-4">
-            <LoginButton
-              img="/images/kakao-logo.png"
-              text="카카오 로그인"
-              provider="kakao"
-              className="relative w-full bg-[#FEE500] text-black hover:bg-[#FEE500]/90"
-            />
-
-            <LoginButton
-              img="/images/naver-logo.png"
-              text="네이버 로그인"
-              provider="naver"
-              className="relative w-full bg-[#03C75A] text-white hover:bg-[#03C75A]/90"
-            />
-
-            <LoginButton
-              img="/images/google-logo.svg"
-              text="Google 로그인"
-              provider="google"
-              className="relative w-full border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-            />
-          </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </>
   );
 }

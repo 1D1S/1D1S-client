@@ -1,7 +1,7 @@
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challengePeriod';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import type { SidebarChallenge } from '@feature/member/type/member';
-import { toStartOfDay } from '@module/utils/date';
+import { formatDateISO, toStartOfDay } from '@module/utils/date';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -49,13 +49,6 @@ function parsePositiveInteger(value: string | null): number | null {
   }
 
   return parsedValue;
-}
-
-function formatDate(date: Date): string {
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
 }
 
 function parseDateValue(value?: string | null): Date | null {
@@ -109,7 +102,7 @@ function getFirstSelectableAchievedDate(
 
     if (
       isSelectableAchievedDate(candidate, challengeStartDate) &&
-      !disabledDateKeys.has(formatDate(candidate))
+      !disabledDateKeys.has(formatDateISO(candidate))
     ) {
       return candidate;
     }
@@ -432,7 +425,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       return null;
     }
 
-    return formatDate(parsedDate);
+    return formatDateISO(parsedDate);
   }, [existingDiary, isEditMode]);
 
   const disabledAchievedDateKeys = useMemo(() => {
@@ -480,7 +473,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     Boolean(achievedDate) &&
     (achievedDate
       ? isSelectableAchievedDate(achievedDate, selectedChallenge?.startDate) &&
-        !disabledAchievedDateKeySet.has(formatDate(achievedDate))
+        !disabledAchievedDateKeySet.has(formatDateISO(achievedDate))
       : false) &&
     !isChallengeCheckWriteDatesLoading &&
     !isSubmitting &&
@@ -592,7 +585,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
 
       if (
         !isSelectableAchievedDate(achievedDate, selectedChallenge.startDate) ||
-        disabledAchievedDateKeySet.has(formatDate(achievedDate))
+        disabledAchievedDateKeySet.has(formatDateISO(achievedDate))
       ) {
         setAchievedDate(
           getFirstSelectableAchievedDate(
@@ -633,7 +626,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         return;
       }
 
-      if (disabledAchievedDateKeySet.has(formatDate(date))) {
+      if (disabledAchievedDateKeySet.has(formatDateISO(date))) {
         return;
       }
 
@@ -681,7 +674,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     if (
       achievedDate &&
       (!isSelectableAchievedDate(achievedDate, selectedChallenge.startDate) ||
-        disabledAchievedDateKeySet.has(formatDate(achievedDate)))
+        disabledAchievedDateKeySet.has(formatDateISO(achievedDate)))
     ) {
       return;
     }
@@ -696,7 +689,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
             content,
             feeling: selectedMood,
             isPublic: true,
-            achievedDate: achievedDate ? formatDate(achievedDate) : '',
+            achievedDate: achievedDate ? formatDateISO(achievedDate) : '',
             achievedGoalIds,
           },
         });
@@ -719,7 +712,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         content,
         feeling: selectedMood,
         isPublic: true,
-        achievedDate: achievedDate ? formatDate(achievedDate) : '',
+        achievedDate: achievedDate ? formatDateISO(achievedDate) : '',
         achievedGoalIds,
       });
 

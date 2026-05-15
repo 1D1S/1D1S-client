@@ -2,48 +2,35 @@
 
 import {
   Button,
-  CircleAvatar,
-  CircularProgress,
+  Card,
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   GoalAddList,
-  ScheduleCalendar,
-  type ScheduleCalendarCell,
+  Tag,
   Text,
   TextField,
 } from '@1d1s/design-system';
+import { AlertDialog } from '@component/AlertDialog';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
-import { Feeling } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
-import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
-import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
-import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
-import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/DiaryCreateUnavailableDialog';
-import { normalizeApiError, notifyApiError } from '@module/api/error';
+import { normalizeApiError } from '@module/api/error';
+import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
-import {
-  CalendarDays,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  CircleAlert,
-  Flame,
-  Heart,
-  Trash2,
-  UserRound,
-} from 'lucide-react';
+import { formatDateISO } from '@module/utils/date';
+import { ArrowLeft, CircleAlert, Heart, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
@@ -56,9 +43,17 @@ import {
   Participant,
   ParticipantStatus,
 } from '../../board/type/challenge';
-import { isChallengeOngoing } from '../../board/utils/challengePeriod';
+import {
+  isChallengeOngoing,
+  isInfiniteChallengeEndDate,
+} from '../../board/utils/challengePeriod';
+import { ChallengeDetailHero } from '../components/ChallengeDetailHero';
+import { ChallengeDiaryGrid } from '../components/ChallengeDiaryGrid';
+import { ChallengeLeaderboardCard } from '../components/ChallengeLeaderboardCard';
+import { ChallengeProgressCard } from '../components/ChallengeProgressCard';
+import { ChallengeRulesCard } from '../components/ChallengeRulesCard';
 import { ExpandableText } from '../components/ExpandableText';
-import { CHALLENGE_DETAIL_WEEK_LABELS } from '../consts/challengeDetailData';
+import { PendingMemberItem } from '../components/PendingMemberItem';
 import { useChallengeDiaryList } from '../hooks/useChallengeDiaryQueries';
 import {
   useAcceptParticipant,
@@ -71,6 +66,10 @@ import {
   useUpdateParticipantGoal,
 } from '../hooks/useChallengeMutations';
 import { ChallengeDiaryItem } from '../type/challengeDiary';
+import {
+  buildHeroGradient,
+  getCategoryAccent,
+} from '../utils/challengeAccent';
 
 interface ChallengeDetailScreenProps {
   id: string;
@@ -83,36 +82,11 @@ const PARTICIPATING_STATUS: ParticipantStatus[] = [
 ];
 const EMPTY_GOALS: ChallengeGoal[] = [];
 const EMPTY_PARTICIPANTS: Participant[] = [];
-const ENDLESS_MIN_YEAR = 2090;
 const ENDLESS_LABEL = '무한!';
-
-function getMonthLabel(monthDate: Date): string {
-  return new Intl.DateTimeFormat('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-  }).format(monthDate);
-}
-
-function getChallengeTypeLabel(goalType: string): string {
-  return formatChallengeTypeLabel(goalType);
-}
-
-function isEndlessChallengeEndDate(endDate: string): boolean {
-  if (!endDate) {
-    return false;
-  }
-
-  const parsedEndDate = new Date(endDate);
-  if (Number.isNaN(parsedEndDate.getTime())) {
-    return false;
-  }
-
-  return parsedEndDate.getUTCFullYear() >= ENDLESS_MIN_YEAR;
-}
 
 function formatDateRange(startDate: string, endDate: string): string {
   const format = (date: string): string => date.replaceAll('-', '.');
-  if (isEndlessChallengeEndDate(endDate)) {
+  if (isInfiniteChallengeEndDate(endDate)) {
     return `${format(startDate)} ~ ${ENDLESS_LABEL}`;
   }
 
@@ -120,7 +94,7 @@ function formatDateRange(startDate: string, endDate: string): string {
 }
 
 function getDdayLabel(endDate: string): string {
-  if (isEndlessChallengeEndDate(endDate)) {
+  if (isInfiniteChallengeEndDate(endDate)) {
     return ENDLESS_LABEL;
   }
 
@@ -140,12 +114,18 @@ function getDdayLabel(endDate: string): string {
   return `D+${Math.abs(dayDiff)}`;
 }
 
-function formatDateKey(date: Date): string {
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
-
-  return `${yyyy}-${mm}-${dd}`;
+function getRemainingLabel(endDate: string): string {
+  const ddayLabel = getDdayLabel(endDate);
+  if (ddayLabel === ENDLESS_LABEL) {
+    return '마감 없음';
+  }
+  if (ddayLabel === 'D-DAY') {
+    return '오늘 마감';
+  }
+  if (ddayLabel.startsWith('D-')) {
+    return `${ddayLabel.slice(2)}일 남음`;
+  }
+  return '챌린지 종료';
 }
 
 function hasSelectableDiaryDate(disabledDateKeys: string[]): boolean {
@@ -156,7 +136,7 @@ function hasSelectableDiaryDate(disabledDateKeys: string[]): boolean {
     const candidate = new Date(today);
     candidate.setDate(today.getDate() - dayOffset);
 
-    if (!disabledDateKeys.includes(formatDateKey(candidate))) {
+    if (!disabledDateKeys.includes(formatDateISO(candidate))) {
       return true;
     }
   }
@@ -173,170 +153,6 @@ function formatRelativeJoinedText(status: ParticipantStatus): string {
     default:
       return '참여 중';
   }
-}
-
-function isSameDate(firstDate: Date, secondDate: Date): boolean {
-  return (
-    firstDate.getFullYear() === secondDate.getFullYear() &&
-    firstDate.getMonth() === secondDate.getMonth() &&
-    firstDate.getDate() === secondDate.getDate()
-  );
-}
-
-function buildCalendarRows(
-  baseMonth: Date,
-  startDate: string,
-  endDate: string
-): ScheduleCalendarCell[][] {
-  if (!startDate || !endDate) {
-    return [];
-  }
-
-  const challengeStart = new Date(startDate);
-  const challengeEnd = new Date(endDate);
-  if (
-    Number.isNaN(challengeStart.getTime()) ||
-    Number.isNaN(challengeEnd.getTime())
-  ) {
-    return [];
-  }
-  challengeStart.setHours(0, 0, 0, 0);
-  challengeEnd.setHours(0, 0, 0, 0);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const year = baseMonth.getFullYear();
-  const month = baseMonth.getMonth();
-  const firstWeekday = new Date(year, month, 1).getDay();
-  const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
-  const daysInPreviousMonth = new Date(year, month, 0).getDate();
-  const totalVisibleCells =
-    Math.ceil((firstWeekday + daysInCurrentMonth) / 7) * 7;
-  const calendarCells: ScheduleCalendarCell[] = [];
-
-  for (let cellIndex = 0; cellIndex < totalVisibleCells; cellIndex += 1) {
-    if (cellIndex < firstWeekday) {
-      const previousMonthDay =
-        daysInPreviousMonth - firstWeekday + cellIndex + 1;
-      calendarCells.push({
-        day: previousMonthDay,
-        muted: true,
-      });
-      continue;
-    }
-
-    const currentDay = cellIndex - firstWeekday + 1;
-    if (currentDay > daysInCurrentMonth) {
-      calendarCells.push({
-        day: currentDay - daysInCurrentMonth,
-        muted: true,
-      });
-      continue;
-    }
-
-    const currentDate = new Date(year, month, currentDay);
-    currentDate.setHours(0, 0, 0, 0);
-    const isInChallengePeriod =
-      currentDate >= challengeStart && currentDate <= challengeEnd;
-    const isToday = isSameDate(currentDate, today);
-
-    calendarCells.push({
-      day: currentDay,
-      subtitle: isToday && isInChallengePeriod ? '오늘' : undefined,
-      highlighted: isToday && isInChallengePeriod,
-      muted: !isInChallengePeriod,
-      bars:
-        isInChallengePeriod && currentDate <= today
-          ? [{ tone: 'main', width: '100%' }]
-          : undefined,
-    });
-  }
-
-  const calendarRows: ScheduleCalendarCell[][] = [];
-  for (let rowIndex = 0; rowIndex < calendarCells.length; rowIndex += 7) {
-    calendarRows.push(calendarCells.slice(rowIndex, rowIndex + 7));
-  }
-
-  return calendarRows;
-}
-
-function StatHeader({
-  icon,
-  title,
-  rightText,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  rightText?: string;
-}): React.ReactElement {
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        {icon}
-        <Text size="heading2" weight="bold" className="text-gray-900">
-          {title}
-        </Text>
-      </div>
-      {rightText ? (
-        <Text size="body1" weight="bold" className="text-main-800">
-          {rightText}
-        </Text>
-      ) : null}
-    </div>
-  );
-}
-
-function PendingMemberItem({
-  name,
-  joinedAt,
-  onAccept,
-  onReject,
-  isLoading,
-}: {
-  name: string;
-  joinedAt: string;
-  onAccept(): void;
-  onReject(): void;
-  isLoading: boolean;
-}): React.ReactElement {
-  return (
-    <div className="rounded-2 flex items-center justify-between border border-gray-200 bg-gray-100 px-3 py-2.5">
-      <div className="flex items-center gap-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-gray-500">
-          <UserRound className="h-5 w-5" />
-        </div>
-        <div className="flex flex-col">
-          <Text size="body2" weight="bold" className="text-gray-900">
-            {name}
-          </Text>
-          <Text size="caption2" weight="regular" className="text-gray-500">
-            {joinedAt}
-          </Text>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className="bg-main-200 text-main-800 flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl"
-          aria-label="참여 승인"
-          onClick={onAccept}
-          disabled={isLoading}
-        >
-          <Check className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl bg-gray-200 text-gray-500"
-          aria-label="참여 거절"
-          onClick={onReject}
-          disabled={isLoading}
-        >
-          ×
-        </button>
-      </div>
-    </div>
-  );
 }
 
 export function ChallengeDetailScreen({
@@ -361,10 +177,22 @@ export function ChallengeDetailScreen({
   const isLoggedIn = useIsLoggedIn();
   const [dismissed, setDismissed] = useState(false);
   const showAuthDialog = !isLoggedIn && !dismissed;
+  // 히어로 위 floating 뒤로가기가 스크롤로 가려지자마자 상단 sticky 헤더가
+  // 등장하도록 임계값을 80px로 둔다.
+  const [isCompactHeaderVisible, setIsCompactHeaderVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = (): void => {
+      setIsCompactHeaderVisible(window.scrollY > 80);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const [showDiaryLikeDialog, setShowDiaryLikeDialog] = useState(false);
   const [showCreateUnavailableDialog, setShowCreateUnavailableDialog] =
     useState(false);
-  const [calendarMonth, setCalendarMonth] = useState<Date>(() => new Date());
   const [showFreeGoalModal, setShowFreeGoalModal] = useState(false);
   const [freeGoalInputs, setFreeGoalInputs] = useState<string[]>(['']);
   const [showEditGoalModal, setShowEditGoalModal] = useState(false);
@@ -384,7 +212,7 @@ export function ChallengeDetailScreen({
   >(() => [createGoalEntry()]);
 
   const { data: challengeDiariesData, isLoading: isDiariesLoading } =
-    useChallengeDiaryList(challengeId, 10);
+    useChallengeDiaryList(challengeId, 5);
 
   const summary = data?.challengeSummary;
   const detail = data?.challengeDetail;
@@ -394,10 +222,6 @@ export function ChallengeDetailScreen({
   const participationRate =
     Math.round(
       Math.min(100, Math.max(0, detail?.participationRate ?? 0)) * 10
-    ) / 10;
-  const goalCompletionRate =
-    Math.round(
-      Math.min(100, Math.max(0, detail?.goalCompletionRate ?? 0)) * 10
     ) / 10;
 
   const pendingParticipants = useMemo(
@@ -421,24 +245,19 @@ export function ChallengeDetailScreen({
   const canJoinByStatus = myStatus === 'NONE' || myStatus === 'REJECTED';
   const isFreeChallenge = summary?.goalType === 'FLEXIBLE';
 
-  const monthLabel = useMemo(
-    () => getMonthLabel(calendarMonth),
-    [calendarMonth]
-  );
   const summaryStartDate = summary?.startDate ?? '';
   const summaryEndDate = summary?.endDate ?? '';
-  const summaryDdayLabel = getDdayLabel(summaryEndDate);
   const summaryMaxParticipantCnt = summary?.maxParticipantCnt ?? 0;
+  const summaryParticipantCnt = summary?.participantCnt ?? 0;
   const isChallengeCurrentlyOngoing = isChallengeOngoing(
     summaryStartDate,
     summaryEndDate
   );
+  const isEndless = isInfiniteChallengeEndDate(summaryEndDate);
   // 챌린지 시작 여부 (시작일이 오늘 이전이면 시작된 것으로 간주)
   const isChallengeStarted =
     isChallengeCurrentlyOngoing ||
-    (summaryStartDate
-      ? new Date() >= new Date(summaryStartDate)
-      : false);
+    (summaryStartDate ? new Date() >= new Date(summaryStartDate) : false);
   const {
     data: challengeCheckWriteDateKeys = [],
     isLoading: isCheckWriteDatesLoading,
@@ -451,10 +270,6 @@ export function ChallengeDetailScreen({
     [challengeCheckWriteDateKeys]
   );
   const canJoin = canJoinByStatus && summaryMaxParticipantCnt > 1;
-  const calendarRows = useMemo(
-    () => buildCalendarRows(calendarMonth, summaryStartDate, summaryEndDate),
-    [calendarMonth, summaryEndDate, summaryStartDate]
-  );
   const previewDiaries = challengeDiariesData?.items ?? [];
   const hasMoreDiaries =
     challengeDiariesData?.pageInfo.hasNextPage ?? false;
@@ -484,8 +299,8 @@ export function ChallengeDetailScreen({
         onSuccess: () => {
           toast.success('챌린지 참여 신청이 완료되었습니다.');
         },
-        onError: (error) => {
-          notifyApiError(error);
+        onError: (mutationError) => {
+          notifyApiError(mutationError);
         },
       }
     );
@@ -506,8 +321,8 @@ export function ChallengeDetailScreen({
           setShowFreeGoalModal(false);
           toast.success('챌린지 참여 신청이 완료되었습니다.');
         },
-        onError: (error) => {
-          notifyApiError(error);
+        onError: (mutationError) => {
+          notifyApiError(mutationError);
         },
       }
     );
@@ -518,8 +333,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('챌린지에서 나갔습니다.');
       },
-      onError: (error) => {
-        notifyApiError(error);
+      onError: (mutationError) => {
+        notifyApiError(mutationError);
       },
     });
   };
@@ -534,8 +349,8 @@ export function ChallengeDetailScreen({
         onSuccess: () => {
           toast.success('챌린지 좋아요 취소 성공했습니다.');
         },
-        onError: (error) => {
-          notifyApiError(error);
+        onError: (mutationError) => {
+          notifyApiError(mutationError);
         },
       });
       return;
@@ -545,8 +360,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('챌린지 좋아요 성공했습니다.');
       },
-      onError: (error) => {
-        notifyApiError(error);
+      onError: (mutationError) => {
+        notifyApiError(mutationError);
       },
     });
   };
@@ -569,8 +384,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('참여 신청을 수락했습니다.');
       },
-      onError: (error) => {
-        notifyApiError(error);
+      onError: (mutationError) => {
+        notifyApiError(mutationError);
       },
     });
   };
@@ -580,8 +395,8 @@ export function ChallengeDetailScreen({
       onSuccess: () => {
         toast.success('참여 신청을 거절했습니다.');
       },
-      onError: (error) => {
-        notifyApiError(error);
+      onError: (mutationError) => {
+        notifyApiError(mutationError);
       },
     });
   };
@@ -606,8 +421,8 @@ export function ChallengeDetailScreen({
           setShowEditGoalModal(false);
           toast.success('목표가 수정되었습니다.');
         },
-        onError: (error) => {
-          notifyApiError(error);
+        onError: (mutationError) => {
+          notifyApiError(mutationError);
         },
       }
     );
@@ -616,7 +431,7 @@ export function ChallengeDetailScreen({
   const handleOpenEditChallengeGoalsModal = (): void => {
     const currentGoals = goals.map((goal) => createGoalEntry(goal.content));
     setChallengeGoalInputs(
-      currentGoals.length > 0 ? currentGoals : [createGoalEntry()],
+      currentGoals.length > 0 ? currentGoals : [createGoalEntry()]
     );
     setShowEditChallengeGoalsModal(true);
   };
@@ -636,8 +451,8 @@ export function ChallengeDetailScreen({
           setShowEditChallengeGoalsModal(false);
           toast.success('챌린지 목표가 수정되었습니다.');
         },
-        onError: (error) => {
-          notifyApiError(error);
+        onError: (mutationError) => {
+          notifyApiError(mutationError);
         },
       }
     );
@@ -658,143 +473,6 @@ export function ChallengeDetailScreen({
     }
   };
 
-  function mapFeelingToEmotion(feeling: Feeling): 'happy' | 'soso' | 'sad' {
-    if (feeling === 'HAPPY') {
-      return 'happy';
-    }
-    if (feeling === 'SAD') {
-      return 'sad';
-    }
-    return 'soso';
-  }
-
-  const renderActionsSection = (): React.ReactElement => (
-    <section className="rounded-4 border border-gray-200 bg-white p-5">
-      <Text size="caption1" weight="bold" className="text-gray-500">
-        ACTIONS
-      </Text>
-      <div className="mt-3 flex flex-col gap-2.5">
-        {isHost ? (
-          <Button
-            variant="outlined"
-            size="large"
-            className="w-full"
-            onClick={() => router.push(`/challenge/${id}/edit`)}
-          >
-            챌린지 수정
-          </Button>
-        ) : null}
-
-        {isParticipating ? (
-          <Button
-            size="large"
-            className="w-full"
-            disabled={!isChallengeCurrentlyOngoing || isCheckWriteDatesLoading}
-            onClick={handleDiaryCreateClick}
-          >
-            {isChallengeCurrentlyOngoing
-              ? '일지 작성하기'
-              : '진행 중일 때만 일지 작성 가능'}
-          </Button>
-        ) : null}
-
-        <Button
-          variant={summary!.likeInfo.likedByMe ? 'default' : 'outlined'}
-          size="large"
-          className="w-full"
-          disabled={isActionLoading}
-          asChild
-        >
-          <button type="button" onClick={handleToggleLike}>
-            <Heart
-              className={cn(
-                'h-4 w-4',
-                summary!.likeInfo.likedByMe && 'fill-current',
-              )}
-            />
-            {summary!.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'} (
-            {summary!.likeInfo.likeCnt})
-          </button>
-        </Button>
-
-        {!isHost && canJoin ? (
-          <Button
-            variant="outlined"
-            size="large"
-            className="w-full"
-            onClick={handleJoinChallenge}
-            disabled={joinChallenge.isPending}
-          >
-            챌린지 참여 신청
-          </Button>
-        ) : null}
-
-        {!isHost && isPending ? (
-          <Button variant="outlined" size="large" className="w-full" disabled>
-            참여 승인 대기중
-          </Button>
-        ) : null}
-
-        {!isHost && isParticipating ? (
-          <Button
-            variant="outlined"
-            size="large"
-            className="w-full"
-            onClick={handleLeaveChallenge}
-            disabled={leaveChallenge.isPending}
-          >
-            챌린지 나가기
-          </Button>
-        ) : null}
-      </div>
-    </section>
-  );
-
-  const renderParticipationStatusSection = (): React.ReactElement => (
-    <section className="rounded-4 border border-gray-200 bg-white p-5">
-      <Text size="heading2" weight="bold" className="text-gray-900">
-        참여 현황
-      </Text>
-      <div className="mt-3">
-        <div className="mb-2 flex items-center justify-between">
-          <Text size="body2" weight="medium" className="text-gray-600">
-            참여자
-          </Text>
-          {summary!.maxParticipantCnt === 0 ? (
-            <Text size="body1" weight="bold" className="text-gray-900">
-              개인 챌린지
-            </Text>
-          ) : (
-            <Text size="body1" weight="bold" className="text-gray-900">
-              {summary!.participantCnt} / {summary!.maxParticipantCnt}
-            </Text>
-          )}
-        </div>
-        {summary!.maxParticipantCnt > 0 && (
-          <div className="h-2 rounded-full bg-gray-200">
-            <div
-              className="bg-mint-800 h-full rounded-full"
-              style={{
-                width: `${Math.min(
-                  100,
-                  (summary!.participantCnt / summary!.maxParticipantCnt) * 100
-                )}%`,
-              }}
-            />
-          </div>
-        )}
-        <div className="mt-3 flex items-center gap-2 text-gray-600">
-          <CalendarDays className="h-4 w-4" />
-          <Text size="body2" weight="medium">
-            {summaryDdayLabel === ENDLESS_LABEL
-              ? summaryDdayLabel
-              : `${summaryDdayLabel} 남음`}
-          </Text>
-        </div>
-      </div>
-    </section>
-  );
-
   const authDialog = (
     <LoginRequiredDialog
       open={showAuthDialog}
@@ -812,11 +490,7 @@ export function ChallengeDetailScreen({
     return (
       <>
         {authDialog}
-        <div className="flex min-h-screen w-full items-center justify-center bg-white">
-          <Text size="body1" weight="medium" className="text-gray-500">
-            상세 정보를 불러오는 중입니다...
-          </Text>
-        </div>
+        <ChallengeDetailSkeleton />
       </>
     );
   }
@@ -825,7 +499,11 @@ export function ChallengeDetailScreen({
     return (
       <>
         {authDialog}
-        <div className="flex min-h-screen w-full items-center justify-center bg-white px-4">
+        <div
+          className={cn(
+            'flex min-h-[60vh] w-full items-center justify-center px-4'
+          )}
+        >
           <Text size="body1" weight="medium" className="text-red-600">
             {error
               ? normalizeApiError(error).message
@@ -835,6 +513,74 @@ export function ChallengeDetailScreen({
       </>
     );
   }
+
+  const accentColor = getCategoryAccent(summary.category);
+  const heroGradient = buildHeroGradient(accentColor);
+  const dateRangeText = formatDateRange(
+    summary.startDate,
+    summary.endDate
+  );
+  const remainingLabel = getRemainingLabel(summary.endDate);
+  const participantsLabel =
+    summaryMaxParticipantCnt > 1
+      ? `${summaryParticipantCnt}/${summaryMaxParticipantCnt}명 참여`
+      : '개인 챌린지';
+  const heroMetaLabel = `${participantsLabel} · ${remainingLabel}`;
+
+  // CTA 결정 로직: 호스트 / 참여 중 / 대기 / 신청 가능 / 신청 불가
+  const ctaConfig = ((): {
+    label: string;
+    onClick(): void;
+    disabled: boolean;
+    variant: 'default' | 'outlined';
+    show: boolean;
+  } => {
+    if (isHost) {
+      return {
+        label: '챌린지 수정',
+        onClick: () => router.push(`/challenge/${id}/edit`),
+        disabled: false,
+        variant: 'outlined',
+        show: true,
+      };
+    }
+    if (isParticipating) {
+      return {
+        label: isChallengeCurrentlyOngoing
+          ? '일지 작성하기'
+          : '진행 중이 아닙니다',
+        onClick: handleDiaryCreateClick,
+        disabled: !isChallengeCurrentlyOngoing || isCheckWriteDatesLoading,
+        variant: 'default',
+        show: true,
+      };
+    }
+    if (isPending) {
+      return {
+        label: '참여 승인 대기중',
+        onClick: () => undefined,
+        disabled: true,
+        variant: 'outlined',
+        show: true,
+      };
+    }
+    if (canJoin) {
+      return {
+        label: '챌린지 참여하기',
+        onClick: handleJoinChallenge,
+        disabled: joinChallenge.isPending,
+        variant: 'default',
+        show: true,
+      };
+    }
+    return {
+      label: '참여 불가',
+      onClick: () => undefined,
+      disabled: true,
+      variant: 'outlined',
+      show: false,
+    };
+  })();
 
   const freeGoalModal = (
     <Dialog open={showFreeGoalModal} onOpenChange={setShowFreeGoalModal}>
@@ -939,8 +685,8 @@ export function ChallengeDetailScreen({
                       prev.map((entry) =>
                         entry.id === goal.id
                           ? { ...entry, value: event.target.value }
-                          : entry,
-                      ),
+                          : entry
+                      )
                     );
                   }}
                   placeholder="목표를 입력하세요"
@@ -950,10 +696,14 @@ export function ChallengeDetailScreen({
                 <button
                   type="button"
                   aria-label="목표 삭제"
-                  className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-red-600"
+                  className={cn(
+                    'flex h-10 w-10 shrink-0 cursor-pointer',
+                    'items-center justify-center rounded-lg text-gray-500',
+                    'transition-colors hover:bg-gray-100 hover:text-red-600'
+                  )}
                   onClick={() => {
                     setChallengeGoalInputs((prev) =>
-                      prev.filter((entry) => entry.id !== goal.id),
+                      prev.filter((entry) => entry.id !== goal.id)
                     );
                   }}
                 >
@@ -997,481 +747,431 @@ export function ChallengeDetailScreen({
   );
 
   return (
-    <div className="min-h-screen w-full bg-white px-4 py-6 md:px-6 lg:px-8">
-      {authDialog}
-      {freeGoalModal}
-      {editGoalModal}
-      {editChallengeGoalsModal}
-      <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-6">
-        {summary.thumbnailImage && (
-          <div className="relative h-[220px] w-full overflow-hidden rounded-3xl md:h-[280px]">
-            <Image
-              src={summary.thumbnailImage}
-              alt={summary.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
+    <>
+      {/* 모바일 sliver-style sticky 헤더 — 스크롤 시 페이드인.
+          data-fade-in 래퍼 밖에 둔다: 래퍼의 transform 이 containing block 을
+          만들어 position: fixed 가 뷰포트 대신 래퍼 기준이 되는 문제를 피한다. */}
+      <div
+        className={cn(
+          'fixed top-0 right-0 left-0 z-30 flex h-14 items-center',
+          'gap-3 border-b border-gray-100 bg-white/95 px-4',
+          'backdrop-blur transition-all duration-200 lg:hidden',
+          isCompactHeaderVisible
+            ? 'translate-y-0 opacity-100'
+            : 'pointer-events-none -translate-y-full opacity-0'
         )}
-        <section className="rounded-4 border border-gray-200 bg-white p-6 md:p-7">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="rounded-1.5 text-caption1 bg-gray-100 px-2.5 py-1 font-medium text-gray-600">
-                {getCategoryLabel(summary.category)}
+      >
+        <button
+          type="button"
+          aria-label="뒤로가기"
+          onClick={() => router.back()}
+          className={cn(
+            'flex h-8 w-8 shrink-0 items-center justify-center',
+            'rounded-lg text-gray-700 transition-colors hover:bg-gray-100'
+          )}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <Text
+          size="body1"
+          weight="extrabold"
+          className={cn(
+            'line-clamp-1 min-w-0 flex-1 tracking-[-0.3px] text-gray-900'
+          )}
+        >
+          {summary.title}
+        </Text>
+      </div>
+
+      <div
+        className={cn(
+          'data-fade-in min-h-screen w-full bg-white lg:bg-gray-50/60',
+          ctaConfig.show ? 'pb-[100px] lg:pb-12' : 'pb-12'
+        )}
+      >
+        {authDialog}
+        {freeGoalModal}
+        {editGoalModal}
+        {editChallengeGoalsModal}
+        <AlertDialog
+          open={showCreateUnavailableDialog}
+          onOpenChange={setShowCreateUnavailableDialog}
+          title="새 일지를 작성할 수 없습니다."
+          description="최근 3일 동안 작성 가능한 날짜를 모두 사용했습니다."
+        />
+        <LoginRequiredDialog
+          open={showDiaryLikeDialog}
+          onOpenChange={setShowDiaryLikeDialog}
+        />
+
+      {/* 히어로 + 모바일 floating 뒤로가기 */}
+      <div className="relative">
+        <ChallengeDetailHero
+          title={summary.title}
+          categoryLabel={getCategoryLabel(summary.category)}
+          typeLabel={`${formatChallengeTypeLabel(summary.goalType)} 챌린지`}
+          metaLabel={heroMetaLabel}
+          imageUrl={summary.thumbnailImage ?? undefined}
+          accent={accentColor}
+          gradient={heroGradient}
+          bleed
+          hideTextOnMobile
+        />
+        <button
+          type="button"
+          aria-label="뒤로가기"
+          onClick={() => router.back()}
+          className={cn(
+            'absolute top-3.5 left-3.5 z-10 flex h-9 w-9',
+            'items-center justify-center rounded-full bg-white/90',
+            'text-gray-700 shadow-sm backdrop-blur',
+            'transition hover:bg-white lg:hidden'
+          )}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* 모바일 컨텐츠 헤더 — 히어로 위로 오버레이 */}
+      <div
+        className={cn(
+          'relative z-10 -mt-5 rounded-t-[20px] bg-white px-5 pt-5 pb-1',
+          'lg:hidden'
+        )}
+      >
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Tag tone="brand" size="sm">
+            {getCategoryLabel(summary.category)}
+          </Tag>
+          <Tag tone="gray" size="sm">
+            {formatChallengeTypeLabel(summary.goalType)}
+          </Tag>
+        </div>
+        <Text
+          as="h1"
+          size="heading1"
+          weight="extrabold"
+          className="mt-2.5 block tracking-[-0.5px] break-keep text-gray-900"
+        >
+          {summary.title}
+        </Text>
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <Text
+            size="caption1"
+            weight="regular"
+            className="min-w-0 flex-1 text-gray-500"
+          >
+            {heroMetaLabel}
+          </Text>
+          <button
+            type="button"
+            onClick={handleToggleLike}
+            disabled={isActionLoading}
+            aria-label={
+              summary.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'
+            }
+            className={cn(
+              'flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1',
+              'text-[12px] font-bold transition-colors disabled:opacity-50',
+              summary.likeInfo.likedByMe
+                ? 'text-main-800 bg-main-100 hover:bg-main-200/70'
+                : 'text-gray-500 hover:bg-gray-100'
+            )}
+          >
+            <Heart
+              className={cn(
+                'h-3.5 w-3.5',
+                summary.likeInfo.likedByMe && 'fill-current'
+              )}
+            />
+            {summary.likeInfo.likeCnt}
+          </button>
+        </div>
+
+        {activeParticipants.length > 0 ? (
+          <div
+            className={cn(
+              'mt-4 flex items-center gap-2.5 rounded-[12px]',
+              'bg-main-100 px-3.5 py-3'
+            )}
+          >
+            <div className="flex">
+              {activeParticipants.slice(0, 4).map((participant, idx) => (
+                <div
+                  key={participant.participantId}
+                  className={cn(
+                    'h-7 w-7 overflow-hidden rounded-full',
+                    'border-2 border-white bg-gray-200',
+                    idx > 0 && '-ml-2.5'
+                  )}
+                  style={{
+                    backgroundColor: !participant.profileImg
+                      ? accentColor
+                      : undefined,
+                  }}
+                >
+                  {participant.profileImg ? (
+                    <Image
+                      src={participant.profileImg}
+                      alt=""
+                      width={28}
+                      height={28}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </div>
+              ))}
+            </div>
+            <Text
+              size="caption1"
+              weight="regular"
+              className="text-gray-700"
+            >
+              <span className="font-extrabold">
+                {activeParticipants.length}명
               </span>
-              <span className="rounded-1.5 bg-main-200 text-caption1 text-main-800 px-2.5 py-1 font-bold">
-                {getChallengeTypeLabel(summary.goalType)}
+              이 함께 도전 중이에요
+            </Text>
+          </div>
+        ) : null}
+      </div>
+
+      <div
+        className={cn(
+          'relative z-10 flex w-full flex-col gap-3 px-5 pt-3',
+          'sm:pt-6 md:px-6 lg:gap-4 lg:px-8 lg:pt-8'
+        )}
+      >
+        {isHost && pendingParticipants.length > 0 ? (
+          <Card radius="lg" className="border-main-300 p-5 md:p-6">
+            <div className="flex items-center gap-2">
+              <CircleAlert className="text-main-800 h-5 w-5" />
+              <Text size="heading2" weight="bold" className="text-gray-900">
+                참여 인원 대기
+              </Text>
+              <span
+                className={cn(
+                  'bg-main-200 text-main-800',
+                  'text-caption1 rounded-full px-2 py-0.5 font-bold'
+                )}
+              >
+                {pendingParticipants.length}명
               </span>
             </div>
-            <Text size="body2" weight="medium" className="text-gray-600">
-              {formatDateRange(summary.startDate, summary.endDate)}
-              {summaryDdayLabel === ENDLESS_LABEL
-                ? ''
-                : ` ( ${summaryDdayLabel} )`}
-            </Text>
-          </div>
-
-          <div className="mt-4 flex flex-col gap-3">
-            <Text
-              as="h1"
-              size="display1"
-              weight="bold"
-              className="break-keep whitespace-pre-wrap text-gray-900"
+            <div
+              className={cn(
+                'mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3'
+              )}
             >
-              {summary.title}
-            </Text>
-            <ExpandableText>{detail.description}</ExpandableText>
-          </div>
-        </section>
+              {pendingParticipants.map((participant) => (
+                <PendingMemberItem
+                  key={participant.participantId}
+                  name={participant.nickname}
+                  joinedAt={formatRelativeJoinedText(participant.status)}
+                  onAccept={() =>
+                    handleAcceptParticipant(participant.participantId)
+                  }
+                  onReject={() =>
+                    handleRejectParticipant(participant.participantId)
+                  }
+                  isLoading={
+                    acceptParticipant.isPending ||
+                    rejectParticipant.isPending
+                  }
+                />
+              ))}
+            </div>
+          </Card>
+        ) : null}
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-          <div className="flex min-w-0 flex-col gap-6">
-            {isHost ? (
-              <section className="rounded-4 border-main-300 border bg-white p-5">
-                <div className="flex items-center gap-2">
-                  <CircleAlert className="text-main-800 h-5 w-5" />
-                  <Text size="heading2" weight="bold" className="text-gray-900">
-                    참여 인원 대기
-                  </Text>
-                  <span className="bg-main-200 text-caption1 text-main-800 rounded-full px-2 py-0.5 font-bold">
-                    {pendingParticipants.length}명
-                  </span>
-                </div>
-
-                {pendingParticipants.length > 0 ? (
-                  <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                    {pendingParticipants.map((participant) => (
-                      <PendingMemberItem
-                        key={participant.participantId}
-                        name={participant.nickname}
-                        joinedAt={formatRelativeJoinedText(participant.status)}
-                        onAccept={() =>
-                          handleAcceptParticipant(participant.participantId)
-                        }
-                        onReject={() =>
-                          handleRejectParticipant(participant.participantId)
-                        }
-                        isLoading={
-                          acceptParticipant.isPending ||
-                          rejectParticipant.isPending
-                        }
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <Text
-                    size="body2"
-                    weight="regular"
-                    className="mt-3 text-gray-500"
-                  >
-                    현재 대기 중인 참여 신청이 없습니다.
-                  </Text>
+        <div
+          className={cn(
+            'grid grid-cols-1 gap-4',
+            'lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-7'
+          )}
+        >
+          {/* 메인 콘텐츠: 소개 → 목표 → 참여자 일지 */}
+          <div className="flex min-w-0 flex-col gap-3.5 lg:gap-4">
+            {detail.description?.trim() ? (
+              <section
+                className={cn(
+                  'rounded-[14px] border border-gray-100 bg-gray-50',
+                  'lg:border-gray-200 lg:bg-white',
+                  'p-4 sm:p-5 lg:p-6'
                 )}
+              >
+                <Text
+                  as="h2"
+                  size="heading2"
+                  weight="extrabold"
+                  className="mb-3 block tracking-[-0.3px] text-gray-900"
+                >
+                  챌린지 소개
+                </Text>
+                <ExpandableText>{detail.description}</ExpandableText>
+                <div className="mt-3 hidden flex-wrap items-center gap-1.5 lg:flex">
+                  <Tag tone="brand" size="sm">
+                    {getCategoryLabel(summary.category)}
+                  </Tag>
+                  <Tag tone="gray" size="sm">
+                    {formatChallengeTypeLabel(summary.goalType)}
+                  </Tag>
+                </div>
               </section>
             ) : null}
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              <section className="rounded-4 border border-gray-200 bg-white p-5">
-                <StatHeader
-                  icon={
-                    <span className="text-main-800 pb-1.5 text-4xl">◔</span>
-                  }
-                  title="챌린지 참여율"
-                />
-                <div className="mt-4 flex items-center gap-4">
-                  <CircularProgress
-                    value={participationRate}
-                    size="lg"
-                    showPercentage
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <Text
-                        size="caption1"
-                        weight="medium"
-                        className="text-gray-600"
-                      >
-                        챌린지 참여율
-                      </Text>
-                      <Text
-                        size="body2"
-                        weight="bold"
-                        className="text-gray-900"
-                      >
-                        {participationRate}%
-                      </Text>
-                    </div>
-                    <div className="mt-2 h-2 rounded-full bg-gray-200">
-                      <div
-                        className="bg-main-700 h-full rounded-full"
-                        style={{ width: `${participationRate}%` }}
-                      />
-                    </div>
-                    <Text
-                      size="caption1"
-                      weight="regular"
-                      className="mt-3 text-gray-600"
-                    >
-                      챌린지 전체 참여율 지표입니다.
-                    </Text>
-                  </div>
-                </div>
-              </section>
+            <ChallengeRulesCard
+              goals={goals.map((goal) => goal.content)}
+              isFreeChallenge={isFreeChallenge}
+              editLabel={
+                isHost && !isChallengeStarted && !isFreeChallenge
+                  ? '수정'
+                  : !isHost &&
+                      isFreeChallenge &&
+                      isParticipating &&
+                      !isChallengeStarted
+                    ? '내 목표 수정'
+                    : undefined
+              }
+              onEdit={
+                isHost && !isChallengeStarted && !isFreeChallenge
+                  ? handleOpenEditChallengeGoalsModal
+                  : !isHost &&
+                      isFreeChallenge &&
+                      isParticipating &&
+                      !isChallengeStarted
+                    ? handleOpenEditGoalModal
+                    : undefined
+              }
+            />
 
-              <section className="rounded-4 border border-gray-200 bg-white p-5">
-                <StatHeader
-                  icon={<Flame className="text-main-800 h-5 w-5" />}
-                  title="목표 달성률"
-                />
-                <div className="mt-4 flex items-center gap-4">
-                  <CircularProgress
-                    value={goalCompletionRate}
-                    size="lg"
-                    showPercentage
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <Text
-                        size="caption1"
-                        weight="medium"
-                        className="text-gray-600"
-                      >
-                        목표 달성률
-                      </Text>
-                      <Text
-                        size="body2"
-                        weight="bold"
-                        className="text-gray-900"
-                      >
-                        {goalCompletionRate}%
-                      </Text>
-                    </div>
-                    <div className="mt-2 h-2 rounded-full bg-gray-200">
-                      <div
-                        className="bg-main-700 h-full rounded-full"
-                        style={{ width: `${goalCompletionRate}%` }}
-                      />
-                    </div>
-                    <Text
-                      size="caption1"
-                      weight="regular"
-                      className="mt-3 text-gray-600"
-                    >
-                      챌린지 목표 달성률 지표입니다.
-                    </Text>
-                  </div>
-                </div>
-              </section>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:hidden">
-              {renderActionsSection()}
-              {renderParticipationStatusSection()}
-            </div>
-
-            <section className="rounded-4 border border-gray-200 bg-white p-5">
-              <div className="mb-3 flex items-center justify-between">
-                <StatHeader
-                  icon={<CalendarDays className="text-main-800 h-5 w-5" />}
-                  title="활동 캘린더"
-                />
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="cursor-pointer rounded-full border border-gray-200 p-1.5 text-gray-600 transition hover:bg-gray-100"
-                    aria-label="이전 달"
-                    onClick={() =>
-                      setCalendarMonth(
-                        (prevMonth) =>
-                          new Date(
-                            prevMonth.getFullYear(),
-                            prevMonth.getMonth() - 1,
-                            1
-                          )
-                      )
-                    }
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
+            <section
+              className={cn(
+                'rounded-[14px] border border-gray-100 bg-gray-50',
+                'lg:border-gray-200 lg:bg-white',
+                'p-4 sm:p-5 lg:p-6'
+              )}
+            >
+              <div className="mb-3 flex items-baseline justify-between gap-2">
+                <Text
+                  as="h2"
+                  size="heading2"
+                  weight="extrabold"
+                  className="tracking-[-0.3px] text-gray-900"
+                >
+                  참여자 일지{' '}
                   <Text
-                    size="body2"
-                    weight="bold"
-                    className="min-w-[120px] text-center text-gray-700"
+                    size="caption1"
+                    weight="regular"
+                    className="ml-1 text-gray-500"
                   >
-                    {monthLabel}
+                    · 최근 {Math.min(previewDiaries.length, 4)}개
                   </Text>
-                  <button
-                    type="button"
-                    className="cursor-pointer rounded-full border border-gray-200 p-1.5 text-gray-600 transition hover:bg-gray-100"
-                    aria-label="다음 달"
-                    onClick={() =>
-                      setCalendarMonth(
-                        (prevMonth) =>
-                          new Date(
-                            prevMonth.getFullYear(),
-                            prevMonth.getMonth() + 1,
-                            1
-                          )
-                      )
-                    }
+                </Text>
+                {hasMoreDiaries ? (
+                  <Link
+                    href={`/challenge/${id}/diary`}
+                    className={cn(
+                      'text-main-800 text-[12px] font-semibold',
+                      'hover:underline'
+                    )}
                   >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
+                    전체 보기 →
+                  </Link>
+                ) : null}
               </div>
-              <ScheduleCalendar
-                rows={calendarRows}
-                weekLabels={CHALLENGE_DETAIL_WEEK_LABELS}
-                cellMinHeight={110}
+              <ChallengeDiaryGrid
+                diaries={previewDiaries.slice(0, 4)}
+                isLoading={isDiariesLoading}
+                onDiaryClick={(diaryId) => router.push(`/diary/${diaryId}`)}
+                onLikeToggle={handleDiaryLikeToggle}
+                gridClassName={cn(
+                  'scrollbar-hide flex gap-3 overflow-x-auto',
+                  'sm:grid sm:gap-2.5 sm:overflow-visible',
+                  'sm:grid-cols-[repeat(auto-fill,minmax(160px,200px))]'
+                )}
+                itemClassName="w-[170px] shrink-0 sm:w-auto"
               />
             </section>
           </div>
 
-          <aside className="flex min-w-0 flex-col gap-6">
-            <div className="hidden xl:block">{renderActionsSection()}</div>
-            <div className="hidden xl:block">
-              {renderParticipationStatusSection()}
+          {/* 우측 sticky rail: 진행률 + 리더보드 */}
+          <aside
+            className={cn(
+              'flex min-w-0 flex-col gap-3.5',
+              'lg:sticky lg:top-6 lg:self-start'
+            )}
+          >
+            <div className="hidden lg:block">
+              <ChallengeProgressCard
+                progressPercent={participationRate}
+                participantsLabel={participantsLabel}
+                remainingLabel={dateRangeText}
+                ctaLabel={ctaConfig.label}
+                onCtaClick={ctaConfig.onClick}
+                ctaDisabled={ctaConfig.disabled}
+                ctaVariant={ctaConfig.variant}
+                showCta={ctaConfig.show}
+                isInfinite={isEndless}
+                likeCount={summary.likeInfo.likeCnt}
+                likedByMe={summary.likeInfo.likedByMe}
+                onToggleLike={handleToggleLike}
+                isLikePending={isActionLoading}
+              />
             </div>
 
-            <section className="rounded-4 border border-gray-200 bg-white p-5">
-              <Text size="heading2" weight="bold" className="text-gray-900">
-                참여자 목록
-              </Text>
-              <div className="mt-3 grid grid-cols-3 gap-4 sm:grid-cols-4">
-                {activeParticipants.map((participant) => {
-                  const highlighted = participant.status === 'HOST';
+            <ChallengeLeaderboardCard
+              entries={activeParticipants.map((participant) => ({
+                participantId: participant.participantId,
+                memberId: participant.memberId,
+                nickname: participant.nickname,
+                profileImg: participant.profileImg,
+                isHost: participant.status === 'HOST',
+              }))}
+              onMemberClick={(memberId) =>
+                router.push(`/member/${memberId}`)
+              }
+            />
 
-                  return (
-                    <button
-                      key={participant.participantId}
-                      type="button"
-                      onClick={() =>
-                        router.push(`/member/${participant.memberId}`)
-                      }
-                      className="flex cursor-pointer flex-col items-center gap-2.5 rounded-2xl p-2 transition-colors duration-150 hover:bg-gray-100"
-                    >
-                      <div className="relative">
-                        <div
-                          className={cn(
-                            'flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border',
-                            highlighted ? 'border-main-700' : 'border-gray-200',
-                          )}
-                        >
-                          <CircleAvatar
-                            imageUrl={participant.profileImg || undefined}
-                            size="md"
-                          />
-                        </div>
-                        {highlighted && (
-                          <span className="bg-main-800 absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-bold text-white">
-                            HOST
-                          </span>
-                        )}
-                      </div>
-                      <Text
-                        size="caption2"
-                        weight="medium"
-                        className="text-gray-700"
-                      >
-                        {participant.nickname}
-                      </Text>
-                      <Text
-                        size="caption3"
-                        weight="regular"
-                        className={
-                          highlighted ? 'text-main-800' : 'text-gray-500'
-                        }
-                      >
-                        {participant.status}
-                      </Text>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            <section className="rounded-4 border border-gray-200 bg-white p-5">
-              <div className="flex items-center justify-between">
-                <Text
-                  size="heading2"
-                  weight="bold"
-                  className="block text-gray-900"
-                >
-                  챌린지 목표
-                </Text>
-                {isHost && !isChallengeStarted && !isFreeChallenge ? (
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={handleOpenEditChallengeGoalsModal}
-                  >
-                    목표 수정하기
-                  </Button>
-                ) : null}
-                {!isHost &&
-                isFreeChallenge &&
-                isParticipating &&
-                !isChallengeStarted ? (
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={handleOpenEditGoalModal}
-                  >
-                    내 목표 수정하기
-                  </Button>
-                ) : null}
-              </div>
-              {isFreeChallenge ? (
-                <Text
-                  size="body2"
-                  weight="regular"
-                  className="mt-3 block text-gray-500"
-                >
-                  자유 목표 챌린지입니다.
-                  <br />
-                  참여 신청 시 나만의 목표를 직접 입력할 수 있습니다.
-                </Text>
-              ) : (
-                <div className="mt-3 flex flex-col gap-2">
-                  {goals.map((goal) => (
-                    <div
-                      key={goal.challengeGoalId}
-                      className="rounded-2 border border-gray-200 bg-gray-100 p-3"
-                    >
-                      <div className="flex items-start gap-2">
-                        <div className="text-main-800 mt-1">
-                          <Check className="h-4 w-4" />
-                        </div>
-                        <Text
-                          size="body2"
-                          weight="bold"
-                          className="text-gray-900"
-                        >
-                          {goal.content}
-                        </Text>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
+            {!isHost && isParticipating ? (
+              <button
+                type="button"
+                onClick={handleLeaveChallenge}
+                disabled={leaveChallenge.isPending}
+                className={cn(
+                  'mt-1 self-center text-[12px] text-gray-500',
+                  'underline-offset-2 hover:text-gray-700 hover:underline',
+                  'disabled:opacity-50'
+                )}
+              >
+                챌린지 나가기
+              </button>
+            ) : null}
           </aside>
         </div>
-
-        <section className="rounded-4 border border-gray-200 bg-white p-5">
-          <DiaryCreateUnavailableDialog
-            open={showCreateUnavailableDialog}
-            onOpenChange={setShowCreateUnavailableDialog}
-          />
-          <LoginRequiredDialog
-            open={showDiaryLikeDialog}
-            onOpenChange={setShowDiaryLikeDialog}
-          />
-          <div className="flex flex-col gap-2 border-b border-gray-200 pb-4 md:flex-row md:items-center md:justify-between">
-            <Text size="heading2" weight="bold" className="text-gray-900">
-              챌린지 일지 리스트
-            </Text>
-            {hasMoreDiaries && (
-              <Link
-                href={`/challenge/${id}/diary`}
-                className="text-main-800 text-sm font-semibold hover:underline"
-              >
-                전체 보기
-              </Link>
-            )}
-          </div>
-
-          {isDiariesLoading ? (
-            <div className="mt-6 flex justify-center py-6">
-              <Text size="body2" weight="regular" className="text-gray-500">
-                일지를 불러오는 중입니다.
-              </Text>
-            </div>
-          ) : previewDiaries.length === 0 ? (
-            <div className="mt-6 flex justify-center py-6">
-              <Text size="body2" weight="regular" className="text-gray-500">
-                아직 등록된 일지가 없습니다.
-              </Text>
-            </div>
-          ) : (
-            <div className="-mx-2 mt-4 overflow-x-auto px-2 pb-3">
-              <div className="flex w-max gap-3 py-1">
-                {previewDiaries.map((diary) => (
-                  <div key={diary.id} className="w-[200px] shrink-0">
-                    <DiaryCard
-                      imageUrl={
-                        resolveDiaryImageUrl(diary.imgUrl?.[0]) ||
-                        '/images/default-card.png'
-                      }
-                      percent={Math.min(
-                        100,
-                        Math.max(0, diary.diaryInfo?.achievementRate ?? 0)
-                      )}
-                      isLiked={diary.likeInfo.likedByMe}
-                      likes={diary.likeInfo.likeCnt}
-                      title={diary.title}
-                      user={diary.author?.nickname || '익명'}
-                      userImage={
-                        resolveDiaryImageUrl(diary.author?.profileImage) ||
-                        '/images/default-profile.png'
-                      }
-                      challengeLabel={
-                        diary.challenge?.title ||
-                        getCategoryLabel(diary.challenge?.category) ||
-                        '챌린지'
-                      }
-                      onUserClick={
-                        diary.author?.id
-                          ? () => router.push(`/member/${diary.author!.id}`)
-                          : undefined
-                      }
-                      onChallengeClick={() => {
-                        const targetChallengeId =
-                          diary.challenge?.challengeId ?? challengeId;
-                        if (targetChallengeId > 0) {
-                          router.push(`/challenge/${targetChallengeId}`);
-                        }
-                      }}
-                      date={getRelativeDiaryDateLabel(
-                        diary.diaryInfo?.createdAt ??
-                          diary.diaryInfo?.challengedDate ??
-                          ''
-                      )}
-                      emotion={mapFeelingToEmotion(
-                        diary.diaryInfo?.feeling ?? 'NONE'
-                      )}
-                      commentCount={diary.commentCount}
-                      onLikeToggle={() => handleDiaryLikeToggle(diary)}
-                      onClick={() => router.push(`/diary/${diary.id}`)}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </section>
       </div>
-    </div>
+
+      {/* 모바일 sticky bottom CTA */}
+      {ctaConfig.show ? (
+        <div
+          className={cn(
+            'fixed right-0 bottom-0 left-0 z-20 lg:hidden',
+            'border-t border-gray-100 bg-white/95 backdrop-blur',
+            'px-5 pt-3 pb-5'
+          )}
+        >
+          <Button
+            size="medium"
+            variant={ctaConfig.variant}
+            fullWidth
+            onClick={ctaConfig.onClick}
+            disabled={ctaConfig.disabled}
+          >
+            {ctaConfig.label}
+          </Button>
+        </div>
+      ) : null}
+      </div>
+    </>
   );
 }

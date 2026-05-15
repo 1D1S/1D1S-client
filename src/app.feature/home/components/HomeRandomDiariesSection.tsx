@@ -1,15 +1,19 @@
-import { Text } from '@1d1s/design-system';
+import { SectionHeader, Text } from '@1d1s/design-system';
+import DiaryCard from '@component/cards/DiaryCard';
+import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
-import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
+import {
+  resolveDiaryImageList,
+  resolveDiaryImageUrl,
+} from '@feature/diary/shared/utils/diaryImageUrl';
+import { cn } from '@module/utils/cn';
 import React from 'react';
 
 import {
   getDiaryAchievementRate,
   mapFeelingToEmotion,
-  toRelativeDateLabel,
 } from '../utils/homeFormatters';
-import HomeSectionHeader from './HomeSectionHeader';
 
 interface HomeRandomDiariesSectionProps {
   diaries: DiaryItem[];
@@ -20,8 +24,6 @@ interface HomeRandomDiariesSectionProps {
   onMoreClick(): void;
   onDiaryClick(diaryId: number): void;
   onLikeToggle(diary: DiaryItem): void;
-  onChallengeClick(challengeId?: number): void;
-  onUserClick?(memberId: number): void;
 }
 
 export default function HomeRandomDiariesSection({
@@ -33,89 +35,82 @@ export default function HomeRandomDiariesSection({
   onMoreClick,
   onDiaryClick,
   onLikeToggle,
-  onChallengeClick,
-  onUserClick,
 }: HomeRandomDiariesSectionProps): React.ReactElement {
   return (
-    <>
-      <HomeSectionHeader
-        title="랜덤 일지"
-        subtitle="챌린저들의 일지를 보며 의욕을 충전해봐요."
-        onMoreClick={onMoreClick}
+    <section className="w-full">
+      <SectionHeader
+        title="오늘의 응원 한 마디"
+        subtitle="응원의 ❤️ 한 번씩 눌러주세요"
+        actionLabel="전체보기 →"
+        onActionClick={onMoreClick}
       />
-      <div className="h-4" />
       {isLoading ? (
-        <div className="flex w-full justify-center px-4 py-8">
-          <Text size="body1" weight="medium" className="text-gray-500">
-            일지를 불러오는 중입니다.
-          </Text>
+        <div
+          className={
+            'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'
+          }
+        >
+          {Array.from({ length: 8 }).map((_, index) => (
+            <DiaryCardSkeleton key={index} />
+          ))}
         </div>
       ) : null}
       {isError ? (
-        <div className="flex w-full justify-center px-4 py-8">
-          <Text size="body1" weight="medium" className="text-red-600">
+        <div className="flex w-full justify-center py-8">
+          <Text size="body2" weight="medium" className="text-red-600">
             {errorMessage ?? '일지를 불러오지 못했습니다.'}
           </Text>
         </div>
       ) : null}
-      {!isLoading && !isError ? (
-        <div className="diary-grid-container px-4 pb-4">
-          <div className="diary-card-grid grid grid-cols-2 gap-3">
-            {diaries.map((item) => (
-              <div key={item.id} className="min-w-0 self-start">
-                <DiaryCard
-                  imageUrl={item.imgUrl?.[0] ?? '/images/default-card.png'}
-                  percent={getDiaryAchievementRate(
-                    item.achievementRate,
-                    item.diaryInfoDto?.achievementRate
-                  )}
-                  isLiked={item.likeInfo.likedByMe}
-                  likes={item.likeInfo.likeCnt}
-                  title={item.title}
-                  user={item.authorInfoDto?.nickname ?? '익명'}
-                  userImage={
-                    item.authorInfoDto?.profileImage ??
-                    '/images/default-profile.png'
-                  }
-                  challengeLabel={
-                    item.challenge?.title ||
-                    getCategoryLabel(item.challenge?.category) ||
-                    '챌린지'
-                  }
-                  onUserClick={
-                    item.authorInfoDto?.id
-                      ? () => onUserClick?.(item.authorInfoDto!.id)
-                      : undefined
-                  }
-                  onChallengeClick={() =>
-                    onChallengeClick(item.challenge?.challengeId)
-                  }
-                  date={toRelativeDateLabel(item.diaryInfoDto?.createdAt ?? '')}
-                  emotion={mapFeelingToEmotion(
-                    item.diaryInfoDto?.feeling ?? 'NONE'
-                  )}
-                  onLikeToggle={() => {
-                    if (isLikePending) {
-                      return;
-                    }
-
-                    onLikeToggle(item);
-                  }}
-                  commentCount={item.commentCount}
-                  onClick={() => onDiaryClick(item.id)}
-                />
-              </div>
-            ))}
-          </div>
+      {!isLoading && !isError && diaries.length > 0 ? (
+        <div
+          className={cn(
+            'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4',
+            'data-fade-in'
+          )}
+        >
+          {diaries.slice(0, 8).map((item) => (
+            <DiaryCard
+              key={item.id}
+              imageUrl={resolveDiaryImageList(item.imgUrl)?.[0]}
+              profileImageUrl={
+                resolveDiaryImageUrl(item.authorInfoDto?.profileImage) ??
+                undefined
+              }
+              percent={getDiaryAchievementRate(
+                item.achievementRate,
+                item.diaryInfoDto?.achievementRate
+              )}
+              isLiked={item.likeInfo.likedByMe}
+              likes={item.likeInfo.likeCnt}
+              title={item.title}
+              user={item.authorInfoDto?.nickname ?? '익명'}
+              challengeLabel={
+                item.challenge?.title ||
+                getCategoryLabel(item.challenge?.category) ||
+                '챌린지'
+              }
+              emotion={mapFeelingToEmotion(
+                item.diaryInfoDto?.feeling ?? 'NONE'
+              )}
+              onClick={() => onDiaryClick(item.id)}
+              onLikeToggle={() => {
+                if (isLikePending) {
+                  return;
+                }
+                onLikeToggle(item);
+              }}
+            />
+          ))}
         </div>
       ) : null}
       {!isLoading && !isError && diaries.length === 0 ? (
-        <div className="flex w-full justify-center px-4 py-8">
-          <Text size="body1" weight="medium" className="text-gray-500">
+        <div className="flex w-full justify-center py-8">
+          <Text size="body2" weight="medium" className="text-gray-500">
             표시할 일지가 없습니다.
           </Text>
         </div>
       ) : null}
-    </>
+    </section>
   );
 }

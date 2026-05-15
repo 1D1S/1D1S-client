@@ -1,6 +1,14 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Icon,
+  Text,
+} from '@1d1s/design-system';
 import { getCategoryLabel } from '@constants/categories';
 import {
   isChallengeEnded,
@@ -10,7 +18,7 @@ import {
 import { ChallengeListItem } from '@feature/challenge/shared/components/ChallengeListItem';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { cn } from '@module/utils/cn';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import type { ChallengeListItem as ChallengeListItemType } from '../../../challenge/board/type/challenge';
 
@@ -32,100 +40,104 @@ export function ChallengePicker({
     isChallengeOngoing(challenge.startDate, challenge.endDate)
   );
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  const handleOverlayClick = (): void => setIsOpen(false);
-
   return (
     <div className={className}>
-      <div
-        className="flex h-20 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 transition hover:border-gray-400"
+      <button
+        type="button"
         onClick={() => setIsOpen(true)}
-      >
-        <Text className="text-gray-500">챌린지를 선택해주세요.</Text>
-      </div>
-
-      <div
         className={cn(
-          'fixed inset-0 z-50 flex items-center justify-center',
-          'transition-opacity duration-300 ease-in-out',
-          isOpen
-            ? 'pointer-events-auto opacity-100'
-            : 'pointer-events-none opacity-0'
+          'rounded-3 border-main-200 bg-main-100/40',
+          'hover:border-main-800 hover:bg-main-100',
+          'flex w-full items-center gap-2.5 border-2 border-dashed',
+          'px-4 py-4 transition-colors'
         )}
-        aria-modal="true"
-        role="dialog"
-        onClick={handleOverlayClick}
       >
-        <div className="absolute inset-0 bg-black/50" />
-
-        <div
-          className="relative mx-auto max-w-md rounded-xl bg-white p-6 shadow-lg"
-          onClick={(event) => event.stopPropagation()}
+        <span
+          className={cn(
+            'bg-main-200 text-main-800 flex h-8 w-8 shrink-0 items-center',
+            'justify-center rounded-full'
+          )}
         >
-          <Text size="heading1" weight="bold" className="mb-4 block">
-            챌린지 선택
-          </Text>
-          <div className="-mx-1 flex max-h-[60vh] flex-col space-y-2 overflow-y-auto px-1 py-1">
+          <Icon name="Flag" size={16} />
+        </span>
+        <span
+          className={cn(
+            'text-main-800 flex-1 truncate text-left text-sm font-bold'
+          )}
+        >
+          챌린지를 선택해주세요
+        </span>
+        <Icon name="ChevronRight" size={16} className="text-main-800" />
+      </button>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle>챌린지 선택</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="flex flex-col gap-2.5 pb-2">
             {isLoading ? (
-              <Text size="body1" className="py-4 text-gray-500">
-                불러오는 중...
-              </Text>
-            ) : ongoingChallenges.length === 0 ? (
-              <Text size="body1" className="py-4 text-gray-500">
-                작성 가능한 진행 중 챌린지가 없습니다.
-              </Text>
-            ) : (
-              ongoingChallenges.map((challenge) => (
-                <ChallengeListItem
-                  key={challenge.challengeId}
-                  challengeTitle={challenge.title}
-                  challengeType={formatChallengeTypeLabel(
-                    challenge.goalType
+              <div className="flex flex-col items-center gap-2 py-10">
+                <span
+                  className={cn(
+                    'bg-main-100 h-9 w-9 animate-pulse rounded-full'
                   )}
-                  challengeCategory={getCategoryLabel(challenge.category)}
-                  imageUrl={challenge.thumbnailImage}
-                  currentUserCount={challenge.participantCnt}
-                  maxUserCount={challenge.maxParticipantCnt}
-                  startDate={challenge.startDate}
-                  endDate={challenge.endDate}
-                  isInfiniteChallenge={isInfiniteChallengeEndDate(
-                    challenge.endDate
-                  )}
-                  isOngoing={isChallengeOngoing(
-                    challenge.startDate,
-                    challenge.endDate
-                  )}
-                  isEnded={isChallengeEnded(challenge.endDate)}
-                  onClick={() => {
-                    onSelect?.(challenge);
-                    setIsOpen(false);
-                  }}
                 />
-              ))
+                <Text size="body2" className="text-gray-500">
+                  불러오는 중입니다...
+                </Text>
+              </div>
+            ) : ongoingChallenges.length === 0 ? (
+              <div className="flex flex-col items-center gap-2 py-10">
+                <span
+                  className={cn(
+                    'bg-main-100 text-main-800 flex h-10 w-10 items-center',
+                    'justify-center rounded-full'
+                  )}
+                >
+                  <Icon name="Flag" size={18} />
+                </span>
+                <Text size="body2" weight="bold" className="text-gray-700">
+                  작성 가능한 진행 중 챌린지가 없어요
+                </Text>
+                <Text size="caption2" className="text-gray-500">
+                  새 챌린지에 참여하거나 모집 중 챌린지를 기다려보세요.
+                </Text>
+              </div>
+            ) : (
+              <div className="flex max-h-[60vh] flex-col gap-2.5 overflow-y-auto pr-1">
+                {ongoingChallenges.map((challenge) => (
+                  <ChallengeListItem
+                    key={challenge.challengeId}
+                    challengeTitle={challenge.title}
+                    challengeType={formatChallengeTypeLabel(
+                      challenge.goalType
+                    )}
+                    challengeCategory={getCategoryLabel(challenge.category)}
+                    imageUrl={challenge.thumbnailImage}
+                    currentUserCount={challenge.participantCnt}
+                    maxUserCount={challenge.maxParticipantCnt}
+                    startDate={challenge.startDate}
+                    endDate={challenge.endDate}
+                    isInfiniteChallenge={isInfiniteChallengeEndDate(
+                      challenge.endDate
+                    )}
+                    isOngoing={isChallengeOngoing(
+                      challenge.startDate,
+                      challenge.endDate
+                    )}
+                    isEnded={isChallengeEnded(challenge.endDate)}
+                    onClick={() => {
+                      onSelect?.(challenge);
+                      setIsOpen(false);
+                    }}
+                  />
+                ))}
+              </div>
             )}
-          </div>
-        </div>
-      </div>
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

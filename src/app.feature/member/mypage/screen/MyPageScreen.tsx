@@ -1,91 +1,104 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { MyPageSkeleton } from '@component/skeletons/MyPageSkeleton';
+import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
+import { MyPageFriendsEntry } from '@feature/friend/components/MyPageFriendsEntry';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
-import {
-  PencilLine,
-  Plus,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import { MyPageChallengeSection } from '../components/MyPageChallengeSection';
+import { MyPageActiveChallenges } from '../components/MyPageActiveChallenges';
+import { MyPageActivityHeatmap } from '../components/MyPageActivityHeatmap';
+import { MyPageBadgesSection } from '../components/MyPageBadgesSection';
 import { MyPageDiarySection } from '../components/MyPageDiarySection';
+import { MyPageHeroBanner } from '../components/MyPageHeroBanner';
 import { MyPageProfileCard } from '../components/MyPageProfileCard';
 import { MyPageStatSection } from '../components/MyPageStatSection';
-import { MyPageStreakSection } from '../components/MyPageStreakSection';
-import { QuickActionItem } from '../components/QuickActionItem';
+import { MyPageStreakHeroCard } from '../components/MyPageStreakHeroCard';
 
 export default function MyPageScreen(): React.ReactElement {
-  const router = useRouter();
   const { data, isLoading } = useMyPage();
+  const { data: myDiariesData } = useMyDiaries(5);
 
   if (isLoading || !data) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Text size="body1" weight="medium" className="text-gray-500">
-          불러오는 중...
-        </Text>
-      </div>
-    );
+    return <MyPageSkeleton />;
   }
 
-  const { nickname, profileUrl, streak, challengeList } = data;
+  const { nickname, profileUrl, email, streak, challengeList } = data;
+  const myDiaries = myDiariesData?.items ?? [];
+  const hasMoreDiaries = myDiariesData?.pageInfo.hasNextPage ?? false;
 
   return (
-    <div className="min-h-screen w-full bg-white p-4">
+    <div
+      className={cn(
+        'min-h-screen w-full bg-white lg:bg-gray-50',
+        'data-fade-in'
+      )}
+    >
+      {/* Full-bleed gradient banner — 모바일에서는 프로필 카드가 페이지 헤더 역할 */}
+      <div className="hidden lg:block">
+        <MyPageHeroBanner />
+      </div>
+
+      {/* Centered content container — 표준 반응형 패딩 */}
       <div
         className={cn(
-          'mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-4',
-          'xl:grid-cols-[minmax(0,1fr)_320px]',
+          'mx-auto w-full max-w-[1200px]',
+          'px-5 py-5 lg:px-8 lg:py-10',
         )}
       >
-        <aside className="space-y-4 xl:order-last">
-          <div
-            className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1"
-          >
-            <MyPageProfileCard
-              nickname={nickname}
-              profileUrl={profileUrl}
-            />
+        <MyPageProfileCard
+          nickname={nickname}
+          profileUrl={profileUrl}
+          email={email}
+          totalDiaryCount={streak.totalDiaryCount}
+          totalChallengeCount={streak.totalChallengeCount ?? 0}
+          completedFiniteChallengeCount={
+            streak.completedFiniteChallengeCount ?? 0
+          }
+          currentStreak={streak.currentStreak}
+        />
 
-            <section
-              className="rounded-4 border border-gray-200 bg-white p-5"
-            >
-              <Text
-                size="body1"
-                weight="medium"
-                className="text-gray-600"
-              >
-                빠른 실행
-              </Text>
-              <div className="mt-4 space-y-2">
-                <QuickActionItem
-                  icon={<PencilLine className="h-5 w-5" />}
-                  title="일지 작성하기"
-                  onClick={() => router.push('/diary/create')}
-                />
-                <QuickActionItem
-                  icon={<Plus className="h-5 w-5" />}
-                  title="챌린지 만들기"
-                  onClick={() => router.push('/challenge/create')}
-                  tone="blue"
-                />
-              </div>
-            </section>
-          </div>
-        </aside>
-
-        <main className="space-y-4 xl:order-first">
-          <MyPageStatSection streak={streak} />
-          <MyPageStreakSection calendar={streak.calendar} />
-          <MyPageChallengeSection challengeList={challengeList} />
-          <MyPageDiarySection
-            nickname={nickname}
-            profileUrl={profileUrl}
+        {/* Streak hero + Heatmap — 모바일에서는 숨김 */}
+        <div
+          className={cn(
+            'mt-6 hidden grid-cols-1 gap-4',
+            'lg:grid lg:grid-cols-2 lg:gap-5',
+          )}
+        >
+          <MyPageStreakHeroCard
+            currentStreak={streak.currentStreak}
+            maxStreak={streak.maxStreak}
           />
-        </main>
+          <MyPageActivityHeatmap calendar={streak.calendar} />
+        </div>
+
+        {/* 통계 섹션 — 모바일에서는 프로필 카드 내부 grid로 대체 */}
+        <div className="mt-8 hidden lg:block">
+          <MyPageStatSection streak={streak} />
+        </div>
+
+        <div className="mt-6">
+          <MyPageFriendsEntry />
+        </div>
+
+        <div className="mt-8">
+          <MyPageBadgesSection streak={streak} />
+        </div>
+
+        <div className="mt-8">
+          <MyPageActiveChallenges challengeList={challengeList} />
+        </div>
+
+        <div className="mt-8">
+          <MyPageDiarySection
+            title="내 일지"
+            diaries={myDiaries}
+            nickname={nickname}
+            hasMore={hasMoreDiaries}
+            viewAllHref="/mypage/diary"
+          />
+        </div>
       </div>
     </div>
   );

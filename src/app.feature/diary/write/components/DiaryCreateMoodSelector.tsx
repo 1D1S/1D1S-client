@@ -21,24 +21,15 @@ function MoodOptionButton({
       type="button"
       onClick={onClick}
       className={cn(
-        'rounded-2 relative flex h-[92px] w-[92px] cursor-pointer flex-col items-center justify-center border transition',
+        'rounded-3 relative flex flex-1 cursor-pointer flex-col items-center',
+        'justify-center gap-1 border-2 px-3 py-3 transition',
         active
           ? 'border-main-800 bg-main-100 text-main-800'
-          : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-100',
+          : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
       )}
     >
-      {active ? (
-        <span className="bg-main-800 absolute top-1 right-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white">
-          PICK
-        </span>
-      ) : null}
-      <Image
-        src={option.imageSrc}
-        alt={option.alt}
-        width={52}
-        height={52}
-      />
-      <Text size="caption2" weight="medium" className="mt-1">
+      <Image src={option.imageSrc} alt={option.alt} width={36} height={36} />
+      <Text size="caption2" weight="medium" className="mt-0.5">
         {option.label}
       </Text>
     </button>
@@ -55,7 +46,7 @@ export function DiaryCreateMoodSelector({
   onSelectMood,
 }: DiaryCreateMoodSelectorProps): React.ReactElement {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex gap-2">
       {DIARY_CREATE_MOOD_OPTIONS.map((option) => (
         <MoodOptionButton
           key={option.id}

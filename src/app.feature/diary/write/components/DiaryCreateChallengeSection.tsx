@@ -1,12 +1,6 @@
 import { Text } from '@1d1s/design-system';
-import { getCategoryLabel } from '@constants/categories';
-import {
-  isChallengeEnded,
-  isChallengeOngoing,
-  isInfiniteChallengeEndDate,
-} from '@feature/challenge/board/utils/challengePeriod';
-import { ChallengeListItem } from '@feature/challenge/shared/components/ChallengeListItem';
-import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
+import { cn } from '@module/utils/cn';
+import { ChevronRight, Flag } from 'lucide-react';
 import React from 'react';
 
 import type { ChallengeListItem as ChallengeListItemType } from '../../../challenge/board/type/challenge';
@@ -33,42 +27,39 @@ export function DiaryCreateChallengeSection({
 }: DiaryCreateChallengeSectionProps): React.ReactElement {
   return (
     <section>
-      <Text size="heading2" weight="bold" className="mb-6 text-gray-900">
-        연동된 챌린지
+      <Text size="caption1" weight="bold" className="mb-2 block text-gray-600">
+        챌린지 선택
       </Text>
 
       {isCheckingAvailability ? (
-        <div className="rounded-2xl border border-gray-200 bg-white px-4 py-5">
+        <div className="rounded-3 border border-gray-200 bg-white px-4 py-3">
           <Text size="body2" weight="regular" className="text-gray-500">
             챌린지 정보를 확인하는 중입니다.
           </Text>
         </div>
       ) : selectedChallenge ? (
-        <div className="mt-2">
-          <ChallengeListItem
-            challengeTitle={selectedChallenge.title}
-            challengeType={formatChallengeTypeLabel(
-              selectedChallenge.goalType
+        <button
+          type="button"
+          onClick={onClearChallenge}
+          className={cn(
+            'rounded-3 border-main-200 bg-main-100',
+            'hover:bg-main-200/60 flex w-full items-center gap-2.5',
+            'border px-4 py-3 transition-colors'
+          )}
+        >
+          <Flag className="text-main-800 h-4 w-4 shrink-0" />
+          <span
+            className={cn(
+              'text-main-800 flex-1 truncate text-left',
+              'text-sm font-bold'
             )}
-            challengeCategory={getCategoryLabel(selectedChallenge.category)}
-            imageUrl={selectedChallenge.thumbnailImage}
-            currentUserCount={selectedChallenge.participantCnt}
-            maxUserCount={selectedChallenge.maxParticipantCnt}
-            startDate={selectedChallenge.startDate}
-            endDate={selectedChallenge.endDate}
-            isInfiniteChallenge={isInfiniteChallengeEndDate(
-              selectedChallenge.endDate
-            )}
-            isOngoing={isChallengeOngoing(
-              selectedChallenge.startDate,
-              selectedChallenge.endDate
-            )}
-            isEnded={isChallengeEnded(selectedChallenge.endDate)}
-            onClick={onClearChallenge}
-          />
-        </div>
+          >
+            {selectedChallenge.title}
+          </span>
+          <ChevronRight className="text-main-800 h-4 w-4 shrink-0" />
+        </button>
       ) : isInitialChallengeLoading ? (
-        <div className="rounded-2xl border border-gray-200 bg-white px-4 py-5">
+        <div className="rounded-3 border border-gray-200 bg-white px-4 py-3">
           <Text size="body2" weight="regular" className="text-gray-500">
             챌린지 정보를 불러오는 중입니다.
           </Text>
@@ -78,7 +69,6 @@ export function DiaryCreateChallengeSection({
           challenges={challenges}
           isLoading={isChallengesLoading}
           onSelect={onSelectChallenge}
-          className="mt-2"
         />
       )}
     </section>

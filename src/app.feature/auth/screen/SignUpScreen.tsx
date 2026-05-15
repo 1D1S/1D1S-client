@@ -1,52 +1,53 @@
 'use client';
 
 import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  ConfirmDialog,
   Icon,
   StepIndicator,
+  Text,
 } from '@1d1s/design-system';
 import { Form } from '@component/ui/Form';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
-import { notifyApiError } from '@module/api/error';
+import { notifyApiError } from '@module/api/errorNotify';
 import { authStorage } from '@module/utils/auth';
+import { cn } from '@module/utils/cn';
 import { useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 
 import { authApi } from '../api/authApi';
+import { BrandPanel } from '../components/BrandPanel';
 import { SignupFormValues, useSignUpForm } from '../hooks/useSignUpForm';
 import { Step1 } from './step-pages/Step1';
 import { Step2 } from './step-pages/Step2';
 
 type Step = 1 | 2;
+
 const SIGN_UP_STEPS = [
-  { id: 'profile', label: '프로필 설정' },
-  { id: 'topics', label: '관심 주제' },
+  { id: 'profile', label: '프로필 정보' },
+  { id: 'topics', label: '관심 카테고리' },
 ];
 
-function SignUpHeader({ onBack }: { onBack(): void }): React.ReactElement {
-  return (
-    <header className="h-14 border-b border-gray-200 bg-white px-4">
-      <div className="relative flex h-full items-center">
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label="가입 나가기"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-gray-600 transition hover:bg-gray-100"
-        >
-          <Icon name="ChevronLeft" size={20} />
-        </button>
-      </div>
-    </header>
-  );
+interface StepHeading {
+  eyebrow: string;
+  title: string;
+  sub: string;
 }
+
+const STEP_HEADINGS: Record<Step, StepHeading> = {
+  1: {
+    eyebrow: 'STEP 01 / 02',
+    title: '프로필을 알려주세요',
+    sub: '또래·관심사 기반 챌린지 추천에 사용돼요',
+  },
+  2: {
+    eyebrow: 'STEP 02 / 02',
+    title: '어떤 챌린지에 관심 있으세요?',
+    sub: '관심사 기반으로 첫 챌린지를 골라드릴게요',
+  },
+};
 
 export function SignUpScreen(): React.ReactElement {
   const router = useRouter();
@@ -83,17 +84,15 @@ export function SignUpScreen(): React.ReactElement {
         profileImageKey = presigned.objectKey;
       }
 
-      await authApi.completeSignUpInfo(
-        {
-          nickname: values.nickname,
-          job: values.job,
-          birth,
-          gender: values.gender,
-          isPublic: values.isPublic,
-          category: values.topics,
-          profileImageKey,
-        }
-      );
+      await authApi.completeSignUpInfo({
+        nickname: values.nickname,
+        job: values.job,
+        birth,
+        gender: values.gender,
+        isPublic: values.isPublic,
+        category: values.topics,
+        profileImageKey,
+      });
 
       toast.success('가입이 완료되었습니다!');
       await queryClient.invalidateQueries({
@@ -139,63 +138,130 @@ export function SignUpScreen(): React.ReactElement {
     setStep(2);
   };
 
+  const heading = STEP_HEADINGS[step];
+
   return (
-    <div className="flex min-h-screen w-full flex-col bg-gray-50 lg:overflow-y-auto">
-      <Dialog open={showExitDialog} onOpenChange={setShowExitDialog}>
-        <DialogContent className="gap-6 px-8 py-6 sm:max-w-[380px] sm:px-6">
-          <DialogHeader className="items-center text-center sm:text-center">
-            <DialogTitle>정말 나가시겠어요?</DialogTitle>
-          </DialogHeader>
-          <DialogDescription className="block w-full text-center">
-            정보를 입력하지 않으면 서비스 사용이 어렵습니다.
-          </DialogDescription>
-          <DialogFooter className="flex-row gap-2">
-            <Button
-              size="medium"
-              variant="ghost"
-              className="flex-1"
-              onClick={() => setShowExitDialog(false)}
-            >
-              계속 입력하기
-            </Button>
-            <Button
-              size="medium"
-              className="flex-1"
-              onClick={handleExitConfirm}
-            >
-              확인
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+    <div
+      className={cn(
+        'grid min-h-screen w-full grid-cols-1 bg-white',
+        'lg:grid-cols-[1.05fr_1fr]'
+      )}
+    >
+      <ConfirmDialog
+        open={showExitDialog}
+        onOpenChange={setShowExitDialog}
+        tone="danger"
+        icon="Close"
+        title="정말 나가시겠어요?"
+        description="정보를 입력하지 않으면 서비스 사용이 어렵습니다."
+        confirmLabel="확인"
+        cancelLabel="계속 입력하기"
+        onConfirm={handleExitConfirm}
+      />
 
-      <SignUpHeader onBack={handleBack} />
+      <BrandPanel
+        heading={'당신의 첫 챌린지가\n곧 시작됩니다'}
+        subtitle={
+          'SNS로 가입하셨네요!\n프로필 정보만 입력하면 바로 시작할 수 있어요.'
+        }
+      />
 
-      <Form {...form}>
-        <form
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={form.handleSubmit(onSubmit)}
-        >
-          <div className="mx-auto w-full max-w-[1080px] px-4 pt-10 pb-10">
-            <StepIndicator
-              steps={SIGN_UP_STEPS}
-              currentStep={step}
-              size="sm"
-              className="w-full"
-            />
-          </div>
-
-          {step === 1 ? (
-            <Step1 onNext={handleNextStep} />
-          ) : (
-            <Step2
-              onPrev={() => setStep(1)}
-              onSubmit={() => void form.handleSubmit(onSubmit)()}
-              isSubmitting={isSubmitting}
-            />
+      <section className="relative flex min-h-screen flex-col">
+        <header
+          className={cn(
+            'flex h-14 items-center justify-between border-b border-gray-100',
+            'bg-white px-4 lg:hidden'
           )}
-        </form>
-      </Form>
+        >
+          <button
+            type="button"
+            onClick={handleBack}
+            aria-label="가입 나가기"
+            className={cn(
+              'flex h-9 w-9 items-center justify-center rounded-full',
+              'text-gray-700 transition hover:bg-gray-100'
+            )}
+          >
+            <Icon name="ChevronLeft" size={20} />
+          </button>
+          <Text size="caption1" weight="regular" className="text-gray-500">
+            {step}/2
+          </Text>
+        </header>
+
+        <Text
+          size="caption1"
+          weight="regular"
+          as="div"
+          className={cn(
+            'absolute top-7 right-8 hidden text-gray-600 lg:block'
+          )}
+        >
+          이미 계정이 있으세요?{' '}
+          <Link
+            href="/login"
+            className="text-main-800 ml-1 font-extrabold hover:underline"
+          >
+            로그인 →
+          </Link>
+        </Text>
+
+        <Form {...form}>
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
+            <div
+              className={cn(
+                'mx-auto flex w-full max-w-[460px] flex-1 flex-col',
+                'px-5 pt-6 pb-10 lg:px-0 lg:pt-16'
+              )}
+            >
+              <StepIndicator
+                steps={SIGN_UP_STEPS}
+                currentStep={step}
+                size="sm"
+                className="mb-6 w-full"
+              />
+
+              <Text
+                size="caption2"
+                weight="extrabold"
+                as="div"
+                className="text-main-800 mb-1.5 tracking-[0.2em]"
+              >
+                {heading.eyebrow}
+              </Text>
+              <Text
+                size="display2"
+                weight="extrabold"
+                as="h1"
+                className="block tracking-tight text-gray-900"
+              >
+                {heading.title}
+              </Text>
+              <Text
+                size="body2"
+                weight="regular"
+                as="p"
+                className="mt-2 mb-6 block text-gray-500"
+              >
+                {heading.sub}
+              </Text>
+
+              {step === 1 ? (
+                <Step1 onNext={handleNextStep} />
+              ) : (
+                <Step2
+                  onPrev={() => setStep(1)}
+                  onSubmit={() => void form.handleSubmit(onSubmit)()}
+                  isSubmitting={isSubmitting}
+                />
+              )}
+            </div>
+          </form>
+        </Form>
+      </section>
     </div>
   );
 }

@@ -2,7 +2,14 @@
 
 import { Button, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
-import { Bell, BellOff, BellRing, Loader2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Bell,
+  BellOff,
+  BellRing,
+  Loader2,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import {
@@ -89,6 +96,7 @@ const WEB_PUSH_LABEL: Record<string, WebPushLabelEntry> = {
 };
 
 export function NotificationSettingsScreen(): React.ReactElement {
+  const router = useRouter();
   const { data, isLoading } = useNotificationPreferences();
   const { mutate: updatePreferences } = useUpdateNotificationPreferences();
   const { status, subscribe } = useWebPushSubscription();
@@ -112,10 +120,42 @@ export function NotificationSettingsScreen(): React.ReactElement {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white p-4">
-      <section className="mx-auto w-full max-w-[980px] bg-white p-2">
-        <div className="border-b border-gray-200 pb-5">
-          <Text size="display1" weight="bold" className="text-gray-900">
+    <div className="min-h-screen w-full pt-14 lg:pt-0">
+      {/* 모바일 fixed 헤더 — ← + 알림 설정 */}
+      <div
+        className={cn(
+          'fixed top-0 right-0 left-0 z-30 flex h-14 items-center gap-3',
+          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
+          'lg:hidden',
+        )}
+      >
+        <button
+          type="button"
+          aria-label="뒤로가기"
+          onClick={() => router.back()}
+          className={cn(
+            'flex h-8 w-8 items-center justify-center rounded-lg',
+            'text-gray-700 transition-colors hover:bg-gray-100',
+          )}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <Text
+          size="body1"
+          weight="extrabold"
+          className="flex-1 tracking-[-0.3px] text-gray-900"
+        >
+          알림 설정
+        </Text>
+      </div>
+
+      <section className="mx-auto w-full max-w-[980px] p-4 lg:p-6">
+        <div className="hidden border-b border-gray-200 pb-5 lg:block">
+          <Text
+            size="pageTitle"
+            weight="extrabold"
+            className="tracking-tight text-gray-900"
+          >
             알림 설정
           </Text>
         </div>

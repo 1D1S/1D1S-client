@@ -20,6 +20,7 @@ export function DiaryCreateGoalsSection({
   }));
 
   const selectedValues = achievedGoalIds.map((goalId) => String(goalId));
+  const totalGoalCount = goals.length;
 
   const handleValueChange = (nextValues: string[]): void => {
     onGoalIdsChange(nextValues.map((value) => Number(value)));
@@ -27,18 +28,27 @@ export function DiaryCreateGoalsSection({
 
   return (
     <section>
-      <Text size="heading2" weight="bold" className="mb-6 text-gray-900">
-        목표 리스트
+      <Text size="caption1" weight="bold" className="mb-2 block text-gray-600">
+        오늘의 목표
       </Text>
 
-      {goals.length > 0 ? (
-        <CheckList
-          options={options}
-          value={selectedValues}
-          onValueChange={handleValueChange}
-        />
+      {totalGoalCount > 0 ? (
+        <>
+          <CheckList
+            options={options}
+            value={selectedValues}
+            onValueChange={handleValueChange}
+          />
+          <Text
+            size="caption2"
+            weight="regular"
+            className="mt-1.5 block text-gray-400"
+          >
+            달성한 항목을 체크해주세요.
+          </Text>
+        </>
       ) : (
-        <div className="rounded-2xl border border-gray-200 bg-white px-4 py-5">
+        <div className="rounded-3 border border-gray-200 bg-white px-4 py-3">
           <Text size="body2" weight="regular" className="text-gray-500">
             연동된 챌린지를 선택하면 목표 리스트가 표시됩니다.
           </Text>

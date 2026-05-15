@@ -1,20 +1,39 @@
-import { ChevronRight, Mail } from 'lucide-react';
+import { Icon } from '@1d1s/design-system';
+import { cn } from '@module/utils/cn';
+import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
 export default function HomeQuickActions(): React.ReactElement {
   return (
-    <div className="w-full px-4">
+    <div className="w-full">
       <Link
         href="/inquiry"
-        className="flex w-full cursor-pointer items-center gap-2 rounded-xl bg-sky-100 px-4 py-3 text-sky-700 transition hover:bg-sky-200"
+        className={cn(
+          'flex w-full cursor-pointer items-center gap-3',
+          'rounded-4 border-main-200 border bg-white px-4 py-3',
+          'text-gray-800 transition',
+          'hover:border-main-300 hover:bg-main-100'
+        )}
       >
-        <Mail className="h-4 w-4 shrink-0" />
-        <span className="text-sm font-medium">불편한 점이 있으신가요?</span>
-        <div className="ml-auto flex items-center gap-0.5">
-          <span className="text-sm font-medium">문의하기</span>
-          <ChevronRight className="h-4 w-4 shrink-0" />
-        </div>
+        <span
+          className={cn(
+            'inline-flex h-7 w-7 items-center justify-center',
+            'bg-main-200 text-brand rounded-full'
+          )}
+        >
+          <Icon name="PencilLine" size={14} />
+        </span>
+        <span className="text-sm font-medium">의견을 들려주세요</span>
+        <span
+          className={cn(
+            'ml-auto inline-flex items-center gap-0.5',
+            'text-brand text-xs font-bold'
+          )}
+        >
+          문의하기
+          <ChevronRight className="h-3.5 w-3.5" />
+        </span>
       </Link>
     </div>
   );

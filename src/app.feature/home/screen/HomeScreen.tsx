@@ -1,15 +1,19 @@
 'use client';
 
-import { BannerCarousel, PageWatermark } from '@1d1s/design-system';
+import { PageWatermark } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
-import { HOME_MAIN_BANNERS } from '@constants/consts/homeData';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { useSidebar } from '@feature/member/hooks/useMemberQueries';
+import { cn } from '@module/utils/cn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react';
 
 import HomeQuickActions from '../components/HomeQuickActions';
 import HomeRandomChallengesSection from '../components/HomeRandomChallengesSection';
 import HomeRandomDiariesSection from '../components/HomeRandomDiariesSection';
+import HomeStreakSlot from '../components/HomeStreakSlot';
+import HomeWarmBanner from '../components/HomeWarmBanner';
+import HomeWarmGreeting from '../components/HomeWarmGreeting';
 import { useHomeRandomData } from '../hooks/useHomeRandomData';
 import { useHomeRandomDiaryLike } from '../hooks/useHomeRandomDiaryLike';
 
@@ -19,6 +23,11 @@ export default function HomeScreen(): React.ReactElement {
   const searchParams = useSearchParams();
   const isLoginRequired = searchParams.get('loginRequired') === 'true';
   const isLoggedIn = useIsLoggedIn();
+  const {
+    data: sidebar,
+    isLoading: isSidebarLoading,
+    isFetching: isSidebarFetching,
+  } = useSidebar();
   const { isLikePending, showLoginDialog, setShowLoginDialog, onLikeToggle } =
     useHomeRandomDiaryLike();
   const loginDialogDescription = isLoginRequired
@@ -39,7 +48,6 @@ export default function HomeScreen(): React.ReactElement {
   const handleDialogOpenChange = (open: boolean): void => {
     setShowLoginDialog(open);
     if (!open && isLoginRequired) {
-      // dialog가 닫히는 순간에만 URL 청소
       const params = new URLSearchParams(searchParams.toString());
       params.delete('loginRequired');
       const query = params.toString();
@@ -60,44 +68,65 @@ export default function HomeScreen(): React.ReactElement {
     diariesErrorMessage,
   } = useHomeRandomData();
 
+  const streakDays = sidebar?.streakCount ?? 0;
+  const todayGoalCount = sidebar?.todayGoalCount ?? 0;
+  // 토큰 힌트는 있는데 sidebar 가 아직 도착하지 않은 구간에서 0 → 실제 값으로
+  // 깜빡이는 것을 막기 위해 스켈레톤을 노출.
+  const isStreakLoading =
+    isLoggedIn && (isSidebarLoading || isSidebarFetching || !sidebar);
+
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white">
+    <div
+      className={cn(
+        'flex min-h-screen w-full flex-col bg-white',
+        'lg:from-main-100 lg:bg-gradient-to-b lg:via-white lg:to-white'
+      )}
+    >
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={handleDialogOpenChange}
         description={loginDialogDescription}
       />
-      {/* 메인 콘텐츠 */}
-      <div className="flex w-full flex-col pt-6">
-        <div className="h-6" />
+      <div
+        className={cn(
+          'mx-auto flex w-full max-w-[1200px] flex-col gap-7',
+          'px-5 py-7 lg:px-8 lg:py-10'
+        )}
+      >
+        {/* 모바일 인사 hero — 데스크탑/태블릿은 시안에 따라 생략 */}
+        <div className="lg:hidden">
+          <HomeWarmGreeting />
+        </div>
 
-        {/* 메인 배너 영역 */}
-        <div className="w-full px-4">
-          <BannerCarousel
-            items={HOME_MAIN_BANNERS}
-            autoSlideIntervalMs={5000}
-            enableLoop
-            showIndicators
-            aspectRatioClassName="aspect-[5/1]"
-            minHeightPx={140}
-            onItemClick={(_, index) => {
-              const route = HOME_MAIN_BANNERS[index]?.href;
-
-              if (route) {
-                router.push(route);
-              }
-            }}
+        {/* 모바일: 스트릭 슬롯을 배너 위로 올림 */}
+        <div className="sm:hidden">
+          <HomeStreakSlot
+            isLoggedIn={isLoggedIn}
+            streakDays={streakDays}
+            todayGoalCount={todayGoalCount}
+            isStreakLoading={isStreakLoading}
           />
         </div>
 
-        <div className="h-4" />
+        {/* Banner + StreakHero row (데스크탑은 1:1, 태블릿은 1.4:1) */}
+        <div
+          className={cn(
+            'grid gap-3 sm:grid-cols-[1.4fr_1fr] lg:grid-cols-2',
+            'lg:gap-5'
+          )}
+        >
+          <HomeWarmBanner />
+          <div className="hidden sm:block">
+            <HomeStreakSlot
+              isLoggedIn={isLoggedIn}
+              streakDays={streakDays}
+              todayGoalCount={todayGoalCount}
+            />
+          </div>
+        </div>
 
-        {/* 문의 버튼 */}
         <HomeQuickActions />
 
-        <div className="h-10" />
-
-        {/* 랜덤 챌린지 */}
         <HomeRandomChallengesSection
           challenges={randomChallenges}
           isLoading={isChallengesLoading}
@@ -113,9 +142,6 @@ export default function HomeScreen(): React.ReactElement {
           }}
         />
 
-        <div className="h-12" />
-
-        {/* 랜덤 일지 */}
         <HomeRandomDiariesSection
           diaries={randomDiaries}
           isLoading={isDiariesLoading}
@@ -131,19 +157,11 @@ export default function HomeScreen(): React.ReactElement {
             router.push(`/diary/${diaryId}`);
           }}
           onLikeToggle={onLikeToggle}
-          onUserClick={(memberId) => router.push(`/member/${memberId}`)}
-          onChallengeClick={(challengeId) =>
-            router.push(
-              challengeId ? `/challenge/${challengeId}` : '/challenge'
-            )
-          }
         />
 
-        <div className="h-12" />
-        <div className="flex w-full justify-center">
+        <div className="flex w-full justify-center pt-4">
           <PageWatermark />
         </div>
-        <div className="h-8" />
       </div>
     </div>
   );
