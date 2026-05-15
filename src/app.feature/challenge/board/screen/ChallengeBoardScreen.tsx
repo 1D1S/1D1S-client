@@ -4,16 +4,23 @@ import { Button, Icon, Text, TextField } from '@1d1s/design-system';
 import ChallengeCard from '@component/cards/ChallengeCard';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import {
+  ChallengeCardSkeleton,
+  ChallengeCardSkeletonGrid,
+} from '@component/skeletons/ChallengeCardSkeleton';
+import {
   getCategoryIcon,
   getCategoryLabel,
   getCategoryStripeTone,
 } from '@constants/categories';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { useInViewObserver } from '@module/hooks/useInViewObserver';
 import { cn } from '@module/utils/cn';
 import { X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
+// TODO: 카테고리 토글 복구 시 사용. 현재 화면에서 임시 비활성화됨.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import ChallengeBoardFilters from '../components/ChallengeBoardFilters';
 import { toCategoryParam } from '../consts/categoryFilters';
 import { useChallengeList } from '../hooks/useChallengeQueries';
@@ -23,43 +30,6 @@ import {
   isChallengeEnded,
   isInfiniteChallengeEndDate,
 } from '../utils/challengePeriod';
-
-function useInViewObserver(): {
-  ref: React.RefObject<HTMLDivElement | null>;
-  inView: boolean;
-} {
-  const ref = useRef<HTMLDivElement>(null);
-  const [observedInView, setObservedInView] = useState(false);
-  const isIntersectionObserverUnsupported =
-    typeof window !== 'undefined' &&
-    typeof IntersectionObserver === 'undefined';
-
-  useEffect(() => {
-    const target = ref.current;
-
-    if (!target || typeof window === 'undefined') {
-      return;
-    }
-
-    if (typeof IntersectionObserver === 'undefined') {
-      return;
-    }
-
-    const observer = new IntersectionObserver(([entry]) => {
-      setObservedInView(entry.isIntersecting);
-    });
-
-    observer.observe(target);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  const inView = isIntersectionObserverUnsupported ? true : observedInView;
-
-  return { ref, inView };
-}
 
 export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
@@ -74,6 +44,8 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   );
   const [inputValue, setInputValue] = useState('');
   const [query, setQuery] = useState('');
+  // TODO: 카테고리 토글 복구 시 setCategory 사용. 현재 임시 비활성화.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [category, setCategory] = useState<ChallengeCategory>('ALL');
 
   const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
@@ -115,12 +87,17 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     setQuery('');
   };
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useChallengeList({
-      limit: 12,
-      keyword: query || undefined,
-      category: toCategoryParam(category),
-    });
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useChallengeList({
+    limit: 12,
+    keyword: query || undefined,
+    category: toCategoryParam(category),
+  });
 
   const { ref, inView } = useInViewObserver();
 
@@ -276,17 +253,23 @@ export default function ChallengeBoardScreen(): React.ReactElement {
             </Button>
           </div>
 
+          {/* TODO: 카테고리 토글 — 임시 비활성화. 카테고리 필터 UX
+              재정의되면 아래 블록의 주석을 해제해 복구할 것. */}
+          {/*
           <ChallengeBoardFilters
             selected={category}
             onSelect={(next) => setCategory(next)}
           />
+          */}
         </div>
 
         <div className="mt-4 lg:mt-6">
-          {challenges.length > 0 ? (
+          {isLoading && challenges.length === 0 ? (
+            <ChallengeCardSkeletonGrid count={8} className="gap-4" />
+          ) : challenges.length > 0 ? (
             <div
               className={cn(
-                'grid gap-4',
+                'data-fade-in grid gap-4',
                 'grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4'
               )}
             >
@@ -337,19 +320,30 @@ export default function ChallengeBoardScreen(): React.ReactElement {
             </div>
           )}
 
+          {isFetchingNextPage ? (
+            <div
+              className={cn(
+                'mt-4 grid gap-4',
+                'grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4'
+              )}
+            >
+              {Array.from({ length: 4 }).map((_, index) => (
+                <ChallengeCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : null}
+
           <div
             ref={ref}
             className="mt-6 flex h-10 w-full items-center justify-center"
           >
-            {isFetchingNextPage ? (
-              <Text size="body2" className="text-gray-400">
-                데이터를 불러오는 중...
-              </Text>
-            ) : !hasNextPage && challenges.length > 0 ? (
-              <Text size="body2" className="text-gray-400">
-                마지막 챌린지입니다.
-              </Text>
-            ) : null}
+            {isFetchingNextPage
+              ? null
+              : !hasNextPage && challenges.length > 0 ? (
+                  <Text size="body2" className="text-gray-400">
+                    마지막 챌린지입니다.
+                  </Text>
+                ) : null}
           </div>
         </div>
       </div>

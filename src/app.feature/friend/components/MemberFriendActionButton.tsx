@@ -2,10 +2,11 @@
 
 import { Button, Text } from '@1d1s/design-system';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
-import { notifyApiError } from '@module/api/error';
+import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
+import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
 import { Check, Clock, UserMinus, UserPlus } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -15,7 +16,7 @@ import {
   useRemoveFriend,
   useSendFriendRequest,
 } from '../hooks/useFriendMutations';
-import { useFriendRelation } from '../hooks/useFriendQueries';
+import { useFriendList, useFriendRelation } from '../hooks/useFriendQueries';
 
 interface MemberFriendActionButtonProps {
   memberId: number;
@@ -36,12 +37,20 @@ export function MemberFriendActionButton({
 }: MemberFriendActionButtonProps): React.ReactElement | null {
   const isLoggedIn = useIsLoggedIn();
   const { data: relation, isLoading } = useFriendRelation(memberId);
+  // 백엔드 relation 응답이 누락/오타로 FRIEND 분기를 못 탈 때를 위한 fallback.
+  // 친구 목록에 있는 회원이면 상태와 무관하게 친구로 간주한다.
+  const { data: friendList } = useFriendList();
+  const isFriendByList = (friendList ?? []).some(
+    (friend) => friend.memberId === memberId
+  );
 
   const sendRequest = useSendFriendRequest();
   const cancelRequest = useCancelFriendRequest();
   const acceptRequest = useAcceptFriendRequest();
   const rejectRequest = useRejectFriendRequest();
   const removeFriend = useRemoveFriend();
+
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
 
   const isMutating =
     sendRequest.isPending ||
@@ -78,25 +87,41 @@ export function MemberFriendActionButton({
     return null;
   }
 
-  if (relation.status === 'FRIEND') {
+  if (relation.status === 'FRIEND' || isFriendByList) {
     return (
-      <Button
-        variant="secondary"
-        size="md"
-        iconLeft={<Check className="h-4 w-4" />}
-        disabled={isMutating}
-        onClick={() => {
-          if (!window.confirm('친구를 삭제하시겠어요?')) {
-            return;
-          }
-          removeFriend.mutate(memberId, {
-            onSuccess: () => toast.success('친구가 삭제되었습니다.'),
-            onError: notifyApiError,
-          });
-        }}
-      >
-        친구
-      </Button>
+      <>
+        <Button
+          variant="secondary"
+          size="md"
+          iconLeft={<Check className="h-4 w-4" />}
+          disabled={isMutating}
+          onClick={() => setIsRemoveDialogOpen(true)}
+        >
+          친구
+        </Button>
+        <ConfirmDialog
+          open={isRemoveDialogOpen}
+          onOpenChange={setIsRemoveDialogOpen}
+          tone="danger"
+          icon="Close"
+          title="친구를 삭제하시겠어요?"
+          description="친구 목록에서 제거됩니다."
+          confirmLabel="삭제"
+          pendingLabel="삭제 중..."
+          isPending={removeFriend.isPending}
+          isDisabled={isMutating}
+          onCancel={() => setIsRemoveDialogOpen(false)}
+          onConfirm={() => {
+            removeFriend.mutate(memberId, {
+              onSuccess: () => {
+                toast.success('친구가 삭제되었습니다.');
+                setIsRemoveDialogOpen(false);
+              },
+              onError: notifyApiError,
+            });
+          }}
+        />
+      </>
     );
   }
 

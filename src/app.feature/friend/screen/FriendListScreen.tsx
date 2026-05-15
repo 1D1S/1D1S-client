@@ -1,7 +1,9 @@
 'use client';
 
 import { Button, Text } from '@1d1s/design-system';
-import { normalizeApiError, notifyApiError } from '@module/api/error';
+import { FriendListSkeleton } from '@component/skeletons/ListItemSkeleton';
+import { normalizeApiError } from '@module/api/error';
+import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
 import { ChevronRight, Inbox, Send, UserMinus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -131,19 +133,16 @@ export default function FriendListScreen(): React.ReactElement {
           </Text>
         </div>
 
+        {isLoading ? (
+          <FriendListSkeleton count={5} />
+        ) : (
         <div
           className={cn(
-            'overflow-hidden border-y border-gray-100 bg-white',
+            'data-fade-in overflow-hidden border-y border-gray-100 bg-white',
             'lg:rounded-[14px] lg:border',
           )}
         >
-          {isLoading ? (
-            <div className="flex w-full justify-center py-10">
-              <Text size="body2" className="text-gray-500">
-                친구 목록을 불러오는 중입니다.
-              </Text>
-            </div>
-          ) : isError ? (
+          {isError ? (
             <div className="flex w-full justify-center py-10">
               <Text size="body2" className="text-red-500">
                 {error
@@ -183,6 +182,7 @@ export default function FriendListScreen(): React.ReactElement {
             ))
           )}
         </div>
+        )}
       </section>
     </FriendPageShell>
   );

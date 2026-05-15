@@ -10,6 +10,8 @@ import {
   TextField,
 } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleton';
+import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import {
   isChallengeEnded,
@@ -20,6 +22,7 @@ import { ChallengeListItem } from '@feature/challenge/shared/components/Challeng
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
+import { getRelativeTimeLabel } from '@module/utils/date';
 import {
   ArrowLeft,
   Edit3,
@@ -60,7 +63,6 @@ import {
   resolveDiaryImageList,
   resolveDiaryImageUrl,
 } from '../../shared/utils/diaryImageUrl';
-import { getRelativeDiaryDateLabel } from '../../shared/utils/diaryRelativeTime';
 import { DiaryReportDialog } from '../components/DiaryReportDialog';
 import {
   useCreateCommentReply,
@@ -291,7 +293,7 @@ function mapDiaryToViewData(
   const diaryInfo = getDiaryInfo(diary);
   const authorInfo = getAuthorInfo(diary);
   const baseDate = diaryInfo?.createdAt ?? diaryInfo?.challengedDate ?? '';
-  const relativeDateLabel = getRelativeDiaryDateLabel(baseDate);
+  const relativeDateLabel = getRelativeTimeLabel(baseDate);
   const challengeGoals: ChallengeGoal[] =
     challengeDetailData?.challengeGoals ?? [];
   const diaryGoals = diaryInfo?.diaryGoal ?? [];
@@ -750,6 +752,8 @@ function DiaryCommentSection({
   isLoggedIn,
   onRequireLogin,
 }: DiaryCommentSectionProps): React.ReactElement {
+  const router = useRouter();
+  const commentWrapperRef = useRef<HTMLDivElement>(null);
   const [commentContent, setCommentContent] = useState('');
   const {
     data: commentsData,
@@ -810,6 +814,56 @@ function DiaryCommentSection({
       })),
     [commentItems, commentRepliesMap, mapCommentNode]
   );
+
+  // DS CommentThread는 onAvatarClick 같은 prop을 노출하지 않아 이벤트 위임으로
+  // 처리. CommentThread 내부 아바타에 붙어 있는 `data-slot="circle-avatar"`
+  // 속성을 후크로 사용하고, 클릭된 아바타의 인덱스(DFS 순서) → flatCommentAuthors
+  // 매핑으로 멤버 ID 를 결정한다. DS 의 data-slot 또는 렌더 순서가 바뀌면 함께
+  // 업데이트해야 한다.
+  const flatCommentAuthors = useMemo<Array<{ id: string }>>(() => {
+    const out: Array<{ id: string }> = [];
+    const walk = (nodes: CommentNode[]): void => {
+      for (const node of nodes) {
+        out.push({ id: node.author.id });
+        if (node.replies && node.replies.length > 0) {
+          walk(node.replies);
+        }
+      }
+    };
+    walk(threadComments);
+    return out;
+  }, [threadComments]);
+
+  const handleCommentAvatarClick = (
+    event: React.MouseEvent<HTMLDivElement>
+  ): void => {
+    const target = event.target as Element | null;
+    if (!target || !commentWrapperRef.current) {
+      return;
+    }
+    const avatar = target.closest('[data-slot="circle-avatar"]');
+    if (!avatar) {
+      return;
+    }
+    const avatars = commentWrapperRef.current.querySelectorAll(
+      '[data-slot="circle-avatar"]'
+    );
+    const index = Array.from(avatars).indexOf(avatar);
+    if (index < 0) {
+      return;
+    }
+    const author = flatCommentAuthors[index];
+    if (!author) {
+      return;
+    }
+    const memberId = Number(author.id);
+    if (!Number.isFinite(memberId) || memberId <= 0) {
+      return;
+    }
+    event.stopPropagation();
+    event.preventDefault();
+    router.push(`/member/${memberId}`);
+  };
   const totalCommentCount = useMemo(() => {
     const baseCommentCount = commentsData?.pageInfo.totalElements ?? 0;
     const totalReplyCount = commentItems.reduce(
@@ -897,9 +951,7 @@ function DiaryCommentSection({
         </Text>
 
         {isCommentsLoading ? (
-          <Text size="caption1" weight="regular" className="text-gray-500">
-            댓글을 불러오는 중입니다.
-          </Text>
+          <DiaryCommentsSkeleton />
         ) : isCommentsError ? (
           <Text size="caption1" weight="regular" className="text-red-600">
             댓글을 불러오지 못했습니다.
@@ -909,18 +961,27 @@ function DiaryCommentSection({
             첫 댓글을 남겨보세요.
           </Text>
         ) : (
-          <CommentThread
-            comments={threadComments}
-            currentUserId={
-              currentMemberId !== null ? String(currentMemberId) : undefined
-            }
-            onReplySubmit={handleReplySubmit}
-            onDelete={handleDeleteComment}
+          <div
+            ref={commentWrapperRef}
+            onClickCapture={handleCommentAvatarClick}
             className={cn(
-              '[&_button]:shrink-0 [&_button]:whitespace-nowrap',
-              '[&_ul]:!pl-1.5'
+              'data-fade-in',
+              "[&_[data-slot='circle-avatar']]:cursor-pointer"
             )}
-          />
+          >
+            <CommentThread
+              comments={threadComments}
+              currentUserId={
+                currentMemberId !== null ? String(currentMemberId) : undefined
+              }
+              onReplySubmit={handleReplySubmit}
+              onDelete={handleDeleteComment}
+              className={cn(
+                '[&_button]:shrink-0 [&_button]:whitespace-nowrap',
+                '[&_ul]:!pl-1.5'
+              )}
+            />
+          </div>
         )}
 
         <div className="mt-3 hidden items-end gap-1.5 lg:flex">
@@ -1107,7 +1168,7 @@ function DiaryDetailView({
   return (
     <div
       className={cn(
-        'min-h-screen w-full bg-white pb-[72px]',
+        'min-h-screen w-full bg-white pb-[112px]',
         'lg:bg-gray-50/60 lg:pb-0'
       )}
     >
@@ -1481,11 +1542,7 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
     return (
       <>
         {authDialog}
-        <div className="flex min-h-[40vh] items-center justify-center p-4">
-          <Text size="body1" weight="medium" className="text-gray-500">
-            일지 상세를 불러오는 중입니다.
-          </Text>
-        </div>
+        <DiaryDetailSkeleton />
       </>
     );
   }
@@ -1508,14 +1565,16 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
   return (
     <>
       {authDialog}
-      <DiaryDetailView
-        diaryData={mapDiaryToViewData(data, challengeDetailData)}
-        onLikeToggle={handleLikeToggle}
-        isLikePending={isLikePending}
-        isOwner={isOwner}
-        onDelete={handleDelete}
-        onRequireLogin={handleRequireLogin}
-      />
+      <div className="data-fade-in">
+        <DiaryDetailView
+          diaryData={mapDiaryToViewData(data, challengeDetailData)}
+          onLikeToggle={handleLikeToggle}
+          isLikePending={isLikePending}
+          isOwner={isOwner}
+          onDelete={handleDelete}
+          onRequireLogin={handleRequireLogin}
+        />
+      </div>
     </>
   );
 }

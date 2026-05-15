@@ -19,3 +19,27 @@
   stroke-dashoffset: 1;
   animation: drawCheck 0.22s cubic-bezier(0.4, 0, 0.2, 1) 0.26s forwards;
 }
+
+/* 스켈레톤 → 실데이터 전환 시 사용하는 페이드인.
+   skeleton 이 unmount 되면서 같은 자리에 데이터 컨테이너가 mount 되는데,
+   그 컨테이너에 `data-fade-in` 클래스를 붙이면 부드럽게 나타난다. */
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.data-fade-in {
+  animation: contentFadeIn 280ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .data-fade-in {
+    animation: none;
+  }
+}

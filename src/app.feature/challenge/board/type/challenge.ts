@@ -1,3 +1,7 @@
+import type { LikeInfo } from '@module/api/types';
+
+export type { LikeInfo };
+
 export type ChallengeCategory =
   | 'ALL'
   | 'DEV'
@@ -16,11 +20,6 @@ export type ParticipantStatus =
   | 'ACCEPTED'
   | 'HOST'
   | 'PARTICIPANT';
-
-export interface LikeInfo {
-  likedByMe: boolean;
-  likeCnt: number;
-}
 
 export interface ChallengeSummary {
   challengeId: number;

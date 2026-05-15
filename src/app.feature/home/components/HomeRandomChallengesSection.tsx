@@ -1,5 +1,6 @@
 import { SectionHeader, Text } from '@1d1s/design-system';
 import ChallengeCard from '@component/cards/ChallengeCard';
+import { ChallengeCardSkeleton } from '@component/skeletons/ChallengeCardSkeleton';
 import {
   getCategoryIcon,
   getCategoryLabel,
@@ -41,10 +42,22 @@ export default function HomeRandomChallengesSection({
         onActionClick={onMoreClick}
       />
       {isLoading ? (
-        <div className="flex w-full justify-center py-8">
-          <Text size="body2" weight="medium" className="text-gray-500">
-            챌린지를 불러오는 중입니다.
-          </Text>
+        <div
+          className={cn(
+            '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-2',
+            'scrollbar-hide',
+            'sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0',
+            'sm:py-0 lg:grid-cols-4'
+          )}
+        >
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={index}
+              className="w-[200px] shrink-0 sm:w-auto sm:shrink"
+            >
+              <ChallengeCardSkeleton />
+            </div>
+          ))}
         </div>
       ) : null}
       {isError ? (
@@ -58,7 +71,7 @@ export default function HomeRandomChallengesSection({
         <div
           className={cn(
             '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-2',
-            'scrollbar-hide',
+            'scrollbar-hide data-fade-in',
             'sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0',
             'sm:py-0 lg:grid-cols-4'
           )}

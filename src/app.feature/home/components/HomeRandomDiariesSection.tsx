@@ -1,11 +1,13 @@
 import { SectionHeader, Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
+import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
 import {
   resolveDiaryImageList,
   resolveDiaryImageUrl,
 } from '@feature/diary/shared/utils/diaryImageUrl';
+import { cn } from '@module/utils/cn';
 import React from 'react';
 
 import {
@@ -43,10 +45,14 @@ export default function HomeRandomDiariesSection({
         onActionClick={onMoreClick}
       />
       {isLoading ? (
-        <div className="flex w-full justify-center py-8">
-          <Text size="body2" weight="medium" className="text-gray-500">
-            일지를 불러오는 중입니다.
-          </Text>
+        <div
+          className={
+            'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'
+          }
+        >
+          {Array.from({ length: 8 }).map((_, index) => (
+            <DiaryCardSkeleton key={index} />
+          ))}
         </div>
       ) : null}
       {isError ? (
@@ -58,9 +64,10 @@ export default function HomeRandomDiariesSection({
       ) : null}
       {!isLoading && !isError && diaries.length > 0 ? (
         <div
-          className={
-            'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'
-          }
+          className={cn(
+            'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4',
+            'data-fade-in'
+          )}
         >
           {diaries.slice(0, 8).map((item) => (
             <DiaryCard

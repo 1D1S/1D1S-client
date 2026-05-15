@@ -3,20 +3,22 @@
 import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
+import { useInViewObserver } from '@module/hooks/useInViewObserver';
 import { cn } from '@module/utils/cn';
+import { getDateTimestamp } from '@module/utils/date';
 import { motion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import {
   useLikeDiary,
   useUnlikeDiary,
 } from '../../detail/hooks/useDiaryMutations';
 import { resolveDiaryImageUrl } from '../../shared/utils/diaryImageUrl';
-import { getDateTimestamp } from '../../shared/utils/diaryRelativeTime';
 import { mapFeelingToEmotion } from '../../shared/utils/feeling';
 import { useDiaryList } from '../hooks/useDiaryQueries';
 import { type DiaryItem } from '../type/diary';
@@ -78,43 +80,6 @@ function getDiaryAchievementRate(diary: DiaryItem): number {
     diary.achievementRate ?? diaryInfo?.achievementRate ?? 0;
 
   return Math.min(100, Math.max(0, rawAchievementRate));
-}
-
-function useInViewObserver(): {
-  ref: React.RefObject<HTMLDivElement | null>;
-  inView: boolean;
-} {
-  const ref = useRef<HTMLDivElement>(null);
-  const [observedInView, setObservedInView] = useState(false);
-  const isIntersectionObserverUnsupported =
-    typeof window !== 'undefined' &&
-    typeof IntersectionObserver === 'undefined';
-
-  useEffect(() => {
-    const target = ref.current;
-
-    if (!target || typeof window === 'undefined') {
-      return;
-    }
-
-    if (typeof IntersectionObserver === 'undefined') {
-      return;
-    }
-
-    const observer = new IntersectionObserver(([entry]) => {
-      setObservedInView(entry.isIntersecting);
-    });
-
-    observer.observe(target);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  const inView = isIntersectionObserverUnsupported ? true : observedInView;
-
-  return { ref, inView };
 }
 
 export default function DiaryListScreen(): React.ReactElement {
@@ -267,11 +232,10 @@ export default function DiaryListScreen(): React.ReactElement {
         </header>
 
         {isLoading ? (
-          <div className="mt-10 flex w-full justify-center py-10">
-            <Text size="body1" weight="medium" className="text-gray-500">
-              일지를 불러오는 중입니다.
-            </Text>
-          </div>
+          <DiaryCardSkeletonGrid
+            count={12}
+            className="mt-6"
+          />
         ) : null}
 
         {isError && !hasLoadedDiaries ? (
@@ -287,7 +251,7 @@ export default function DiaryListScreen(): React.ReactElement {
         {!isLoading && hasLoadedDiaries ? (
           <div
             className={cn(
-              'mt-6 grid gap-4',
+              'data-fade-in mt-6 grid gap-4',
               'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
             )}
           >
@@ -338,15 +302,15 @@ export default function DiaryListScreen(): React.ReactElement {
           </div>
         ) : null}
 
+        {isFetchingNextPage ? (
+          <DiaryCardSkeletonGrid count={4} className="mt-4" />
+        ) : null}
+
         <div
           ref={ref}
           className="mt-6 flex h-10 w-full items-center justify-center"
         >
-          {isFetchingNextPage ? (
-            <Text size="body2" className="text-gray-400">
-              데이터를 불러오는 중...
-            </Text>
-          ) : isError && hasLoadedDiaries ? (
+          {isFetchingNextPage ? null : isError && hasLoadedDiaries ? (
             <Text size="body2" className="text-red-500">
               {error
                 ? normalizeApiError(error).message

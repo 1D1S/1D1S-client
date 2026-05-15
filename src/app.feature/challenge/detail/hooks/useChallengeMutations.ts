@@ -1,3 +1,4 @@
+import { invalidateAll } from '@module/api/queryInvalidation';
 import {
   useMutation,
   UseMutationResult,
@@ -28,22 +29,12 @@ export function useCreateChallenge(): UseMutationResult<
     mutationFn: (data: CreateChallengeRequest) =>
       challengeWriteApi.createChallenge(data),
     onSuccess: () => {
-      // 챌린지 리스트 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.lists(),
-      });
-      // 랜덤 챌린지 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.all,
-        predicate: (query) => query.queryKey.includes('random'),
-      });
-      // 내 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: MEMBER_QUERY_KEYS.myPage(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: MEMBER_QUERY_KEYS.sidebar(),
-      });
+      invalidateAll(queryClient, [
+        CHALLENGE_QUERY_KEYS.lists(),
+        CHALLENGE_QUERY_KEYS.randoms(),
+        MEMBER_QUERY_KEYS.myPage(),
+        MEMBER_QUERY_KEYS.sidebar(),
+      ]);
     },
   });
 }
@@ -65,14 +56,10 @@ export function useJoinChallenge(): UseMutationResult<
       data: JoinChallengeRequest;
     }) => challengeDetailApi.joinChallenge(challengeId, data),
     onSuccess: (_, { challengeId }) => {
-      // 해당 챌린지 상세 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.detail(challengeId),
-      });
-      // 챌린지 리스트 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.lists(),
-      });
+      invalidateAll(queryClient, [
+        CHALLENGE_QUERY_KEYS.detail(challengeId),
+        CHALLENGE_QUERY_KEYS.lists(),
+      ]);
     },
   });
 }
@@ -85,7 +72,6 @@ export function useAcceptParticipant(): UseMutationResult<void, Error, number> {
     mutationFn: (participantId: number) =>
       challengeDetailApi.acceptParticipant(participantId),
     onSuccess: () => {
-      // 모든 챌린지 상세 정보 무효화
       queryClient.invalidateQueries({
         queryKey: CHALLENGE_QUERY_KEYS.details(),
       });
@@ -101,7 +87,6 @@ export function useRejectParticipant(): UseMutationResult<void, Error, number> {
     mutationFn: (participantId: number) =>
       challengeDetailApi.rejectParticipant(participantId),
     onSuccess: () => {
-      // 모든 챌린지 상세 정보 무효화
       queryClient.invalidateQueries({
         queryKey: CHALLENGE_QUERY_KEYS.details(),
       });
@@ -117,19 +102,11 @@ export function useLeaveChallenge(): UseMutationResult<void, Error, number> {
     mutationFn: (challengeId: number) =>
       challengeDetailApi.leaveChallenge(challengeId),
     onSuccess: (_, challengeId) => {
-      // 해당 챌린지 상세 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.detail(challengeId),
-      });
-      // 챌린지 리스트 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.lists(),
-      });
-      // 멤버 챌린지 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.all,
-        predicate: (query) => query.queryKey.includes('member'),
-      });
+      invalidateAll(queryClient, [
+        CHALLENGE_QUERY_KEYS.detail(challengeId),
+        CHALLENGE_QUERY_KEYS.lists(),
+        CHALLENGE_QUERY_KEYS.members(),
+      ]);
     },
   });
 }
@@ -142,19 +119,11 @@ export function useLikeChallenge(): UseMutationResult<void, Error, number> {
     mutationFn: (challengeId: number) =>
       challengeDetailApi.likeChallenge(challengeId),
     onSuccess: (_, challengeId) => {
-      // 해당 챌린지 상세 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.detail(challengeId),
-      });
-      // 챌린지 리스트 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.lists(),
-      });
-      // 랜덤 챌린지 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.all,
-        predicate: (query) => query.queryKey.includes('random'),
-      });
+      invalidateAll(queryClient, [
+        CHALLENGE_QUERY_KEYS.detail(challengeId),
+        CHALLENGE_QUERY_KEYS.lists(),
+        CHALLENGE_QUERY_KEYS.randoms(),
+      ]);
     },
   });
 }
@@ -171,12 +140,10 @@ export function useUpdateChallenge(): UseMutationResult<
     mutationFn: ({ challengeId, data }) =>
       challengeWriteApi.updateChallenge(challengeId, data),
     onSuccess: (_, { challengeId }) => {
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.detail(challengeId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.lists(),
-      });
+      invalidateAll(queryClient, [
+        CHALLENGE_QUERY_KEYS.detail(challengeId),
+        CHALLENGE_QUERY_KEYS.lists(),
+      ]);
     },
   });
 }
@@ -208,19 +175,11 @@ export function useUnlikeChallenge(): UseMutationResult<void, Error, number> {
     mutationFn: (challengeId: number) =>
       challengeDetailApi.unlikeChallenge(challengeId),
     onSuccess: (_, challengeId) => {
-      // 해당 챌린지 상세 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.detail(challengeId),
-      });
-      // 챌린지 리스트 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.lists(),
-      });
-      // 랜덤 챌린지 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.all,
-        predicate: (query) => query.queryKey.includes('random'),
-      });
+      invalidateAll(queryClient, [
+        CHALLENGE_QUERY_KEYS.detail(challengeId),
+        CHALLENGE_QUERY_KEYS.lists(),
+        CHALLENGE_QUERY_KEYS.randoms(),
+      ]);
     },
   });
 }

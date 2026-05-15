@@ -5,7 +5,7 @@ import {
 } from '@feature/diary/board/type/diary';
 import { diaryDetailApi } from '@feature/diary/detail/api/diaryDetailApi';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
-import { notifyApiError } from '@module/api/error';
+import { notifyApiError } from '@module/api/errorNotify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
@@ -78,10 +78,7 @@ export function useHomeRandomDiaryLike(): UseHomeRandomDiaryLikeResult {
     likeCountFromServer?: number
   ): void => {
     queryClient.setQueriesData<DiaryItem[]>(
-      {
-        queryKey: DIARY_QUERY_KEYS.all,
-        predicate: (query) => query.queryKey.includes('random'),
-      },
+      { queryKey: DIARY_QUERY_KEYS.randoms() },
       (current) =>
         updateDiaryListLikeInfo(
           current,

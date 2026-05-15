@@ -2,6 +2,7 @@
 
 import { Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import {
   useLikeDiary,
@@ -9,14 +10,16 @@ import {
 } from '@feature/diary/detail/hooks/useDiaryMutations';
 import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
-import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
+import { useInViewObserver } from '@module/hooks/useInViewObserver';
+import { cn } from '@module/utils/cn';
+import { getRelativeTimeLabel } from '@module/utils/date';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { useChallengeDiaryListInfinite } from '../hooks/useChallengeDiaryQueries';
 import { ChallengeDiaryItem } from '../type/challengeDiary';
@@ -25,43 +28,6 @@ const CHALLENGE_DIARY_PAGE_SIZE = 12;
 
 interface ChallengeDiaryListScreenProps {
   id: string;
-}
-
-function useInViewObserver(): {
-  ref: React.RefObject<HTMLDivElement | null>;
-  inView: boolean;
-} {
-  const ref = useRef<HTMLDivElement>(null);
-  const [observedInView, setObservedInView] = useState(false);
-  const isIntersectionObserverUnsupported =
-    typeof window !== 'undefined' &&
-    typeof IntersectionObserver === 'undefined';
-
-  useEffect(() => {
-    const target = ref.current;
-
-    if (!target || typeof window === 'undefined') {
-      return;
-    }
-
-    if (typeof IntersectionObserver === 'undefined') {
-      return;
-    }
-
-    const observer = new IntersectionObserver(([entry]) => {
-      setObservedInView(entry.isIntersecting);
-    });
-
-    observer.observe(target);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  const inView = isIntersectionObserverUnsupported ? true : observedInView;
-
-  return { ref, inView };
 }
 
 export function ChallengeDiaryListScreen({
@@ -144,11 +110,13 @@ export function ChallengeDiaryListScreen({
         </div>
 
         {isLoading ? (
-          <div className="mt-10 flex w-full justify-center py-10">
-            <Text size="body1" weight="medium" className="text-gray-500">
-              일지를 불러오는 중입니다.
-            </Text>
-          </div>
+          <DiaryCardSkeletonGrid
+            count={CHALLENGE_DIARY_PAGE_SIZE}
+            className={cn(
+              'mt-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
+              'lg:grid-cols-4 xl:grid-cols-6'
+            )}
+          />
         ) : null}
 
         {isError && !hasDiaries ? (
@@ -162,7 +130,12 @@ export function ChallengeDiaryListScreen({
         ) : null}
 
         {!isLoading && hasDiaries ? (
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          <div
+            className={cn(
+              'data-fade-in mt-6 grid grid-cols-1 gap-4',
+              'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
+            )}
+          >
             {diaryItems.map((diary) => (
               <DiaryCard
                 key={diary.id}
@@ -199,7 +172,7 @@ export function ChallengeDiaryListScreen({
                     router.push(`/challenge/${targetChallengeId}`);
                   }
                 }}
-                date={getRelativeDiaryDateLabel(
+                date={getRelativeTimeLabel(
                   diary.diaryInfo?.createdAt ??
                     diary.diaryInfo?.challengedDate ??
                     ''
@@ -223,15 +196,21 @@ export function ChallengeDiaryListScreen({
           </div>
         ) : null}
 
+        {isFetchingNextPage ? (
+          <DiaryCardSkeletonGrid
+            count={6}
+            className={cn(
+              'mt-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
+              'lg:grid-cols-4 xl:grid-cols-6'
+            )}
+          />
+        ) : null}
+
         <div
           ref={ref}
           className="mt-6 flex h-10 w-full items-center justify-center"
         >
-          {isFetchingNextPage ? (
-            <Text size="body2" className="text-gray-400">
-              데이터를 불러오는 중...
-            </Text>
-          ) : isError && hasDiaries ? (
+          {isFetchingNextPage ? null : isError && hasDiaries ? (
             <Text size="body2" className="text-red-500">
               {error
                 ? normalizeApiError(error).message

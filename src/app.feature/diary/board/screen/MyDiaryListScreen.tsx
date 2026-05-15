@@ -3,6 +3,7 @@
 import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { DiaryItem } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
@@ -11,52 +12,16 @@ import {
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { normalizeApiError } from '@module/api/error';
+import { useInViewObserver } from '@module/hooks/useInViewObserver';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { buildDiaryCardViewModels } from '../../../member/mypage/utils/mypageUtils';
 import { useMyDiariesInfinite } from '../hooks/useDiaryQueries';
 
 const MY_DIARY_PAGE_SIZE = 12;
-
-function useInViewObserver(): {
-  ref: React.RefObject<HTMLDivElement | null>;
-  inView: boolean;
-} {
-  const ref = useRef<HTMLDivElement>(null);
-  const [observedInView, setObservedInView] = useState(false);
-  const isIntersectionObserverUnsupported =
-    typeof window !== 'undefined' &&
-    typeof IntersectionObserver === 'undefined';
-
-  useEffect(() => {
-    const target = ref.current;
-
-    if (!target || typeof window === 'undefined') {
-      return;
-    }
-
-    if (typeof IntersectionObserver === 'undefined') {
-      return;
-    }
-
-    const observer = new IntersectionObserver(([entry]) => {
-      setObservedInView(entry.isIntersecting);
-    });
-
-    observer.observe(target);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  const inView = isIntersectionObserverUnsupported ? true : observedInView;
-
-  return { ref, inView };
-}
 
 export function MyDiaryListScreen(): React.ReactElement {
   const router = useRouter();
@@ -177,11 +142,10 @@ export function MyDiaryListScreen(): React.ReactElement {
         </header>
 
         {isLoading ? (
-          <div className="mt-10 flex w-full justify-center py-10">
-            <Text size="body1" weight="medium" className="text-gray-500">
-              일지를 불러오는 중입니다.
-            </Text>
-          </div>
+          <DiaryCardSkeletonGrid
+            count={MY_DIARY_PAGE_SIZE}
+            className="mt-6"
+          />
         ) : null}
 
         {isError && !hasDiaries ? (
@@ -197,7 +161,7 @@ export function MyDiaryListScreen(): React.ReactElement {
         {!isLoading && hasDiaries ? (
           <div
             className={cn(
-              'mt-6 grid gap-4',
+              'data-fade-in mt-6 grid gap-4',
               'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
             )}
           >
@@ -230,15 +194,15 @@ export function MyDiaryListScreen(): React.ReactElement {
           </div>
         ) : null}
 
+        {isFetchingNextPage ? (
+          <DiaryCardSkeletonGrid count={4} className="mt-4" />
+        ) : null}
+
         <div
           ref={ref}
           className="mt-6 flex h-10 w-full items-center justify-center"
         >
-          {isFetchingNextPage ? (
-            <Text size="body2" className="text-gray-400">
-              데이터를 불러오는 중...
-            </Text>
-          ) : isError && hasDiaries ? (
+          {isFetchingNextPage ? null : isError && hasDiaries ? (
             <Text size="body2" className="text-red-500">
               {error
                 ? normalizeApiError(error).message

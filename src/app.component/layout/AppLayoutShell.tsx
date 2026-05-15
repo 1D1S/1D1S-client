@@ -4,6 +4,7 @@ import { Button } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
 import { authStorage } from '@module/utils/auth';
+import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, {
@@ -18,25 +19,11 @@ import { AppLayoutProvider } from './AppLayoutContext';
 import AppRightRail from './AppRightRail';
 import AppTopNav from './AppTopNav';
 
-type Viewport = 'mobile' | 'tablet' | 'desktop';
-
 const TOP_NAV_HIDDEN_ROUTES = [
   '/auth/login',
   '/login',
   '/auth/signup',
   '/signup',
-];
-
-// 데스크탑 미만(모바일/태블릿)에서 글로벌 top-nav를 숨긴다. 이런 라우트는
-// 자체 sticky 헤더를 가지거나 (보드/생성/작성), 자체 floating 뒤로가기
-// 버튼을 가진다 (상세). 자체 헤더가 `lg:hidden`이므로 태블릿에서도 동일하게
-// 글로벌 nav를 숨겨야 헤더가 이중으로 나오지 않는다.
-const TOP_NAV_BELOW_DESKTOP_HIDDEN_ROUTES = [
-  '/diary/create',
-  '/challenge/create',
-  '/notification',
-  '/mypage/settings',
-  '/mypage/friend',
 ];
 
 const RIGHT_RAIL_HIDDEN_ROUTES = [
@@ -47,6 +34,8 @@ const RIGHT_RAIL_HIDDEN_ROUTES = [
   '/mypage',
   '/challenge/create',
   '/notification',
+  '/terms',
+  '/privacy',
 ];
 
 const BOTTOM_NAV_HIDDEN_ROUTES = [
@@ -60,6 +49,8 @@ const BOTTOM_NAV_HIDDEN_ROUTES = [
   '/notification',
   '/mypage/settings',
   '/mypage/friend',
+  '/terms',
+  '/privacy',
 ];
 
 const NOOP_SUBSCRIBE = (): (() => void) => () => {};
@@ -83,31 +74,11 @@ function isBottomNavHidden(pathname: string): boolean {
   if (/^\/diary\/\d+/.test(pathname)) {
     return true;
   }
-  return false;
-}
-
-function isTopNavBelowDesktopHidden(pathname: string): boolean {
-  if (matchesRoute(pathname, TOP_NAV_BELOW_DESKTOP_HIDDEN_ROUTES)) {
-    return true;
-  }
-  // 챌린지/일지 보드 — 페이지에 자체 sticky 헤더가 있음.
-  if (pathname === '/challenge' || pathname === '/diary') {
-    return true;
-  }
-  // 챌린지/일지 상세 — 페이지에 자체 헤더/뒤로가기 버튼이 있음.
-  if (/^\/challenge\/\d+(?:\/.*)?$/.test(pathname)) {
-    return true;
-  }
-  if (/^\/diary\/\d+(?:\/.*)?$/.test(pathname)) {
+  // 다른 회원 프로필 페이지는 자체 sticky 백 헤더를 사용한다.
+  if (/^\/member\/\d+\/?$/.test(pathname)) {
     return true;
   }
   return false;
-}
-
-function isTopNavMobileOnlyHidden(pathname: string): boolean {
-  // 마이페이지 메인 — 모바일에서만 자체 프로필 카드가 헤더 역할을 대신한다.
-  // 태블릿/데스크탑에서는 글로벌 nav가 필요하다.
-  return pathname === '/mypage';
 }
 
 function resolveActiveNavId(pathname: string): string {
@@ -124,12 +95,13 @@ function resolveActiveNavId(pathname: string): string {
 }
 
 function needsBackButton(pathname: string): boolean {
-  // 메인 챌린지/일지 상세는 글로벌 nav만 사용 — back 버튼 숨김.
-  // 하위 라우트(`/challenge/{id}/diary` 등)는 깊이가 있어 back 버튼 유지.
-  if (/^\/challenge\/\d+\/.+/.test(pathname)) {
-    return true;
-  }
   if (pathname === '/challenge/create') {
+    return false;
+  }
+  if (/^\/challenge\/\d+\/edit\/?$/.test(pathname)) {
+    return false;
+  }
+  if (/^\/challenge\/\d+\/.+/.test(pathname)) {
     return true;
   }
   if (pathname === '/diary/create') {
@@ -208,22 +180,6 @@ function getMountTimestamp(): number {
   return mountTimestamp;
 }
 
-function readViewport(): Viewport {
-  const width = window.innerWidth;
-  if (width < 640) {
-    return 'mobile';
-  }
-  if (width < 1024) {
-    return 'tablet';
-  }
-  return 'desktop';
-}
-
-function subscribeViewport(callback: () => void): () => void {
-  window.addEventListener('resize', callback);
-  return () => window.removeEventListener('resize', callback);
-}
-
 export default function AppLayoutShell({
   children,
 }: {
@@ -239,12 +195,6 @@ export default function AppLayoutShell({
   );
   const now = useSyncExternalStore(NOOP_SUBSCRIBE, getMountTimestamp, () => 0);
 
-  const viewport = useSyncExternalStore<Viewport>(
-    subscribeViewport,
-    readViewport,
-    () => 'desktop'
-  );
-
   const hasTokenHint = hasMounted && authStorage.hasTokens();
 
   const {
@@ -257,6 +207,17 @@ export default function AppLayoutShell({
     hasMounted &&
     hasTokenHint &&
     (Boolean(sidebarData) || isSidebarLoading || isSidebarFetching);
+
+  // SSR/하이드레이션 직후에는 클라이언트에서만 읽히는 토큰 힌트(localStorage,
+  // 쿠키)를 알 수 없어 무조건 게스트로 렌더된다. 그대로 노출하면 로그인 상태
+  // 사용자가 새로고침할 때 매번 게스트→로그인으로 깜빡인다. 토큰 만료로
+  // 401이 떨어지기 직전에도 같은 구간을 거치면서 직전 사용자 정보가 노출될
+  // 수 있다. 인증 확정 전(`hasMounted` 이전 + 토큰 힌트는 있으나 사이드바
+  // 쿼리가 아직 pending)까지는 사용자 정보 영역을 스켈레톤으로 가린다.
+  // 401 → forceLogout 경로에서 sidebarData=null 로 응답이 도착하므로
+  // `!sidebarData` 대신 쿼리 상태(`isSidebarLoading`)를 기준으로 판정한다.
+  const isAuthLoading =
+    !hasMounted || (hasTokenHint && isSidebarLoading);
 
   useEffect(() => {
     if (
@@ -293,17 +254,23 @@ export default function AppLayoutShell({
     });
   }, [sidebarData, now]);
 
-  const showTopNav =
-    !matchesRoute(pathname, TOP_NAV_HIDDEN_ROUTES) &&
-    !(viewport !== 'desktop' && isTopNavBelowDesktopHidden(pathname)) &&
-    !(viewport === 'mobile' && isTopNavMobileOnlyHidden(pathname));
+  const isLoginPage = matchesRoute(pathname, TOP_NAV_HIDDEN_ROUTES);
+  // TopNav 가시성: 로그인/회원가입 페이지면 완전 제거. 그 외엔 CSS로 처리.
+  const showTopNav = !isLoginPage;
+  // 모든 라우트에서 `lg`(1024px) 기준으로 데스크탑/태블릿 전환을 통일한다.
+  // - 데스크탑(≥lg): 글로벌 TopNav 노출
+  // - 태블릿/모바일(<lg): 글로벌 TopNav 숨김, BottomNav 노출
+  //   (페이지별 자체 sticky 헤더가 있으면 화면 상단을 채운다)
+  const topNavRespClass = 'hidden lg:flex';
+
   const showBackButton = needsBackButton(pathname);
   const isContentRouteForRail = !matchesRoute(
     pathname,
     RIGHT_RAIL_HIDDEN_ROUTES
   );
-  const showRightRail = viewport === 'desktop' && isContentRouteForRail;
-  const showBottomNav = viewport === 'mobile' && !isBottomNavHidden(pathname);
+  const showRightRail = isContentRouteForRail;
+  const showBottomNav = !isBottomNavHidden(pathname);
+  const bottomNavRespClass = 'lg:hidden';
   const activeNavId = resolveActiveNavId(pathname);
 
   return (
@@ -318,7 +285,7 @@ export default function AppLayoutShell({
           <AppTopNav
             activeId={activeNavId}
             isLoggedIn={isLoggedIn}
-            mode={viewport}
+            isAuthLoading={isAuthLoading}
             hasUnread={hasUnread}
             streakDays={sidebarData?.streakCount ?? 0}
             profileImageUrl={sidebarData?.profileUrl}
@@ -329,6 +296,7 @@ export default function AppLayoutShell({
               }
               router.push('/mypage');
             }}
+            className={topNavRespClass}
           />
         ) : null}
 
@@ -345,23 +313,33 @@ export default function AppLayoutShell({
           <main className="min-h-0 min-w-0 flex-1 overflow-x-clip">
             {children}
           </main>
-          {showRightRail && hasMounted ? (
-            <AppRightRail
-              isLoggedIn={isLoggedIn}
-              nickname={sidebarData?.nickname ?? '사용자'}
-              handle={
-                sidebarData?.nickname ? `@${sidebarData.nickname}` : undefined
-              }
-              profileImageUrl={sidebarData?.profileUrl}
-              streakDays={sidebarData?.streakCount ?? 0}
-              todayGoalCount={sidebarData?.todayGoalCount ?? 0}
-              challenges={railChallenges}
-              onChallengeClick={(id) => router.push(`/challenge/${id}`)}
-            />
+          {showRightRail ? (
+            <div className={cn('hidden lg:flex')}>
+              <AppRightRail
+                isLoggedIn={isLoggedIn}
+                isAuthLoading={isAuthLoading}
+                nickname={sidebarData?.nickname ?? '사용자'}
+                handle={
+                  sidebarData?.nickname
+                    ? `@${sidebarData.nickname}`
+                    : undefined
+                }
+                profileImageUrl={sidebarData?.profileUrl}
+                streakDays={sidebarData?.streakCount ?? 0}
+                todayGoalCount={sidebarData?.todayGoalCount ?? 0}
+                challenges={railChallenges}
+                onChallengeClick={(id) => router.push(`/challenge/${id}`)}
+              />
+            </div>
           ) : null}
         </div>
 
-        {showBottomNav ? <AppBottomNav activeId={activeNavId} /> : null}
+        {showBottomNav ? (
+          <AppBottomNav
+            activeId={activeNavId}
+            className={bottomNavRespClass}
+          />
+        ) : null}
       </div>
 
       <BetaButton />

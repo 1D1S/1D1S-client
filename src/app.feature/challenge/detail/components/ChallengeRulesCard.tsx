@@ -32,7 +32,7 @@ export function ChallengeRulesCard({
           weight="extrabold"
           className="tracking-[-0.3px] text-gray-900"
         >
-          인증 규칙
+          목표
         </Text>
         {editLabel && onEdit ? (
           <Button variant="outlined" size="small" onClick={onEdit}>

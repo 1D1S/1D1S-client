@@ -10,7 +10,7 @@ import type {
 /**
  * 백엔드가 내려주는 친구 신청 원본 응답.
  *
- * 받은 신청은 `from*`, 보낸 신청은 `to*` 접두사로 상대방 정보를 내려준다.
+ * 보낸 신청/받은 신청 모두 `fromMember*` 키로 상대방 정보를 내려준다.
  * 컴포넌트는 `FriendRequestSummary` 통일 형태를 쓰므로 API 레이어에서 정규화한다.
  */
 interface FriendRequestRaw {
@@ -18,31 +18,16 @@ interface FriendRequestRaw {
   fromMemberId?: number;
   fromMemberNickname?: string | null;
   fromMemberProfileUrl?: string | null;
-  toMemberId?: number;
-  toMemberNickname?: string | null;
-  toMemberProfileUrl?: string | null;
   status?: string;
   createdAt?: string;
 }
 
-function normalizeRequest(
-  raw: FriendRequestRaw,
-  direction: 'received' | 'sent',
-): FriendRequestSummary {
-  const memberId =
-    direction === 'received' ? raw.fromMemberId : raw.toMemberId;
-  const nickname =
-    direction === 'received' ? raw.fromMemberNickname : raw.toMemberNickname;
-  const profileUrl =
-    direction === 'received'
-      ? raw.fromMemberProfileUrl
-      : raw.toMemberProfileUrl;
-
+function normalizeRequest(raw: FriendRequestRaw): FriendRequestSummary {
   return {
     requestId: raw.requestId,
-    memberId: memberId ?? 0,
-    nickname: nickname ?? '',
-    profileUrl: profileUrl ?? '',
+    memberId: raw.fromMemberId ?? 0,
+    nickname: raw.fromMemberNickname ?? '',
+    profileUrl: raw.fromMemberProfileUrl ?? '',
     createdAt: raw.createdAt,
   };
 }
@@ -68,7 +53,7 @@ export const friendApi = {
       url: '/friends/requests/sent',
       method: 'GET',
     });
-    return raw.map((item) => normalizeRequest(item, 'sent'));
+    return raw.map(normalizeRequest);
   },
 
   /** 받은 친구 신청 목록 */
@@ -77,7 +62,7 @@ export const friendApi = {
       url: '/friends/requests/received',
       method: 'GET',
     });
-    return raw.map((item) => normalizeRequest(item, 'received'));
+    return raw.map(normalizeRequest);
   },
 
   /** 차단 목록 조회 */

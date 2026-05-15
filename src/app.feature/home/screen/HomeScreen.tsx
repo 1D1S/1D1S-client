@@ -23,7 +23,11 @@ export default function HomeScreen(): React.ReactElement {
   const searchParams = useSearchParams();
   const isLoginRequired = searchParams.get('loginRequired') === 'true';
   const isLoggedIn = useIsLoggedIn();
-  const { data: sidebar } = useSidebar();
+  const {
+    data: sidebar,
+    isLoading: isSidebarLoading,
+    isFetching: isSidebarFetching,
+  } = useSidebar();
   const { isLikePending, showLoginDialog, setShowLoginDialog, onLikeToggle } =
     useHomeRandomDiaryLike();
   const loginDialogDescription = isLoginRequired
@@ -66,6 +70,10 @@ export default function HomeScreen(): React.ReactElement {
 
   const streakDays = sidebar?.streakCount ?? 0;
   const todayGoalCount = sidebar?.todayGoalCount ?? 0;
+  // 토큰 힌트는 있는데 sidebar 가 아직 도착하지 않은 구간에서 0 → 실제 값으로
+  // 깜빡이는 것을 막기 위해 스켈레톤을 노출.
+  const isStreakLoading =
+    isLoggedIn && (isSidebarLoading || isSidebarFetching || !sidebar);
 
   return (
     <div
@@ -96,6 +104,7 @@ export default function HomeScreen(): React.ReactElement {
             isLoggedIn={isLoggedIn}
             streakDays={streakDays}
             todayGoalCount={todayGoalCount}
+            isStreakLoading={isStreakLoading}
           />
         </div>
 

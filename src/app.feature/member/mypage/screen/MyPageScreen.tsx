@@ -1,6 +1,6 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { MyPageSkeleton } from '@component/skeletons/MyPageSkeleton';
 import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
 import { MyPageFriendsEntry } from '@feature/friend/components/MyPageFriendsEntry';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
@@ -21,13 +21,7 @@ export default function MyPageScreen(): React.ReactElement {
   const { data: myDiariesData } = useMyDiaries(5);
 
   if (isLoading || !data) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Text size="body1" weight="medium" className="text-gray-500">
-          불러오는 중...
-        </Text>
-      </div>
-    );
+    return <MyPageSkeleton />;
   }
 
   const { nickname, profileUrl, email, streak, challengeList } = data;
@@ -35,17 +29,22 @@ export default function MyPageScreen(): React.ReactElement {
   const hasMoreDiaries = myDiariesData?.pageInfo.hasNextPage ?? false;
 
   return (
-    <div className="min-h-screen w-full bg-white pb-12 lg:bg-gray-50">
-      {/* Full-bleed gradient banner — 모바일에서는 프로필 카드가 자체 gradient를 가짐 */}
+    <div
+      className={cn(
+        'min-h-screen w-full bg-white lg:bg-gray-50',
+        'data-fade-in'
+      )}
+    >
+      {/* Full-bleed gradient banner — 모바일에서는 프로필 카드가 페이지 헤더 역할 */}
       <div className="hidden lg:block">
         <MyPageHeroBanner />
       </div>
 
-      {/* Centered content container */}
+      {/* Centered content container — 표준 반응형 패딩 */}
       <div
         className={cn(
           'mx-auto w-full max-w-[1200px]',
-          'lg:px-8',
+          'px-5 py-5 lg:px-8 lg:py-10',
         )}
       >
         <MyPageProfileCard
@@ -60,48 +59,45 @@ export default function MyPageScreen(): React.ReactElement {
           currentStreak={streak.currentStreak}
         />
 
-        {/* 모바일 이후 컨텐츠 인셋 */}
-        <div className="px-5 lg:px-0">
-          {/* Streak hero + Heatmap — 모바일에서는 숨김 */}
-          <div
-            className={cn(
-              'mt-6 hidden grid-cols-1 gap-4',
-              'lg:grid lg:grid-cols-2 lg:gap-5',
-            )}
-          >
-            <MyPageStreakHeroCard
-              currentStreak={streak.currentStreak}
-              maxStreak={streak.maxStreak}
-            />
-            <MyPageActivityHeatmap calendar={streak.calendar} />
-          </div>
+        {/* Streak hero + Heatmap — 모바일에서는 숨김 */}
+        <div
+          className={cn(
+            'mt-6 hidden grid-cols-1 gap-4',
+            'lg:grid lg:grid-cols-2 lg:gap-5',
+          )}
+        >
+          <MyPageStreakHeroCard
+            currentStreak={streak.currentStreak}
+            maxStreak={streak.maxStreak}
+          />
+          <MyPageActivityHeatmap calendar={streak.calendar} />
+        </div>
 
-          {/* 통계 섹션 — 모바일에서는 프로필 카드 내부 grid로 대체 */}
-          <div className="mt-8 hidden lg:block">
-            <MyPageStatSection streak={streak} />
-          </div>
+        {/* 통계 섹션 — 모바일에서는 프로필 카드 내부 grid로 대체 */}
+        <div className="mt-8 hidden lg:block">
+          <MyPageStatSection streak={streak} />
+        </div>
 
-          <div className="mt-6">
-            <MyPageFriendsEntry />
-          </div>
+        <div className="mt-6">
+          <MyPageFriendsEntry />
+        </div>
 
-          <div className="mt-8">
-            <MyPageBadgesSection streak={streak} />
-          </div>
+        <div className="mt-8">
+          <MyPageBadgesSection streak={streak} />
+        </div>
 
-          <div className="mt-8">
-            <MyPageActiveChallenges challengeList={challengeList} />
-          </div>
+        <div className="mt-8">
+          <MyPageActiveChallenges challengeList={challengeList} />
+        </div>
 
-          <div className="mt-8">
-            <MyPageDiarySection
-              title="내 일지"
-              diaries={myDiaries}
-              nickname={nickname}
-              hasMore={hasMoreDiaries}
-              viewAllHref="/mypage/diary"
-            />
-          </div>
+        <div className="mt-8">
+          <MyPageDiarySection
+            title="내 일지"
+            diaries={myDiaries}
+            nickname={nickname}
+            hasMore={hasMoreDiaries}
+            viewAllHref="/mypage/diary"
+          />
         </div>
       </div>
     </div>

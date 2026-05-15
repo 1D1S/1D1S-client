@@ -8,7 +8,7 @@ import {
 } from '@1d1s/design-system';
 import { Form } from '@component/ui/Form';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
-import { notifyApiError } from '@module/api/error';
+import { notifyApiError } from '@module/api/errorNotify';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import { useQueryClient } from '@tanstack/react-query';

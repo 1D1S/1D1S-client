@@ -1,7 +1,6 @@
 import { getCategoryLabel } from '@constants/categories';
 import type { DiaryItem } from '@feature/diary/board/type/diary';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
-import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
 import {
   type DiaryEmotion,
   mapFeelingToEmotion,
@@ -10,6 +9,7 @@ import type {
   MyPageStreak,
   StreakCalendarItem,
 } from '@feature/member/type/member';
+import { getRelativeTimeLabel } from '@module/utils/date';
 
 export type { DiaryEmotion };
 
@@ -54,7 +54,7 @@ function toLocalDateKey(date: Date): string {
 }
 
 function toRelativeDateLabel(createdAt: string | undefined): string {
-  return getRelativeDiaryDateLabel(createdAt ?? '', '최근');
+  return getRelativeTimeLabel(createdAt ?? '', '최근');
 }
 
 function resolveDiaryImage(diary: DiaryItem): string | undefined {
@@ -94,13 +94,20 @@ function toHeatmapLevel(count: number): number {
   return 4;
 }
 
+export interface HeatmapEntry {
+  date: string;
+  count: number;
+  level: number;
+}
+
 /**
  * 7행 × 20열 (총 140일) 활동 잔디용 데이터를 오늘 기준 과거 순으로 생성한다.
- * 각 셀의 count 는 0~4 레벨로 클램프되어 DS Streak 그라데이션과 매핑된다.
+ * 각 셀의 level 은 0~4 로 클램프되어 DS Heatmap 그라데이션과 매핑되며,
+ * count 는 원본 활동 횟수 그대로 보존해 툴팁 표시에 사용한다.
  */
 export function buildHeatmapData(
   calendar: StreakCalendarItem[]
-): StreakCalendarItem[] {
+): HeatmapEntry[] {
   const calendarMap = new Map(
     calendar.map((item) => [item.date, item.count])
   );
@@ -108,12 +115,12 @@ export function buildHeatmapData(
   const start = new Date(today);
   start.setDate(today.getDate() - (HEATMAP_TOTAL_DAYS - 1));
 
-  const result: StreakCalendarItem[] = [];
+  const result: HeatmapEntry[] = [];
   const cursor = new Date(start);
   while (cursor <= today) {
     const dateStr = toLocalDateKey(cursor);
     const count = calendarMap.get(dateStr) ?? 0;
-    result.push({ date: dateStr, count: toHeatmapLevel(count) });
+    result.push({ date: dateStr, count, level: toHeatmapLevel(count) });
     cursor.setDate(cursor.getDate() + 1);
   }
   return result;

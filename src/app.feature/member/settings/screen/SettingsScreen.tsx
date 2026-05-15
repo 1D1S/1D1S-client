@@ -4,7 +4,7 @@ import { Text } from '@1d1s/design-system';
 import { useLogout } from '@feature/auth/hooks/useAuthMutations';
 import { useDeleteMember } from '@feature/member/hooks/useMemberMutations';
 import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
-import { notifyApiError } from '@module/api/error';
+import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
 import {
   ArrowLeft,

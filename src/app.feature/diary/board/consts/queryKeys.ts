@@ -7,8 +7,9 @@ export const DIARY_QUERY_KEYS = {
     [...DIARY_QUERY_KEYS.lists(), params] as const,
   details: () => [...DIARY_QUERY_KEYS.all, 'detail'] as const,
   detail: (id: number) => [...DIARY_QUERY_KEYS.details(), id] as const,
+  randoms: () => [...DIARY_QUERY_KEYS.all, 'random'] as const,
   random: (params: RandomDiaryParams) =>
-    [...DIARY_QUERY_KEYS.all, 'random', params] as const,
+    [...DIARY_QUERY_KEYS.randoms(), params] as const,
   allDiaries: () => [...DIARY_QUERY_KEYS.all, 'all'] as const,
   my: () => [...DIARY_QUERY_KEYS.all, 'my'] as const,
   myDiaries: (params?: { page?: number; size?: number }) =>

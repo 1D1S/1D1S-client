@@ -26,3 +26,83 @@ export function formatDateISO(date: Date): string {
 export function formatDateKR(date: Date): string {
   return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
+
+const relativeTimeFormatter = new Intl.RelativeTimeFormat('ko', {
+  numeric: 'auto',
+});
+
+function isDateOnlyValue(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function parseDateValue(value: string): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  if (isDateOnlyValue(value)) {
+    const [year, month, day] = value.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  const normalizedValue = value.includes('T') ? value : value.replace(' ', 'T');
+  const parsedDate = new Date(normalizedValue);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  return parsedDate;
+}
+
+/**
+ * 한국어 상대 시간 라벨 (예: "방금 전", "5분 전", "어제") 로 변환한다.
+ * `YYYY-MM-DD` 형식은 일 단위로, 그 외 timestamp는 분/시간/일 단위로 처리한다.
+ */
+export function getRelativeTimeLabel(
+  value: string,
+  emptyFallback = '방금 전'
+): string {
+  if (!value) {
+    return emptyFallback;
+  }
+
+  const targetDate = parseDateValue(value);
+  if (!targetDate) {
+    return emptyFallback;
+  }
+
+  if (isDateOnlyValue(value)) {
+    const diffDays = Math.round(
+      (toStartOfDay(targetDate).getTime() -
+        toStartOfDay(new Date()).getTime()) /
+        86400000
+    );
+    return relativeTimeFormatter.format(diffDays, 'day');
+  }
+
+  const diffMinutes = Math.round((targetDate.getTime() - Date.now()) / 60000);
+  const absMinutes = Math.abs(diffMinutes);
+
+  if (absMinutes < 1) {
+    return '방금 전';
+  }
+
+  if (absMinutes < 60) {
+    return relativeTimeFormatter.format(diffMinutes, 'minute');
+  }
+
+  const diffHours = Math.round(diffMinutes / 60);
+  if (Math.abs(diffHours) < 24) {
+    return relativeTimeFormatter.format(diffHours, 'hour');
+  }
+
+  const diffDays = Math.round(diffHours / 24);
+  return relativeTimeFormatter.format(diffDays, 'day');
+}
+
+/**
+ * 비교/정렬용 epoch ms 를 반환한다. 파싱 실패 시 0을 반환한다.
+ */
+export function getDateTimestamp(value: string): number {
+  return parseDateValue(value)?.getTime() ?? 0;
+}

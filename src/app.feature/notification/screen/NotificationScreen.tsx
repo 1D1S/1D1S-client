@@ -1,6 +1,7 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
+import { NotificationListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft, Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -22,16 +23,6 @@ export function NotificationScreen(): React.JSX.Element {
   const notifications = data?.items ?? [];
   const hasUnread = notifications.some((notif) => !notif.isRead);
   const unreadCount = notifications.filter((notif) => !notif.isRead).length;
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen w-full items-center justify-center">
-        <Text size="body1" weight="medium" className="text-gray-500">
-          불러오는 중...
-        </Text>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen w-full">
@@ -116,7 +107,9 @@ export function NotificationScreen(): React.JSX.Element {
           )}
         </header>
 
-        {notifications.length === 0 ? (
+        {isLoading ? (
+          <NotificationListSkeleton count={6} className="mt-6" />
+        ) : notifications.length === 0 ? (
           <div
             className={cn(
               'mt-6 flex flex-col items-center justify-center gap-4',
@@ -138,7 +131,7 @@ export function NotificationScreen(): React.JSX.Element {
         ) : (
           <ul
             className={cn(
-              'rounded-3 mt-6 overflow-hidden',
+              'rounded-3 data-fade-in mt-6 overflow-hidden',
               'border border-gray-200 bg-white',
               'divide-y divide-gray-100',
             )}

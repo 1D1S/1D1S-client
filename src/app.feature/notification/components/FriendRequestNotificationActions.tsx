@@ -6,7 +6,7 @@ import {
   useRejectFriendRequest,
 } from '@feature/friend/hooks/useFriendMutations';
 import { useReceivedFriendRequests } from '@feature/friend/hooks/useFriendQueries';
-import { notifyApiError } from '@module/api/error';
+import { notifyApiError } from '@module/api/errorNotify';
 import { useQueryClient } from '@tanstack/react-query';
 import React from 'react';
 import { toast } from 'sonner';

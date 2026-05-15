@@ -82,24 +82,22 @@ export function MyPageProfileCard({
 
   return (
     <>
-      {/* 모바일: 흰 배경 + 72px 아바타 + 3-col stats grid */}
-      <section
-        className={cn(
-          'relative bg-white px-5 pt-5 pb-6 lg:hidden',
-        )}
-      >
-        <div className="flex justify-end">
-          <button
-            type="button"
-            aria-label="설정"
-            onClick={() => router.push('/mypage/settings')}
-            className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-lg',
-              'text-gray-500 transition-colors hover:bg-white/60',
-            )}
-          >
-            <Settings className="h-[18px] w-[18px]" />
-          </button>
+      {/* 모바일: 부모 컨테이너 패딩에 정렬, 72px 아바타 + 3-col stats grid */}
+      <section className={cn('relative lg:hidden')}>
+        <div className="flex min-h-8 items-center justify-end gap-2">
+          {actions ?? (
+            <button
+              type="button"
+              aria-label="설정"
+              onClick={() => router.push('/mypage/settings')}
+              className={cn(
+                'flex h-8 w-8 items-center justify-center rounded-lg',
+                'text-gray-500 transition-colors hover:bg-gray-100',
+              )}
+            >
+              <Settings className="h-[18px] w-[18px]" />
+            </button>
+          )}
         </div>
         <div className="mt-1 flex items-center gap-3.5">
           <div
@@ -156,10 +154,11 @@ export function MyPageProfileCard({
         </div>
       </section>
 
-      {/* 데스크탑: hero 위에 -60px 마진으로 겹쳐 올라오는 카드 */}
+      {/* 데스크탑: hero 위에 -60px 마진으로 겹쳐 올라오는 카드.
+          컨테이너 lg:py-10(40px top) 보정 위해 -mt-25(-100px)를 사용 */}
       <section
         className={cn(
-          'rounded-4 relative -mt-15 hidden border border-gray-200 bg-white',
+          'rounded-4 relative -mt-25 hidden border border-gray-200 bg-white',
           'p-5 shadow-[0_6px_20px_rgba(0,0,0,0.06)]',
           'lg:flex lg:flex-row lg:items-center lg:gap-5 lg:p-6',
         )}

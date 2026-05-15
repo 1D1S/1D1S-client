@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Text } from '@1d1s/design-system';
+import { AlertDialog } from '@component/AlertDialog';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -10,9 +11,7 @@ import React from 'react';
 import { DiaryCreateChallengeSection } from '../components/DiaryCreateChallengeSection';
 import { DiaryCreateFinishSection } from '../components/DiaryCreateFinishSection';
 import { DiaryCreateGoalsSection } from '../components/DiaryCreateGoalsSection';
-import { DiaryCreateMissingChallengeDialog } from '../components/DiaryCreateMissingChallengeDialog';
 import { DiaryCreateThumbnailSection } from '../components/DiaryCreateThumbnailSection';
-import { DiaryCreateUnavailableDialog } from '../components/DiaryCreateUnavailableDialog';
 import { useDiaryCreateForm } from '../hooks/useDiaryCreateForm';
 
 // tiptap(~200KB+)은 일지 작성/편집 진입 시에만 필요하므로 동적 import 로
@@ -249,22 +248,26 @@ export default function DiaryCreateScreen(): React.ReactElement {
         </div>
       </div>
 
-      <DiaryCreateMissingChallengeDialog
+      <AlertDialog
         open={isMissingChallengeDialogOpen}
         onOpenChange={(open) => {
           if (!open) {
             closeMissingChallengeDialog();
           }
         }}
+        title="챌린지를 찾을 수 없습니다."
+        description="내 일지 리스트에서 요청한 챌린지를 찾지 못했습니다."
       />
 
-      <DiaryCreateUnavailableDialog
+      <AlertDialog
         open={isCreateUnavailableDialogOpen}
         onOpenChange={(open) => {
           if (!open) {
             closeCreateUnavailableDialog();
           }
         }}
+        title="새 일지를 작성할 수 없습니다."
+        description="최근 3일 동안 작성 가능한 날짜를 모두 사용했습니다."
       />
     </div>
   );

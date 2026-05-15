@@ -21,10 +21,12 @@ const ITEMS: BottomNavConfigItem[] = [
 
 interface AppBottomNavProps {
   activeId: string;
+  className?: string;
 }
 
 export default function AppBottomNav({
   activeId,
+  className,
 }: AppBottomNavProps): React.ReactElement {
   const router = useRouter();
   return (
@@ -41,7 +43,7 @@ export default function AppBottomNav({
         label,
         icon: <Icon size={20} strokeWidth={1.8} />,
       }))}
-      className="sticky bottom-0 z-30"
+      className={`sticky bottom-0 z-30 ${className ?? ''}`}
     />
   );
 }

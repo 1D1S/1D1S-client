@@ -1,7 +1,9 @@
 'use client';
 
 import { Button, Text } from '@1d1s/design-system';
-import { normalizeApiError, notifyApiError } from '@module/api/error';
+import { FriendListSkeleton } from '@component/skeletons/ListItemSkeleton';
+import { normalizeApiError } from '@module/api/error';
+import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 import { toast } from 'sonner';
@@ -29,19 +31,16 @@ export default function SentFriendRequestsScreen(): React.ReactElement {
 
   return (
     <FriendPageShell title="보낸 친구 신청">
+      {isLoading ? (
+        <FriendListSkeleton count={4} className="mt-3 lg:mt-6" />
+      ) : (
       <section
         className={cn(
           'mt-3 overflow-hidden border-y border-gray-100 bg-white',
-          'lg:mt-6 lg:rounded-[14px] lg:border',
+          'data-fade-in lg:mt-6 lg:rounded-[14px] lg:border',
         )}
       >
-        {isLoading ? (
-          <div className="flex w-full justify-center py-10">
-            <Text size="body2" className="text-gray-500">
-              불러오는 중입니다.
-            </Text>
-          </div>
-        ) : isError ? (
+        {isError ? (
           <div className="flex w-full justify-center py-10">
             <Text size="body2" className="text-red-500">
               {error
@@ -78,6 +77,7 @@ export default function SentFriendRequestsScreen(): React.ReactElement {
           ))
         )}
       </section>
+      )}
     </FriendPageShell>
   );
 }

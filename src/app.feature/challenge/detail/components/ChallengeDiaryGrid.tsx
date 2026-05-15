@@ -2,6 +2,7 @@
 
 import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
+import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import {
   resolveDiaryImageList,
@@ -31,10 +32,12 @@ export function ChallengeDiaryGrid({
 }: ChallengeDiaryGridProps): React.ReactElement {
   if (isLoading) {
     return (
-      <div className="flex w-full justify-center py-8">
-        <Text size="body2" weight="medium" className="text-gray-500">
-          일지를 불러오는 중입니다.
-        </Text>
+      <div className={gridClassName}>
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className={itemClassName}>
+            <DiaryCardSkeleton />
+          </div>
+        ))}
       </div>
     );
   }
@@ -50,7 +53,7 @@ export function ChallengeDiaryGrid({
   }
 
   return (
-    <div className={gridClassName}>
+    <div className={`${gridClassName} data-fade-in`}>
       {diaries.map((diary) => (
         <div key={diary.id} className={itemClassName}>
           <DiaryCard

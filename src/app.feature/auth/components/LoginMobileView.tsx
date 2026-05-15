@@ -123,7 +123,7 @@ export function LoginMobileView({
           size="caption2"
           weight="regular"
           as="p"
-          className="mt-auto block pt-6 pb-4 text-center leading-7 text-gray-500"
+          className="mt-auto block pt-6 pb-8 text-center leading-7 text-gray-500"
         >
           가입 시{' '}
           <Link
@@ -141,24 +141,6 @@ export function LoginMobileView({
           </Link>
           에<br />
           동의한 것으로 간주됩니다.
-        </Text>
-      </div>
-
-      {/* 하단 계정 찾기 스트립 — gray-50 배경, 시안 매칭 */}
-      <div
-        className={cn(
-          'relative border-t border-gray-100 bg-gray-50',
-          'px-6 pt-3.5 pb-5 text-center'
-        )}
-      >
-        <Text size="caption1" weight="regular" className="text-gray-600">
-          어떤 SNS로 가입했는지 모르시나요?{' '}
-          <Link
-            href="/help/account-find"
-            className="text-main-800 font-extrabold hover:underline"
-          >
-            계정 찾기
-          </Link>
         </Text>
       </div>
     </div>

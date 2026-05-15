@@ -13,15 +13,17 @@ import {
   Text,
   TextField,
 } from '@1d1s/design-system';
+import { AlertDialog } from '@component/AlertDialog';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
-import { DiaryCreateUnavailableDialog } from '@feature/diary/write/components/DiaryCreateUnavailableDialog';
-import { normalizeApiError, notifyApiError } from '@module/api/error';
+import { normalizeApiError } from '@module/api/error';
+import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
 import { formatDateISO } from '@module/utils/date';
 import { ArrowLeft, CircleAlert, Heart, Trash2 } from 'lucide-react';
@@ -175,14 +177,13 @@ export function ChallengeDetailScreen({
   const isLoggedIn = useIsLoggedIn();
   const [dismissed, setDismissed] = useState(false);
   const showAuthDialog = !isLoggedIn && !dismissed;
-  // 모바일에서 히어로가 스크롤로 사라지면 상단 sticky 헤더(뒤로가기 + 타이틀)
-  // 를 페이드인한다. 히어로 높이(200px)보다 살짝 일찍 노출되도록 임계값을
-  // 140px로 둔다.
+  // 히어로 위 floating 뒤로가기가 스크롤로 가려지자마자 상단 sticky 헤더가
+  // 등장하도록 임계값을 80px로 둔다.
   const [isCompactHeaderVisible, setIsCompactHeaderVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = (): void => {
-      setIsCompactHeaderVisible(window.scrollY > 140);
+      setIsCompactHeaderVisible(window.scrollY > 80);
     };
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -489,15 +490,7 @@ export function ChallengeDetailScreen({
     return (
       <>
         {authDialog}
-        <div
-          className={cn(
-            'flex min-h-[60vh] w-full items-center justify-center'
-          )}
-        >
-          <Text size="body1" weight="medium" className="text-gray-500">
-            상세 정보를 불러오는 중입니다...
-          </Text>
-        </div>
+        <ChallengeDetailSkeleton />
       </>
     );
   }
@@ -754,26 +747,10 @@ export function ChallengeDetailScreen({
   );
 
   return (
-    <div
-      className={cn(
-        'min-h-screen w-full bg-white lg:bg-gray-50/60',
-        ctaConfig.show ? 'pb-[100px] lg:pb-12' : 'pb-12'
-      )}
-    >
-      {authDialog}
-      {freeGoalModal}
-      {editGoalModal}
-      {editChallengeGoalsModal}
-      <DiaryCreateUnavailableDialog
-        open={showCreateUnavailableDialog}
-        onOpenChange={setShowCreateUnavailableDialog}
-      />
-      <LoginRequiredDialog
-        open={showDiaryLikeDialog}
-        onOpenChange={setShowDiaryLikeDialog}
-      />
-
-      {/* 모바일 sliver-style sticky 헤더 — 스크롤 시 페이드인 */}
+    <>
+      {/* 모바일 sliver-style sticky 헤더 — 스크롤 시 페이드인.
+          data-fade-in 래퍼 밖에 둔다: 래퍼의 transform 이 containing block 을
+          만들어 position: fixed 가 뷰포트 대신 래퍼 기준이 되는 문제를 피한다. */}
       <div
         className={cn(
           'fixed top-0 right-0 left-0 z-30 flex h-14 items-center',
@@ -805,6 +782,27 @@ export function ChallengeDetailScreen({
           {summary.title}
         </Text>
       </div>
+
+      <div
+        className={cn(
+          'data-fade-in min-h-screen w-full bg-white lg:bg-gray-50/60',
+          ctaConfig.show ? 'pb-[100px] lg:pb-12' : 'pb-12'
+        )}
+      >
+        {authDialog}
+        {freeGoalModal}
+        {editGoalModal}
+        {editChallengeGoalsModal}
+        <AlertDialog
+          open={showCreateUnavailableDialog}
+          onOpenChange={setShowCreateUnavailableDialog}
+          title="새 일지를 작성할 수 없습니다."
+          description="최근 3일 동안 작성 가능한 날짜를 모두 사용했습니다."
+        />
+        <LoginRequiredDialog
+          open={showDiaryLikeDialog}
+          onOpenChange={setShowDiaryLikeDialog}
+        />
 
       {/* 히어로 + 모바일 floating 뒤로가기 */}
       <div className="relative">
@@ -992,7 +990,7 @@ export function ChallengeDetailScreen({
             'lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-7'
           )}
         >
-          {/* 메인 콘텐츠: 소개 → 인증 규칙 → 참여자 일지 */}
+          {/* 메인 콘텐츠: 소개 → 목표 → 참여자 일지 */}
           <div className="flex min-w-0 flex-col gap-3.5 lg:gap-4">
             {detail.description?.trim() ? (
               <section
@@ -1173,6 +1171,7 @@ export function ChallengeDetailScreen({
           </Button>
         </div>
       ) : null}
-    </div>
+      </div>
+    </>
   );
 }
