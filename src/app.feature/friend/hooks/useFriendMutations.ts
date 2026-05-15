@@ -75,21 +75,3 @@ export function useRemoveFriend(): UseMutationResult<void, Error, number> {
     onSuccess: invalidate,
   });
 }
-
-export function useBlockMember(): UseMutationResult<void, Error, number> {
-  const invalidate = useInvalidateFriendQueries();
-  return useMutation({
-    mutationFn: (blockedMemberId: number) =>
-      friendApi.blockMember(blockedMemberId),
-    onSuccess: invalidate,
-  });
-}
-
-export function useUnblockMember(): UseMutationResult<void, Error, number> {
-  const invalidate = useInvalidateFriendQueries();
-  return useMutation({
-    mutationFn: (blockedMemberId: number) =>
-      friendApi.unblockMember(blockedMemberId),
-    onSuccess: invalidate,
-  });
-}

@@ -188,40 +188,6 @@ export function buildMyPageBadges(streak: MyPageStreak): MyPageBadge[] {
   });
 }
 
-/**
- * 챌린지 진행률 계산 — 시작일 ~ 종료일 사이에서 오늘이 차지하는 비율.
- */
-export function getChallengeProgressInfo(
-  startDate: string,
-  endDate: string,
-  isInfinite: boolean
-): { progress: number; daysElapsed: number; totalDays: number } {
-  const start = new Date(startDate).getTime();
-  const end = new Date(endDate).getTime();
-  const now = Date.now();
-  const dayMs = 24 * 60 * 60 * 1000;
-
-  if (Number.isNaN(start) || Number.isNaN(end)) {
-    return { progress: 0, daysElapsed: 0, totalDays: 0 };
-  }
-  const totalDays = Math.max(
-    1,
-    Math.round((end - start) / dayMs) + 1,
-  );
-  const daysElapsed = Math.max(
-    0,
-    Math.min(totalDays, Math.floor((now - start) / dayMs) + 1),
-  );
-  if (isInfinite) {
-    return { progress: 100, daysElapsed, totalDays };
-  }
-  const progress = Math.max(
-    0,
-    Math.min(100, Math.round((daysElapsed / totalDays) * 100)),
-  );
-  return { progress, daysElapsed, totalDays };
-}
-
 export function buildDiaryCardViewModels(
   diaries: DiaryItem[],
   nickname: string
