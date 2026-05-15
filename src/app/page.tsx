@@ -5,7 +5,7 @@ import {
   getServerRandomChallenges,
   getServerRandomDiaries,
 } from '@module/api/serverApi';
-import React from 'react';
+import React, { Suspense } from 'react';
 
 import { Prefetch } from '@/app.lib/Prefetch';
 
@@ -26,7 +26,11 @@ export default function MainPage(): React.ReactElement {
         },
       ]}
     >
-      <HomeScreen />
+      {/* HomeScreen 내부에서 useSearchParams 사용 — prerender 시 CSR bailout
+          되지 않도록 Suspense 경계를 둔다 */}
+      <Suspense fallback={null}>
+        <HomeScreen />
+      </Suspense>
     </Prefetch>
   );
 }
