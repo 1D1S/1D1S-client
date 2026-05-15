@@ -17,9 +17,17 @@ import {
   useSendFriendRequest,
 } from '../hooks/useFriendMutations';
 import { useFriendList, useFriendRelation } from '../hooks/useFriendQueries';
+import type { FriendRelationStatus } from '../type/friend';
 
 interface MemberFriendActionButtonProps {
   memberId: number;
+  /**
+   * 통합 멤버 프로필 API(`GET /member/profile/{memberId}`)에서 받은 관계 상태.
+   * 전달되면 이 값을 표시 우선순위로 사용하며, requestId 가 필요한 액션
+   * (REQUEST_SENT 취소, REQUEST_RECEIVED 수락/거절)에 한해서만
+   * `useFriendRelation` 호출로 보강한다.
+   */
+  relationStatus?: FriendRelationStatus;
 }
 
 /**
@@ -34,9 +42,20 @@ interface MemberFriendActionButtonProps {
  */
 export function MemberFriendActionButton({
   memberId,
+  relationStatus,
 }: MemberFriendActionButtonProps): React.ReactElement | null {
   const isLoggedIn = useIsLoggedIn();
-  const { data: relation, isLoading } = useFriendRelation(memberId);
+  // requestId 가 필요한 상태에서만 보조 호출. 외부 prop 이 없으면 항상 호출.
+  const needsRequestId =
+    relationStatus === 'REQUEST_SENT' ||
+    relationStatus === 'REQUEST_RECEIVED';
+  const shouldFetchRelation = relationStatus === undefined || needsRequestId;
+  const { data: fetchedRelation, isLoading: isRelationLoading } =
+    useFriendRelation(shouldFetchRelation ? memberId : 0);
+  const status: FriendRelationStatus | undefined =
+    relationStatus ?? fetchedRelation?.status;
+  const requestId = fetchedRelation?.requestId;
+  const isLoading = relationStatus === undefined && isRelationLoading;
   // 백엔드 relation 응답이 누락/오타로 FRIEND 분기를 못 탈 때를 위한 fallback.
   // 친구 목록에 있는 회원이면 상태와 무관하게 친구로 간주한다.
   const { data: friendList } = useFriendList();
@@ -63,7 +82,7 @@ export function MemberFriendActionButton({
     return null;
   }
 
-  if (isLoading || !relation) {
+  if (isLoading || !status) {
     return (
       <div
         className={cn(
@@ -80,14 +99,14 @@ export function MemberFriendActionButton({
   }
 
   if (
-    relation.status === 'SELF' ||
-    relation.status === 'BLOCKED' ||
-    relation.status === 'BLOCKED_BY'
+    status === 'SELF' ||
+    status === 'BLOCKED' ||
+    status === 'BLOCKED_BY'
   ) {
     return null;
   }
 
-  if (relation.status === 'FRIEND' || isFriendByList) {
+  if (status === 'FRIEND' || isFriendByList) {
     return (
       <>
         <Button
@@ -125,18 +144,18 @@ export function MemberFriendActionButton({
     );
   }
 
-  if (relation.status === 'REQUEST_SENT') {
+  if (status === 'REQUEST_SENT') {
     return (
       <Button
         variant="secondary"
         size="md"
         iconLeft={<Clock className="h-4 w-4" />}
-        disabled={isMutating || !relation.requestId}
+        disabled={isMutating || !requestId}
         onClick={() => {
-          if (!relation.requestId) {
+          if (!requestId) {
             return;
           }
-          cancelRequest.mutate(relation.requestId, {
+          cancelRequest.mutate(requestId, {
             onSuccess: () => toast.success('친구 신청을 취소했습니다.'),
             onError: notifyApiError,
           });
@@ -147,8 +166,7 @@ export function MemberFriendActionButton({
     );
   }
 
-  if (relation.status === 'REQUEST_RECEIVED') {
-    const requestId = relation.requestId;
+  if (status === 'REQUEST_RECEIVED') {
     const disabled = isMutating || !requestId;
     return (
       <div className="flex items-center gap-2">

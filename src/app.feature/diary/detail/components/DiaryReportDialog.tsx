@@ -10,11 +10,17 @@ import {
   DialogTitle,
   Text,
 } from '@1d1s/design-system';
+import { AlertDialog } from '@component/AlertDialog';
 import { cn } from '@module/utils/cn';
 import React, { useState } from 'react';
 
 import { ReportType } from '../../board/type/diary';
 import { useCreateDiaryReport } from '../hooks/useDiaryMutations';
+
+type ReportAlertState =
+  | { kind: 'success'; message: string }
+  | { kind: 'error'; message: string }
+  | null;
 
 interface DiaryReportDialogProps {
   diaryId: number;
@@ -35,6 +41,7 @@ export function DiaryReportDialog({
 }: DiaryReportDialogProps): React.ReactElement {
   const [selectedType, setSelectedType] = useState<ReportType | null>(null);
   const [content, setContent] = useState('');
+  const [alertState, setAlertState] = useState<ReportAlertState>(null);
   const reportMutation = useCreateDiaryReport();
 
   const handleClose = (): void => {
@@ -57,17 +64,31 @@ export function DiaryReportDialog({
       },
       {
         onSuccess: (): void => {
-          alert('신고가 접수되었습니다.');
-          handleClose();
+          setAlertState({
+            kind: 'success',
+            message: '신고가 접수되었습니다.',
+          });
         },
         onError: (): void => {
-          alert('신고 접수 중 오류가 발생했습니다.');
+          setAlertState({
+            kind: 'error',
+            message: '신고 접수 중 오류가 발생했습니다.',
+          });
         },
       }
     );
   };
 
+  const handleAlertConfirm = (): void => {
+    const kind = alertState?.kind;
+    setAlertState(null);
+    if (kind === 'success') {
+      handleClose();
+    }
+  };
+
   return (
+    <>
     <Dialog
       open={open}
       onOpenChange={(isOpen) => {
@@ -157,5 +178,18 @@ export function DiaryReportDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <AlertDialog
+      open={alertState !== null}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          handleAlertConfirm();
+        }
+      }}
+      title={alertState?.kind === 'success' ? '신고 접수 완료' : '신고 실패'}
+      description={alertState?.message ?? ''}
+      onConfirm={handleAlertConfirm}
+    />
+    </>
   );
 }

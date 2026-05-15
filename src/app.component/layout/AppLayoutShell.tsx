@@ -13,7 +13,6 @@ import React, {
   useSyncExternalStore,
 } from 'react';
 
-import { BetaButton } from '../BetaButton';
 import AppBottomNav from './AppBottomNav';
 import { AppLayoutProvider } from './AppLayoutContext';
 import AppRightRail from './AppRightRail';
@@ -341,8 +340,6 @@ export default function AppLayoutShell({
           />
         ) : null}
       </div>
-
-      <BetaButton />
     </AppLayoutProvider>
   );
 }

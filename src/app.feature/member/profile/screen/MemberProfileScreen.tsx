@@ -1,7 +1,6 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
-import { useMemberDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
 import { MemberFriendActionButton } from '@feature/friend/components/MemberFriendActionButton';
 import { useMemberProfile } from '@feature/member/hooks/useMemberQueries';
 import { MyPageActiveChallenges } from '@feature/member/mypage/components/MyPageActiveChallenges';
@@ -62,7 +61,6 @@ export default function MemberProfileScreen({
   memberId,
 }: MemberProfileScreenProps): React.ReactElement {
   const { data, isLoading, isError, error } = useMemberProfile(memberId);
-  const { data: memberDiariesData } = useMemberDiaries(memberId, 10);
 
   if (isLoading) {
     return (
@@ -98,9 +96,17 @@ export default function MemberProfileScreen({
     );
   }
 
-  const { nickname, profileUrl, streak, challengeList } = data;
-  const memberDiaries = memberDiariesData?.items ?? [];
-  const hasMoreDiaries = memberDiariesData?.pageInfo.hasNextPage ?? false;
+  const {
+    nickname,
+    profileUrl,
+    streak,
+    challengeList,
+    diaryList,
+    relationStatus,
+    isAccessible,
+  } = data;
+  const memberDiaries = diaryList?.items ?? [];
+  const hasMoreDiaries = diaryList?.pageInfo?.hasNextPage ?? false;
 
   return (
     <div className="min-h-screen w-full bg-white lg:bg-gray-50">
@@ -123,44 +129,63 @@ export default function MemberProfileScreen({
           completedFiniteChallengeCount={
             streak.completedFiniteChallengeCount ?? 0
           }
-          actions={<MemberFriendActionButton memberId={memberId} />}
+          actions={
+            <MemberFriendActionButton
+              memberId={memberId}
+              relationStatus={relationStatus}
+            />
+          }
         />
 
-        <div
-          className={cn(
-            'mt-6 grid grid-cols-1 gap-4',
-            'lg:grid-cols-2 lg:gap-5',
-          )}
-        >
-          <MyPageStreakHeroCard
-            currentStreak={streak.currentStreak}
-            maxStreak={streak.maxStreak}
-          />
-          <MyPageActivityHeatmap calendar={streak.calendar} />
-        </div>
+        {isAccessible ? (
+          <>
+            <div
+              className={cn(
+                'mt-6 grid grid-cols-1 gap-4',
+                'lg:grid-cols-2 lg:gap-5',
+              )}
+            >
+              <MyPageStreakHeroCard
+                currentStreak={streak.currentStreak}
+                maxStreak={streak.maxStreak}
+              />
+              <MyPageActivityHeatmap calendar={streak.calendar} />
+            </div>
 
-        <div className="mt-8">
-          <MyPageStatSection streak={streak} />
-        </div>
+            <div className="mt-8">
+              <MyPageStatSection streak={streak} />
+            </div>
 
-        <div className="mt-8">
-          <MyPageBadgesSection streak={streak} />
-        </div>
+            <div className="mt-8">
+              <MyPageBadgesSection streak={streak} />
+            </div>
 
-        <div className="mt-8">
-          <MyPageActiveChallenges challengeList={challengeList} />
-        </div>
+            <div className="mt-8">
+              <MyPageActiveChallenges challengeList={challengeList} />
+            </div>
 
-        <div className="mt-8">
-          <MyPageDiarySection
-            title={`${nickname}님의 일지`}
-            diaries={memberDiaries}
-            nickname={nickname}
-            hasMore={hasMoreDiaries}
-            viewAllHref={`/member/${memberId}/diary`}
-            emptyMessage="작성한 일지가 없습니다."
-          />
-        </div>
+            <div className="mt-8">
+              <MyPageDiarySection
+                title={`${nickname}님의 일지`}
+                diaries={memberDiaries}
+                nickname={nickname}
+                hasMore={hasMoreDiaries}
+                viewAllHref={`/member/${memberId}/diary`}
+                emptyMessage="작성한 일지가 없습니다."
+              />
+            </div>
+          </>
+        ) : (
+          <div
+            className={cn(
+              'rounded-3 mt-8 border border-gray-200 p-8 text-center',
+            )}
+          >
+            <Text size="body1" weight="medium" className="text-gray-500">
+              비공개 프로필입니다. 친구가 되면 활동을 볼 수 있어요.
+            </Text>
+          </div>
+        )}
       </div>
     </div>
   );

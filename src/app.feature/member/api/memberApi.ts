@@ -1,7 +1,23 @@
+import {
+  type DiaryItemApi,
+  normalizeDiaryItems,
+} from '@feature/diary/shared/utils/normalizeDiary';
 import { apiClient } from '@module/api/client';
 import { requestBody, requestData } from '@module/api/request';
 
-import type { MemberProfileData, MyPageData, SidebarData } from '../type/member';
+import type {
+  MemberDiaryPageInfo,
+  MemberProfileData,
+  MyPageData,
+  SidebarData,
+} from '../type/member';
+
+type MemberProfileApiResponse = Omit<MemberProfileData, 'diaryList'> & {
+  diaryList: {
+    items: DiaryItemApi[];
+    pageInfo: MemberDiaryPageInfo;
+  };
+};
 
 export const memberApi = {
   getSidebar: async (): Promise<SidebarData> =>
@@ -10,11 +26,25 @@ export const memberApi = {
       method: 'GET',
     }),
 
-  getMemberProfile: async (memberId: number): Promise<MemberProfileData> =>
-    requestData<MemberProfileData>(apiClient, {
+  getMemberProfile: async (memberId: number): Promise<MemberProfileData> => {
+    const response = await requestData<MemberProfileApiResponse>(apiClient, {
       url: `/member/profile/${memberId}`,
       method: 'GET',
-    }),
+    });
+    return {
+      ...response,
+      diaryList: {
+        items: normalizeDiaryItems(response.diaryList?.items ?? []),
+        pageInfo: response.diaryList?.pageInfo ?? {
+          page: 0,
+          size: 0,
+          totalElements: 0,
+          totalPages: 0,
+          hasNextPage: false,
+        },
+      },
+    };
+  },
 
   getMyPage: async (): Promise<MyPageData> =>
     requestData<MyPageData>(apiClient, {

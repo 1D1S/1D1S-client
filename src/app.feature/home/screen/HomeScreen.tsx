@@ -8,6 +8,7 @@ import { cn } from '@module/utils/cn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react';
 
+import HomeMobileHeader from '../components/HomeMobileHeader';
 import HomeQuickActions from '../components/HomeQuickActions';
 import HomeRandomChallengesSection from '../components/HomeRandomChallengesSection';
 import HomeRandomDiariesSection from '../components/HomeRandomDiariesSection';
@@ -87,6 +88,7 @@ export default function HomeScreen(): React.ReactElement {
         onOpenChange={handleDialogOpenChange}
         description={loginDialogDescription}
       />
+      <HomeMobileHeader />
       <div
         className={cn(
           'mx-auto flex w-full max-w-[1200px] flex-col gap-7',

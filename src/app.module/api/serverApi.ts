@@ -24,7 +24,10 @@ import type {
   RandomDiaryParams,
 } from '@feature/diary/board/type/diary';
 import { resolveDiaryImageList } from '@feature/diary/shared/utils/diaryImageUrl';
-import type { MemberProfileData } from '@feature/member/type/member';
+import type {
+  MemberDiaryPageInfo,
+  MemberProfileData,
+} from '@feature/member/type/member';
 
 import { buildQueryString } from './request';
 import { serverRequestBody, serverRequestData } from './serverClient';
@@ -132,10 +135,30 @@ export async function getServerDiaryDetail(
 export async function getServerMemberProfile(
   memberId: number
 ): Promise<MemberProfileData> {
-  return serverRequestData<MemberProfileData>({
+  const response = await serverRequestData<
+    Omit<MemberProfileData, 'diaryList'> & {
+      diaryList: {
+        items: DiaryItemApi[];
+        pageInfo: MemberDiaryPageInfo;
+      };
+    }
+  >({
     url: `/member/profile/${memberId}`,
     method: 'GET',
   });
+  return {
+    ...response,
+    diaryList: {
+      items: normalizeDiaryItems(response.diaryList?.items ?? []),
+      pageInfo: response.diaryList?.pageInfo ?? {
+        page: 0,
+        size: 0,
+        totalElements: 0,
+        totalPages: 0,
+        hasNextPage: false,
+      },
+    },
+  };
 }
 
 export async function getServerMemberDiaries(

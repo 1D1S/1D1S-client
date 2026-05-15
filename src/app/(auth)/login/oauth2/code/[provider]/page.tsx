@@ -3,10 +3,13 @@
 import { useSocialLogin } from '@feature/auth/hooks/useAuthQueries';
 import { OAuthProvider } from '@feature/auth/type/auth';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
+import {
+  NotificationOptInPrompt,
+} from '@feature/notification/components/NotificationOptInPrompt';
 import { authStorage } from '@module/utils/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useRef } from 'react';
+import { Suspense, useCallback, useEffect, useRef } from 'react';
 
 function OAuthCallbackContent(): React.ReactElement {
   const router = useRouter();
@@ -20,6 +23,15 @@ function OAuthCallbackContent(): React.ReactElement {
   const state = searchParams.get('state');
 
   const { data, error, isSuccess } = useSocialLogin(provider, code, state);
+
+  // profileComplete === true 일 때만 prompt 활성화. signup 분기는 effect 에서
+  // router.replace 로 처리하므로 derived 값으로 충분하다.
+  const optInActive =
+    isSuccess && !error && data?.data?.profileComplete === true;
+
+  const finishToHome = useCallback((): void => {
+    router.replace('/');
+  }, [router]);
 
   useEffect(() => {
     if (processed.current) {
@@ -43,16 +55,22 @@ function OAuthCallbackContent(): React.ReactElement {
 
       if (data?.data?.profileComplete === false) {
         router.replace('/signup');
-      } else {
-        router.replace('/');
       }
+      // profileComplete === true → optInActive(derived)=true.
+      // prompt 가 사용자 액션 후 finishToHome 으로 redirect 한다.
     }
   }, [data, error, isSuccess, provider, router, queryClient]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-gray-500">로그인 처리 중...</p>
-    </div>
+    <>
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-gray-500">로그인 처리 중...</p>
+      </div>
+      <NotificationOptInPrompt
+        active={optInActive}
+        onComplete={finishToHome}
+      />
+    </>
   );
 }
 

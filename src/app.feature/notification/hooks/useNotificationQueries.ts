@@ -43,13 +43,13 @@ export function useUnreadCount(
   });
 }
 
-export function useNotificationPreferences(): UseQueryResult<
-  NotificationPreferences,
-  Error
-> {
+export function useNotificationPreferences(
+  options?: { enabled?: boolean }
+): UseQueryResult<NotificationPreferences, Error> {
   return useQuery({
     queryKey: NOTIFICATION_QUERY_KEYS.preferences(),
     queryFn: () => notificationApi.getPreferences(),
+    enabled: options?.enabled ?? true,
   });
 }
 

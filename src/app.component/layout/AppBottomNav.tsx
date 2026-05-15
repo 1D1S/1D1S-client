@@ -1,6 +1,8 @@
 'use client';
 
 import { BottomNav } from '@1d1s/design-system';
+import { cn } from '@module/utils/cn';
+import { useIsMobileWebApp } from '@module/utils/userAgent';
 import { BookOpen, Home, LayoutGrid, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -29,6 +31,7 @@ export default function AppBottomNav({
   className,
 }: AppBottomNavProps): React.ReactElement {
   const router = useRouter();
+  const isMobileWebApp = useIsMobileWebApp();
   return (
     <BottomNav
       activeId={activeId}
@@ -43,7 +46,12 @@ export default function AppBottomNav({
         label,
         icon: <Icon size={20} strokeWidth={1.8} />,
       }))}
-      className={`sticky bottom-0 z-30 ${className ?? ''}`}
+      className={cn(
+        'sticky bottom-0 z-30',
+        isMobileWebApp &&
+          'pb-[calc(0.875rem+env(safe-area-inset-bottom))]',
+        className
+      )}
     />
   );
 }

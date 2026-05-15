@@ -51,9 +51,7 @@ export function MyPageActiveChallenges({
         <div
           className={cn(
             '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-2',
-            'scrollbar-hide',
-            'sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0',
-            'sm:py-0 lg:grid-cols-3 xl:grid-cols-4'
+            'scrollbar-hide'
           )}
         >
           {challengeList.map((challenge) => {
@@ -68,7 +66,7 @@ export function MyPageActiveChallenges({
             return (
               <div
                 key={challenge.challengeId}
-                className="w-[220px] shrink-0 sm:w-auto sm:shrink"
+                className="w-[220px] shrink-0"
               >
                 <ChallengeCard
                   title={challenge.title}

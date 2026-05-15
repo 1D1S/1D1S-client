@@ -1,3 +1,4 @@
+import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import {
   useMutation,
   UseMutationResult,
@@ -10,12 +11,16 @@ import { FRIEND_QUERY_KEYS } from '../consts/queryKeys';
 /**
  * 친구 관련 mutation 후 갱신해야 할 쿼리들을 한 번에 무효화한다.
  * 어떤 액션이든 친구 목록·관계·신청 목록에 영향이 갈 수 있으므로 root 키로
- * 일괄 invalidate 한다.
+ * 일괄 invalidate 한다. 멤버 프로필 응답에도 `relationStatus` 가 포함되므로
+ * 함께 무효화해 화면이 즉시 동기화되도록 한다.
  */
 function useInvalidateFriendQueries(): () => void {
   const queryClient = useQueryClient();
   return () => {
     void queryClient.invalidateQueries({ queryKey: FRIEND_QUERY_KEYS.all });
+    void queryClient.invalidateQueries({
+      queryKey: MEMBER_QUERY_KEYS.profiles(),
+    });
   };
 }
 

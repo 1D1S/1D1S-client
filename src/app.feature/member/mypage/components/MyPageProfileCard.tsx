@@ -1,8 +1,10 @@
 'use client';
 
 import { Button, CircleAvatar, Text } from '@1d1s/design-system';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
 import { cn } from '@module/utils/cn';
-import { Settings } from 'lucide-react';
+import { Bell, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -52,6 +54,9 @@ export function MyPageProfileCard({
   actions,
 }: MyPageProfileCardProps): React.ReactElement {
   const router = useRouter();
+  const isLoggedIn = useIsLoggedIn();
+  const { data: unreadData } = useUnreadCount({ enabled: isLoggedIn });
+  const hasUnread = isLoggedIn && (unreadData?.unreadCount ?? 0) > 0;
   const handle = email
     ? `@${email.split('@')[0]}`
     : `@${nickname}`;
@@ -84,19 +89,42 @@ export function MyPageProfileCard({
     <>
       {/* 모바일: 부모 컨테이너 패딩에 정렬, 72px 아바타 + 3-col stats grid */}
       <section className={cn('relative lg:hidden')}>
-        <div className="flex min-h-8 items-center justify-end gap-2">
+        <div className="flex min-h-8 items-center justify-end gap-1">
           {actions ?? (
-            <button
-              type="button"
-              aria-label="설정"
-              onClick={() => router.push('/mypage/settings')}
-              className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-lg',
-                'text-gray-500 transition-colors hover:bg-gray-100',
-              )}
-            >
-              <Settings className="h-[18px] w-[18px]" />
-            </button>
+            <>
+              <button
+                type="button"
+                aria-label="알림"
+                onClick={() => router.push('/notification')}
+                className={cn(
+                  'relative flex h-8 w-8 items-center justify-center',
+                  'rounded-lg text-gray-500 transition-colors',
+                  'hover:bg-gray-100',
+                )}
+              >
+                <Bell className="h-[18px] w-[18px]" />
+                {hasUnread ? (
+                  <span
+                    aria-hidden
+                    className={cn(
+                      'absolute top-1.5 right-1.5 h-1.5 w-1.5',
+                      'bg-brand rounded-full',
+                    )}
+                  />
+                ) : null}
+              </button>
+              <button
+                type="button"
+                aria-label="설정"
+                onClick={() => router.push('/mypage/settings')}
+                className={cn(
+                  'flex h-8 w-8 items-center justify-center rounded-lg',
+                  'text-gray-500 transition-colors hover:bg-gray-100',
+                )}
+              >
+                <Settings className="h-[18px] w-[18px]" />
+              </button>
+            </>
           )}
         </div>
         <div className="mt-1 flex items-center gap-3.5">

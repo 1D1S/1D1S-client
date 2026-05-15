@@ -834,35 +834,83 @@ function DiaryCommentSection({
     return out;
   }, [threadComments]);
 
-  const handleCommentAvatarClick = (
+  // threadComments 와 동일한 DFS 순서로 원본 comment 메타(id, isDeleted)를
+  // 평탄화. DS 가 comment 당 <li> 하나를 렌더하므로 querySelectorAll('li') 의
+  // 문서 순서와 일치한다.
+  const flatCommentMeta = useMemo<
+    Array<{ id: number; isDeleted: boolean }>
+  >(() => {
+    const out: Array<{ id: number; isDeleted: boolean }> = [];
+    for (const comment of commentItems) {
+      out.push({ id: comment.id, isDeleted: comment.isDeleted });
+      const replies = sortCommentsByOldest(
+        commentRepliesMap[comment.id] ?? []
+      );
+      for (const reply of replies) {
+        out.push({ id: reply.id, isDeleted: reply.isDeleted });
+      }
+    }
+    return out;
+  }, [commentItems, commentRepliesMap]);
+
+  const deletedCommentIds = useMemo<Set<number>>(() => {
+    const ids = new Set<number>();
+    for (const meta of flatCommentMeta) {
+      if (meta.isDeleted) {
+        ids.add(meta.id);
+      }
+    }
+    return ids;
+  }, [flatCommentMeta]);
+
+  const handleCommentWrapperClickCapture = (
     event: React.MouseEvent<HTMLDivElement>
   ): void => {
     const target = event.target as Element | null;
     if (!target || !commentWrapperRef.current) {
       return;
     }
+
     const avatar = target.closest('[data-slot="circle-avatar"]');
-    if (!avatar) {
+    if (avatar) {
+      const avatars = commentWrapperRef.current.querySelectorAll(
+        '[data-slot="circle-avatar"]'
+      );
+      const index = Array.from(avatars).indexOf(avatar);
+      if (index < 0) {
+        return;
+      }
+      const author = flatCommentAuthors[index];
+      if (!author) {
+        return;
+      }
+      const memberId = Number(author.id);
+      if (!Number.isFinite(memberId) || memberId <= 0) {
+        return;
+      }
+      event.stopPropagation();
+      event.preventDefault();
+      router.push(`/member/${memberId}`);
       return;
     }
-    const avatars = commentWrapperRef.current.querySelectorAll(
-      '[data-slot="circle-avatar"]'
+
+    // 삭제된 댓글 행 클릭은 DS 의 답글 입력 오픈 핸들러로 전달되지 않게 차단.
+    const li = target.closest('li');
+    if (!li || !commentWrapperRef.current.contains(li)) {
+      return;
+    }
+    const allLis = Array.from(
+      commentWrapperRef.current.querySelectorAll('li')
     );
-    const index = Array.from(avatars).indexOf(avatar);
-    if (index < 0) {
+    const liIndex = allLis.indexOf(li);
+    if (liIndex < 0) {
       return;
     }
-    const author = flatCommentAuthors[index];
-    if (!author) {
-      return;
+    const meta = flatCommentMeta[liIndex];
+    if (meta?.isDeleted) {
+      event.stopPropagation();
+      event.preventDefault();
     }
-    const memberId = Number(author.id);
-    if (!Number.isFinite(memberId) || memberId <= 0) {
-      return;
-    }
-    event.stopPropagation();
-    event.preventDefault();
-    router.push(`/member/${memberId}`);
   };
   const totalCommentCount = useMemo(() => {
     const baseCommentCount = commentsData?.pageInfo.totalElements ?? 0;
@@ -907,6 +955,10 @@ function DiaryCommentSection({
     const trimmedContent = content.trim();
 
     if (!Number.isFinite(targetCommentId) || targetCommentId <= 0) {
+      return;
+    }
+
+    if (deletedCommentIds.has(targetCommentId)) {
       return;
     }
 
@@ -963,7 +1015,7 @@ function DiaryCommentSection({
         ) : (
           <div
             ref={commentWrapperRef}
-            onClickCapture={handleCommentAvatarClick}
+            onClickCapture={handleCommentWrapperClickCapture}
             className={cn(
               'data-fade-in',
               "[&_[data-slot='circle-avatar']]:cursor-pointer"

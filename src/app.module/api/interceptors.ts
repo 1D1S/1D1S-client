@@ -64,6 +64,13 @@ export const attachInterceptors = (
         return response;
       }
 
+      // 비멱등 메서드는 재시도 시 중복 부작용(예: 댓글 2건 생성)이 발생하므로
+      // responseURL 휴리스틱 기반 자동 재시도를 GET 요청에만 적용한다.
+      const method = (config.method ?? 'get').toLowerCase();
+      if (method !== 'get') {
+        return response;
+      }
+
       const xhr = response.request as XMLHttpRequest | undefined;
       const responseUrl = xhr?.responseURL ?? '';
       const baseUrl = API_BASE_URL.replace(/\/$/, '');
