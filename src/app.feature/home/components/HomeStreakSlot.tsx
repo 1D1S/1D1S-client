@@ -7,7 +7,6 @@ import React from 'react';
 interface HomeStreakSlotProps {
   isLoggedIn: boolean;
   streakDays: number;
-  todayGoalCount: number;
   isStreakLoading?: boolean;
 }
 
@@ -50,7 +49,6 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 export default function HomeStreakSlot({
   isLoggedIn,
   streakDays,
-  todayGoalCount: _todayGoalCount,
   isStreakLoading = false,
 }: HomeStreakSlotProps): React.ReactElement {
   const router = useRouter();

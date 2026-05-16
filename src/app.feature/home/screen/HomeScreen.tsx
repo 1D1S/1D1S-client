@@ -71,7 +71,6 @@ export default function HomeScreen(): React.ReactElement {
   } = useHomeRandomData();
 
   const streakDays = sidebar?.streakCount ?? 0;
-  const todayGoalCount = sidebar?.todayGoalCount ?? 0;
   // 토큰 힌트는 있는데 sidebar 가 아직 도착하지 않은 구간에서 0 → 실제 값으로
   // 깜빡이는 것을 막기 위해 스켈레톤을 노출.
   const isStreakLoading =
@@ -106,7 +105,6 @@ export default function HomeScreen(): React.ReactElement {
           <HomeStreakSlot
             isLoggedIn={isLoggedIn}
             streakDays={streakDays}
-            todayGoalCount={todayGoalCount}
             isStreakLoading={isStreakLoading}
           />
         </div>
@@ -118,7 +116,6 @@ export default function HomeScreen(): React.ReactElement {
             <HomeStreakSlot
               isLoggedIn={isLoggedIn}
               streakDays={streakDays}
-              todayGoalCount={todayGoalCount}
             />
           </div>
         </div>
