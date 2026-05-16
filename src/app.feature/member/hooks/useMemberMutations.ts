@@ -25,6 +25,16 @@ export function useUpdateNickname(): UseMutationResult<void, Error, string> {
   });
 }
 
+export function useCheckNickname(): UseMutationResult<
+  { message?: string },
+  Error,
+  string
+> {
+  return useMutation({
+    mutationFn: (nickname: string) => memberApi.checkNickname(nickname),
+  });
+}
+
 export function useUpdateProfileImage(): UseMutationResult<void, Error, File> {
   const queryClient = useQueryClient();
 

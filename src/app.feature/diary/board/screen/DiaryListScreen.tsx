@@ -191,7 +191,8 @@ export default function DiaryListScreen(): React.ReactElement {
       {/* 모바일 sticky 헤더 — 일지 */}
       <div
         className={cn(
-          'sticky top-0 z-20 border-b border-gray-100',
+          'sticky top-0 z-20 flex items-center justify-between',
+          'gap-3 border-b border-gray-100',
           'bg-white/95 px-5 pt-3.5 pb-3 backdrop-blur lg:hidden'
         )}
       >
@@ -203,6 +204,20 @@ export default function DiaryListScreen(): React.ReactElement {
         >
           일지
         </Text>
+        {isLoggedIn ? (
+          <button
+            type="button"
+            onClick={() => router.push('/diary/create')}
+            aria-label="일지 쓰기"
+            className={cn(
+              'rounded-2 bg-brand shrink-0 px-3 py-1.5',
+              'text-[12px] font-bold text-white transition',
+              'hover:brightness-105'
+            )}
+          >
+            + 일지 쓰기
+          </button>
+        ) : null}
       </div>
 
       <div

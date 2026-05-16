@@ -2,7 +2,14 @@ import { silentAuthClient, tokenClient } from '@module/api/client';
 import { isUnauthorizedError } from '@module/api/error';
 import { requestData } from '@module/api/request';
 import { authStorage } from '@module/utils/auth';
-import { isServer, useQuery, UseQueryResult } from '@tanstack/react-query';
+import {
+  InfiniteData,
+  isServer,
+  useInfiniteQuery,
+  UseInfiniteQueryResult,
+  useQuery,
+  UseQueryResult,
+} from '@tanstack/react-query';
 
 import { memberApi } from '../api/memberApi';
 import { MEMBER_QUERY_KEYS } from '../consts/queryKeys';
@@ -94,6 +101,23 @@ export function useMemberProfile(
     enabled: memberId > 0,
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
+  });
+}
+
+export function useMemberProfileDiariesInfinite(
+  memberId: number,
+  size?: number
+): UseInfiniteQueryResult<InfiniteData<MemberProfileData>, Error> {
+  return useInfiniteQuery({
+    queryKey: MEMBER_QUERY_KEYS.profileDiariesInfinite(memberId, { size }),
+    queryFn: ({ pageParam }) =>
+      memberApi.getMemberProfile(memberId, { page: pageParam, size }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) =>
+      lastPage.diaryList?.pageInfo?.hasNextPage
+        ? lastPage.diaryList.pageInfo.page + 1
+        : undefined,
+    enabled: memberId > 0,
   });
 }
 

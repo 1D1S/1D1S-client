@@ -3,6 +3,7 @@
 import { Icon, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { PROVIDER_META } from '../consts/providerMeta';
@@ -18,6 +19,16 @@ export function LoginMobileView({
   providers,
   recommended,
 }: LoginMobileViewProps): React.ReactElement {
+  const router = useRouter();
+
+  const handleBack = (): void => {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.replace('/');
+  };
+
   return (
     <div
       className={cn(
@@ -41,20 +52,34 @@ export function LoginMobileView({
         )}
       />
 
-      <div className="relative flex items-center justify-between px-6 pt-8 pb-3">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div
+      <div className="relative flex items-center justify-between px-6 pt-6 pb-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleBack}
+            aria-label="뒤로 가기"
             className={cn(
-              'bg-main-800 flex h-[26px] w-[26px] items-center justify-center',
-              'rounded-[8px] shadow-[0_6px_18px_rgba(255,87,34,0.35)]'
+              '-ml-2 flex h-9 w-9 items-center justify-center rounded-full',
+              'text-gray-700 transition hover:bg-gray-100'
             )}
           >
-            <Icon name="Logo" size={14} className="text-white" />
-          </div>
-          <Text size="body2" weight="extrabold" className="text-gray-900">
-            1Day 1Streak
-          </Text>
-        </Link>
+            <Icon name="ChevronLeft" size={20} />
+          </button>
+          <Link href="/" className="flex items-center gap-2.5">
+            <div
+              className={cn(
+                'bg-main-800 flex h-[26px] w-[26px] items-center',
+                'justify-center rounded-[8px]',
+                'shadow-[0_6px_18px_rgba(255,87,34,0.35)]'
+              )}
+            >
+              <Icon name="Logo" size={14} className="text-white" />
+            </div>
+            <Text size="body2" weight="extrabold" className="text-gray-900">
+              1Day 1Streak
+            </Text>
+          </Link>
+        </div>
         <span className="text-[11px] font-semibold text-gray-500">
           한국어 / KR
         </span>

@@ -4,8 +4,10 @@ import { Icon, StreakHero } from '@1d1s/design-system';
 import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
+
+const CHALLENGE_DETAIL_PATH_REGEX = /^\/challenge\/(\d+)(?:\/|$)/;
 
 interface ChallengeProgressItem {
   id: string;
@@ -83,8 +85,19 @@ export default function AppRightRail({
   onChallengeClick,
 }: AppRightRailProps): React.ReactElement {
   const router = useRouter();
+  const pathname = usePathname();
   const contentVisible = !isAuthLoading;
   const contentHidden = !contentVisible;
+
+  const handleWriteDiaryClick = (): void => {
+    const challengeIdMatch = pathname?.match(CHALLENGE_DETAIL_PATH_REGEX);
+    const challengeId = challengeIdMatch?.[1];
+    router.push(
+      challengeId
+        ? `/diary/create?challengeId=${challengeId}`
+        : '/diary/create'
+    );
+  };
 
   return (
     <aside className={ASIDE_CLASS}>
@@ -233,7 +246,7 @@ export default function AppRightRail({
 
           <button
             type="button"
-            onClick={() => router.push('/diary/create')}
+            onClick={handleWriteDiaryClick}
             tabIndex={contentHidden ? -1 : 0}
             className={cn(
               'rounded-2 bg-brand mt-auto py-2.5',

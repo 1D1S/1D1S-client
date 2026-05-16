@@ -36,6 +36,11 @@ const shouldSkipToast = (error: unknown): boolean => {
   return false;
 };
 
+const IGNORED_SERVER_MESSAGES = new Set(['internal server error']);
+
+const isIgnoredServerMessage = (message: string): boolean =>
+  IGNORED_SERVER_MESSAGES.has(message.trim().toLowerCase());
+
 export const notifyApiError = (error: unknown): void => {
   if (typeof window === 'undefined') {
     return;
@@ -46,6 +51,10 @@ export const notifyApiError = (error: unknown): void => {
   }
 
   const normalizedError = normalizeApiError(error);
+  if (isIgnoredServerMessage(normalizedError.message)) {
+    return;
+  }
+
   toast.error(normalizedError.message);
 };
 

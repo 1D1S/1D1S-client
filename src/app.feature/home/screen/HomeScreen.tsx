@@ -4,6 +4,7 @@ import { PageWatermark } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
+import Stories from '@feature/stories/components/Stories';
 import { cn } from '@module/utils/cn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react';
@@ -95,6 +96,11 @@ export default function HomeScreen(): React.ReactElement {
           'px-5 py-7 lg:px-8 lg:py-10'
         )}
       >
+        {/* 친구들의 일지 스토리 — 비로그인 시 호출하지 않는다. */}
+        <div className="-mx-5 lg:-mx-8">
+          <Stories enabled={isLoggedIn} />
+        </div>
+
         {/* 모바일 인사 hero — 데스크탑/태블릿은 시안에 따라 생략 */}
         <div className="lg:hidden">
           <HomeWarmGreeting />

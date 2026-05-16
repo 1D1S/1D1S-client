@@ -23,6 +23,7 @@ import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challe
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
 import { getRelativeTimeLabel } from '@module/utils/date';
+import { useIsMobileWebApp } from '@module/utils/userAgent';
 import {
   ArrowLeft,
   Edit3,
@@ -1079,6 +1080,7 @@ function DiaryMobileCommentBar({
   const [content, setContent] = useState('');
   const createComment = useCreateDiaryComment(diaryId);
   const disabled = createComment.isPending || !content.trim();
+  const isMobileWebApp = useIsMobileWebApp();
 
   const handleSubmit = (): void => {
     if (!isLoggedIn) {
@@ -1099,7 +1101,10 @@ function DiaryMobileCommentBar({
       className={cn(
         'fixed right-0 bottom-0 left-0 z-20 lg:hidden',
         'border-t border-gray-100 bg-white',
-        'flex items-end gap-2 px-4 py-2.5'
+        'flex items-end gap-2 px-4 pt-2.5',
+        isMobileWebApp
+          ? 'pb-[calc(0.625rem+env(safe-area-inset-bottom))]'
+          : 'pb-2.5'
       )}
     >
       <TextField
@@ -1148,6 +1153,7 @@ function DiaryDetailView({
   const router = useRouter();
   const { data: sidebarData } = useSidebar();
   const isLoggedIn = useIsLoggedIn();
+  const isMobileWebApp = useIsMobileWebApp();
   const currentMemberId = useMemo(
     () => resolveSidebarMemberId(sidebarData),
     [sidebarData]
@@ -1220,7 +1226,10 @@ function DiaryDetailView({
   return (
     <div
       className={cn(
-        'min-h-screen w-full bg-white pb-[112px]',
+        'min-h-screen w-full bg-white',
+        isMobileWebApp
+          ? 'pb-[calc(112px+env(safe-area-inset-bottom))]'
+          : 'pb-[112px]',
         'lg:bg-gray-50/60 lg:pb-0'
       )}
     >
@@ -1499,12 +1508,6 @@ function DiaryDetailView({
         open={isReportOpen}
         onOpenChange={setIsReportOpen}
       />
-
-      <DiaryMobileCommentBar
-        diaryId={diaryData.id}
-        isLoggedIn={isLoggedIn}
-        onRequireLogin={onRequireLogin}
-      />
     </div>
   );
 }
@@ -1627,6 +1630,14 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
           onRequireLogin={handleRequireLogin}
         />
       </div>
+      {/* 모바일 sticky 댓글 입력바 — data-fade-in 래퍼 밖에 둔다:
+          래퍼의 transform 이 containing block 을 만들어 position: fixed 가
+          뷰포트 대신 래퍼 기준이 되는 문제를 피한다. */}
+      <DiaryMobileCommentBar
+        diaryId={data.id}
+        isLoggedIn={isLoggedIn}
+        onRequireLogin={handleRequireLogin}
+      />
     </>
   );
 }

@@ -133,8 +133,13 @@ export async function getServerDiaryDetail(
 }
 
 export async function getServerMemberProfile(
-  memberId: number
+  memberId: number,
+  params: { page?: number; size?: number } = {}
 ): Promise<MemberProfileData> {
+  const query = buildQueryString({
+    page: params.page,
+    size: params.size,
+  });
   const response = await serverRequestData<
     Omit<MemberProfileData, 'diaryList'> & {
       diaryList: {
@@ -143,7 +148,9 @@ export async function getServerMemberProfile(
       };
     }
   >({
-    url: `/member/profile/${memberId}`,
+    url: query
+      ? `/member/profile/${memberId}?${query}`
+      : `/member/profile/${memberId}`,
     method: 'GET',
   });
   return {
@@ -158,28 +165,5 @@ export async function getServerMemberProfile(
         hasNextPage: false,
       },
     },
-  };
-}
-
-export async function getServerMemberDiaries(
-  memberId: number,
-  size?: number
-): Promise<{
-  items: DiaryItem[];
-  pageInfo: DiaryListResponse['pageInfo'];
-}> {
-  const query = size !== undefined ? buildQueryString({ size }) : '';
-  const data = await serverRequestData<{
-    items: DiaryItemApi[];
-    pageInfo: DiaryListResponse['pageInfo'];
-  }>({
-    url: query
-      ? `/diaries/member/${memberId}?${query}`
-      : `/diaries/member/${memberId}`,
-    method: 'GET',
-  });
-  return {
-    items: normalizeDiaryItems(data.items),
-    pageInfo: data.pageInfo,
   };
 }

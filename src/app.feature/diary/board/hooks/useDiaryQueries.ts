@@ -94,14 +94,3 @@ export function useMyDiariesInfinite(
   });
 }
 
-// 특정 멤버의 다이어리 목록 조회
-export function useMemberDiaries(
-  memberId: number,
-  size?: number
-): UseQueryResult<MyDiariesResponse, Error> {
-  return useQuery({
-    queryKey: DIARY_QUERY_KEYS.memberDiaries(memberId, { size }),
-    queryFn: () => diaryBoardApi.getMemberDiaries(memberId, size),
-    enabled: memberId > 0,
-  });
-}

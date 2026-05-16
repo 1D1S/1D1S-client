@@ -2,8 +2,12 @@
 
 import {
   Button,
-  CheckContainer,
   Icon,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Text,
   TextField,
   ToggleGroup,
@@ -15,7 +19,10 @@ import {
   FormItem,
   FormMessage,
 } from '@component/ui/Form';
-import { cn } from '@module/utils/cn';
+import { NicknameCheckButton } from '@feature/member/components/NicknameCheckButton';
+import { useCheckNickname } from '@feature/member/hooks/useMemberMutations';
+import { normalizeApiError } from '@module/api/error';
+import { NICKNAME_REGEX } from '@module/utils/nickname';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
@@ -41,20 +48,20 @@ const JOB_EMOJI: Record<string, string> = {
   STUDENT: '📚',
 };
 
-const VISIBILITY_OPTIONS = [
-  {
-    id: 'public' as const,
-    icon: 'People' as const,
-    title: '공개 프로필',
-    desc: '다른 챌린저와 일지·스트릭을 공유해요',
-  },
-  {
-    id: 'private' as const,
-    icon: 'Person' as const,
-    title: '비공개 프로필',
-    desc: '나만 볼 수 있어요. 언제든 변경 가능해요',
-  },
-];
+const CURRENT_YEAR = new Date().getFullYear();
+const YEAR_OPTIONS = Array.from({ length: CURRENT_YEAR - 1950 + 1 }, (_, i) =>
+  String(CURRENT_YEAR - i)
+);
+const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => String(i + 1));
+
+function getDaysInMonth(year: string, month: string): number {
+  const yearNum = Number(year);
+  const monthNum = Number(month);
+  if (!yearNum || !monthNum) {
+    return 31;
+  }
+  return new Date(yearNum, monthNum, 0).getDate();
+}
 
 function FieldLabel({
   children,
@@ -78,6 +85,41 @@ function FieldLabel({
 
 export function Step1({ onNext }: Step1Props): React.ReactElement {
   const form = useFormContext<SignupFormValues>();
+  const checkNickname = useCheckNickname();
+  const nicknameValue = form.watch('nickname') ?? '';
+  const isFormatValid =
+    nicknameValue.length > 0 &&
+    nicknameValue.length <= 8 &&
+    NICKNAME_REGEX.test(nicknameValue);
+  const checkedNickname = checkNickname.variables;
+  const isCheckCurrent = checkedNickname === nicknameValue;
+  const showSuccess = isCheckCurrent && checkNickname.isSuccess;
+  const showError = isCheckCurrent && checkNickname.isError;
+  const isVerified = showSuccess;
+  const yearValue = form.watch('year') ?? '';
+  const monthValue = form.watch('month') ?? '';
+  const dayValue = form.watch('day') ?? '';
+  const dayOptions = React.useMemo(
+    () =>
+      Array.from({ length: getDaysInMonth(yearValue, monthValue) }, (_, i) =>
+        String(i + 1)
+      ),
+    [yearValue, monthValue]
+  );
+
+  const handleCheck = (): void => {
+    if (!isFormatValid) {
+      return;
+    }
+    checkNickname.mutate(nicknameValue);
+  };
+
+  const handleNext = (): void => {
+    if (!isVerified) {
+      return;
+    }
+    onNext();
+  };
 
   return (
     <div className="flex flex-1 flex-col">
@@ -92,7 +134,18 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
                   label="닉네임"
                   placeholder="2~12자, 한글/영문/숫자"
                   iconLeft={<Icon name="Person" size={16} />}
-                  helper="한 번 정한 닉네임은 30일 후 변경할 수 있어요"
+                  iconRight={
+                    <NicknameCheckButton
+                      onClick={handleCheck}
+                      disabled={!isFormatValid || isVerified}
+                      isPending={checkNickname.isPending}
+                    />
+                  }
+                  helper={
+                    showSuccess
+                      ? undefined
+                      : '한 번 정한 닉네임은 30일 후 변경할 수 있어요'
+                  }
                   className="w-full"
                   value={field.value ?? ''}
                   onChange={field.onChange}
@@ -101,7 +154,25 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
                   ref={field.ref}
                 />
               </FormControl>
-              <FormMessage />
+              {showSuccess ? (
+                <Text
+                  size="caption1"
+                  weight="regular"
+                  className="mt-1 text-green-600"
+                >
+                  ✅ 사용 가능한 닉네임이에요
+                </Text>
+              ) : showError ? (
+                <Text
+                  size="caption1"
+                  weight="regular"
+                  className="mt-1 text-red-500"
+                >
+                  {normalizeApiError(checkNickname.error).message}
+                </Text>
+              ) : (
+                <FormMessage />
+              )}
             </FormItem>
           )}
         />
@@ -115,19 +186,27 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <TextField
-                      placeholder="1998"
-                      suffix="년"
-                      inputMode="numeric"
-                      maxLength={4}
-                      className="w-full"
+                    <Select
                       value={field.value ?? ''}
-                      onChange={(event) =>
-                        field.onChange(event.target.value.replace(/\D/g, ''))
-                      }
-                      onBlur={field.onBlur}
-                      name={field.name}
-                    />
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        const maxDay = getDaysInMonth(value, monthValue);
+                        if (dayValue && Number(dayValue) > maxDay) {
+                          form.setValue('day', '', { shouldValidate: true });
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="연도" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {YEAR_OPTIONS.map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}년
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -139,19 +218,27 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <TextField
-                      placeholder="MM"
-                      suffix="월"
-                      inputMode="numeric"
-                      maxLength={2}
-                      className="w-full"
+                    <Select
                       value={field.value ?? ''}
-                      onChange={(event) =>
-                        field.onChange(event.target.value.replace(/\D/g, ''))
-                      }
-                      onBlur={field.onBlur}
-                      name={field.name}
-                    />
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        const maxDay = getDaysInMonth(yearValue, value);
+                        if (dayValue && Number(dayValue) > maxDay) {
+                          form.setValue('day', '', { shouldValidate: true });
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="월" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MONTH_OPTIONS.map((month) => (
+                          <SelectItem key={month} value={month}>
+                            {month}월
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -163,19 +250,21 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <TextField
-                      placeholder="DD"
-                      suffix="일"
-                      inputMode="numeric"
-                      maxLength={2}
-                      className="w-full"
+                    <Select
                       value={field.value ?? ''}
-                      onChange={(event) =>
-                        field.onChange(event.target.value.replace(/\D/g, ''))
-                      }
-                      onBlur={field.onBlur}
-                      name={field.name}
-                    />
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="일" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {dayOptions.map((day) => (
+                          <SelectItem key={day} value={day}>
+                            {day}일
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -266,69 +355,6 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
           />
         </div>
 
-        <div>
-          <FieldLabel required>프로필 공개 설정</FieldLabel>
-          <FormField
-            control={form.control}
-            name="isPublic"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex flex-col gap-2">
-                  {VISIBILITY_OPTIONS.map((option) => {
-                    const checked =
-                      option.id === 'public' ? field.value : !field.value;
-                    return (
-                      <CheckContainer
-                        key={option.id}
-                        type="button"
-                        checked={checked}
-                        onCheckedChange={() =>
-                          field.onChange(option.id === 'public')
-                        }
-                        width="100%"
-                        className={cn(
-                          'rounded-3 flex w-full items-center gap-3.5 px-4 py-3.5'
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            'flex h-[38px] w-[38px] flex-shrink-0 items-center',
-                            'justify-center rounded-[10px] transition-colors',
-                            checked
-                              ? 'bg-main-800 text-white'
-                              : 'bg-gray-100 text-gray-600'
-                          )}
-                        >
-                          <Icon name={option.icon} size={18} />
-                        </span>
-                        <span className="flex-1 text-left">
-                          <Text
-                            size="body2"
-                            weight="extrabold"
-                            as="div"
-                            className={
-                              checked ? 'text-main-800' : 'text-gray-900'
-                            }
-                          >
-                            {option.title}
-                          </Text>
-                          <Text
-                            size="caption2"
-                            weight="regular"
-                            as="div"
-                            className="mt-0.5 text-gray-500"
-                          >
-                            {option.desc}
-                          </Text>
-                        </span>
-                      </CheckContainer>
-                    );
-                  })}
-                </div>
-              </FormItem>
-            )}
-          />
-        </div>
       </div>
 
       <div className="mt-8 flex justify-end">
@@ -336,7 +362,8 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
           type="button"
           size="large"
           fullWidth
-          onClick={onNext}
+          disabled={!isVerified}
+          onClick={handleNext}
         >
           다음 — 관심 카테고리
         </Button>

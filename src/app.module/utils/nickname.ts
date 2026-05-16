@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-export const NICKNAME_REGEX = /^[A-Za-z가-힣]+$/;
+export const NICKNAME_REGEX = /^[A-Za-z0-9가-힣]+$/;
 export const NICKNAME_REQUIRED_MESSAGE = '닉네임을 입력해 주세요.';
 export const NICKNAME_MAX_LENGTH = 8;
 export const NICKNAME_MAX_LENGTH_MESSAGE = '닉네임은 8자 이내여야 해요.';
 export const NICKNAME_PATTERN_MESSAGE =
-  '닉네임은 한글 또는 영어만 사용할 수 있고, 특수문자는 사용할 수 없어요.';
+  '닉네임은 한글·영어·숫자만 사용할 수 있고, 특수문자는 사용할 수 없어요.';
 
 export const nicknameSchema = z
   .string()

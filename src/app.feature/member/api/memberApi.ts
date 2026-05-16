@@ -3,7 +3,11 @@ import {
   normalizeDiaryItems,
 } from '@feature/diary/shared/utils/normalizeDiary';
 import { apiClient } from '@module/api/client';
-import { requestBody, requestData } from '@module/api/request';
+import {
+  buildQueryString,
+  requestBody,
+  requestData,
+} from '@module/api/request';
 
 import type {
   MemberDiaryPageInfo,
@@ -26,9 +30,18 @@ export const memberApi = {
       method: 'GET',
     }),
 
-  getMemberProfile: async (memberId: number): Promise<MemberProfileData> => {
+  getMemberProfile: async (
+    memberId: number,
+    params: { page?: number; size?: number } = {}
+  ): Promise<MemberProfileData> => {
+    const query = buildQueryString({
+      page: params.page,
+      size: params.size,
+    });
     const response = await requestData<MemberProfileApiResponse>(apiClient, {
-      url: `/member/profile/${memberId}`,
+      url: query
+        ? `/member/profile/${memberId}?${query}`
+        : `/member/profile/${memberId}`,
       method: 'GET',
     });
     return {
@@ -56,6 +69,13 @@ export const memberApi = {
     requestData<void>(apiClient, {
       url: '/member/nickname',
       method: 'PATCH',
+      data: { nickname },
+    }),
+
+  checkNickname: async (nickname: string): Promise<{ message?: string }> =>
+    requestBody<{ message?: string }>(apiClient, {
+      url: '/member/nickname/check',
+      method: 'POST',
       data: { nickname },
     }),
 

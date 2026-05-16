@@ -6,11 +6,14 @@ import {
   Text,
   TextField,
 } from '@1d1s/design-system';
+import { NicknameCheckButton } from '@feature/member/components/NicknameCheckButton';
 import {
+  useCheckNickname,
   useUpdateNickname,
   useUpdateProfileImage,
 } from '@feature/member/hooks/useMemberMutations';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
+import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
 import { validateNickname } from '@module/utils/nickname';
 import { ArrowLeft } from 'lucide-react';
@@ -54,6 +57,17 @@ export default function ProfileSettingsScreen(): React.ReactElement {
 
   const updateNickname = useUpdateNickname();
   const updateProfileImage = useUpdateProfileImage();
+  const checkNickname = useCheckNickname();
+
+  const trimmedNickname = nickname.trim();
+  const isSameAsCurrent = trimmedNickname === data?.nickname;
+  const isFormatValid =
+    !validateNickname(trimmedNickname) && !isSameAsCurrent;
+  const checkedNickname = checkNickname.variables;
+  const isCheckCurrent = checkedNickname === trimmedNickname;
+  const showCheckSuccess = isCheckCurrent && checkNickname.isSuccess;
+  const showCheckError = isCheckCurrent && checkNickname.isError;
+  const isVerified = showCheckSuccess;
 
   const handleProfileImageChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -68,21 +82,28 @@ export default function ProfileSettingsScreen(): React.ReactElement {
 
   const handleNicknameChange = (value: string): void => {
     updateNickname.reset();
+    checkNickname.reset();
     setEditedNickname(value);
     setNicknameError(validateNickname(value));
   };
 
+  const handleCheckNickname = (): void => {
+    if (!isFormatValid) {
+      return;
+    }
+    checkNickname.mutate(trimmedNickname);
+  };
+
   const handleNicknameSave = (): void => {
-    const trimmed = nickname.trim();
-    const error = validateNickname(trimmed);
+    const error = validateNickname(trimmedNickname);
     if (error) {
       setNicknameError(error);
       return;
     }
-    if (trimmed === data?.nickname) {
+    if (isSameAsCurrent || !isVerified) {
       return;
     }
-    updateNickname.mutate(trimmed);
+    updateNickname.mutate(trimmedNickname);
   };
 
   return (
@@ -165,6 +186,13 @@ export default function ProfileSettingsScreen(): React.ReactElement {
                     }
                     placeholder="닉네임을 입력하세요"
                     className="flex-1"
+                    iconRight={
+                      <NicknameCheckButton
+                        onClick={handleCheckNickname}
+                        disabled={!isFormatValid || isVerified}
+                        isPending={checkNickname.isPending}
+                      />
+                    }
                     onKeyDown={(event) => {
                       if (event.key === 'Enter') {
                         handleNicknameSave();
@@ -176,9 +204,10 @@ export default function ProfileSettingsScreen(): React.ReactElement {
                     onClick={handleNicknameSave}
                     disabled={
                       updateNickname.isPending ||
-                      !nickname.trim() ||
+                      !trimmedNickname ||
                       Boolean(nicknameError) ||
-                      nickname.trim() === data?.nickname
+                      isSameAsCurrent ||
+                      !isVerified
                     }
                     className="shrink-0 whitespace-nowrap"
                   >
@@ -192,6 +221,14 @@ export default function ProfileSettingsScreen(): React.ReactElement {
                     className="text-red-500"
                   >
                     {nicknameError}
+                  </Text>
+                ) : showCheckError ? (
+                  <Text
+                    size="caption1"
+                    weight="regular"
+                    className="text-red-500"
+                  >
+                    {normalizeApiError(checkNickname.error).message}
                   </Text>
                 ) : updateNickname.isSuccess ? (
                   <Text
@@ -208,6 +245,14 @@ export default function ProfileSettingsScreen(): React.ReactElement {
                     className="text-red-500"
                   >
                     닉네임 변경에 실패했습니다.
+                  </Text>
+                ) : showCheckSuccess ? (
+                  <Text
+                    size="caption1"
+                    weight="regular"
+                    className="text-green-600"
+                  >
+                    ✅ 사용 가능한 닉네임이에요
                   </Text>
                 ) : null}
               </div>

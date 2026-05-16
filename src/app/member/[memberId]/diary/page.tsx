@@ -1,9 +1,11 @@
-import { DIARY_QUERY_KEYS } from '@feature/diary/board/consts/queryKeys';
 import { MemberDiaryListScreen } from '@feature/diary/board/screen/MemberDiaryListScreen';
-import { getServerMemberDiaries } from '@module/api/serverApi';
+import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
+import { getServerMemberProfile } from '@module/api/serverApi';
 import React from 'react';
 
 import { Prefetch } from '@/app.lib/Prefetch';
+
+const MEMBER_DIARY_PAGE_SIZE = 12;
 
 interface MemberDiaryListProps {
   params: Promise<{ memberId: string }>;
@@ -19,10 +21,16 @@ export default async function MemberDiaryListPage({
     <Prefetch
       queries={[
         {
-          queryKey: DIARY_QUERY_KEYS.memberDiaries(memberIdNum, {
-            size: undefined,
+          type: 'infinite',
+          queryKey: MEMBER_QUERY_KEYS.profileDiariesInfinite(memberIdNum, {
+            size: MEMBER_DIARY_PAGE_SIZE,
           }),
-          queryFn: () => getServerMemberDiaries(memberIdNum),
+          initialPageParam: 0,
+          queryFn: () =>
+            getServerMemberProfile(memberIdNum, {
+              page: 0,
+              size: MEMBER_DIARY_PAGE_SIZE,
+            }),
         },
       ]}
     >

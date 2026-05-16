@@ -105,28 +105,6 @@ export const diaryBoardApi = {
     };
   },
 
-  // 특정 멤버의 다이어리 목록 조회
-  getMemberDiaries: async (
-    memberId: number,
-    size?: number
-  ): Promise<MyDiariesResponse> => {
-    const query = size !== undefined ? buildQueryString({ size }) : '';
-    const response = await requestData<{
-      items: DiaryItemApi[];
-      pageInfo: MyDiariesResponse['pageInfo'];
-    }>(apiClient, {
-      url: query
-        ? `/diaries/member/${memberId}?${query}`
-        : `/diaries/member/${memberId}`,
-      method: 'GET',
-    });
-
-    return {
-      items: normalizeDiaryItems(response.items),
-      pageInfo: response.pageInfo,
-    };
-  },
-
   // 랜덤 다이어리 보여주기
   getRandomDiaries: async (
     params: RandomDiaryParams = {}

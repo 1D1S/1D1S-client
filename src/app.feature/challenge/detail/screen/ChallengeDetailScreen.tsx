@@ -26,6 +26,7 @@ import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
 import { formatDateISO } from '@module/utils/date';
+import { useIsMobileWebApp } from '@module/utils/userAgent';
 import { ArrowLeft, CircleAlert, Heart, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -160,6 +161,7 @@ export function ChallengeDetailScreen({
 }: ChallengeDetailScreenProps): React.ReactElement {
   const challengeId = Number(id);
   const router = useRouter();
+  const isMobileWebApp = useIsMobileWebApp();
 
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
 
@@ -177,13 +179,13 @@ export function ChallengeDetailScreen({
   const isLoggedIn = useIsLoggedIn();
   const [dismissed, setDismissed] = useState(false);
   const showAuthDialog = !isLoggedIn && !dismissed;
-  // 히어로 위 floating 뒤로가기가 스크롤로 가려지자마자 상단 sticky 헤더가
-  // 등장하도록 임계값을 80px로 둔다.
+  // 히어로 위 floating 뒤로가기(top-3.5)가 스크롤로 가려지기 시작하는
+  // 시점에 맞춰 sticky 헤더가 즉시 등장하도록 임계값을 8px로 둔다.
   const [isCompactHeaderVisible, setIsCompactHeaderVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = (): void => {
-      setIsCompactHeaderVisible(window.scrollY > 80);
+      setIsCompactHeaderVisible(window.scrollY > 8);
     };
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -786,7 +788,11 @@ export function ChallengeDetailScreen({
       <div
         className={cn(
           'data-fade-in min-h-screen w-full bg-white lg:bg-gray-50/60',
-          ctaConfig.show ? 'pb-[100px] lg:pb-12' : 'pb-12'
+          ctaConfig.show
+            ? isMobileWebApp
+              ? 'pb-[calc(100px+env(safe-area-inset-bottom))] lg:pb-12'
+              : 'pb-[100px] lg:pb-12'
+            : 'pb-12'
         )}
       >
         {authDialog}
@@ -1150,14 +1156,20 @@ export function ChallengeDetailScreen({
           </aside>
         </div>
       </div>
+      </div>
 
-      {/* 모바일 sticky bottom CTA */}
+      {/* 모바일 sticky bottom CTA — data-fade-in 래퍼 밖에 둔다:
+          래퍼의 transform 이 containing block 을 만들어 position: fixed 가
+          뷰포트 대신 래퍼 기준이 되는 문제를 피한다. */}
       {ctaConfig.show ? (
         <div
           className={cn(
             'fixed right-0 bottom-0 left-0 z-20 lg:hidden',
             'border-t border-gray-100 bg-white/95 backdrop-blur',
-            'px-5 pt-3 pb-5'
+            'px-5 pt-3',
+            isMobileWebApp
+              ? 'pb-[calc(1.25rem+env(safe-area-inset-bottom))]'
+              : 'pb-5'
           )}
         >
           <Button
@@ -1171,7 +1183,6 @@ export function ChallengeDetailScreen({
           </Button>
         </div>
       ) : null}
-      </div>
     </>
   );
 }
