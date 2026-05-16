@@ -8,6 +8,12 @@ import React from 'react';
 
 export type ChallengeCardGoalType = 'FIXED' | 'FLEXIBLE';
 
+export interface ChallengeCardParticipant {
+  memberId: number;
+  nickname: string;
+  profileImg: string | null;
+}
+
 export interface ChallengeCardProps {
   title: string;
   category: string;
@@ -23,6 +29,7 @@ export interface ChallengeCardProps {
   goalType?: ChallengeCardGoalType;
   isGroup?: boolean;
   isEnded?: boolean;
+  participants?: ChallengeCardParticipant[];
   onClick?(): void;
   className?: string;
 }
@@ -112,6 +119,7 @@ export default function ChallengeCard({
   goalType,
   isGroup = true,
   isEnded = false,
+  participants,
   onClick,
   className,
 }: ChallengeCardProps): React.ReactElement {
@@ -127,7 +135,10 @@ export default function ChallengeCard({
   const stripeLabel = categoryIcon ?? category;
   const participationLabel = isGroup ? '단체' : '개인';
   const goalLabel = goalType ? GOAL_TYPE_LABELS[goalType] : null;
-  const visibleAvatars = Math.min(3, Math.max(0, currentParticipantCount));
+  const visibleParticipants = (participants ?? []).slice(0, 3);
+  const visibleAvatars = visibleParticipants.length > 0
+    ? visibleParticipants.length
+    : Math.min(3, Math.max(0, currentParticipantCount));
   const extraCount = Math.max(0, currentParticipantCount - visibleAvatars);
   const period = buildPeriodInfo(startDate, endDate, isInfinite);
   const hasMaxCount =
@@ -254,14 +265,25 @@ export default function ChallengeCard({
         <Card.Meta className="mt-2 border-t border-gray-100 pt-2">
           <span className="inline-flex items-center gap-2">
             <span className="flex -space-x-2">
-              {Array.from({ length: visibleAvatars }).map((_, index) => (
-                <CircleAvatar
-                  key={index}
-                  size="sm"
-                  tone={AVATAR_TONES[index % AVATAR_TONES.length]}
-                  ring
-                />
-              ))}
+              {visibleParticipants.length > 0
+                ? visibleParticipants.map((participant, index) => (
+                    <CircleAvatar
+                      key={participant.memberId}
+                      size="sm"
+                      tone={AVATAR_TONES[index % AVATAR_TONES.length]}
+                      imageUrl={participant.profileImg ?? undefined}
+                      alt={participant.nickname}
+                      ring
+                    />
+                  ))
+                : Array.from({ length: visibleAvatars }).map((_, index) => (
+                    <CircleAvatar
+                      key={index}
+                      size="sm"
+                      tone={AVATAR_TONES[index % AVATAR_TONES.length]}
+                      ring
+                    />
+                  ))}
             </span>
             {extraCount > 0 ? (
               <span className="text-gray-500">+{extraCount}</span>

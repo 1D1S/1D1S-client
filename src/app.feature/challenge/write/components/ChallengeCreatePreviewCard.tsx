@@ -29,7 +29,10 @@ function resolveDays(values: ChallengeCreateFormValues): number {
 
 function resolveDurationLabel(values: ChallengeCreateFormValues): string {
   if (values.periodType === 'ENDLESS') {
-    return '무제한';
+    if (!values.startDate) {
+      return '무제한';
+    }
+    return `${formatDateKR(values.startDate)} 시작 · 무제한`;
   }
   const days = resolveDays(values);
   if (!values.startDate || days <= 0) {

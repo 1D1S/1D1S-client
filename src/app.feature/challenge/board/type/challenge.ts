@@ -21,6 +21,12 @@ export type ParticipantStatus =
   | 'HOST'
   | 'PARTICIPANT';
 
+export interface RandomParticipant {
+  memberId: number;
+  nickname: string;
+  profileImg: string | null;
+}
+
 export interface ChallengeSummary {
   challengeId: number;
   title: string;
@@ -34,6 +40,7 @@ export interface ChallengeSummary {
   likeInfo: LikeInfo;
   thumbnailImage?: string | null;
   deleted?: boolean;
+  randomParticipants?: RandomParticipant[];
 }
 
 export interface ChallengeListItem {
@@ -49,6 +56,7 @@ export interface ChallengeListItem {
   liked: boolean;
   likeCnt: number;
   thumbnailImage?: string;
+  randomParticipants?: RandomParticipant[];
 }
 
 export interface ChallengeDetail {

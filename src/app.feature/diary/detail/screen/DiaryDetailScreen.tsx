@@ -1230,7 +1230,7 @@ function DiaryDetailView({
         isMobileWebApp
           ? 'pb-[calc(112px+env(safe-area-inset-bottom))]'
           : 'pb-[112px]',
-        'lg:bg-gray-50/60 lg:pb-0'
+        'lg:pb-0'
       )}
     >
       {/* 모바일 sticky 헤더 — ← + 일지 */}

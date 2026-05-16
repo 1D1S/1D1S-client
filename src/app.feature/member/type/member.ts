@@ -61,6 +61,11 @@ export interface MyPageChallenge {
     likeCnt: number;
   };
   thumbnailImage?: string;
+  randomParticipants?: Array<{
+    memberId: number;
+    nickname: string;
+    profileImg: string | null;
+  }>;
 }
 
 export interface MyPageDiary {

@@ -10,7 +10,7 @@ export function ChallengeDetailSkeleton(): React.ReactElement {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen w-full bg-white lg:bg-gray-50/60">
+    <div className="min-h-screen w-full bg-white">
       {/* 히어로 + 모바일 floating 뒤로가기 */}
       <div className="relative">
         <Skeleton

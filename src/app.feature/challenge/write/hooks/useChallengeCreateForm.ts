@@ -45,19 +45,19 @@ export const challengeCreateFormSchema = z
     ),
   })
   .superRefine((data, ctx) => {
+    if (!data.startDate) {
+      ctx.addIssue({
+        path: ['startDate'],
+        code: z.ZodIssueCode.custom,
+        message: '시작일이 선택되지 않았습니다.',
+      });
+    }
     if (data.periodType === 'LIMITED') {
       if (!data.period) {
         ctx.addIssue({
           path: ['period'],
           code: z.ZodIssueCode.custom,
           message: '챌린지 기간이 선택되지 않았습니다.',
-        });
-      }
-      if (!data.startDate) {
-        ctx.addIssue({
-          path: ['startDate'],
-          code: z.ZodIssueCode.custom,
-          message: '시작일이 선택되지 않았습니다.',
         });
       }
       if (data.period === 'etc') {

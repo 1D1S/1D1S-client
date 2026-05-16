@@ -31,7 +31,7 @@ export default function MyPageScreen(): React.ReactElement {
   return (
     <div
       className={cn(
-        'min-h-screen w-full bg-white lg:bg-gray-50',
+        'min-h-screen w-full bg-white',
         'data-fade-in'
       )}
     >
@@ -59,6 +59,10 @@ export default function MyPageScreen(): React.ReactElement {
           currentStreak={streak.currentStreak}
         />
 
+        <div className="mt-6">
+          <MyPageFriendsEntry />
+        </div>
+
         {/* Streak hero + Heatmap — 모바일에서는 숨김 */}
         <div
           className={cn(
@@ -76,10 +80,6 @@ export default function MyPageScreen(): React.ReactElement {
         {/* 통계 섹션 — 모바일에서는 프로필 카드 내부 grid로 대체 */}
         <div className="mt-8 hidden lg:block">
           <MyPageStatSection streak={streak} />
-        </div>
-
-        <div className="mt-6">
-          <MyPageFriendsEntry />
         </div>
 
         <div className="mt-8">

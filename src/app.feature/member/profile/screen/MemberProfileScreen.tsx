@@ -64,7 +64,7 @@ export default function MemberProfileScreen({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen w-full bg-white lg:bg-gray-50">
+      <div className="min-h-screen w-full bg-white">
         <MobileBackHeader title="프로필" />
         <div className="flex min-h-[60vh] items-center justify-center">
           <Text size="body1" weight="medium" className="text-gray-500">
@@ -79,7 +79,7 @@ export default function MemberProfileScreen({
     const message = isError ? normalizeApiError(error).message : '';
     const isPrivate = message.includes('비공개');
     return (
-      <div className="min-h-screen w-full bg-white lg:bg-gray-50">
+      <div className="min-h-screen w-full bg-white">
         <MobileBackHeader title="프로필" />
         <div className="flex min-h-[60vh] items-center justify-center">
           <Text
@@ -109,7 +109,7 @@ export default function MemberProfileScreen({
   const hasMoreDiaries = diaryList?.pageInfo?.hasNextPage ?? false;
 
   return (
-    <div className="min-h-screen w-full bg-white lg:bg-gray-50">
+    <div className="min-h-screen w-full bg-white">
       <MobileBackHeader title={nickname} />
       <div className="hidden lg:block">
         <MyPageHeroBanner />

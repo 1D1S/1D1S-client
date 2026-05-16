@@ -105,6 +105,7 @@ export default function HomeRandomChallengesSection({
                   goalType={challenge.goalType}
                   isGroup={challenge.participationType === 'GROUP'}
                   isEnded={ended}
+                  participants={challenge.randomParticipants}
                   onClick={() => onChallengeClick(challenge.challengeId)}
                 />
               </div>

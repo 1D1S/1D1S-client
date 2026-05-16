@@ -5,20 +5,28 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { useUpdateNotificationPreferences } from '../hooks/useNotificationMutations';
 import { useNotificationPreferences } from '../hooks/useNotificationQueries';
+import { useWebPushSubscription } from '../hooks/useWebPushSubscription';
 
 interface NotificationOptInPromptProps {
   active: boolean;
   onComplete(): void;
 }
 
+function shouldRequestBrowserPermission(): boolean {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    return false;
+  }
+  return Notification.permission === 'default';
+}
+
 /**
- * 로그인 직후 전체 푸시 알림이 꺼져 있으면 활성화 여부를 묻는 프롬프트.
+ * 로그인 직후 서비스 푸시 설정과 브라우저 알림 권한을 함께 점검하는 프롬프트.
  *
- * - active 가 true 가 되면 prefs 를 조회한다.
- * - pushEnabled === true 이면 즉시 onComplete 호출 → 후속 redirect 진행.
- * - pushEnabled === false 이면 ConfirmDialog 노출.
- *   - 확인: 4개 알림 모두 활성화 후 onComplete.
+ * - pushEnabled === false → 활성화 여부를 묻는 ConfirmDialog 노출.
+ *   - 확인: 4개 알림 모두 활성화 + 브라우저 권한 요청 후 onComplete.
  *   - 취소/닫기: 변경 없이 onComplete.
+ * - pushEnabled === true → 브라우저 권한이 'default' 면 권한 요청 후 onComplete.
+ *   - 'granted' / 'denied' 인 경우엔 즉시 onComplete.
  */
 export function NotificationOptInPrompt({
   active,
@@ -30,21 +38,27 @@ export function NotificationOptInPrompt({
   const { data: prefs } = useNotificationPreferences({ enabled: active });
   const { mutate: updatePrefs, isPending } =
     useUpdateNotificationPreferences();
+  const { subscribe } = useWebPushSubscription();
 
-  // pushEnabled === true 이면 prompt 노출 없이 바로 onComplete.
-  // pushEnabled === false 이면 아래 derived isOpen 으로 다이얼로그가 떠서
-  // 사용자 액션 시점에 onComplete 가 호출된다.
   useEffect(() => {
     if (!active || !prefs || handled.current) {
       return;
     }
-    handled.current = true;
-    if (prefs.pushEnabled) {
-      onComplete();
+    if (!prefs.pushEnabled) {
+      // 다이얼로그가 떠서 사용자 액션 시점에 onComplete 가 호출된다.
+      return;
     }
-  }, [active, prefs, onComplete]);
+    handled.current = true;
+    if (shouldRequestBrowserPermission()) {
+      void subscribe().finally(onComplete);
+      return;
+    }
+    onComplete();
+  }, [active, prefs, onComplete, subscribe]);
 
   function handleConfirm(): void {
+    // prefs 갱신으로 useEffect 가 재실행되어 onComplete 가 중복 호출되는 것을 방지.
+    handled.current = true;
     updatePrefs(
       {
         pushEnabled: true,
@@ -55,6 +69,10 @@ export function NotificationOptInPrompt({
       {
         onSettled: () => {
           setDismissed(true);
+          if (shouldRequestBrowserPermission()) {
+            void subscribe().finally(onComplete);
+            return;
+          }
           onComplete();
         },
       },
@@ -62,6 +80,7 @@ export function NotificationOptInPrompt({
   }
 
   function handleCancel(): void {
+    handled.current = true;
     setDismissed(true);
     onComplete();
   }

@@ -83,6 +83,7 @@ export function MyPageActiveChallenges({
                   goalType={challenge.goalType as ChallengeCardGoalType}
                   isGroup={challenge.participationType === 'GROUP'}
                   isEnded={ended}
+                  participants={challenge.randomParticipants}
                   onClick={() =>
                     router.push(`/challenge/${challenge.challengeId}`)
                   }

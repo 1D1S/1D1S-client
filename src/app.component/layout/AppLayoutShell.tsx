@@ -104,7 +104,7 @@ function needsBackButton(pathname: string): boolean {
     return true;
   }
   if (pathname === '/diary/create') {
-    return true;
+    return false;
   }
   if (pathname === '/onboarding') {
     return true;
@@ -279,7 +279,7 @@ export default function AppLayoutShell({
         isRightSidebarCollapsed: false,
       }}
     >
-      <div className="flex min-h-screen w-full flex-col bg-white lg:bg-gray-50">
+      <div className="flex min-h-screen w-full flex-col bg-white">
         {showTopNav ? (
           <AppTopNav
             activeId={activeNavId}

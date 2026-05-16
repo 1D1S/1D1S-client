@@ -78,12 +78,7 @@ export default function HomeScreen(): React.ReactElement {
     isLoggedIn && (isSidebarLoading || isSidebarFetching || !sidebar);
 
   return (
-    <div
-      className={cn(
-        'flex min-h-screen w-full flex-col bg-white',
-        'lg:from-main-100 lg:bg-gradient-to-b lg:via-white lg:to-white'
-      )}
-    >
+    <div className="flex min-h-screen w-full flex-col bg-white">
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={handleDialogOpenChange}
@@ -106,8 +101,8 @@ export default function HomeScreen(): React.ReactElement {
           <HomeWarmGreeting />
         </div>
 
-        {/* 모바일: 스트릭 슬롯을 배너 위로 올림 */}
-        <div className="sm:hidden">
+        {/* 모바일/태블릿: 스트릭 슬롯을 배너 위로 올림 */}
+        <div className="lg:hidden">
           <HomeStreakSlot
             isLoggedIn={isLoggedIn}
             streakDays={streakDays}
@@ -116,15 +111,10 @@ export default function HomeScreen(): React.ReactElement {
           />
         </div>
 
-        {/* Banner + StreakHero row (데스크탑은 1:1, 태블릿은 1.4:1) */}
-        <div
-          className={cn(
-            'grid gap-3 sm:grid-cols-[1.4fr_1fr] lg:grid-cols-2',
-            'lg:gap-5'
-          )}
-        >
+        {/* Banner + StreakHero row (lg부터 1:1 좌우, 그 이하에선 위쪽 슬롯 사용) */}
+        <div className="grid gap-3 lg:grid-cols-2 lg:gap-5">
           <HomeWarmBanner />
-          <div className="hidden sm:block">
+          <div className="hidden lg:block">
             <HomeStreakSlot
               isLoggedIn={isLoggedIn}
               streakDays={streakDays}

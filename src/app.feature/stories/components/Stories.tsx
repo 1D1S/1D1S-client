@@ -1,12 +1,12 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 import { useStories } from '../hooks/useStoryQueries';
 import { sortStoryGroups } from '../utils/storyHelpers';
-import { useIsDesktopViewport } from '../utils/useIsDesktopViewport';
 import StoryRing from './StoryRing';
 import StoryViewer from './StoryViewer';
 
@@ -19,26 +19,25 @@ function StoryRingSkeleton(): React.ReactElement {
   return (
     <div
       className={cn(
-        'scrollbar-hide flex w-full gap-3.5 overflow-x-auto',
-        'px-5 py-3.5'
+        'scrollbar-hide flex w-full gap-3 overflow-x-auto px-5 py-3.5'
       )}
       aria-busy
       aria-label="스토리 불러오는 중"
     >
-      {Array.from({ length: 6 }).map((_, index) => (
+      {Array.from({ length: 5 }).map((_, index) => (
         <div
           key={index}
-          className="flex flex-shrink-0 flex-col items-center gap-1.5"
+          className="flex w-[140px] flex-shrink-0 flex-col gap-2"
         >
           <div
             className={cn(
-              'h-[74px] w-[74px] rounded-full',
-              'animate-pulse bg-gray-200'
+              'rounded-3 aspect-4/5 w-full animate-pulse bg-gray-200'
             )}
           />
-          <Text size="caption1" weight="medium" className="text-transparent">
-            로딩
-          </Text>
+          <div className="flex flex-col gap-1 px-0.5">
+            <div className="h-3 w-3/4 animate-pulse rounded bg-gray-200" />
+            <div className="h-2.5 w-1/2 animate-pulse rounded bg-gray-200" />
+          </div>
         </div>
       ))}
     </div>
@@ -48,9 +47,10 @@ function StoryRingSkeleton(): React.ReactElement {
 export default function Stories({
   enabled = true,
 }: StoriesProps): React.ReactElement | null {
-  const isDesktop = useIsDesktopViewport();
+  const router = useRouter();
   const [openIndex, setOpenIndex] = useState<number>(-1);
-  const { data, isLoading, isError } = useStories({ enabled });
+  const { data, isLoading } = useStories({ enabled });
+  const { data: sidebar } = useSidebar();
 
   if (!enabled) {
     return null;
@@ -60,24 +60,24 @@ export default function Stories({
     return <StoryRingSkeleton />;
   }
 
-  if (isError || !data) {
-    return null;
-  }
+  const groups = data ? sortStoryGroups(data.storyGroups) : [];
 
-  const groups = sortStoryGroups(data.storyGroups);
-
-  if (groups.length === 0) {
-    return null;
-  }
+  const handleAddStory = (): void => {
+    router.push('/diary/create');
+  };
 
   return (
     <>
-      <StoryRing groups={groups} onSelect={setOpenIndex} />
+      <StoryRing
+        groups={groups}
+        onSelect={setOpenIndex}
+        myProfileImage={sidebar?.profileUrl ?? null}
+        onAddStory={handleAddStory}
+      />
       {openIndex >= 0 ? (
         <StoryViewer
           groups={groups}
           startIndex={openIndex}
-          mode={isDesktop ? 'dialog' : 'fullscreen'}
           onClose={() => setOpenIndex(-1)}
         />
       ) : null}

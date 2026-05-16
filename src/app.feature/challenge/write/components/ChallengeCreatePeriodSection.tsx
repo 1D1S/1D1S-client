@@ -74,109 +74,122 @@ export function ChallengeCreatePeriodSection(): React.ReactElement {
           : '시작일과 진행 일수를 정해서 마감일을 만들어요.'}
       </Text>
 
-      {periodType === 'LIMITED' ? (
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Text
-              size="caption1"
-              weight="bold"
-              className="block text-gray-600"
-            >
-              시작일
-            </Text>
-            <FormField
-              control={control}
-              name="startDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <DatePicker
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="YYYY/MM/DD"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Text
+            size="caption1"
+            weight="bold"
+            className="block text-gray-600"
+          >
+            시작일
+          </Text>
+          <FormField
+            control={control}
+            name="startDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="YYYY/MM/DD"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
-          <div className="space-y-2 md:col-span-1">
-            <Text
-              size="caption1"
-              weight="bold"
-              className="block text-gray-600"
-            >
-              진행 일수
-            </Text>
-            <FormField
-              control={control}
-              name="period"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex flex-wrap gap-1.5">
-                    {PERIOD_OPTIONS.map((option) => (
-                      <ChallengeCreateChip
-                        key={option.value}
-                        active={field.value === option.value}
-                        onClick={() => field.onChange(option.value)}
-                      >
-                        {option.label}
-                      </ChallengeCreateChip>
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {period === 'etc' ? (
+        {periodType === 'LIMITED' ? (
+          <>
+            <div className="space-y-2 md:col-span-1">
+              <Text
+                size="caption1"
+                weight="bold"
+                className="block text-gray-600"
+              >
+                진행 일수
+              </Text>
               <FormField
                 control={control}
-                name="periodNumber"
+                name="period"
                 render={({ field }) => (
                   <FormItem>
-                    <FormControl>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        maxLength={3}
-                        placeholder="1 ~ 730"
-                        value={field.value ?? ''}
-                        onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                          field.onChange(
-                            event.target.value.replace(/\D/g, '')
-                          );
-                        }}
-                        className={cn(
-                          'rounded-2 w-full border border-gray-200',
-                          'bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900',
-                          'focus:border-main-800 outline-none'
-                        )}
-                      />
-                    </FormControl>
+                    <div className="flex flex-wrap gap-1.5">
+                      {PERIOD_OPTIONS.map((option) => (
+                        <ChallengeCreateChip
+                          key={option.value}
+                          active={field.value === option.value}
+                          onClick={() => field.onChange(option.value)}
+                        >
+                          {option.label}
+                        </ChallengeCreateChip>
+                      ))}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            ) : null}
-          </div>
-
-          {startDate && previewEndDate ? (
-            <div
-              className={cn(
-                'rounded-2 col-span-1 bg-gray-50 px-3.5 py-2.5',
-                'text-[12px] text-gray-700 md:col-span-2'
-              )}
-            >
-              <b>{formatDateKR(startDate)}</b>에 시작해서{' '}
-              <b>{formatDateKR(previewEndDate)}</b>에 끝나요 · 총{' '}
-              <b>{days}일</b>
+              {period === 'etc' ? (
+                <FormField
+                  control={control}
+                  name="periodNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={3}
+                          placeholder="1 ~ 730"
+                          value={field.value ?? ''}
+                          onChange={(
+                            event: ChangeEvent<HTMLInputElement>
+                          ) => {
+                            field.onChange(
+                              event.target.value.replace(/\D/g, '')
+                            );
+                          }}
+                          className={cn(
+                            'rounded-2 w-full border border-gray-200',
+                            'bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900',
+                            'focus:border-main-800 outline-none'
+                          )}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : null}
             </div>
-          ) : null}
-        </div>
-      ) : null}
+
+            {startDate && previewEndDate ? (
+              <div
+                className={cn(
+                  'rounded-2 col-span-1 bg-gray-50 px-3.5 py-2.5',
+                  'text-[12px] text-gray-700 md:col-span-2'
+                )}
+              >
+                <b>{formatDateKR(startDate)}</b>에 시작해서{' '}
+                <b>{formatDateKR(previewEndDate)}</b>에 끝나요 · 총{' '}
+                <b>{days}일</b>
+              </div>
+            ) : null}
+          </>
+        ) : startDate ? (
+          <div
+            className={cn(
+              'rounded-2 col-span-1 bg-gray-50 px-3.5 py-2.5',
+              'text-[12px] text-gray-700 md:col-span-2'
+            )}
+          >
+            <b>{formatDateKR(startDate)}</b>부터 시작 · 종료일 없이 이어가요
+          </div>
+        ) : null}
+      </div>
     </ChallengeCreateSectionCard>
   );
 }

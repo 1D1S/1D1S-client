@@ -348,9 +348,6 @@ export function ChallengeDetailScreen({
 
     if (summary.likeInfo.likedByMe) {
       unlikeChallenge.mutate(challengeId, {
-        onSuccess: () => {
-          toast.success('챌린지 좋아요 취소 성공했습니다.');
-        },
         onError: (mutationError) => {
           notifyApiError(mutationError);
         },
@@ -359,9 +356,6 @@ export function ChallengeDetailScreen({
     }
 
     likeChallenge.mutate(challengeId, {
-      onSuccess: () => {
-        toast.success('챌린지 좋아요 성공했습니다.');
-      },
       onError: (mutationError) => {
         notifyApiError(mutationError);
       },
@@ -787,7 +781,7 @@ export function ChallengeDetailScreen({
 
       <div
         className={cn(
-          'data-fade-in min-h-screen w-full bg-white lg:bg-gray-50/60',
+          'data-fade-in min-h-screen w-full bg-white',
           ctaConfig.show
             ? isMobileWebApp
               ? 'pb-[calc(100px+env(safe-area-inset-bottom))] lg:pb-12'

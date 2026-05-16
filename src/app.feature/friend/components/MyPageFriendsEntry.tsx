@@ -43,10 +43,10 @@ export function MyPageFriendsEntry(): React.ReactElement {
         <Users className="h-5 w-5" />
       </span>
       <div className="min-w-0 flex-1">
-        <Text size="body1" weight="medium" className="text-gray-900">
+        <Text as="div" size="body1" weight="medium" className="text-gray-900">
           친구
         </Text>
-        <Text size="caption2" className="text-gray-500">
+        <Text as="div" size="caption2" className="text-gray-500">
           {friendCount > 0 ? `친구 ${friendCount}명` : '친구를 추가해보세요'}
         </Text>
       </div>

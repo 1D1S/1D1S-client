@@ -8,8 +8,8 @@ export interface StoryItem {
 
 export interface StoryGroup {
   userId: number;
+  userName?: string | null;
   profileImage: string | null;
-  nickname?: string | null;
   stories: StoryItem[];
 }
 

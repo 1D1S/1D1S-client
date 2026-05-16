@@ -125,8 +125,12 @@ export default function DiaryCreateScreen(): React.ReactElement {
           'px-5 py-5 lg:px-8 lg:py-10'
         )}
       >
-        <div className="hidden flex-col gap-1.5 pb-6 lg:flex lg:pb-8">
-          <Text size="display1" weight="bold" className="text-gray-900">
+        <header className="hidden flex-col gap-1.5 pb-6 lg:flex lg:pb-8">
+          <Text
+            size="pageTitle"
+            weight="extrabold"
+            className="tracking-tight text-gray-900"
+          >
             {isEditMode ? '일지 수정' : '일지 작성'}
           </Text>
           <Text size="body2" weight="regular" className="text-gray-500">
@@ -134,7 +138,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
               ? '기록을 최신 상태로 업데이트해보세요.'
               : '오늘 챌린지를 어떻게 실천하셨나요?'}
           </Text>
-        </div>
+        </header>
 
         <div className="mx-auto w-full max-w-[860px]">
           <div className="flex flex-col gap-7">

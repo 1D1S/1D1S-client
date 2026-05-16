@@ -4,7 +4,7 @@ import React from 'react';
 
 export function MyPageSkeleton(): React.ReactElement {
   return (
-    <div className="min-h-screen w-full bg-white pb-12 lg:bg-gray-50">
+    <div className="min-h-screen w-full bg-white pb-12">
       {/* 데스크탑 그라데이션 배너 자리 */}
       <Skeleton
         shape="rect"

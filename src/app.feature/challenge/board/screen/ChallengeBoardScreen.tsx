@@ -301,6 +301,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
                     goalType={challenge.goalType}
                     isGroup={challenge.participationType === 'GROUP'}
                     isEnded={ended}
+                    participants={challenge.randomParticipants}
                     onClick={() =>
                       requireAuth(
                         '챌린지 상세는 로그인 후 이용할 수 있습니다.',

@@ -43,3 +43,35 @@
     animation: none;
   }
 }
+
+/* CTA 버튼 attention pulse — 부드러운 스케일 + 링이 퍼지는 듯한 그림자.
+   "오늘 기록 +" 같은 핵심 CTA에 적용해 사용자의 시선을 끈다. */
+@keyframes ctaPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 107, 74, 0.55);
+  }
+  60% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 10px rgba(255, 107, 74, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 107, 74, 0);
+  }
+}
+
+.animate-cta-pulse {
+  animation: ctaPulse 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-cta-pulse:hover,
+.animate-cta-pulse:focus-visible {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-cta-pulse {
+    animation: none;
+  }
+}
