@@ -4,15 +4,15 @@
 
 ## 파일 위치 규칙
 
-| 코드 종류       | 위치                  |
-| --------------- | --------------------- |
-| 라우트 / 페이지 | `src/app/`            |
-| 도메인 기능     | `src/app.feature/`    |
-| 공용 컴포넌트   | `src/app.component/`  |
-| 핵심 모듈       | `src/app.module/`     |
-| 전역 상수       | `src/app.constants/`  |
-| 전역 스타일     | `src/app.styles/`     |
-| 유틸리티 라이브러리 | `src/app.lib/`    |
+| 코드 종류           | 위치                  |
+| ------------------- | --------------------- |
+| 라우트 / 페이지     | `src/app/`            |
+| 도메인 기능         | `src/app.feature/`    |
+| 공용 컴포넌트       | `src/app.component/`  |
+| 핵심 모듈           | `src/app.module/`     |
+| 전역 상수           | `src/app.constants/`  |
+| 전역 스타일         | `src/app.styles/`     |
+| RSC/client 공용 라이브러리 | `src/app.lib/` (font, Prefetch, getQueryClient) |
 
 ### 파일 확장자
 
@@ -25,13 +25,15 @@
 
 ## Path Alias
 
-| Alias          | 경로                |
-| -------------- | ------------------- |
-| `@/*`          | `./src/*`           |
+| Alias          | 경로                    |
+| -------------- | ----------------------- |
+| `@/*`          | `./src/*`               |
 | `@component/*` | `./src/app.component/*` |
 | `@feature/*`   | `./src/app.feature/*`   |
 | `@module/*`    | `./src/app.module/*`    |
 | `@constants/*` | `./src/app.constants/*` |
+
+> `app.lib/`는 별도 alias가 없으며 `@/app.lib/...`로 import 한다.
 
 ---
 
@@ -46,7 +48,13 @@
 | 훅       | `.ts`  | `use` 접두사 + camelCase  | `useDiaryQueries.ts`          |
 | API      | `.ts`  | camelCase + `Api`         | `diaryBoardApi.ts`            |
 | 타입     | `.ts`  | camelCase                 | `challenge.ts`, `diary.ts`    |
-| 상수     | `.ts`  | camelCase                 | `queryKeys.ts`                |
+| 상수/Query Key | `.ts` | camelCase             | `queryKeys.ts`, `categories.ts` |
+
+예외:
+- Next.js 규약 파일은 소문자: `page.tsx`, `layout.tsx`, `route.ts`,
+  `loading.tsx`, `not-found.tsx`, `middleware.ts` 등
+- 배럴 파일이 필요한 경우 `index.tsx` / `index.ts` 사용 (예:
+  `app.module/providers/index.tsx`)
 
 ### 변수 / 함수
 
@@ -67,14 +75,14 @@ export default function ChallengeCard() {}
 // Screen: Screen 역할 명시
 export default function ChallengeListScreen() {}
 
-// Props: 컴포넌트명 + Props
-type ChallengeCardProps = { ... };
+// Props: 컴포넌트명 + Props 또는 짧게 Props
+interface ChallengeCardProps { /* ... */ }
 ```
 
 ### Query Key Factory
 
 ```ts
-// 도메인_QUERY_KEYS 형식
+// 도메인_QUERY_KEYS 형식 (대문자 + SCREAMING_SNAKE_CASE)
 export const DIARY_QUERY_KEYS = {
   all: ['diaries'] as const,
   lists: () => [...DIARY_QUERY_KEYS.all, 'list'] as const,
@@ -90,7 +98,7 @@ export const DIARY_QUERY_KEYS = {
 ### 타입 정의
 
 ```ts
-// ESLint에서 interface 사용 (consistent-type-definitions)
+// ESLint에서 interface 사용 강제 (consistent-type-definitions)
 interface User {
   id: string;
   name: string;
@@ -119,6 +127,7 @@ function isUser(data: unknown): data is User {
 
 ### `any` 금지
 
+- ESLint `no-explicit-any` warn + `fixToUnknown` 옵션 적용
 - 불가피한 경우 `// eslint-disable-next-line` + 사유 주석 필수
 
 ---
@@ -127,10 +136,11 @@ function isUser(data: unknown): data is User {
 
 ### 구조 순서
 
-```ts
-'use client'; // 최하위 리프 컴포넌트에만
+```tsx
+'use client'; // 최하위 리프 컴포넌트에만 (Screen은 상위 컴포넌트면 RSC 유지)
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
+
 import { cn } from '@module/utils/cn';
 
 interface Props {
@@ -163,7 +173,7 @@ export default function ChallengeCard({
 
 ### 조건부 렌더링
 
-```ts
+```tsx
 // 단순 조건
 {isVisible && <Modal />}
 
@@ -180,7 +190,7 @@ return <Content />;
 
 ### 리스트 렌더링
 
-```ts
+```tsx
 // 고유 key 사용
 {posts.map((post) => <Card key={post.id} />)}
 
@@ -194,7 +204,7 @@ return <Content />;
 
 > 상세 규칙: `docs/ai/TAILWIND_STYLING_GUIDE.md`
 
-```ts
+```tsx
 // 80자 이하 정적 문자열 -> cn() 금지
 className="flex items-center gap-2"
 
@@ -227,20 +237,34 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@module/api/client';
 import { cn } from '@module/utils/cn';
 
-// 3. 같은 feature 내 상대 경로
+// 3. @/app.lib 등 다른 alias 그룹
+import { Prefetch } from '@/app.lib/Prefetch';
+
+// 4. 같은 feature 내 상대 경로
 import { DIARY_QUERY_KEYS } from '../consts/queryKeys';
 import type { Diary } from '../type/diary';
 ```
+
+`import/first`, `import/newline-after-import`, `import/no-duplicates`도 함께
+강제된다.
 
 ---
 
 ## 코드 품질 기준
 
-| 항목         | 기준                           |
-| ------------ | ------------------------------ |
-| 들여쓰기     | 스페이스 2칸                   |
-| 최대 줄 길이 | 80자                           |
-| 따옴표       | 단일 따옴표 (single quotes)    |
-| 포맷팅       | Prettier 기준                  |
-| 린트         | ESLint 통과 필수               |
-| 커밋         | Conventional Commits 형식      |
+| 항목              | 기준                                       |
+| ----------------- | ------------------------------------------ |
+| 들여쓰기          | 스페이스 2칸                               |
+| 최대 줄 길이      | 80자 (ESLint `max-len` error)              |
+| 따옴표            | 단일 따옴표 (`quotes: single`)             |
+| 세미콜론          | 필수 (`semi: always`)                      |
+| 함수 스타일       | 선언식 + 화살표 허용 (`func-style`)        |
+| 배열 타입         | `T[]` (단순) / `ReadonlyArray<T>` (readonly) |
+| 타입 정의         | `interface` 강제                           |
+| `var`             | 금지 (`no-var`)                            |
+| `const` 선호      | `prefer-const`                             |
+| `parseInt`/`parseFloat` | `Number()` 사용 (no-restricted-globals) |
+| 포맷팅            | Prettier (printWidth 80, trailingComma es5) |
+| 린트              | ESLint `--max-warnings=0` (CI는 -1 = 모두 fail) |
+| 커밋              | Conventional Commits 형식                  |
+| 미사용 파일/export | Knip 통과 (`pnpm knip`)                    |

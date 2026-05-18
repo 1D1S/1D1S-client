@@ -4,11 +4,14 @@
 
 ## 핵심 원칙
 
-1. **모바일 우선** — 기본 스타일은 모바일 기준, PC 확장은 `md:` 또는 커스텀 브레이크포인트
-2. **`cn()` 분리 필수** — `className`이 포함된 줄이 **80자를 넘으면 반드시 `cn()`으로 분리** (인라인 문자열/템플릿 리터럴 금지)
+1. **모바일 우선** — 기본 스타일은 모바일 기준, 확장은 `md:`/`lg:` 또는
+   컨테이너 쿼리로 처리
+2. **`cn()` 분리 필수** — `className`이 포함된 줄이 **80자를 넘으면 반드시
+   `cn()`으로 분리** (인라인 문자열/템플릿 리터럴 금지)
 3. **Tailwind 최우선** — CSS Modules는 예외 상황에만 허용
 4. **컴포넌트 내부 margin 금지** — 간격은 부모에서 `className`으로 제어
-5. **디자인 시스템 변수 활용** — `colors.css`, `typography.css` 정의된 변수 사용
+5. **디자인 시스템 변수 활용** — `colors.css`, `typography.css` 정의된
+   CSS 변수(`var(--*)`)를 통해 Tailwind 토큰으로 노출
 
 ---
 
@@ -17,14 +20,18 @@
 ### 컨테이너 쿼리 기반 그리드
 
 ```css
-/* globals.css에 정의된 반응형 그리드 */
-/* 일지 그리드: 2 -> 3 -> 4 -> 6 columns */
-/* 챌린지 그리드: 1 -> 2 -> 3 -> 4 columns */
+/* globals.css에 정의된 반응형 그리드 (예: 일지 카드) */
+/* .diary-card-grid: 2 -> 3 -> 4 -> 6 columns */
+@container (min-width: 640px)  { /* 3 cols */ }
+@container (min-width: 900px)  { /* 4 cols */ }
+@container (min-width: 1200px) { /* 6 cols */ }
 ```
+
+루트 폰트 사이즈도 미디어 쿼리로 단계 조정: `14px → 15px(≥640) → 16px(≥1024)`.
 
 ### 표시 / 숨김 패턴
 
-```ts
+```tsx
 // 모바일 표시, PC 숨김
 className="flex md:hidden"
 
@@ -36,8 +43,8 @@ className="hidden md:block"
 
 ## 단위 변환 (PX -> Tailwind)
 
-```ts
-// 기본 공식: px / 4
+```tsx
+// 기본 공식: px / 4 (루트 16px 환산 기준)
 // 24px -> 6,  1080px -> 270
 className="mt-6 md:max-w-270"
 
@@ -45,6 +52,9 @@ className="mt-6 md:max-w-270"
 // 불가피한 경우만 arbitrary value
 <div className="w-[26.2px]">...</div>
 ```
+
+> 본 프로젝트는 루트 폰트가 14~16px 사이에서 변하므로 정확한 픽셀 일치가
+> 필요한 자리에는 arbitrary value(`w-[24px]` 등)를 사용해도 된다.
 
 ---
 
@@ -55,7 +65,7 @@ className="mt-6 md:max-w-270"
 `cn()`은 **복수 인수** 또는 **조건부 클래스**가 있을 때만 사용한다.
 한 줄이 80자를 넘지 않는 정적 문자열에는 `cn()`을 쓰지 않는다.
 
-```ts
+```tsx
 // 금지 — 80자 이하 정적 문자열에 cn() 불필요
 <span className={cn('text-sm text-gray-500')} />
 
@@ -73,7 +83,7 @@ className="mt-6 md:max-w-270"
 
 `cn()`을 써야 하는 경우:
 
-```ts
+```tsx
 // 1. 복수 문자열 분리 (80자 초과 시)
 <div
   className={cn(
@@ -105,22 +115,29 @@ function MyComponent({ className, ...props }: Props) {
 }
 ```
 
+ESLint Tailwind 플러그인은 `cn` / `clsx` / `cva` callee를 인식하도록
+설정되어 있다 (`tailwindcss.callees`).
+
 ---
 
 ## 색상 — CSS 변수 활용
 
 ### 색상 팔레트 (`src/app.styles/colors.css`)
 
-| 계열  | 범위      | 용도                   |
-| ----- | --------- | ---------------------- |
-| Gray  | 50 - 900  | 중립 톤, 배경, 텍스트  |
-| Main  | 100 - 900 | 브랜드 색상 (오렌지/피치) |
-| Green | 다양      | 성공, 긍정적 상태      |
-| Blue  | 다양      | 정보, 링크             |
-| Red   | 다양      | 에러, 위험             |
-| Mint  | 다양      | 보조 강조              |
+`@theme inline`을 통해 `--color-*` 토큰을 정의하고, 실제 색상은
+`@1d1s/design-system`의 `globals.css`에서 oklch 기반 변수(`--gray-50` 등)로
+정의된다.
 
-```ts
+| 계열   | 범위      | 용도                   |
+| ------ | --------- | ---------------------- |
+| Gray   | 50 - 900  | 중립 톤, 배경, 텍스트  |
+| Main   | 100 - 900 | 브랜드 색상 (오렌지/피치) |
+| Green  | 400 - 800 | 성공, 긍정적 상태      |
+| Blue   | 200 - 600 | 정보, 링크             |
+| Red    | 300 - 500 | 에러, 위험             |
+| White / Black / warning / accent | -- | 시스템 토큰 |
+
+```tsx
 // CSS 변수로 정의된 색상 사용
 <div className="bg-main-500 text-gray-900">
 <div className="border-gray-200">
@@ -128,7 +145,7 @@ function MyComponent({ className, ...props }: Props) {
 // 하드코딩 지양 -> CSS 변수 활용
 // 중복 선언 금지
 className="border-t border-[#d9d9d9] border-b border-[#d9d9d9]"
-// 축약
+// 축약 (ESLint tailwindcss/enforces-shorthand가 warn)
 className="border-y border-[#d9d9d9]"
 ```
 
@@ -145,13 +162,13 @@ className="border-y border-[#d9d9d9]"
 | `text-xl`  | 20px    | 제목         |
 | `text-2xl` | 24px    | 큰 제목      |
 
-폰트 패밀리: **Pretendard** (기본), **Suite** (보조)
+폰트 패밀리: **Pretendard** (기본, `src/app.lib/font.ts`에서 로딩)
 
 ---
 
 ## 상태 스타일링
 
-```ts
+```tsx
 // hover / focus
 <button className="bg-main-500 hover:bg-main-600 focus:ring-2">
 
@@ -167,10 +184,8 @@ className="border-y border-[#d9d9d9]"
 
 ## 다크 모드
 
-```css
-/* globals.css에서 :is(.dark *) 선택자 사용 */
-/* 색상 변수가 light/dark 두 벌로 정의되어 있음 */
-```
+`@1d1s/design-system`의 글로벌 CSS가 light/dark 두 벌의 색상 변수를
+정의한다. `:is(.dark *)` 셀렉터 기반.
 
 ---
 
@@ -184,11 +199,16 @@ className="border-y border-[#d9d9d9]"
 
 ## 디자인 시스템 연동
 
-```ts
+```tsx
 // @1d1s/design-system 컴포넌트 사용
 import { Button } from '@1d1s/design-system';
-
-// Tailwind 테마 변수는 globals.css @theme에서 정의
-// 디자인 시스템 소스도 Tailwind 스캔 대상:
-// @source "../node_modules/@1d1s/design-system/**/*.{ts,tsx}"
 ```
+
+```css
+/* globals.css에서 디자인 시스템 소스도 Tailwind 스캔 대상으로 등록 */
+@source "../../node_modules/@1d1s/design-system";
+@import '@1d1s/design-system/styles/globals.css';
+```
+
+디자인 시스템에서 정의한 색상/타이포 토큰을 `@theme inline`을 통해
+프로젝트 Tailwind 토큰으로 노출한다.
