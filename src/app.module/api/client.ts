@@ -29,8 +29,8 @@ export const tokenClient = axios.create({
   withCredentials: true,
 });
 
-// 사이드바 등 선택적 인증 요청용: 401은 조용히 null 반환, 302는 토큰 재발급 후 재시도
-// withCredentials로 쿠키를 자동 전송하고, 에러는 호출부에서 직접 처리
+// 사이드바 등 선택적 인증 요청용: 401/302 모두 토큰 재발급 후 1회 재시도,
+// 재발급 실패 또는 재시도 후에도 인증 실패 시 호출부에서 직접 로그아웃 처리
 export const silentAuthClient: AxiosInstance = (() => {
   const instance = axios.create({
     baseURL: API_BASE_URL,
@@ -46,14 +46,14 @@ export const silentAuthClient: AxiosInstance = (() => {
         _retried?: boolean;
       };
 
-      // 302: 세션 만료 → 토큰 재발급 후 재시도
-      if (status === 302 && config && !config._retried) {
+      // 401(access 만료) / 302(세션 만료 redirect) → 토큰 재발급 후 재시도
+      if ((status === 401 || status === 302) && config && !config._retried) {
         config._retried = true;
         try {
           await tokenClient.get('/auth/token');
           return instance.request(config);
         } catch {
-          // 재발급 실패는 호출부에서 처리
+          // 재발급 실패는 호출부(forceLogout)에서 처리
         }
       }
 
