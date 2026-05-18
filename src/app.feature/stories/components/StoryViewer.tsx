@@ -37,45 +37,49 @@ export default function StoryViewer({
   const group = groups[groupIndex];
   const story = group?.stories[diaryIndex];
 
-  // 시청 처리: 같은 diary 는 한 번만 호출.
+  const diaryId = story?.diaryId;
+  const hasUnreadJournal = story?.hasUnreadJournal ?? false;
+  const viewStoryMutate = viewStoryMutation.mutate;
+
   useEffect(() => {
-    if (!story) {
+    if (diaryId === undefined) {
       return;
     }
-    if (reportedRef.current.has(story.diaryId)) {
+    if (reportedRef.current.has(diaryId)) {
       return;
     }
-    reportedRef.current.add(story.diaryId);
-    if (story.hasUnreadJournal) {
-      viewStoryMutation.mutate(story.diaryId);
+    reportedRef.current.add(diaryId);
+    if (hasUnreadJournal) {
+      viewStoryMutate(diaryId);
     }
-  }, [story, viewStoryMutation]);
+  }, [diaryId, hasUnreadJournal, viewStoryMutate]);
 
   const advanceToNext = useCallback(() => {
-    if (!group) {
+    const currentGroup = groups[groupIndex];
+    if (!currentGroup) {
       onClose();
       return;
     }
-    if (diaryIndex < group.stories.length - 1) {
-      setDiaryIndex(diaryIndex + 1);
+    if (diaryIndex < currentGroup.stories.length - 1) {
+      setDiaryIndex((prev) => prev + 1);
       return;
     }
     if (groupIndex < groups.length - 1) {
-      setGroupIndex(groupIndex + 1);
+      setGroupIndex((prev) => prev + 1);
       setDiaryIndex(0);
       return;
     }
     onClose();
-  }, [diaryIndex, group, groupIndex, groups.length, onClose]);
+  }, [diaryIndex, groupIndex, groups, onClose]);
 
   const advanceToPrev = useCallback(() => {
     if (diaryIndex > 0) {
-      setDiaryIndex(diaryIndex - 1);
+      setDiaryIndex((prev) => prev - 1);
       return;
     }
     if (groupIndex > 0) {
       const prevGroup = groups[groupIndex - 1];
-      setGroupIndex(groupIndex - 1);
+      setGroupIndex((prev) => prev - 1);
       setDiaryIndex(Math.max(0, prevGroup.stories.length - 1));
     }
   }, [diaryIndex, groupIndex, groups]);

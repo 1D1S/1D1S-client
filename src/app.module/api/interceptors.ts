@@ -1,3 +1,4 @@
+import { trimTrailingSlash } from '@module/utils/url';
 import axios, {
   type AxiosInstance,
   type AxiosResponse,
@@ -73,7 +74,7 @@ export const attachInterceptors = (
 
       const xhr = response.request as XMLHttpRequest | undefined;
       const responseUrl = xhr?.responseURL ?? '';
-      const baseUrl = API_BASE_URL.replace(/\/$/, '');
+      const baseUrl = trimTrailingSlash(API_BASE_URL);
       const requestPath = response.config.url ?? '';
       const expectedUrl = `${baseUrl}${requestPath}`;
 

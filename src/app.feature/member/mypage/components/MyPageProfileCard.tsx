@@ -187,7 +187,7 @@ export function MyPageProfileCard({
       <section
         className={cn(
           'rounded-4 relative -mt-25 hidden border border-gray-200 bg-white',
-          'p-5 shadow-[0_6px_20px_rgba(0,0,0,0.06)]',
+          'p-5 shadow-sm',
           'lg:flex lg:flex-row lg:items-center lg:gap-5 lg:p-6',
         )}
       >

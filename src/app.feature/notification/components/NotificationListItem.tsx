@@ -3,6 +3,7 @@
 import { CircleAvatar, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { getRelativeTimeLabel } from '@module/utils/date';
+import { createActivationKeydownHandler } from '@module/utils/event';
 import { useRouter } from 'next/navigation';
 
 import { Notification } from '../type/notification';
@@ -51,12 +52,8 @@ export function NotificationListItem({
     if (targetUrl) { router.push(targetUrl); }
   }
 
-  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handleActivate();
-    }
-  }
+  const handleKeyDown =
+    createActivationKeydownHandler<HTMLDivElement>(handleActivate);
 
   return (
     <div

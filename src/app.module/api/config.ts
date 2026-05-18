@@ -1,4 +1,6 @@
-const normalizeBaseUrl = (url: string): string => url.replace(/\/+$/, '');
+import { trimTrailingSlash } from '@module/utils/url';
+
+const normalizeBaseUrl = (url: string): string => trimTrailingSlash(url);
 
 const resolveApiBaseUrl = (): string => {
   const envBaseUrl = process.env.NEXT_PUBLIC_ODOS_API_URL;

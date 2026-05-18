@@ -2,6 +2,7 @@
 
 import { Card, CircleAvatar, Stripe } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import { createActivationKeydownHandler } from '@module/utils/event';
 import { CalendarDays, Target, Users } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
@@ -123,14 +124,7 @@ export default function ChallengeCard({
   onClick,
   className,
 }: ChallengeCardProps): React.ReactElement {
-  const handleKeyDown = (
-    event: React.KeyboardEvent<HTMLDivElement>
-  ): void => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onClick?.();
-    }
-  };
+  const handleKeyDown = createActivationKeydownHandler<HTMLDivElement>(onClick);
 
   const stripeLabel = categoryIcon ?? category;
   const participationLabel = isGroup ? '단체' : '개인';
@@ -157,7 +151,7 @@ export default function ChallengeCard({
       onKeyDown={handleKeyDown}
       className={cn(
         'transition-all duration-300 ease-out',
-        'hover:shadow-[0_10px_28px_rgba(255,87,34,0.18)]',
+        'hover:shadow-warm',
         isEnded && 'opacity-60',
         className
       )}

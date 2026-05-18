@@ -9,7 +9,7 @@ import type {
   MyPageStreak,
   StreakCalendarItem,
 } from '@feature/member/type/member';
-import { getRelativeTimeLabel } from '@module/utils/date';
+import { formatDateISO, getRelativeTimeLabel } from '@module/utils/date';
 
 export type { DiaryEmotion };
 
@@ -45,12 +45,6 @@ export interface DiaryCardViewModel {
   challengeLabel: string;
   date: string;
   emotion: DiaryEmotion;
-}
-
-function toLocalDateKey(date: Date): string {
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
-  return `${date.getFullYear()}-${mm}-${dd}`;
 }
 
 function toRelativeDateLabel(createdAt: string | undefined): string {
@@ -118,7 +112,7 @@ export function buildHeatmapData(
   const result: HeatmapEntry[] = [];
   const cursor = new Date(start);
   while (cursor <= today) {
-    const dateStr = toLocalDateKey(cursor);
+    const dateStr = formatDateISO(cursor);
     const count = calendarMap.get(dateStr) ?? 0;
     result.push({ date: dateStr, count, level: toHeatmapLevel(count) });
     cursor.setDate(cursor.getDate() + 1);

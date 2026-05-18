@@ -7,6 +7,7 @@ import {
   type TagProps,
   Text,
 } from '@1d1s/design-system';
+import { createActivationKeydownHandler } from '@module/utils/event';
 import Image from 'next/image';
 
 export interface ChallengeListItemProps {
@@ -66,17 +67,11 @@ export function ChallengeListItem({
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
-      onKeyDown={(event) => {
-        if (!onClick) {return;}
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          onClick();
-        }
-      }}
+      onKeyDown={createActivationKeydownHandler(onClick)}
       className={cn(
         'flex gap-3 overflow-hidden p-0 sm:gap-4',
         onClick &&
-          'transition-all duration-200 hover:shadow-[0_10px_28px_rgba(255,87,34,0.18)]',
+          'hover:shadow-warm transition-all duration-200',
         className
       )}
     >

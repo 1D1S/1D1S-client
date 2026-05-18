@@ -3,6 +3,7 @@
 import { Card, Icon, Stripe, Text } from '@1d1s/design-system';
 import { ChallengeChip } from '@feature/challenge/shared/components/ChallengeChip';
 import { cn } from '@module/utils/cn';
+import { createActivationKeydownHandler } from '@module/utils/event';
 import Image from 'next/image';
 import React from 'react';
 
@@ -61,14 +62,7 @@ export default function DiaryCard({
   onLikeToggle,
   className,
 }: DiaryCardProps): React.ReactElement {
-  const handleKeyDown = (
-    event: React.KeyboardEvent<HTMLDivElement>
-  ): void => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onClick?.();
-    }
-  };
+  const handleKeyDown = createActivationKeydownHandler<HTMLDivElement>(onClick);
 
   const handleLikeClick = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -92,7 +86,7 @@ export default function DiaryCard({
       onKeyDown={handleKeyDown}
       className={cn(
         'transition-all duration-300 ease-out',
-        'hover:shadow-[0_10px_28px_rgba(255,87,34,0.18)]',
+        'hover:shadow-warm',
         className
       )}
     >

@@ -51,10 +51,7 @@ export default function HomeRandomChallengesSection({
           )}
         >
           {Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={index}
-              className="w-[200px] shrink-0 sm:w-auto sm:shrink"
-            >
+            <div key={index} className="w-[200px] shrink-0 sm:w-auto sm:shrink">
               <ChallengeCardSkeleton />
             </div>
           ))}
