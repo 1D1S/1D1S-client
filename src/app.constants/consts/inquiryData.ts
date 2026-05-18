@@ -9,7 +9,7 @@ export const INQUIRY_FAQ_ITEMS: FaqItem[] = [
     id: 'item-1',
     question: '1D1S는 어떤 서비스인가요?',
     answer:
-      '1D1S(One Day One Step)는 매일 하나의 챌린지에 도전하고 일지를 작성하며 성장하는 습관 형성 플랫폼입니다.',
+      '1D1S(1Day 1Streak)는 매일 하나의 챌린지에 도전하고 일지를 작성하며 성장하는 습관 형성 플랫폼입니다.',
   },
   {
     id: 'item-2',

@@ -13,14 +13,19 @@ import {
   PROVIDER_META,
 } from '../consts/providerMeta';
 import { OAuthProvider } from '../type/auth';
+import { getLaunchStreakDay } from '../utils/streakDay';
 
 export function LoginScreen(): React.ReactElement {
   const [recommended, setRecommended] = React.useState<OAuthProvider | null>(
     null
   );
+  const [streakDay, setStreakDay] = React.useState<number>(() =>
+    getLaunchStreakDay()
+  );
 
   React.useEffect(() => {
     setRecommended(getLastOAuthProvider());
+    setStreakDay(getLaunchStreakDay());
   }, []);
 
   const providers = getOrderedProviders(recommended);
@@ -28,7 +33,11 @@ export function LoginScreen(): React.ReactElement {
   return (
     <>
       <div className="lg:hidden">
-        <LoginMobileView providers={providers} recommended={recommended} />
+        <LoginMobileView
+          providers={providers}
+          recommended={recommended}
+          streakDay={streakDay}
+        />
       </div>
 
       <div
@@ -39,9 +48,8 @@ export function LoginScreen(): React.ReactElement {
       >
         <BrandPanel
           heading={'매일 한 걸음,\n오늘도 함께해요'}
-          subtitle={
-            '챌린저 12,847명이 지금\n각자의 작은 목표를 지키는 중이에요.'
-          }
+          subtitle={'각자의 작은 목표를 꾸준히\n지켜나가는 중이에요.'}
+          streakDay={streakDay}
         />
 
         <section
@@ -88,7 +96,7 @@ export function LoginScreen(): React.ReactElement {
               as="p"
               className="mt-3 block text-gray-500"
             >
-              27일 스트릭이 기다리고 있어요 🔥
+              {`${streakDay}일 스트릭이 기다리고 있어요 🔥`}
               <br />
               가입할 때 사용한 SNS로 로그인해주세요.
             </Text>

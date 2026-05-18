@@ -13,11 +13,13 @@ import { LoginButton } from './LoginButtons';
 interface LoginMobileViewProps {
   providers: OAuthProvider[];
   recommended: OAuthProvider | null;
+  streakDay: number;
 }
 
 export function LoginMobileView({
   providers,
   recommended,
+  streakDay,
 }: LoginMobileViewProps): React.ReactElement {
   const router = useRouter();
 
@@ -104,7 +106,7 @@ export function LoginMobileView({
                 'shadow-[0_4px_12px_rgba(255,87,34,0.4)]'
               )}
             >
-              27일째
+              {`${streakDay}일째`}
             </span>
           </div>
           <Text

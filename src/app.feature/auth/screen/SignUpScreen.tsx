@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { authApi } from '../api/authApi';
 import { BrandPanel } from '../components/BrandPanel';
 import { SignupFormValues, useSignUpForm } from '../hooks/useSignUpForm';
+import { getLaunchStreakDay } from '../utils/streakDay';
 import { Step1 } from './step-pages/Step1';
 import { Step2 } from './step-pages/Step2';
 
@@ -56,6 +57,13 @@ export function SignUpScreen(): React.ReactElement {
   const [step, setStep] = React.useState<Step>(1);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showExitDialog, setShowExitDialog] = React.useState(false);
+  const [streakDay, setStreakDay] = React.useState<number>(() =>
+    getLaunchStreakDay()
+  );
+
+  React.useEffect(() => {
+    setStreakDay(getLaunchStreakDay());
+  }, []);
 
   const onSubmit = async (values: SignupFormValues): Promise<void> => {
     if (!authStorage.hasTokens()) {
@@ -164,6 +172,7 @@ export function SignUpScreen(): React.ReactElement {
         subtitle={
           'SNS로 가입하셨네요!\n프로필 정보만 입력하면 바로 시작할 수 있어요.'
         }
+        streakDay={streakDay}
       />
 
       <section className="relative flex min-h-screen flex-col">

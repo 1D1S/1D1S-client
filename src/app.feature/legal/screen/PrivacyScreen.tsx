@@ -2,7 +2,7 @@ import React from 'react';
 
 import { LegalPageShell } from '../components/LegalPageShell';
 
-const EFFECTIVE_DATE = '2026년 1월 1일';
+const EFFECTIVE_DATE = '2026년 5월 20일';
 
 const PRIVACY_SECTIONS: Array<{ heading: string; body: string }> = [
   {

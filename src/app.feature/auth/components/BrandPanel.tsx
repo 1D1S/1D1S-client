@@ -5,6 +5,7 @@ import Link from 'next/link';
 interface BrandPanelProps {
   heading: string;
   subtitle: string;
+  streakDay: number;
   className?: string;
 }
 
@@ -21,6 +22,7 @@ const FOOTER_CHIPS: Array<{
 export function BrandPanel({
   heading,
   subtitle,
+  streakDay,
   className,
 }: BrandPanelProps): React.ReactElement {
   return (
@@ -87,7 +89,7 @@ export function BrandPanel({
               'shadow-[0_6px_16px_rgba(0,0,0,0.18)]'
             )}
           >
-            +27일
+            {`+${streakDay}일`}
           </span>
         </div>
         <Text
@@ -136,17 +138,6 @@ export function BrandPanel({
         ))}
       </div>
 
-      <div
-        aria-hidden
-        className={cn(
-          'pointer-events-none absolute top-12 right-12 hidden items-center',
-          'gap-1 rounded-full bg-white/15 px-3 py-1.5 text-[11px]',
-          'font-bold text-white backdrop-blur-sm xl:flex'
-        )}
-      >
-        <Icon name="People" size={12} className="text-white" />
-        12,847명 참여 중
-      </div>
     </section>
   );
 }
