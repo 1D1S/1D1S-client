@@ -20,7 +20,7 @@ export function NicknameCheckButton({
       onClick={onClick}
       disabled={disabled || isPending}
       className={cn(
-        'text-main-800 text-sm font-bold whitespace-nowrap',
+        'text-main-800 pointer-events-auto text-sm font-bold whitespace-nowrap',
         'transition-opacity hover:opacity-70',
         'disabled:cursor-not-allowed disabled:text-gray-300'
       )}
