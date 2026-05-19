@@ -46,6 +46,7 @@ export function NotificationListItem({
 
   const targetUrl = resolveTargetUrl(notification);
   const isFriendRequest = type === 'FRIEND_REQUEST' && actorId !== null;
+  const showAvatar = type !== 'LIKE_MILESTONE';
 
   function handleActivate(): void {
     if (!isRead) { onRead?.(id); }
@@ -69,7 +70,9 @@ export function NotificationListItem({
         !targetUrl && 'cursor-default',
       )}
     >
-      <CircleAvatar imageUrl={actorProfileUrl ?? undefined} size="sm" />
+      {showAvatar && (
+        <CircleAvatar imageUrl={actorProfileUrl ?? undefined} size="sm" />
+      )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <Text

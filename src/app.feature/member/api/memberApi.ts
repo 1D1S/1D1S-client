@@ -2,7 +2,7 @@ import {
   type DiaryItemApi,
   normalizeDiaryItems,
 } from '@feature/diary/shared/utils/normalizeDiary';
-import { apiClient } from '@module/api/client';
+import { apiClient, publicApiClient } from '@module/api/client';
 import {
   buildQueryString,
   requestBody,
@@ -73,10 +73,10 @@ export const memberApi = {
     }),
 
   checkNickname: async (nickname: string): Promise<{ message?: string }> =>
-    requestBody<{ message?: string }>(apiClient, {
+    requestBody<{ message?: string }>(publicApiClient, {
       url: '/member/nickname/check',
-      method: 'POST',
-      data: { nickname },
+      method: 'GET',
+      params: { nickname },
     }),
 
   updateProfileImage: async (file: File): Promise<void> => {
