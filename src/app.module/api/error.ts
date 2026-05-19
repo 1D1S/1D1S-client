@@ -1,8 +1,14 @@
-import { authStorage } from '@module/utils/auth';
-import axios from 'axios';
-import { toast } from 'sonner';
-
 import type { ApiErrorResponse, NormalizedApiError } from './types';
+
+/**
+ * 서버 컴포넌트(RSC)와 클라이언트 양쪽에서 import 가능한 순수 에러 헬퍼.
+ *
+ * Turbopack RSC 스캐너는 `axios` 패키지를 client-only 로 취급해
+ * import 만 해도 모듈을 client component 로 강제한다. 그래서 axios.isAxiosError
+ * 대신 객체 marker (`isAxiosError === true`) 를 직접 검사한다 — 의미상 동일.
+ *
+ * 토스트/스토리지 같은 사이드이펙트는 `errorNotify.ts` 로 분리되어 있다.
+ */
 
 const DEFAULT_ERROR_MESSAGE =
   '요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
@@ -10,9 +16,6 @@ const NETWORK_ERROR_MESSAGE = '네트워크 연결을 확인한 뒤 다시 시�
 const TIMEOUT_ERROR_MESSAGE =
   '요청 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.';
 const UNAUTHORIZED_ERROR_MESSAGE = '로그인이 필요하거나 세션이 만료되었습니다.';
-
-const TOASTED_ERRORS = new WeakSet<object>();
-let isRedirecting = false;
 
 const STATUS_ERROR_MESSAGE: Record<number, string> = {
   400: '잘못된 요청입니다.',
@@ -27,6 +30,22 @@ const STATUS_ERROR_MESSAGE: Record<number, string> = {
   504: '서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.',
 };
 
+interface AxiosErrorLike {
+  isAxiosError: true;
+  code?: string;
+  response?: {
+    status?: number;
+    data?: unknown;
+  };
+}
+
+const isAxiosErrorLike = (error: unknown): error is AxiosErrorLike => {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+  return (error as { isAxiosError?: unknown }).isAxiosError === true;
+};
+
 const getResponseMessage = (payload: unknown): string | null => {
   if (!payload || typeof payload !== 'object') {
     return null;
@@ -39,10 +58,13 @@ const getResponseMessage = (payload: unknown): string | null => {
 };
 
 export const isUnauthorizedError = (error: unknown): boolean =>
-  axios.isAxiosError(error) && error.response?.status === 401;
+  isAxiosErrorLike(error) && error.response?.status === 401;
+
+export const isRedirectError = (error: unknown): boolean =>
+  isAxiosErrorLike(error) && error.response?.status === 302;
 
 export const normalizeApiError = (error: unknown): NormalizedApiError => {
-  if (axios.isAxiosError(error)) {
+  if (isAxiosErrorLike(error)) {
     const status = error.response?.status;
     const payloadMessage = getResponseMessage(error.response?.data);
 
@@ -79,67 +101,4 @@ export const normalizeApiError = (error: unknown): NormalizedApiError => {
   return {
     message: DEFAULT_ERROR_MESSAGE,
   };
-};
-
-const isRedirectError = (error: unknown): boolean =>
-  axios.isAxiosError(error) && error.response?.status === 302;
-
-const shouldSkipToast = (error: unknown): boolean => {
-  if (!error || typeof error !== 'object') {
-    return false;
-  }
-
-  if (isRedirectError(error)) {
-    return true;
-  }
-
-  if (TOASTED_ERRORS.has(error)) {
-    return true;
-  }
-
-  TOASTED_ERRORS.add(error);
-  return false;
-};
-
-export const notifyApiError = (error: unknown): void => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  if (shouldSkipToast(error)) {
-    return;
-  }
-
-  const normalizedError = normalizeApiError(error);
-  toast.error(normalizedError.message);
-};
-
-const PROTECTED_PATH_PREFIXES = [
-  '/mypage',
-  '/diary/create',
-  '/challenge/create',
-];
-const PROTECTED_PATH_PATTERNS = [/^\/challenge\/\d+/, /^\/diary\/\d+/];
-
-const isProtectedRoute = (pathname: string): boolean =>
-  PROTECTED_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
-  PROTECTED_PATH_PATTERNS.some((pattern) => pattern.test(pathname));
-
-export const handleAuthError = (error: unknown): void => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  if (!isUnauthorizedError(error)) {
-    return;
-  }
-
-  // 토큰 없음/만료 시 조용히 로그아웃 처리 (토스트 표시하지 않음)
-  authStorage.clearTokens();
-  localStorage.removeItem('1d1s:sidebar');
-
-  if (!isRedirecting && isProtectedRoute(window.location.pathname)) {
-    isRedirecting = true;
-    window.location.assign('/');
-  }
 };

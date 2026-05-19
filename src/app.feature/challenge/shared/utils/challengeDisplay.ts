@@ -15,18 +15,3 @@ export function formatChallengeTypeLabel(
   return GOAL_TYPE_LABELS[goalType as GoalType] ?? goalType;
 }
 
-export function isIndividualChallenge(maxParticipantCount: number): boolean {
-  return maxParticipantCount <= 1;
-}
-
-export function formatChallengeCardTypeLabel(
-  goalType: string | null | undefined,
-  maxParticipantCount: number
-): string {
-  if (isIndividualChallenge(maxParticipantCount)) {
-    return '개인 챌린지';
-  }
-
-  return formatChallengeTypeLabel(goalType);
-}
-

@@ -84,11 +84,21 @@ export const challengeDetailApi = {
   // 챌린지 일지 목록 조회
   getChallengeDiaries: async (
     challengeId: number,
-    size?: number
-  ): Promise<ChallengeDiaryListResponse> =>
-    requestData<ChallengeDiaryListResponse>(apiClient, {
+    params: { page?: number; size?: number } = {}
+  ): Promise<ChallengeDiaryListResponse> => {
+    const requestParams: Record<string, number> = {};
+    if (params.page !== undefined) {
+      requestParams.page = params.page;
+    }
+    if (params.size !== undefined) {
+      requestParams.size = params.size;
+    }
+
+    return requestData<ChallengeDiaryListResponse>(apiClient, {
       url: `/diaries/challenges/${challengeId}`,
       method: 'GET',
-      params: size !== undefined ? { size } : undefined,
-    }),
+      params:
+        Object.keys(requestParams).length > 0 ? requestParams : undefined,
+    });
+  },
 };

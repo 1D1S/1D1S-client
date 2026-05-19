@@ -14,6 +14,11 @@ export interface NormalizedApiError {
   message: string;
 }
 
+export interface LikeInfo {
+  likedByMe: boolean;
+  likeCnt: number;
+}
+
 export type QueryParamPrimitive = string | number | boolean;
 export type QueryParamValue =
   | QueryParamPrimitive

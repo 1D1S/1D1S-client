@@ -1,3 +1,6 @@
+import type { DiaryItem } from '@feature/diary/board/type/diary';
+import type { FriendRelationStatus } from '@feature/friend/type/friend';
+
 export interface SidebarChallenge {
   challengeId: number;
   title: string;
@@ -58,6 +61,11 @@ export interface MyPageChallenge {
     likeCnt: number;
   };
   thumbnailImage?: string;
+  randomParticipants?: Array<{
+    memberId: number;
+    nickname: string;
+    profileImg: string | null;
+  }>;
 }
 
 export interface MyPageDiary {
@@ -81,16 +89,20 @@ export interface MemberDiaryPageInfo {
 }
 
 export interface MemberDiaryListResponse {
-  items: MyPageDiary[];
+  items: DiaryItem[];
   pageInfo: MemberDiaryPageInfo;
 }
 
 export interface MemberProfileData {
   nickname: string;
   profileUrl: string;
+  email?: string;
+  provider?: 'GOOGLE' | 'KAKAO' | 'NAVER';
   streak: MyPageStreak;
   challengeList: MyPageChallenge[];
   diaryList: MemberDiaryListResponse;
+  relationStatus: FriendRelationStatus;
+  isAccessible: boolean;
 }
 
 export interface MyPageData {

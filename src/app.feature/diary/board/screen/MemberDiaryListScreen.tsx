@@ -2,36 +2,28 @@
 
 import { Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
-import { DiaryItem,Feeling  } from '@feature/diary/board/type/diary';
+import { DiaryItem } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
 import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
-import { getRelativeDiaryDateLabel } from '@feature/diary/shared/utils/diaryRelativeTime';
+import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { useMemberProfileDiariesInfinite } from '@feature/member/hooks/useMemberQueries';
 import { normalizeApiError } from '@module/api/error';
+import { useInViewObserver } from '@module/hooks/useInViewObserver';
+import { cn } from '@module/utils/cn';
+import { getRelativeTimeLabel } from '@module/utils/date';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
-import { useMemberDiaries } from '../hooks/useDiaryQueries';
-
-type DiaryEmotion = 'happy' | 'soso' | 'sad';
-
-function mapFeelingToEmotion(feeling: Feeling): DiaryEmotion {
-  switch (feeling) {
-    case 'HAPPY':
-      return 'happy';
-    case 'SAD':
-      return 'sad';
-    default:
-      return 'soso';
-  }
-}
+const MEMBER_DIARY_PAGE_SIZE = 12;
 
 interface MemberDiaryListScreenProps {
   memberId: string;
@@ -51,11 +43,30 @@ export function MemberDiaryListScreen({
     isLoading,
     isError,
     error,
-  } = useMemberDiaries(memberIdNum);
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useMemberProfileDiariesInfinite(memberIdNum, MEMBER_DIARY_PAGE_SIZE);
+  const { ref, inView } = useInViewObserver();
 
-  const diaryItems = data?.items ?? [];
+  const diaryItems = useMemo(() => {
+    const flattened =
+      data?.pages?.flatMap((page) => page?.diaryList?.items ?? []) ?? [];
+    const diaryMap = new Map<number, DiaryItem>();
+    flattened.forEach((diary) => {
+      diaryMap.set(diary.id, diary);
+    });
+    return Array.from(diaryMap.values());
+  }, [data]);
+
   const hasDiaries = diaryItems.length > 0;
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleLikeToggle = (diary: DiaryItem): void => {
     if (!isLoggedIn) {
@@ -98,14 +109,16 @@ export function MemberDiaryListScreen({
         </div>
 
         {isLoading ? (
-          <div className="mt-10 flex w-full justify-center py-10">
-            <Text size="body1" weight="medium" className="text-gray-500">
-              일지를 불러오는 중입니다.
-            </Text>
-          </div>
+          <DiaryCardSkeletonGrid
+            count={MEMBER_DIARY_PAGE_SIZE}
+            className={cn(
+              'mt-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
+              'lg:grid-cols-4 xl:grid-cols-6'
+            )}
+          />
         ) : null}
 
-        {isError ? (
+        {isError && !hasDiaries ? (
           <div className="mt-10 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-red-600">
               {error
@@ -115,8 +128,13 @@ export function MemberDiaryListScreen({
           </div>
         ) : null}
 
-        {!isLoading && !isError && hasDiaries ? (
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        {!isLoading && hasDiaries ? (
+          <div
+            className={cn(
+              'data-fade-in mt-6 grid grid-cols-1 gap-4',
+              'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
+            )}
+          >
             {diaryItems.map((diary) => (
               <DiaryCard
                 key={diary.id}
@@ -159,7 +177,7 @@ export function MemberDiaryListScreen({
                     );
                   }
                 }}
-                date={getRelativeDiaryDateLabel(
+                date={getRelativeTimeLabel(
                   diary.diaryInfoDto?.createdAt ??
                     diary.diaryInfoDto?.challengedDate ??
                     ''
@@ -182,6 +200,35 @@ export function MemberDiaryListScreen({
             </Text>
           </div>
         ) : null}
+
+        {isFetchingNextPage ? (
+          <DiaryCardSkeletonGrid
+            count={4}
+            className={cn(
+              'mt-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
+              'lg:grid-cols-4 xl:grid-cols-6'
+            )}
+          />
+        ) : null}
+
+        <div
+          ref={ref}
+          className="mt-6 flex h-10 w-full items-center justify-center"
+        >
+          {isFetchingNextPage ? null : isError && hasDiaries ? (
+            <Text size="body2" className="text-red-500">
+              {error
+                ? normalizeApiError(error).message
+                : '추가 일지를 불러오지 못했습니다.'}
+            </Text>
+          ) : hasNextPage ? (
+            <div />
+          ) : hasDiaries ? (
+            <Text size="body2" className="text-gray-400">
+              마지막 일지입니다.
+            </Text>
+          ) : null}
+        </div>
       </section>
     </div>
   );

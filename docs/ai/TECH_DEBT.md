@@ -37,7 +37,8 @@ AI 에이전트는 아래 항목을 기준으로 위반 여부를 판단한다.
 | 중첩 삼항 연산자                       | `? ... ? ... : ... : ...`                        |
 | `cn()` 없이 80자 초과 `className`      | `className="..."` 줄 전체가 80자 초과 + `cn()` 미사용 |
 | Query Key Factory 미사용              | 문자열 배열 직접 사용 (`['diaries', 'list']`)    |
-| 캐시 무효화 누락                       | `useMutation` 성공 후 `invalidateQueries` 없음   |
+| 캐시 무효화 누락                       | `useMutation` 성공 후 `invalidateQueries` / `invalidateAll` 없음 |
+| `requestData`/`requestBody` 시그니처 오용 | promise 전달 (`(apiClient.get(...))`)이 아니라 `(client, config)` 형태로 호출 |
 
 ### Minor — 백로그 등록 후 순차 처리
 
@@ -45,7 +46,9 @@ AI 에이전트는 아래 항목을 기준으로 위반 여부를 판단한다.
 | ----------------------------------- | -------------------------------------------- |
 | 공용 컴포넌트 내부에 margin 클래스  | `app.component/` 내 `ml-`, `mr-`, `mt-`, `mb-` |
 | 미사용 import                       | 실제로 참조되지 않는 import 구문             |
+| 미사용 파일/export (Knip)           | `pnpm knip` 결과의 신규 항목                 |
 | 디자인 시스템 미활용                | `@1d1s/design-system`에 있는 컴포넌트를 직접 구현 |
+| RSC에 client-only 모듈 import       | server component에서 `errorNotify` 등 `'use client'` 모듈을 static import |
 
 ---
 
@@ -63,6 +66,7 @@ AI 에이전트는 아래 항목을 기준으로 위반 여부를 판단한다.
 
 - `/ods-review` 커맨드 실행 시 — 변경 파일 대상
 - 사용자가 명시적으로 "부채 스캔" 요청 시 — `src/` 전체 대상
+- `pnpm knip --reporter=compact` 결과의 신규 항목 — dead code 부채는 Minor 분류
 
 ---
 

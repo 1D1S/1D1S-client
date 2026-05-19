@@ -1,15 +1,21 @@
 'use client';
 
-import { BannerCarousel, PageWatermark } from '@1d1s/design-system';
+import { PageWatermark } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
-import { HOME_MAIN_BANNERS } from '@constants/consts/homeData';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { useSidebar } from '@feature/member/hooks/useMemberQueries';
+import Stories from '@feature/stories/components/Stories';
+import { cn } from '@module/utils/cn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
+import HomeMobileHeader from '../components/HomeMobileHeader';
 import HomeQuickActions from '../components/HomeQuickActions';
 import HomeRandomChallengesSection from '../components/HomeRandomChallengesSection';
 import HomeRandomDiariesSection from '../components/HomeRandomDiariesSection';
+import HomeStreakSlot from '../components/HomeStreakSlot';
+import HomeWarmBanner from '../components/HomeWarmBanner';
+import HomeWarmGreeting from '../components/HomeWarmGreeting';
 import { useHomeRandomData } from '../hooks/useHomeRandomData';
 import { useHomeRandomDiaryLike } from '../hooks/useHomeRandomDiaryLike';
 
@@ -19,12 +25,20 @@ export default function HomeScreen(): React.ReactElement {
   const searchParams = useSearchParams();
   const isLoginRequired = searchParams.get('loginRequired') === 'true';
   const isLoggedIn = useIsLoggedIn();
+  const {
+    data: sidebar,
+    isLoading: isSidebarLoading,
+    isFetching: isSidebarFetching,
+  } = useSidebar();
   const { isLikePending, showLoginDialog, setShowLoginDialog, onLikeToggle } =
     useHomeRandomDiaryLike();
   const loginDialogDescription = isLoginRequired
     ? '로그인 후 이용할 수 있습니다.'
     : undefined;
 
+  // `?loginRequired=true` 진입 시 비로그인 사용자에게만 다이얼로그를 1회 띄운다.
+  // mount-only useEffect 는 hydration 직후 isLoggedIn 이 일시적으로 false 인 구간을
+  // 잡아 잘못된 다이얼로그를 띄울 수 있어, prevState 패턴으로 변경 시점에만 반응한다.
   const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
   if (isLoginRequired !== prevIsLoginRequired) {
     setPrevIsLoginRequired(isLoginRequired);
@@ -33,17 +47,17 @@ export default function HomeScreen(): React.ReactElement {
     }
   }
 
-  useEffect(() => {
-    if (!isLoginRequired) {
-      return;
+  const handleDialogOpenChange = (open: boolean): void => {
+    setShowLoginDialog(open);
+    if (!open && isLoginRequired) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('loginRequired');
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
     }
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('loginRequired');
-    const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
-    });
-  }, [isLoginRequired, pathname, router, searchParams]);
+  };
 
   const {
     randomChallenges,
@@ -56,44 +70,58 @@ export default function HomeScreen(): React.ReactElement {
     diariesErrorMessage,
   } = useHomeRandomData();
 
+  const streakDays = sidebar?.streakCount ?? 0;
+  // 토큰 힌트는 있는데 sidebar 가 아직 도착하지 않은 구간에서 0 → 실제 값으로
+  // 깜빡이는 것을 막기 위해 스켈레톤을 노출.
+  const isStreakLoading =
+    isLoggedIn && (isSidebarLoading || isSidebarFetching || !sidebar);
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-white">
       <LoginRequiredDialog
         open={showLoginDialog}
-        onOpenChange={setShowLoginDialog}
+        onOpenChange={handleDialogOpenChange}
         description={loginDialogDescription}
       />
-      {/* 메인 콘텐츠 */}
-      <div className="flex w-full flex-col pt-6">
-        <div className="h-6" />
+      <HomeMobileHeader />
+      <div
+        className={cn(
+          'mx-auto flex w-full max-w-[1200px] flex-col gap-7',
+          'px-5 py-7 lg:px-8 lg:py-10'
+        )}
+      >
+        {/* 친구들의 일지 스토리 — 비로그인 시 호출하지 않는다. */}
+        <div className="-mx-5 lg:-mx-8">
+          <Stories enabled={isLoggedIn} />
+        </div>
 
-        {/* 메인 배너 영역 */}
-        <div className="w-full px-4">
-          <BannerCarousel
-            items={HOME_MAIN_BANNERS}
-            autoSlideIntervalMs={5000}
-            enableLoop
-            showIndicators
-            aspectRatioClassName="aspect-[5/1]"
-            minHeightPx={140}
-            onItemClick={(_, index) => {
-              const route = HOME_MAIN_BANNERS[index]?.href;
+        {/* 모바일 인사 hero — 데스크탑/태블릿은 시안에 따라 생략 */}
+        <div className="lg:hidden">
+          <HomeWarmGreeting />
+        </div>
 
-              if (route) {
-                router.push(route);
-              }
-            }}
+        {/* 모바일/태블릿: 스트릭 슬롯을 배너 위로 올림 */}
+        <div className="lg:hidden">
+          <HomeStreakSlot
+            isLoggedIn={isLoggedIn}
+            streakDays={streakDays}
+            isStreakLoading={isStreakLoading}
           />
         </div>
 
-        <div className="h-4" />
+        {/* Banner + StreakHero row (lg부터 1:1 좌우, 그 이하에선 위쪽 슬롯 사용) */}
+        <div className="grid gap-3 lg:grid-cols-2 lg:gap-5">
+          <HomeWarmBanner />
+          <div className="hidden lg:block">
+            <HomeStreakSlot
+              isLoggedIn={isLoggedIn}
+              streakDays={streakDays}
+            />
+          </div>
+        </div>
 
-        {/* 문의 버튼 */}
         <HomeQuickActions />
 
-        <div className="h-10" />
-
-        {/* 랜덤 챌린지 */}
         <HomeRandomChallengesSection
           challenges={randomChallenges}
           isLoading={isChallengesLoading}
@@ -109,9 +137,6 @@ export default function HomeScreen(): React.ReactElement {
           }}
         />
 
-        <div className="h-12" />
-
-        {/* 랜덤 일지 */}
         <HomeRandomDiariesSection
           diaries={randomDiaries}
           isLoading={isDiariesLoading}
@@ -127,19 +152,11 @@ export default function HomeScreen(): React.ReactElement {
             router.push(`/diary/${diaryId}`);
           }}
           onLikeToggle={onLikeToggle}
-          onUserClick={(memberId) => router.push(`/member/${memberId}`)}
-          onChallengeClick={(challengeId) =>
-            router.push(
-              challengeId ? `/challenge/${challengeId}` : '/challenge'
-            )
-          }
         />
 
-        <div className="h-12" />
-        <div className="flex w-full justify-center">
+        <div className="flex w-full justify-center pt-4">
           <PageWatermark />
         </div>
-        <div className="h-8" />
       </div>
     </div>
   );

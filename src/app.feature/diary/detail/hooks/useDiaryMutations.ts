@@ -1,3 +1,4 @@
+import { invalidateAll } from '@module/api/queryInvalidation';
 import {
   useMutation,
   UseMutationResult,
@@ -29,30 +30,14 @@ export function useCreateDiary(): UseMutationResult<
   return useMutation({
     mutationFn: (data: CreateDiaryRequest) => diaryWriteApi.createDiary(data),
     onSuccess: (_, variables) => {
-      // 다이어리 리스트 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.lists(),
-      });
-      // 랜덤 다이어리 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.all,
-        predicate: (query) => query.queryKey.includes('random'),
-      });
-      // 모든 다이어리 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.allDiaries(),
-      });
-      // 내 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: MEMBER_QUERY_KEYS.myPage(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: MEMBER_QUERY_KEYS.sidebar(),
-      });
-      // 일지 작성 가능 날짜 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.checkWrite(variables.challengeId),
-      });
+      invalidateAll(queryClient, [
+        DIARY_QUERY_KEYS.lists(),
+        DIARY_QUERY_KEYS.randoms(),
+        DIARY_QUERY_KEYS.allDiaries(),
+        MEMBER_QUERY_KEYS.myPage(),
+        MEMBER_QUERY_KEYS.sidebar(),
+        CHALLENGE_QUERY_KEYS.checkWrite(variables.challengeId),
+      ]);
     },
   });
 }
@@ -69,27 +54,13 @@ export function useUpdateDiary(): UseMutationResult<
     mutationFn: ({ id, data }: { id: number; data: UpdateDiaryRequest }) =>
       diaryWriteApi.updateDiary(id, data),
     onSuccess: (_, { id }) => {
-      // 해당 다이어리 상세 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.detail(id),
-      });
-      // 다이어리 리스트 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.lists(),
-      });
-      // 랜덤 다이어리 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.all,
-        predicate: (query) => query.queryKey.includes('random'),
-      });
-      // 모든 다이어리 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.allDiaries(),
-      });
-      // 챌린지 일지 리스트 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.challengeDiaries(),
-      });
+      invalidateAll(queryClient, [
+        DIARY_QUERY_KEYS.detail(id),
+        DIARY_QUERY_KEYS.lists(),
+        DIARY_QUERY_KEYS.randoms(),
+        DIARY_QUERY_KEYS.allDiaries(),
+        CHALLENGE_QUERY_KEYS.challengeDiaries(),
+      ]);
     },
   });
 }
@@ -101,30 +72,14 @@ export function useDeleteDiary(): UseMutationResult<boolean, Error, number> {
   return useMutation({
     mutationFn: (id: number) => diaryDetailApi.deleteDiary(id),
     onSuccess: () => {
-      // 다이어리 리스트 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.lists(),
-      });
-      // 랜덤 다이어리 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.all,
-        predicate: (query) => query.queryKey.includes('random'),
-      });
-      // 모든 다이어리 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.allDiaries(),
-      });
-      // 챌린지 일지 리스트 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.challengeDiaries(),
-      });
-      // 내 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: MEMBER_QUERY_KEYS.myPage(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: MEMBER_QUERY_KEYS.sidebar(),
-      });
+      invalidateAll(queryClient, [
+        DIARY_QUERY_KEYS.lists(),
+        DIARY_QUERY_KEYS.randoms(),
+        DIARY_QUERY_KEYS.allDiaries(),
+        CHALLENGE_QUERY_KEYS.challengeDiaries(),
+        MEMBER_QUERY_KEYS.myPage(),
+        MEMBER_QUERY_KEYS.sidebar(),
+      ]);
     },
   });
 }
@@ -136,35 +91,15 @@ export function useLikeDiary(): UseMutationResult<number, Error, number> {
   return useMutation({
     mutationFn: (id: number) => diaryDetailApi.likeDiary(id),
     onSuccess: (_, id) => {
-      // 해당 다이어리 상세 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.detail(id),
-      });
-      // 다이어리 리스트 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.lists(),
-      });
-      // 랜덤 다이어리 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.all,
-        predicate: (query) => query.queryKey.includes('random'),
-      });
-      // 모든 다이어리 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.allDiaries(),
-      });
-      // 챌린지 다이어리 목록 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.challengeDiaries(),
-      });
-      // 멤버 프로필 무효화 (프로필에 포함된 일지 likeInfo 갱신)
-      queryClient.invalidateQueries({
-        queryKey: MEMBER_QUERY_KEYS.profiles(),
-      });
-      // 내 다이어리 목록 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.my(),
-      });
+      invalidateAll(queryClient, [
+        DIARY_QUERY_KEYS.detail(id),
+        DIARY_QUERY_KEYS.lists(),
+        DIARY_QUERY_KEYS.randoms(),
+        DIARY_QUERY_KEYS.allDiaries(),
+        CHALLENGE_QUERY_KEYS.challengeDiaries(),
+        MEMBER_QUERY_KEYS.profiles(),
+        DIARY_QUERY_KEYS.my(),
+      ]);
     },
   });
 }
@@ -176,35 +111,15 @@ export function useUnlikeDiary(): UseMutationResult<number, Error, number> {
   return useMutation({
     mutationFn: (id: number) => diaryDetailApi.unlikeDiary(id),
     onSuccess: (_, id) => {
-      // 해당 다이어리 상세 정보 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.detail(id),
-      });
-      // 다이어리 리스트 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.lists(),
-      });
-      // 랜덤 다이어리 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.all,
-        predicate: (query) => query.queryKey.includes('random'),
-      });
-      // 모든 다이어리 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.allDiaries(),
-      });
-      // 챌린지 다이어리 목록 무효화
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.challengeDiaries(),
-      });
-      // 멤버 프로필 무효화 (프로필에 포함된 일지 likeInfo 갱신)
-      queryClient.invalidateQueries({
-        queryKey: MEMBER_QUERY_KEYS.profiles(),
-      });
-      // 내 다이어리 목록 무효화
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.my(),
-      });
+      invalidateAll(queryClient, [
+        DIARY_QUERY_KEYS.detail(id),
+        DIARY_QUERY_KEYS.lists(),
+        DIARY_QUERY_KEYS.randoms(),
+        DIARY_QUERY_KEYS.allDiaries(),
+        CHALLENGE_QUERY_KEYS.challengeDiaries(),
+        MEMBER_QUERY_KEYS.profiles(),
+        DIARY_QUERY_KEYS.my(),
+      ]);
     },
   });
 }
@@ -233,11 +148,9 @@ export function useUploadDiaryImage(): UseMutationResult<
     mutationFn: ({ id, file }: { id: number; file: File }) =>
       diaryWriteApi.uploadDiaryImage(id, file),
     onSuccess: (_, { id }) => {
-      // 해당 다이어리 상세 정보 무효화
       queryClient.invalidateQueries({
         queryKey: DIARY_QUERY_KEYS.detail(id),
       });
     },
   });
 }
-

@@ -29,7 +29,7 @@ export const challengeCreateFormSchema = z
     periodNumber: z.string().optional(),
     startDate: z.date().optional(),
     participationType: z.enum(['INDIVIDUAL', 'GROUP']),
-    memberCount: z.enum(['2', '5', '10', 'etc']).optional(),
+    memberCount: z.enum(['2', '5', '10', 'etc', 'unlimited']).optional(),
     memberCountNumber: z.string().optional(),
     goalType: z.enum(['FIXED', 'FLEXIBLE']),
     allowMidJoin: z.boolean(),
@@ -45,19 +45,19 @@ export const challengeCreateFormSchema = z
     ),
   })
   .superRefine((data, ctx) => {
+    if (!data.startDate) {
+      ctx.addIssue({
+        path: ['startDate'],
+        code: z.ZodIssueCode.custom,
+        message: '시작일이 선택되지 않았습니다.',
+      });
+    }
     if (data.periodType === 'LIMITED') {
       if (!data.period) {
         ctx.addIssue({
           path: ['period'],
           code: z.ZodIssueCode.custom,
           message: '챌린지 기간이 선택되지 않았습니다.',
-        });
-      }
-      if (!data.startDate) {
-        ctx.addIssue({
-          path: ['startDate'],
-          code: z.ZodIssueCode.custom,
-          message: '시작일이 선택되지 않았습니다.',
         });
       }
       if (data.period === 'etc') {
@@ -93,13 +93,14 @@ export const challengeCreateFormSchema = z
           !isWholeNumberString(data.memberCountNumber) ||
           isNaN(numberValue) ||
           !Number.isInteger(numberValue) ||
-          numberValue < 1 ||
-          numberValue > 50
+          numberValue < 2 ||
+          numberValue > 100
         ) {
           ctx.addIssue({
             path: ['memberCountNumber'],
             code: z.ZodIssueCode.custom,
-            message: '1명부터 50명 사이의 숫자를 입력해주세요.',
+            message:
+              '2명부터 100명 사이의 숫자를 입력해주세요. 그 이상은 제한 없음을 선택해주세요.',
           });
         }
       }

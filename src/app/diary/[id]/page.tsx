@@ -1,10 +1,14 @@
+import { DIARY_QUERY_KEYS } from '@feature/diary/board/consts/queryKeys';
 import { DiaryDetailScreen } from '@feature/diary/detail/screen/DiaryDetailScreen';
+import { getServerDiaryDetail } from '@module/api/serverApi';
 import {
   hasServerAccessToken,
   resolveLoginRequiredRedirect,
 } from '@module/utils/serverAuth';
 import { redirect } from 'next/navigation';
 import React from 'react';
+
+import { Prefetch } from '@/app.lib/Prefetch';
 
 interface DiaryDetailProps {
   params: Promise<{ id: string }>;
@@ -25,5 +29,16 @@ export default async function DiaryDetailPage({
     redirect(target);
   }
 
-  return <DiaryDetailScreen id={diaryId} />;
+  return (
+    <Prefetch
+      queries={[
+        {
+          queryKey: DIARY_QUERY_KEYS.detail(diaryId),
+          queryFn: () => getServerDiaryDetail(diaryId),
+        },
+      ]}
+    >
+      <DiaryDetailScreen id={diaryId} />
+    </Prefetch>
+  );
 }

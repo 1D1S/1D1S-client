@@ -2,6 +2,7 @@
 
 import { Calendar } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import { formatDateISO } from '@module/utils/date';
 import * as Popover from '@radix-ui/react-popover';
 import { CalendarDays, ChevronDown } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
@@ -16,20 +17,7 @@ interface DiaryCreateDatePickerProps {
 }
 
 function formatDateLabel(date: Date): string {
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
-  return `${yyyy}/${mm}/${dd}`;
-}
-
-function formatDateKey(date: Date): string {
-  const normalizedDate = new Date(date);
-  normalizedDate.setHours(0, 0, 0, 0);
-
-  const yyyy = normalizedDate.getFullYear();
-  const mm = String(normalizedDate.getMonth() + 1).padStart(2, '0');
-  const dd = String(normalizedDate.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+  return formatDateISO(date).replaceAll('-', '/');
 }
 
 function parseDateValue(value?: string): Date | null {
@@ -143,7 +131,7 @@ export function DiaryCreateDatePicker({
                   }
                 }
               }
-              return disabledDateKeySet.has(formatDateKey(date));
+              return disabledDateKeySet.has(formatDateISO(date));
             }}
             initialFocus
           />

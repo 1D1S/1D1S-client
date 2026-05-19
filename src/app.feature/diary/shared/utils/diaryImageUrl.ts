@@ -1,9 +1,11 @@
+import { trimTrailingSlash } from '@module/utils/url';
+
 const normalizeBaseUrl = (value?: string): string => {
   if (!value) {
     return '';
   }
 
-  return value.trim().replace(/\/+$/, '');
+  return trimTrailingSlash(value.trim());
 };
 
 const IMAGE_BASE_URL = normalizeBaseUrl(

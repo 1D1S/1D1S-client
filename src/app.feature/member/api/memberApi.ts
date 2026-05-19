@@ -1,7 +1,27 @@
-import { apiClient } from '@module/api/client';
-import { requestBody, requestData } from '@module/api/request';
+import {
+  type DiaryItemApi,
+  normalizeDiaryItems,
+} from '@feature/diary/shared/utils/normalizeDiary';
+import { apiClient, publicApiClient } from '@module/api/client';
+import {
+  buildQueryString,
+  requestBody,
+  requestData,
+} from '@module/api/request';
 
-import type { MemberProfileData, MyPageData, SidebarData } from '../type/member';
+import type {
+  MemberDiaryPageInfo,
+  MemberProfileData,
+  MyPageData,
+  SidebarData,
+} from '../type/member';
+
+type MemberProfileApiResponse = Omit<MemberProfileData, 'diaryList'> & {
+  diaryList: {
+    items: DiaryItemApi[];
+    pageInfo: MemberDiaryPageInfo;
+  };
+};
 
 export const memberApi = {
   getSidebar: async (): Promise<SidebarData> =>
@@ -10,11 +30,34 @@ export const memberApi = {
       method: 'GET',
     }),
 
-  getMemberProfile: async (memberId: number): Promise<MemberProfileData> =>
-    requestData<MemberProfileData>(apiClient, {
-      url: `/member/profile/${memberId}`,
+  getMemberProfile: async (
+    memberId: number,
+    params: { page?: number; size?: number } = {}
+  ): Promise<MemberProfileData> => {
+    const query = buildQueryString({
+      page: params.page,
+      size: params.size,
+    });
+    const response = await requestData<MemberProfileApiResponse>(apiClient, {
+      url: query
+        ? `/member/profile/${memberId}?${query}`
+        : `/member/profile/${memberId}`,
       method: 'GET',
-    }),
+    });
+    return {
+      ...response,
+      diaryList: {
+        items: normalizeDiaryItems(response.diaryList?.items ?? []),
+        pageInfo: response.diaryList?.pageInfo ?? {
+          page: 0,
+          size: 0,
+          totalElements: 0,
+          totalPages: 0,
+          hasNextPage: false,
+        },
+      },
+    };
+  },
 
   getMyPage: async (): Promise<MyPageData> =>
     requestData<MyPageData>(apiClient, {
@@ -27,6 +70,13 @@ export const memberApi = {
       url: '/member/nickname',
       method: 'PATCH',
       data: { nickname },
+    }),
+
+  checkNickname: async (nickname: string): Promise<{ message?: string }> =>
+    requestBody<{ message?: string }>(publicApiClient, {
+      url: '/member/nickname/check',
+      method: 'GET',
+      params: { nickname },
     }),
 
   updateProfileImage: async (file: File): Promise<void> => {

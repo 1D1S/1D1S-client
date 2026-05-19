@@ -1,83 +1,59 @@
 import {
   dehydrate,
   HydrationBoundary,
-  QueryFunction,
-  QueryKey,
+  type QueryFunction,
+  type QueryKey,
 } from '@tanstack/react-query';
+import React from 'react';
 
-import { getQueryClient } from './getQueryClient';
+import { getQueryClient } from '@/app.lib/getQueryClient';
 
-interface PrefetchOptions<TData> {
+interface PrefetchEntry {
   queryKey: QueryKey;
-  queryFn: QueryFunction<TData>;
+  queryFn: QueryFunction<unknown>;
 }
 
+interface PrefetchInfiniteEntry {
+  type: 'infinite';
+  queryKey: QueryKey;
+  // pageParam 의 초기값은 일반적으로 undefined (cursor-based) 이거나 1 (page-based)
+  initialPageParam: unknown;
+  queryFn: QueryFunction<unknown, QueryKey, unknown>;
+}
+
+type AnyPrefetchEntry = PrefetchEntry | PrefetchInfiniteEntry;
+
 /**
- * 서버 컴포넌트에서 데이터를 prefetch하고 HydrationBoundary로 감싸서 반환
+ * 서버 컴포넌트에서 여러 쿼리를 prefetch 한 뒤 HydrationBoundary 로 래핑.
  *
- * @example
- * // 서버 컴포넌트에서 사용
- * export default async function ChallengePage() {
- *   return (
- *     <Prefetch
- *       queries={[
- *         { queryKey: ['challenges'], queryFn: fetchChallenges },
- *         { queryKey: ['user'], queryFn: fetchUser },
- *       ]}
- *     >
- *       <ChallengeList />
- *     </Prefetch>
- *   );
- * }
+ * - `type: 'infinite'` 가 지정된 항목은 `prefetchInfiniteQuery` 로 처리.
+ * - 각 쿼리는 독립적으로 시도하며, 실패해도 prefetch 자체는 throw 하지 않으므로
+ *   페이지 렌더가 깨지지 않는다.
  */
-export async function Prefetch<TData>({
+export async function Prefetch({
   queries,
   children,
 }: {
-  queries: Array<PrefetchOptions<TData>>;
+  queries: AnyPrefetchEntry[];
   children: React.ReactNode;
 }): Promise<React.ReactElement> {
   const queryClient = getQueryClient();
 
   await Promise.all(
-    queries.map(({ queryKey, queryFn }) =>
-      queryClient.prefetchQuery({ queryKey, queryFn })
-    )
+    queries.map((entry) => {
+      if ('type' in entry && entry.type === 'infinite') {
+        return queryClient.prefetchInfiniteQuery({
+          queryKey: entry.queryKey,
+          queryFn: entry.queryFn,
+          initialPageParam: entry.initialPageParam,
+        });
+      }
+      return queryClient.prefetchQuery({
+        queryKey: entry.queryKey,
+        queryFn: entry.queryFn,
+      });
+    })
   );
-
-  return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      {children}
-    </HydrationBoundary>
-  );
-}
-
-/**
- * 단일 쿼리 prefetch 헬퍼
- *
- * @example
- * // 서버 컴포넌트에서 사용
- * export default async function ChallengeDetailPage({ params }: { params: { id: string } }) {
- *   return (
- *     <PrefetchQuery
- *       queryKey={['challenge', params.id]}
- *       queryFn={() => fetchChallengeDetail(params.id)}
- *     >
- *       <ChallengeDetail />
- *     </PrefetchQuery>
- *   );
- * }
- */
-export async function PrefetchQuery<TData>({
-  queryKey,
-  queryFn,
-  children,
-}: PrefetchOptions<TData> & {
-  children: React.ReactNode;
-}): Promise<React.ReactElement> {
-  const queryClient = getQueryClient();
-
-  await queryClient.prefetchQuery({ queryKey, queryFn });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

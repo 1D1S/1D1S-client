@@ -14,4 +14,4 @@
 | [ROUTE_ACCESS_POLICY.md](ROUTE_ACCESS_POLICY.md)       | 보호 라우트, 인증 미들웨어, 토큰 관리, 보안 헤더            |
 | [BRANCH_RELEASE_POLICY.md](BRANCH_RELEASE_POLICY.md)   | 브랜치 역할, 네이밍, 승격 흐름, 머지 규칙                   |
 | [WORKFLOWS.md](WORKFLOWS.md)                           | CI/CD, ESLint 설정, Husky, CommitLint                       |
-| [TECH_DEBT.md](TECH_DEBT.md)                           | 기술 부채 스캔 기준, Golden Principles, 정리 프로세스       |
+| [TECH_DEBT.md](TECH_DEBT.md)                           | 기술 부채 스캔 기준, Golden Principles, 정리 프로세스, Knip 연동 |

@@ -40,9 +40,6 @@ export default function OnboardingPage(): React.ReactElement {
               <Text size="display1" weight="bold" className="text-gray-900">
                 1Day 1Streak
               </Text>
-              <span className="bg-main-800 rounded-full px-2 py-0.5 text-xs font-bold text-white">
-                BETA
-              </span>
             </div>
             <Text size="body1" weight="regular" className="text-gray-600">
               하루 하나의 습관으로

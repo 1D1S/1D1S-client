@@ -1,7 +1,6 @@
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challengePeriod';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
-import type { SidebarChallenge } from '@feature/member/type/member';
-import { toStartOfDay } from '@module/utils/date';
+import { formatDateISO } from '@module/utils/date';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -12,264 +11,31 @@ import {
   useChallengeDetail,
 } from '../../../challenge/board/hooks/useChallengeQueries';
 import type {
-  ChallengeCategory,
   ChallengeGoal,
   ChallengeListItem,
-  GoalType,
-  ParticipationType,
 } from '../../../challenge/board/type/challenge';
 import {
   useAllDiaries,
   useDiaryDetail,
 } from '../../board/hooks/useDiaryQueries';
-import type {
-  ChallengeSummary as DiaryChallengeSummary,
-  DiaryDetail,
-  DiaryInfo,
-  Feeling,
-} from '../../board/type/diary';
+import type { Feeling } from '../../board/type/diary';
 import {
   useCreateDiary,
   useUpdateDiary,
   useUploadDiaryImage,
 } from '../../detail/hooks/useDiaryMutations';
 import {
-  resolveDiaryImageList,
-  resolveDiaryImageUrl,
-} from '../../shared/utils/diaryImageUrl';
-
-function parsePositiveInteger(value: string | null): number | null {
-  if (!value) {
-    return null;
-  }
-
-  const parsedValue = Number(value);
-  if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
-    return null;
-  }
-
-  return parsedValue;
-}
-
-function formatDate(date: Date): string {
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-function parseDateValue(value?: string | null): Date | null {
-  if (!value) {
-    return null;
-  }
-
-  const matchedDate = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (matchedDate) {
-    const [, year, month, day] = matchedDate;
-    return new Date(Number(year), Number(month) - 1, Number(day));
-  }
-
-  const parsedDate = new Date(value);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return null;
-  }
-
-  return parsedDate;
-}
-
-function isSelectableAchievedDate(
-  date: Date,
-  challengeStartDate?: string | null
-): boolean {
-  const today = toStartOfDay(new Date());
-  const minDate = new Date(today);
-  minDate.setDate(today.getDate() - 2);
-  const targetDate = toStartOfDay(date);
-  const parsedChallengeStartDate = parseDateValue(challengeStartDate);
-
-  if (parsedChallengeStartDate) {
-    const challengeStart = toStartOfDay(parsedChallengeStartDate);
-    if (targetDate < challengeStart) {
-      return false;
-    }
-  }
-
-  return targetDate >= minDate && targetDate <= today;
-}
-
-function getFirstSelectableAchievedDate(
-  disabledDateKeys: Set<string>,
-  challengeStartDate?: string | null
-): Date | undefined {
-  const today = toStartOfDay(new Date());
-
-  for (let dayOffset = 0; dayOffset <= 2; dayOffset += 1) {
-    const candidate = new Date(today);
-    candidate.setDate(today.getDate() - dayOffset);
-
-    if (
-      isSelectableAchievedDate(candidate, challengeStartDate) &&
-      !disabledDateKeys.has(formatDate(candidate))
-    ) {
-      return candidate;
-    }
-  }
-
-  return undefined;
-}
-
-function hasSelectableAchievedDate(
-  disabledDateKeys: Set<string>,
-  challengeStartDate?: string | null
-): boolean {
-  return Boolean(
-    getFirstSelectableAchievedDate(disabledDateKeys, challengeStartDate)
-  );
-}
-
-interface SubmitButtonLabelArgs {
-  isCreating: boolean;
-  isUpdating: boolean;
-  isUploadingImage: boolean;
-  isEditMode: boolean;
-}
-
-function getSubmitButtonLabel({
-  isCreating,
-  isUpdating,
-  isUploadingImage,
-  isEditMode,
-}: SubmitButtonLabelArgs): string {
-  if (isCreating) {
-    return '작성 중...';
-  }
-  if (isUpdating) {
-    return '수정 중...';
-  }
-  if (isUploadingImage) {
-    return '썸네일 업로드 중...';
-  }
-  return isEditMode ? '수정 완료' : '작성 완료';
-}
-
-function normalizeChallengeCategory(category: string): ChallengeCategory {
-  const categoryMap: Record<string, ChallengeCategory> = {
-    ALL: 'ALL',
-    DEV: 'DEV',
-    EXERCISE: 'EXERCISE',
-    BOOK: 'BOOK',
-    MUSIC: 'MUSIC',
-    STUDY: 'STUDY',
-    LEISURE: 'LEISURE',
-    ECONOMY: 'ECONOMY',
-  };
-
-  return categoryMap[category] ?? 'DEV';
-}
-
-function normalizeGoalType(goalType: string): GoalType {
-  return goalType === 'FIXED' ? 'FIXED' : 'FLEXIBLE';
-}
-
-function normalizeParticipationType(
-  participationType: string
-): ParticipationType {
-  return participationType === 'GROUP' ? 'GROUP' : 'INDIVIDUAL';
-}
-
-function mapDiaryChallengeToChallengeListItem(
-  challenge: DiaryChallengeSummary
-): ChallengeListItem {
-  return {
-    challengeId: challenge.challengeId,
-    title: challenge.title,
-    category: normalizeChallengeCategory(challenge.category),
-    startDate: challenge.startDate,
-    endDate: challenge.endDate,
-    maxParticipantCnt: challenge.maxParticipantCnt,
-    goalType: normalizeGoalType(challenge.goalType),
-    participationType: normalizeParticipationType(challenge.participationType),
-    participantCnt: challenge.participantCnt,
-    liked: challenge.likeInfo.likedByMe,
-    likeCnt: challenge.likeInfo.likeCnt,
-  };
-}
-
-function mapSidebarChallengeToChallengeListItem(
-  challenge: SidebarChallenge
-): ChallengeListItem {
-  return {
-    challengeId: challenge.challengeId,
-    title: challenge.title,
-    category: normalizeChallengeCategory(challenge.category),
-    startDate: challenge.startDate,
-    endDate: challenge.endDate,
-    maxParticipantCnt: challenge.maxParticipantCnt,
-    goalType: normalizeGoalType(challenge.goalType),
-    participationType: normalizeParticipationType(challenge.participationType),
-    participantCnt: challenge.participantCnt,
-    liked: challenge.likeInfo.likedByMe,
-    likeCnt: challenge.likeInfo.likeCnt,
-  };
-}
-
-type DiaryDetailWithAliases = DiaryDetail & {
-  diaryInfo?: DiaryInfo | null;
-  img?:
-    | Array<{ url?: string | null; imageUrl?: string | null }>
-    | string[]
-    | string
-    | null;
-  imgUrl?: string[] | string | null;
-  imageUrl?: string | null;
-  thumbnailUrl?: string | null;
-  thumbnail?: string | null;
-  images?:
-    | Array<{ url?: string | null; imageUrl?: string | null } | string>
-    | string[]
-    | string
-    | null;
-};
-
-function revokeObjectUrlIfNeeded(url: string): void {
-  if (url.startsWith('blob:')) {
-    URL.revokeObjectURL(url);
-  }
-}
-
-function getDiaryInfo(diary: DiaryDetail | null | undefined): DiaryInfo | null {
-  const diaryWithAliases = diary as DiaryDetailWithAliases | null | undefined;
-  return diaryWithAliases?.diaryInfoDto ?? diaryWithAliases?.diaryInfo ?? null;
-}
-
-function getDiaryThumbnailPreviewUrl(
-  diary: DiaryDetail | null | undefined
-): string {
-  const diaryWithAliases = diary as DiaryDetailWithAliases | null | undefined;
-  if (!diaryWithAliases) {
-    return '';
-  }
-
-  const imageCandidates: unknown[] = [
-    diaryWithAliases.imgUrl,
-    diaryWithAliases.img,
-    diaryWithAliases.imageUrl,
-    diaryWithAliases.thumbnailUrl,
-    diaryWithAliases.thumbnail,
-    diaryWithAliases.images,
-  ];
-
-  for (const candidate of imageCandidates) {
-    const resolvedImage = resolveDiaryImageList(candidate)?.[0];
-    if (resolvedImage) {
-      return resolvedImage;
-    }
-  }
-
-  const imageFromLegacyFields = resolveDiaryImageUrl(diaryWithAliases.img);
-
-  return imageFromLegacyFields ?? '';
-}
+  getDiaryInfo,
+  getDiaryThumbnailPreviewUrl,
+  getFirstSelectableAchievedDate,
+  getSubmitButtonLabel,
+  hasSelectableAchievedDate,
+  isSelectableAchievedDate,
+  mapDiaryChallengeToChallengeListItem,
+  mapSidebarChallengeToChallengeListItem,
+  parsePositiveInteger,
+  revokeObjectUrlIfNeeded,
+} from '../utils/diaryFormHelpers';
 
 interface UseDiaryCreateFormResult {
   isEditMode: boolean;
@@ -432,7 +198,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       return null;
     }
 
-    return formatDate(parsedDate);
+    return formatDateISO(parsedDate);
   }, [existingDiary, isEditMode]);
 
   const disabledAchievedDateKeys = useMemo(() => {
@@ -480,7 +246,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     Boolean(achievedDate) &&
     (achievedDate
       ? isSelectableAchievedDate(achievedDate, selectedChallenge?.startDate) &&
-        !disabledAchievedDateKeySet.has(formatDate(achievedDate))
+        !disabledAchievedDateKeySet.has(formatDateISO(achievedDate))
       : false) &&
     !isChallengeCheckWriteDatesLoading &&
     !isSubmitting &&
@@ -592,7 +358,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
 
       if (
         !isSelectableAchievedDate(achievedDate, selectedChallenge.startDate) ||
-        disabledAchievedDateKeySet.has(formatDate(achievedDate))
+        disabledAchievedDateKeySet.has(formatDateISO(achievedDate))
       ) {
         setAchievedDate(
           getFirstSelectableAchievedDate(
@@ -633,7 +399,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         return;
       }
 
-      if (disabledAchievedDateKeySet.has(formatDate(date))) {
+      if (disabledAchievedDateKeySet.has(formatDateISO(date))) {
         return;
       }
 
@@ -681,7 +447,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     if (
       achievedDate &&
       (!isSelectableAchievedDate(achievedDate, selectedChallenge.startDate) ||
-        disabledAchievedDateKeySet.has(formatDate(achievedDate)))
+        disabledAchievedDateKeySet.has(formatDateISO(achievedDate)))
     ) {
       return;
     }
@@ -696,7 +462,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
             content,
             feeling: selectedMood,
             isPublic: true,
-            achievedDate: achievedDate ? formatDate(achievedDate) : '',
+            achievedDate: achievedDate ? formatDateISO(achievedDate) : '',
             achievedGoalIds,
           },
         });
@@ -719,7 +485,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         content,
         feeling: selectedMood,
         isPublic: true,
-        achievedDate: achievedDate ? formatDate(achievedDate) : '',
+        achievedDate: achievedDate ? formatDateISO(achievedDate) : '',
         achievedGoalIds,
       });
 

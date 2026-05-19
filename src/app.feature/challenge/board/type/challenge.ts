@@ -1,3 +1,7 @@
+import type { LikeInfo } from '@module/api/types';
+
+export type { LikeInfo };
+
 export type ChallengeCategory =
   | 'ALL'
   | 'DEV'
@@ -17,9 +21,10 @@ export type ParticipantStatus =
   | 'HOST'
   | 'PARTICIPANT';
 
-export interface LikeInfo {
-  likedByMe: boolean;
-  likeCnt: number;
+export interface RandomParticipant {
+  memberId: number;
+  nickname: string;
+  profileImg: string | null;
 }
 
 export interface ChallengeSummary {
@@ -35,6 +40,7 @@ export interface ChallengeSummary {
   likeInfo: LikeInfo;
   thumbnailImage?: string | null;
   deleted?: boolean;
+  randomParticipants?: RandomParticipant[];
 }
 
 export interface ChallengeListItem {
@@ -50,6 +56,7 @@ export interface ChallengeListItem {
   liked: boolean;
   likeCnt: number;
   thumbnailImage?: string;
+  randomParticipants?: RandomParticipant[];
 }
 
 export interface ChallengeDetail {
@@ -86,7 +93,7 @@ export interface CreateChallengeRequest {
   description: string;
   startDate: string;
   endDate: string;
-  maxParticipantCnt: number;
+  maxParticipantCnt: number | null;
   goalType: GoalType;
   participationType: ParticipationType;
   goals: string[];

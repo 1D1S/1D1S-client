@@ -19,7 +19,7 @@ import {
 export default function DevTest(): React.ReactElement {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2 p-24">
-      <h1 className="font-suite text-2xl font-bold">Dev Test 수트</h1>
+      <h1 className="font-pretendard text-2xl font-bold">Dev Test</h1>
       <p className="text-main-700 font-pretendard">
         This is a test page for development purposes.
       </p>
@@ -109,8 +109,8 @@ export default function DevTest(): React.ReactElement {
         </SelectContent>
       </Select>
 
-      <Toggle>토글 태그</Toggle>
-      <Toggle icon="💻">개발 태그</Toggle>
+      <Toggle label="토글 태그" />
+      <Toggle label="개발 태그" />
       <TextField placeholder="텍스트 필드" />
       <TextField label="라벨" placeholder="텍스트 필드" />
       <TextField

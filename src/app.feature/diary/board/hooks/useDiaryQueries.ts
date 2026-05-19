@@ -76,18 +76,21 @@ export function useMyDiaries(
 ): UseQueryResult<MyDiariesResponse, Error> {
   return useQuery({
     queryKey: DIARY_QUERY_KEYS.myDiaries({ size }),
-    queryFn: () => diaryBoardApi.getMyDiaries(size),
+    queryFn: () => diaryBoardApi.getMyDiaries({ size }),
   });
 }
 
-// 특정 멤버의 다이어리 목록 조회
-export function useMemberDiaries(
-  memberId: number,
+// 나의 다이어리 목록 조회 (무한 스크롤)
+export function useMyDiariesInfinite(
   size?: number
-): UseQueryResult<MyDiariesResponse, Error> {
-  return useQuery({
-    queryKey: DIARY_QUERY_KEYS.memberDiaries(memberId, { size }),
-    queryFn: () => diaryBoardApi.getMemberDiaries(memberId, size),
-    enabled: memberId > 0,
+): UseInfiniteQueryResult<InfiniteData<MyDiariesResponse>, Error> {
+  return useInfiniteQuery({
+    queryKey: DIARY_QUERY_KEYS.myDiariesInfinite({ size }),
+    queryFn: ({ pageParam }) =>
+      diaryBoardApi.getMyDiaries({ page: pageParam, size }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) =>
+      lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.page + 1 : undefined,
   });
 }
+

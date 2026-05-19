@@ -1,7 +1,6 @@
 @theme inline {
   /* font family */
   --font-pretendard: var(--font-pretendard);
-  --font-suite: var(--font-suite);
 
   /* font size */
   --text-xs: var(--text-xs);
