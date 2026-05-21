@@ -5,7 +5,7 @@ import ChallengeCard, {
   type ChallengeCardGoalType,
 } from '@component/cards/ChallengeCard';
 import {
-  getCategoryIcon,
+  CategoryIcon,
   getCategoryLabel,
   getCategoryStripeTone,
 } from '@constants/categories';
@@ -71,7 +71,12 @@ export function MyPageActiveChallenges({
                 <ChallengeCard
                   title={challenge.title}
                   category={getCategoryLabel(challenge.category)}
-                  categoryIcon={getCategoryIcon(challenge.category)}
+                  categoryIcon={
+                    <CategoryIcon
+                      category={challenge.category}
+                      className="h-3 w-3"
+                    />
+                  }
                   stripeTone={getCategoryStripeTone(challenge.category)}
                   imageUrl={challenge.thumbnailImage}
                   currentParticipantCount={challenge.participantCnt}

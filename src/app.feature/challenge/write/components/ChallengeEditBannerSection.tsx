@@ -1,4 +1,4 @@
-import { ImagePicker, Text, TextField } from '@1d1s/design-system';
+import { Icon, ImagePicker, Text, TextField } from '@1d1s/design-system';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { apiClient } from '@module/api/client';
 import { requestData } from '@module/api/request';
@@ -144,7 +144,12 @@ export function ChallengeEditBannerSection(): React.ReactElement {
                       key={option.value}
                       active={field.value === option.value}
                       onClick={() => field.onChange(option.value)}
-                      icon={option.icon}
+                      icon={
+                        <Icon
+                          name={option.iconName}
+                          className="h-3.5 w-3.5"
+                        />
+                      }
                       ariaLabel={`${option.label} 카테고리`}
                     >
                       {option.label}

@@ -2,27 +2,51 @@
 
 import { Text } from '@1d1s/design-system';
 import { NotificationListSkeleton } from '@component/skeletons/ListItemSkeleton';
+import { useInViewObserver } from '@module/hooks/useInViewObserver';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft, Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 import { NotificationListItem } from '../components/NotificationListItem';
 import {
   useMarkAllAsRead,
   useMarkAsRead,
 } from '../hooks/useNotificationMutations';
-import { useNotifications } from '../hooks/useNotificationQueries';
+import { useNotificationsInfinite } from '../hooks/useNotificationQueries';
+import { Notification } from '../type/notification';
 
 export function NotificationScreen(): React.JSX.Element {
   const router = useRouter();
-  const { data, isLoading } = useNotifications();
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useNotificationsInfinite();
   const { mutate: markAsRead } = useMarkAsRead();
   const { mutate: markAllAsRead } = useMarkAllAsRead();
+  const { ref, inView } = useInViewObserver();
 
-  const notifications = data?.items ?? [];
+  const notifications = useMemo<Notification[]>(() => {
+    const flattened = data?.pages?.flatMap((page) => page?.items ?? []) ?? [];
+    const map = new Map<number, Notification>();
+    flattened.forEach((notif) => {
+      map.set(notif.id, notif);
+    });
+    return Array.from(map.values());
+  }, [data]);
+
   const hasUnread = notifications.some((notif) => !notif.isRead);
   const unreadCount = notifications.filter((notif) => !notif.isRead).length;
+  const hasNotifications = notifications.length > 0;
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <div className="min-h-screen w-full">
@@ -109,7 +133,7 @@ export function NotificationScreen(): React.JSX.Element {
 
         {isLoading ? (
           <NotificationListSkeleton count={6} className="mt-6" />
-        ) : notifications.length === 0 ? (
+        ) : !hasNotifications ? (
           <div
             className={cn(
               'mt-6 flex flex-col items-center justify-center gap-4',
@@ -129,22 +153,39 @@ export function NotificationScreen(): React.JSX.Element {
             </Text>
           </div>
         ) : (
-          <ul
-            className={cn(
-              'rounded-3 data-fade-in mt-6 overflow-hidden',
-              'border border-gray-200 bg-white',
-              'divide-y divide-gray-100',
-            )}
-          >
-            {notifications.map((notification) => (
-              <li key={notification.id}>
-                <NotificationListItem
-                  notification={notification}
-                  onRead={markAsRead}
-                />
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul
+              className={cn(
+                'rounded-3 data-fade-in mt-6 overflow-hidden',
+                'border border-gray-200 bg-white',
+                'divide-y divide-gray-100',
+              )}
+            >
+              {notifications.map((notification) => (
+                <li key={notification.id}>
+                  <NotificationListItem
+                    notification={notification}
+                    onRead={markAsRead}
+                  />
+                </li>
+              ))}
+            </ul>
+
+            {isFetchingNextPage ? (
+              <NotificationListSkeleton count={3} className="mt-3" />
+            ) : null}
+
+            <div
+              ref={ref}
+              className="mt-6 flex h-10 w-full items-center justify-center"
+            >
+              {!isFetchingNextPage && !hasNextPage ? (
+                <Text size="body2" className="text-gray-400">
+                  마지막 알림입니다.
+                </Text>
+              ) : null}
+            </div>
+          </>
         )}
       </div>
     </div>

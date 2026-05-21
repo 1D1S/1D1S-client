@@ -2,7 +2,7 @@ import { SectionHeader, Text } from '@1d1s/design-system';
 import ChallengeCard from '@component/cards/ChallengeCard';
 import { ChallengeCardSkeleton } from '@component/skeletons/ChallengeCardSkeleton';
 import {
-  getCategoryIcon,
+  CategoryIcon,
   getCategoryLabel,
   getCategoryStripeTone,
 } from '@constants/categories';
@@ -90,7 +90,12 @@ export default function HomeRandomChallengesSection({
                 <ChallengeCard
                   title={challenge.title}
                   category={getCategoryLabel(challenge.category)}
-                  categoryIcon={getCategoryIcon(challenge.category)}
+                  categoryIcon={
+                    <CategoryIcon
+                      category={challenge.category}
+                      className="h-3 w-3"
+                    />
+                  }
                   stripeTone={getCategoryStripeTone(challenge.category)}
                   imageUrl={challenge.thumbnailImage}
                   currentParticipantCount={challenge.participantCnt}

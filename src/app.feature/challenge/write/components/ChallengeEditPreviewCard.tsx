@@ -1,4 +1,4 @@
-import { Stripe, Tag, Text } from '@1d1s/design-system';
+import { Icon, Stripe, Tag, Text } from '@1d1s/design-system';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { cn } from '@module/utils/cn';
 import { formatDateKR } from '@module/utils/date';
@@ -99,7 +99,11 @@ export function ChallengeEditPreviewCard({
 
       <div className="p-4">
         {category ? (
-          <Tag tone="brand" size="sm" icon={category.icon}>
+          <Tag
+            tone="brand"
+            size="sm"
+            icon={<Icon name={category.iconName} className="h-3 w-3" />}
+          >
             {category.label}
           </Tag>
         ) : null}

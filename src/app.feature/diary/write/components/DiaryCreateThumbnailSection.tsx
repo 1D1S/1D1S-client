@@ -14,7 +14,7 @@ function DiaryCreateThumbnailSectionComponent({
   onClearThumbnail,
 }: DiaryCreateThumbnailSectionProps): React.ReactElement {
   return (
-    <section>
+    <div>
       <Text size="caption1" weight="bold" className="mb-2 block text-gray-600">
         사진 첨부 <span className="font-medium text-gray-400">· 선택</span>
       </Text>
@@ -22,8 +22,9 @@ function DiaryCreateThumbnailSectionComponent({
         previewUrl={thumbnailPreviewUrl}
         onSelectFile={onSelectThumbnailFile}
         onClear={onClearThumbnail}
+        dropZoneClassName="aspect-4/5"
       />
-    </section>
+    </div>
   );
 }
 

@@ -1,22 +1,36 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  UseInfiniteQueryResult,
+  useQuery,
+  UseQueryResult,
+} from '@tanstack/react-query';
 
 import { notificationApi } from '../api/notificationApi';
 import { NOTIFICATION_QUERY_KEYS } from '../consts/queryKeys';
 import {
   NotificationListData,
-  NotificationListParams,
   NotificationPreferences,
   UnreadCount,
 } from '../type/notification';
 
 const EMPTY_UNREAD_COUNT: UnreadCount = { unreadCount: 0 };
+const NOTIFICATION_PAGE_SIZE = 20;
 
-export function useNotifications(
-  params?: NotificationListParams
-): UseQueryResult<NotificationListData, Error> {
-  return useQuery({
-    queryKey: NOTIFICATION_QUERY_KEYS.list(params),
-    queryFn: () => notificationApi.getNotifications(params),
+export function useNotificationsInfinite(): UseInfiniteQueryResult<
+  InfiniteData<NotificationListData>,
+  Error
+> {
+  return useInfiniteQuery({
+    queryKey: NOTIFICATION_QUERY_KEYS.list({ size: NOTIFICATION_PAGE_SIZE }),
+    queryFn: ({ pageParam }) =>
+      notificationApi.getNotifications({
+        page: pageParam,
+        size: NOTIFICATION_PAGE_SIZE,
+      }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) =>
+      lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.page + 1 : undefined,
   });
 }
 
@@ -52,4 +66,3 @@ export function useNotificationPreferences(
     enabled: options?.enabled ?? true,
   });
 }
-

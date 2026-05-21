@@ -18,7 +18,7 @@ export interface ChallengeCardParticipant {
 export interface ChallengeCardProps {
   title: string;
   category: string;
-  categoryIcon?: string;
+  categoryIcon?: React.ReactNode;
   stripeTone?: string;
   imageUrl?: string;
   currentParticipantCount: number;

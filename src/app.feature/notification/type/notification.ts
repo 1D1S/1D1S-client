@@ -36,11 +36,17 @@ export interface Notification {
   createdAt: string;
 }
 
+export interface NotificationPageInfo {
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNextPage: boolean;
+}
+
 export interface NotificationListData {
   items: Notification[];
-  currentPage: number;
-  size: number;
-  hasNext: boolean;
+  pageInfo: NotificationPageInfo;
 }
 
 export interface NotificationListParams {

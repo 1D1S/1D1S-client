@@ -749,7 +749,7 @@ function DiaryDetailView({
         <div
           className={cn(
             'grid gap-4 lg:gap-7',
-            'lg:grid-cols-[minmax(0,1fr)_320px]'
+            'lg:grid-cols-[minmax(0,1fr)_380px]'
           )}
         >
           <article className="flex min-w-0 flex-col gap-3.5">
