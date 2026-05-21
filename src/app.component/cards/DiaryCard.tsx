@@ -9,10 +9,10 @@ import React from 'react';
 
 export type DiaryEmotion = 'happy' | 'soso' | 'sad';
 
-const EMOTION_EMOJI: Record<DiaryEmotion, string> = {
-  happy: '😊',
-  soso: '😌',
-  sad: '😔',
+const EMOTION_IMAGE: Record<DiaryEmotion, { src: string; alt: string }> = {
+  happy: { src: '/images/mood-happy.PNG', alt: '행복한 얼굴' },
+  soso: { src: '/images/mood-soso.PNG', alt: '무표정 얼굴' },
+  sad: { src: '/images/mood-sad.PNG', alt: '슬픈 얼굴' },
 };
 
 const EMOTION_STRIPE_TONE: Record<DiaryEmotion, 'peach' | 'mint' | 'sky'> = {
@@ -120,15 +120,13 @@ export default function DiaryCard({
           )}
         </Card.Overlay>
         <Card.Overlay position="top-right">
-          <span
-            aria-hidden
-            className={cn(
-              'inline-flex h-6 w-6 items-center justify-center',
-              'rounded-full bg-white text-base shadow-sm'
-            )}
-          >
-            {EMOTION_EMOJI[emotion]}
-          </span>
+          <Image
+            src={EMOTION_IMAGE[emotion].src}
+            alt={EMOTION_IMAGE[emotion].alt}
+            width={32}
+            height={32}
+            className="h-8 w-8"
+          />
         </Card.Overlay>
       </Card.Thumb>
       <Card.Body className="gap-1.5 p-3">

@@ -1,4 +1,4 @@
-import { Tag, Text } from '@1d1s/design-system';
+import { Icon, Tag, Text } from '@1d1s/design-system';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { format } from 'date-fns';
 import { Check } from 'lucide-react';
@@ -20,10 +20,14 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
 
   const periodValue =
     values.period !== 'etc' ? values.period : values.periodNumber;
-  const memberCountValue =
-    values.memberCount !== 'etc'
-      ? values.memberCount
-      : values.memberCountNumber;
+  const memberCountLabel =
+    values.memberCount === 'unlimited'
+      ? '제한 없음'
+      : values.memberCount === 'etc'
+        ? `${values.memberCountNumber}명`
+        : values.memberCount
+          ? `${values.memberCount}명`
+          : '-';
   const isFlexible = values.goalType === 'FLEXIBLE';
   const isEndless = values.periodType === 'ENDLESS';
   const isGroup = values.participationType === 'GROUP';
@@ -32,7 +36,7 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
     <div className="flex flex-col gap-4">
       {/* 대표 사진 */}
       {values.thumbnailPreviewUrl && (
-        <div className="relative h-[180px] w-full overflow-hidden rounded-2xl">
+        <div className="rounded-2 relative aspect-[16/9] w-full overflow-hidden">
           <Image
             src={values.thumbnailPreviewUrl}
             alt="챌린지 대표 사진"
@@ -42,16 +46,22 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
         </div>
       )}
 
-      {/* 제목 + 카테고리 태그 */}
-      <div className="flex items-start justify-between gap-3">
+      {/* 카테고리 + 제목 */}
+      <div className="flex flex-col gap-2">
+        {category && (
+          <div className="flex">
+            <Tag
+              icon={
+                <Icon name={category.iconName} className="h-3.5 w-3.5" />
+              }
+            >
+              {category.label}
+            </Tag>
+          </div>
+        )}
         <Text size="heading1" weight="bold" className="text-black">
           {values.title}
         </Text>
-        {category && (
-        <div className="shrink-0">
-          <Tag icon={category.icon}>{category.label}</Tag>
-        </div>
-      )}
       </div>
 
       {/* 설명 */}
@@ -88,7 +98,7 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
               참여 인원
             </Text>
             <Text size="heading2" weight="bold" className="text-black">
-              {isGroup ? `${memberCountValue}명` : '개인'}
+              {isGroup ? memberCountLabel : '개인'}
             </Text>
             <div>
               <Tag>{isGroup ? '단체 챌린지' : '개인 챌린지'}</Tag>

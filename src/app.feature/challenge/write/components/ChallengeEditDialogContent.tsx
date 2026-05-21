@@ -1,4 +1,4 @@
-import { Tag, Text } from '@1d1s/design-system';
+import { Icon, Tag, Text } from '@1d1s/design-system';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { format } from 'date-fns';
 import { Check } from 'lucide-react';
@@ -47,7 +47,7 @@ export function ChallengeEditDialogContent({
   return (
     <div className="flex flex-col gap-4">
       {values.thumbnailPreviewUrl ? (
-        <div className="relative h-[180px] w-full overflow-hidden rounded-2xl">
+        <div className="rounded-2 relative aspect-[16/9] w-full overflow-hidden">
           <Image
             src={values.thumbnailPreviewUrl}
             alt="챌린지 대표 사진"
@@ -57,15 +57,21 @@ export function ChallengeEditDialogContent({
         </div>
       ) : null}
 
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-2">
+        {category ? (
+          <div className="flex">
+            <Tag
+              icon={
+                <Icon name={category.iconName} className="h-3.5 w-3.5" />
+              }
+            >
+              {category.label}
+            </Tag>
+          </div>
+        ) : null}
         <Text size="heading1" weight="bold" className="text-black">
           {values.title}
         </Text>
-        {category ? (
-          <div className="shrink-0">
-            <Tag icon={category.icon}>{category.label}</Tag>
-          </div>
-        ) : null}
       </div>
 
       {values.description ? (

@@ -41,12 +41,13 @@ export function NotificationListItem({
     isRead,
     createdAt,
     actorId,
+    actorNickname,
     actorProfileUrl,
   } = notification;
 
   const targetUrl = resolveTargetUrl(notification);
   const isFriendRequest = type === 'FRIEND_REQUEST' && actorId !== null;
-  const showAvatar = type !== 'LIKE_MILESTONE';
+  const showAvatar = actorNickname !== null;
 
   function handleActivate(): void {
     if (!isRead) { onRead?.(id); }

@@ -190,6 +190,14 @@ export default function DiaryCreateScreen(): React.ReactElement {
               }
               selectedMood={selectedMood}
               onMoodChange={setSelectedMood}
+              thumbnailSlot={
+                <DiaryCreateThumbnailSection
+                  thumbnailPreviewUrl={thumbnailPreviewUrl}
+                  hasThumbnail={Boolean(thumbnailFile)}
+                  onSelectThumbnailFile={handleThumbnailFileSelect}
+                  onClearThumbnail={clearThumbnail}
+                />
+              }
             />
 
             <section>
@@ -202,13 +210,6 @@ export default function DiaryCreateScreen(): React.ReactElement {
               </Text>
               <DiaryContentEditor content={content} onChange={setContent} />
             </section>
-
-            <DiaryCreateThumbnailSection
-              thumbnailPreviewUrl={thumbnailPreviewUrl}
-              hasThumbnail={Boolean(thumbnailFile)}
-              onSelectThumbnailFile={handleThumbnailFileSelect}
-              onClearThumbnail={clearThumbnail}
-            />
           </div>
         </div>
       </div>

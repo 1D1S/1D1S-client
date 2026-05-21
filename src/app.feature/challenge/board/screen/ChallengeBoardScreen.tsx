@@ -8,7 +8,7 @@ import {
   ChallengeCardSkeletonGrid,
 } from '@component/skeletons/ChallengeCardSkeleton';
 import {
-  getCategoryIcon,
+  CategoryIcon,
   getCategoryLabel,
   getCategoryStripeTone,
 } from '@constants/categories';
@@ -289,7 +289,12 @@ export default function ChallengeBoardScreen(): React.ReactElement {
                     key={challenge.challengeId}
                     title={challenge.title}
                     category={getCategoryLabel(challenge.category)}
-                    categoryIcon={getCategoryIcon(challenge.category)}
+                    categoryIcon={
+                      <CategoryIcon
+                        category={challenge.category}
+                        className="h-3 w-3"
+                      />
+                    }
                     stripeTone={getCategoryStripeTone(challenge.category)}
                     imageUrl={challenge.thumbnailImage}
                     currentParticipantCount={challenge.participantCnt}

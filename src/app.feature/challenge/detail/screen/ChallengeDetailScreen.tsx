@@ -39,6 +39,7 @@ import {
   useChallengeDetail,
 } from '../../board/hooks/useChallengeQueries';
 import {
+  isChallengeEnded,
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
 } from '../../board/utils/challengePeriod';
@@ -178,6 +179,7 @@ export function ChallengeDetailScreen({
     summaryStartDate,
     summaryEndDate
   );
+  const isChallengeAlreadyEnded = isChallengeEnded(summaryEndDate);
   const isEndless = isInfiniteChallengeEndDate(summaryEndDate);
   // 챌린지 시작 여부 (시작일이 오늘 이전이면 시작된 것으로 간주)
   const isChallengeStarted =
@@ -194,7 +196,10 @@ export function ChallengeDetailScreen({
     () => hasSelectableDiaryDate(challengeCheckWriteDateKeys),
     [challengeCheckWriteDateKeys]
   );
-  const canJoin = canJoinByStatus && summaryMaxParticipantCnt > 1;
+  const canJoin =
+    canJoinByStatus &&
+    summaryMaxParticipantCnt > 1 &&
+    !isChallengeAlreadyEnded;
   const previewDiaries = challengeDiariesData?.items ?? [];
   const hasMoreDiaries =
     challengeDiariesData?.pageInfo.hasNextPage ?? false;
@@ -206,6 +211,11 @@ export function ChallengeDetailScreen({
     unlikeChallenge.isPending;
 
   const handleJoinChallenge = (): void => {
+    if (isChallengeAlreadyEnded) {
+      toast.error('종료된 챌린지는 참여 신청을 보낼 수 없습니다.');
+      return;
+    }
+
     if (summaryMaxParticipantCnt <= 1) {
       toast.error('최대 참여 인원이 2명 이상인 챌린지만 신청할 수 있습니다.');
       return;
@@ -232,6 +242,11 @@ export function ChallengeDetailScreen({
   };
 
   const handleFreeGoalSubmit = (): void => {
+    if (isChallengeAlreadyEnded) {
+      toast.error('종료된 챌린지는 참여 신청을 보낼 수 없습니다.');
+      setShowFreeGoalModal(false);
+      return;
+    }
     const validGoals = freeGoalInputs
       .map((goal) => goal.trim())
       .filter(Boolean);
@@ -477,6 +492,15 @@ export function ChallengeDetailScreen({
     if (isPending) {
       return {
         label: '참여 승인 대기중',
+        onClick: () => undefined,
+        disabled: true,
+        variant: 'outlined',
+        show: true,
+      };
+    }
+    if (canJoinByStatus && isChallengeAlreadyEnded) {
+      return {
+        label: '종료된 챌린지',
         onClick: () => undefined,
         disabled: true,
         variant: 'outlined',

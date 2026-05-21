@@ -1,3 +1,4 @@
+import type { IconName } from '@1d1s/design-system';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 
 import type { SignupFormValues, SignupTopic } from '../hooks/useSignUpForm';
@@ -25,9 +26,9 @@ export const SIGN_UP_OCCUPATION_OPTIONS: Array<{
 export const SIGN_UP_TOPIC_OPTIONS: Array<{
   value: SignupTopic;
   label: string;
-  icon: string;
+  iconName: IconName;
 }> = CATEGORY_OPTIONS.map((option) => ({
   value: option.value as SignupTopic,
   label: option.label,
-  icon: option.icon,
+  iconName: option.iconName,
 }));

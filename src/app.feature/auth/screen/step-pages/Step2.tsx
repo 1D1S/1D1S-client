@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, CheckContainer, Text } from '@1d1s/design-system';
+import { Button, CheckContainer, Icon, Text } from '@1d1s/design-system';
 import { FormField, FormItem, FormMessage } from '@component/ui/Form';
 import { cn } from '@module/utils/cn';
 import React from 'react';
@@ -101,9 +101,10 @@ export function Step2({
                       checked ? tone : 'bg-gray-50'
                     )}
                   >
-                    <span className="text-3xl leading-none">
-                      {option.icon}
-                    </span>
+                    <Icon
+                      name={option.iconName}
+                      className="h-7 w-7 text-gray-800"
+                    />
                     <Text
                       size="caption1"
                       weight="bold"
