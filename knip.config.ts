@@ -69,17 +69,7 @@ const config: KnipConfig = {
 
   // 현 시점 baseline (TECH_DEBT — Minor). 새로 추가된 것만 차단된다.
   // 정리 시 이 리스트에서 하나씩 제거.
-  ignore: [
-    'src/app.lib/Prefetch.tsx',
-    'src/app.component/ui/ScrollArea.tsx',
-    'src/app.constants/consts/mypageData.ts',
-    'src/app.feature/challenge/board/consts/challengeBoardData.ts',
-    'src/app.feature/challenge/detail/components/ChallengeGoalToggle.tsx',
-    'src/app.feature/diary/detail/consts/diaryDetailData.ts',
-    'src/app.feature/diary/write/components/BottomExpandablePanel.tsx',
-    'src/app.feature/diary/write/components/DiaryContentField.tsx',
-    'src/app.feature/diary/write/components/MoodToggle.tsx',
-  ],
+  ignore: [],
 
   // Next.js middleware 의 `export const config` 는 프레임워크 규약
   ignoreExportsUsedInFile: true,
