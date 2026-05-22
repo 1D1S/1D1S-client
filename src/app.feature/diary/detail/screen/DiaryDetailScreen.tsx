@@ -336,6 +336,21 @@ function DiaryCommentSection({
     return ids;
   }, [flatCommentMeta]);
 
+  // 대댓글의 대댓글은 허용하지 않으므로, 답글 대상 id 를 항상 원본(루트)
+  // 댓글 id 로 정규화한다. 리프 노드(대댓글) 클릭 시에도 부모(원본) 댓글에
+  // 답글이 달리도록 한다.
+  const replyTargetRootIdMap = useMemo<Map<number, number>>(() => {
+    const map = new Map<number, number>();
+    for (const comment of commentItems) {
+      map.set(comment.id, comment.id);
+      const replies = commentRepliesMap[comment.id] ?? [];
+      for (const reply of replies) {
+        map.set(reply.id, comment.id);
+      }
+    }
+    return map;
+  }, [commentItems, commentRepliesMap]);
+
   const handleCommentWrapperClickCapture = (
     event: React.MouseEvent<HTMLDivElement>
   ): void => {
@@ -424,14 +439,14 @@ function DiaryCommentSection({
   };
 
   const handleReplySubmit = (comment: CommentNode, content: string): void => {
-    const targetCommentId = Number(comment.id);
+    const clickedCommentId = Number(comment.id);
     const trimmedContent = content.trim();
 
-    if (!Number.isFinite(targetCommentId) || targetCommentId <= 0) {
+    if (!Number.isFinite(clickedCommentId) || clickedCommentId <= 0) {
       return;
     }
 
-    if (deletedCommentIds.has(targetCommentId)) {
+    if (deletedCommentIds.has(clickedCommentId)) {
       return;
     }
 
@@ -439,9 +454,12 @@ function DiaryCommentSection({
       return;
     }
 
+    const rootCommentId =
+      replyTargetRootIdMap.get(clickedCommentId) ?? clickedCommentId;
+
     requireAuthAction(() => {
       createReply.mutate({
-        commentId: targetCommentId,
+        commentId: rootCommentId,
         content: trimmedContent,
       });
     });
