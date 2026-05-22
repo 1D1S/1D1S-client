@@ -14,6 +14,7 @@ interface ChallengeProgressCardProps {
   ctaDisabled?: boolean;
   ctaVariant?: 'default' | 'outlined';
   showCta?: boolean;
+  ctaHint?: string;
   isInfinite?: boolean;
   likeCount?: number;
   likedByMe?: boolean;
@@ -30,6 +31,7 @@ export function ChallengeProgressCard({
   ctaDisabled = false,
   ctaVariant = 'default',
   showCta = true,
+  ctaHint,
   isInfinite = false,
   likeCount,
   likedByMe = false,
@@ -112,6 +114,15 @@ export function ChallengeProgressCard({
           >
             {ctaLabel}
           </Button>
+          {ctaHint ? (
+            <Text
+              size="caption1"
+              weight="regular"
+              className="mt-2 block text-center text-gray-500"
+            >
+              {ctaHint}
+            </Text>
+          ) : null}
         </div>
       ) : null}
     </Card>
