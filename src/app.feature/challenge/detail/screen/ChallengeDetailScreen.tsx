@@ -196,10 +196,15 @@ export function ChallengeDetailScreen({
     () => hasSelectableDiaryDate(challengeCheckWriteDateKeys),
     [challengeCheckWriteDateKeys]
   );
+  // 중도 참여 차단: allowMidJoin=false 인 챌린지는 시작일 당일부터(=진행 중)
+  // 신규 참여 신청을 받지 않는다.
+  const allowMidJoin = detail?.allowMidJoin ?? false;
+  const isMidJoinBlocked = !allowMidJoin && isChallengeCurrentlyOngoing;
   const canJoin =
     canJoinByStatus &&
     summaryMaxParticipantCnt > 1 &&
-    !isChallengeAlreadyEnded;
+    !isChallengeAlreadyEnded &&
+    !isMidJoinBlocked;
   const previewDiaries = challengeDiariesData?.items ?? [];
   const hasMoreDiaries =
     challengeDiariesData?.pageInfo.hasNextPage ?? false;
@@ -468,6 +473,7 @@ export function ChallengeDetailScreen({
     disabled: boolean;
     variant: 'default' | 'outlined';
     show: boolean;
+    hint?: string;
   } => {
     if (isHost) {
       return {
@@ -505,6 +511,16 @@ export function ChallengeDetailScreen({
         disabled: true,
         variant: 'outlined',
         show: true,
+      };
+    }
+    if (canJoinByStatus && isMidJoinBlocked) {
+      return {
+        label: '중도 참여 불가',
+        onClick: () => undefined,
+        disabled: true,
+        variant: 'outlined',
+        show: true,
+        hint: '이미 시작된 챌린지는 중도 참여가 불가능합니다',
       };
     }
     if (canJoin) {
@@ -1059,6 +1075,7 @@ export function ChallengeDetailScreen({
                 ctaDisabled={ctaConfig.disabled}
                 ctaVariant={ctaConfig.variant}
                 showCta={ctaConfig.show}
+                ctaHint={ctaConfig.hint}
                 isInfinite={isEndless}
                 likeCount={summary.likeInfo.likeCnt}
                 likedByMe={summary.likeInfo.likedByMe}
@@ -1122,6 +1139,15 @@ export function ChallengeDetailScreen({
           >
             {ctaConfig.label}
           </Button>
+          {ctaConfig.hint ? (
+            <Text
+              size="caption1"
+              weight="regular"
+              className="mt-2 block text-center text-gray-500"
+            >
+              {ctaConfig.hint}
+            </Text>
+          ) : null}
         </div>
       ) : null}
     </>
