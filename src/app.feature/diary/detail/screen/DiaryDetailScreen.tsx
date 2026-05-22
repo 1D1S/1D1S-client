@@ -12,7 +12,6 @@ import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleto
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
-import { useIsMobileWebApp } from '@module/utils/userAgent';
 import {
   ArrowLeft,
   Edit3,
@@ -570,7 +569,6 @@ function DiaryMobileCommentBar({
   const [content, setContent] = useState('');
   const createComment = useCreateDiaryComment(diaryId);
   const disabled = createComment.isPending || !content.trim();
-  const isMobileWebApp = useIsMobileWebApp();
 
   const handleSubmit = (): void => {
     if (!isLoggedIn) {
@@ -592,9 +590,7 @@ function DiaryMobileCommentBar({
         'fixed right-0 bottom-0 left-0 z-20 lg:hidden',
         'border-t border-gray-100 bg-white',
         'flex items-end gap-2 px-4 pt-2.5',
-        isMobileWebApp
-          ? 'pb-[calc(0.625rem+env(safe-area-inset-bottom))]'
-          : 'pb-2.5'
+        'pb-[calc(0.625rem+env(safe-area-inset-bottom))]'
       )}
     >
       <TextField
@@ -643,7 +639,6 @@ function DiaryDetailView({
   const router = useRouter();
   const { data: sidebarData } = useSidebar();
   const isLoggedIn = useIsLoggedIn();
-  const isMobileWebApp = useIsMobileWebApp();
   const currentMemberId = useMemo(
     () => resolveSidebarMemberId(sidebarData),
     [sidebarData]
@@ -724,16 +719,15 @@ function DiaryDetailView({
     <div
       className={cn(
         'min-h-screen w-full bg-white',
-        isMobileWebApp
-          ? 'pb-[calc(112px+env(safe-area-inset-bottom))]'
-          : 'pb-[112px]',
+        'pb-[calc(112px+env(safe-area-inset-bottom))]',
         'lg:pb-0'
       )}
     >
       {/* 모바일 sticky 헤더 — ← + 일지 */}
       <div
         className={cn(
-          'sticky top-0 z-30 flex h-14 items-center gap-3',
+          'sticky top-0 z-30 flex items-center gap-3',
+          'h-14-safe pt-safe-top',
           'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
           'lg:hidden'
         )}

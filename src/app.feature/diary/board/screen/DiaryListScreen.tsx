@@ -193,7 +193,8 @@ export default function DiaryListScreen(): React.ReactElement {
         className={cn(
           'sticky top-0 z-20 flex items-center justify-between',
           'gap-3 border-b border-gray-100',
-          'bg-white/95 px-5 pt-3.5 pb-3 backdrop-blur lg:hidden'
+          'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
+          'backdrop-blur lg:hidden'
         )}
       >
         <Text

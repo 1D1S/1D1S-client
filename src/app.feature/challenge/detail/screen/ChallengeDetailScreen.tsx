@@ -25,7 +25,6 @@ import {
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
-import { useIsMobileWebApp } from '@module/utils/userAgent';
 import { ArrowLeft, CircleAlert, Heart, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -85,7 +84,6 @@ export function ChallengeDetailScreen({
 }: ChallengeDetailScreenProps): React.ReactElement {
   const challengeId = Number(id);
   const router = useRouter();
-  const isMobileWebApp = useIsMobileWebApp();
 
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
 
@@ -746,9 +744,7 @@ export function ChallengeDetailScreen({
         className={cn(
           'data-fade-in min-h-screen w-full bg-white',
           ctaConfig.show
-            ? isMobileWebApp
-              ? 'pb-[calc(100px+env(safe-area-inset-bottom))] lg:pb-12'
-              : 'pb-[100px] lg:pb-12'
+            ? 'pb-[calc(100px+env(safe-area-inset-bottom))] lg:pb-12'
             : 'pb-12'
         )}
       >
@@ -785,7 +781,8 @@ export function ChallengeDetailScreen({
           aria-label="뒤로가기"
           onClick={() => router.back()}
           className={cn(
-            'absolute top-3.5 left-3.5 z-10 flex h-9 w-9',
+            'absolute left-3.5 z-10 flex h-9 w-9',
+            'top-[calc(0.875rem+env(safe-area-inset-top))]',
             'items-center justify-center rounded-full bg-white/90',
             'text-gray-700 shadow-sm backdrop-blur',
             'transition hover:bg-white lg:hidden'
@@ -864,14 +861,9 @@ export function ChallengeDetailScreen({
                   key={participant.participantId}
                   className={cn(
                     'h-7 w-7 overflow-hidden rounded-full',
-                    'border-2 border-white bg-gray-200',
+                    'bg-main-200 border-2 border-white',
                     idx > 0 && '-ml-2.5'
                   )}
-                  style={{
-                    backgroundColor: !participant.profileImg
-                      ? accentColor
-                      : undefined,
-                  }}
                 >
                   {participant.profileImg ? (
                     <Image
@@ -881,7 +873,15 @@ export function ChallengeDetailScreen({
                       height={28}
                       className="h-full w-full object-cover"
                     />
-                  ) : null}
+                  ) : (
+                    <Image
+                      src="/DefaultProfile.png"
+                      alt=""
+                      width={28}
+                      height={28}
+                      className="h-full w-full object-cover"
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -1125,9 +1125,7 @@ export function ChallengeDetailScreen({
             'fixed right-0 bottom-0 left-0 z-20 lg:hidden',
             'border-t border-gray-100 bg-white/95 backdrop-blur',
             'px-5 pt-3',
-            isMobileWebApp
-              ? 'pb-[calc(1.25rem+env(safe-area-inset-bottom))]'
-              : 'pb-5'
+            'pb-[calc(1.25rem+env(safe-area-inset-bottom))]'
           )}
         >
           <Button

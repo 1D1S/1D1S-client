@@ -31,6 +31,17 @@ export const metadata: Metadata = {
   metadataBase: SITE_URL,
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
+  applicationName: SITE_TITLE,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: '1D1S',
+  },
+  icons: {
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    apple: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    shortcut: ['/icon.svg'],
+  },
   openGraph: {
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
@@ -68,6 +79,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
+  themeColor: '#FF7043',
 };
 
 export default function RootLayout({

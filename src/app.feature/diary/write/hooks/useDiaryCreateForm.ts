@@ -107,6 +107,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState('');
   const submitSuccessRef = useRef(false);
+  const unavailableDialogShownForChallengeIdRef = useRef<number | null>(null);
 
   const { data: existingDiary, isLoading: isExistingDiaryLoading } =
     useDiaryDetail(requestedDiaryId ?? 0);
@@ -314,6 +315,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       isEditMode ||
       !selectedChallenge ||
       isMemberChallengesLoading ||
+      isChallengeCheckWriteDatesLoading ||
       !isSelectedChallengeOngoing ||
       submitSuccessRef.current
     ) {
@@ -324,7 +326,19 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       return;
     }
 
+    // 진입 시점에 한 번만 띄운다. 같은 챌린지에서 작성 도중 mutation 등으로
+    // checkWriteDates가 갱신되어 hasWritableRecentDate가 false 로 바뀌어도
+    // 다시 다이얼로그가 뜨지 않도록 챌린지 단위로 가드한다.
+    if (
+      unavailableDialogShownForChallengeIdRef.current ===
+      selectedChallenge.challengeId
+    ) {
+      return;
+    }
+
     const timerId = window.setTimeout(() => {
+      unavailableDialogShownForChallengeIdRef.current =
+        selectedChallenge.challengeId;
       setIsCreateUnavailableDialogOpen(true);
     }, 0);
 
@@ -333,6 +347,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     };
   }, [
     hasWritableRecentDate,
+    isChallengeCheckWriteDatesLoading,
     isEditMode,
     isMemberChallengesLoading,
     isSelectedChallengeOngoing,
