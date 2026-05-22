@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  CircleAvatar,
-  Icon,
-  ImagePlaceholder,
-  Text,
-} from '@1d1s/design-system';
+import { Card, Icon, Stripe, Text } from '@1d1s/design-system';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { cn } from '@module/utils/cn';
 import Image from 'next/image';
@@ -22,6 +17,25 @@ interface StoryRingProps {
   onAddStory?(): void;
 }
 
+const STRIPE_TONES = ['peach', 'mint', 'sky'] as const;
+type StripeTone = (typeof STRIPE_TONES)[number];
+
+// next/image 는 절대 URL 또는 / 시작 상대 경로만 허용한다.
+function isValidNextImageSrc(src: string | undefined): src is string {
+  if (!src) {
+    return false;
+  }
+  if (src.startsWith('/')) {
+    return true;
+  }
+  return /^(https?:|data:|blob:)/i.test(src);
+}
+
+function pickToneByUserId(userId: number): StripeTone {
+  const index = Math.abs(userId) % STRIPE_TONES.length;
+  return STRIPE_TONES[index];
+}
+
 export default function StoryRing({
   groups,
   onSelect,
@@ -32,6 +46,7 @@ export default function StoryRing({
   const showMySlot = typeof onAddStory === 'function';
   const cardWidthClass = compact ? 'w-[120px]' : 'w-[140px]';
   const myImageUrl = resolveDiaryImageUrl(myProfileImage ?? null) ?? undefined;
+  const hasMyImage = isValidNextImageSrc(myImageUrl);
 
   return (
     <div
@@ -41,58 +56,73 @@ export default function StoryRing({
       )}
     >
       {showMySlot ? (
-        <button
-          type="button"
+        <Card
+          interactive
+          radius="md"
+          role="button"
+          tabIndex={0}
           onClick={onAddStory}
+          aria-label="내 일지 추가"
           className={cn(
-            'flex flex-shrink-0 cursor-pointer flex-col gap-2 p-0',
-            'border-0 bg-transparent text-left',
-            'transition-transform hover:-translate-y-0.5',
+            'flex-shrink-0 transition-all duration-300 ease-out',
+            'hover:shadow-warm',
             cardWidthClass
           )}
-          aria-label="내 일지 추가"
         >
-          <div
-            className={cn(
-              'rounded-3 relative flex aspect-4/5 w-full items-center',
-              'justify-center overflow-hidden border-2 border-dashed',
-              'border-gray-300 bg-gray-50'
-            )}
-          >
-            <CircleAvatar
-              size={56}
-              imageUrl={myImageUrl}
-              tone="peach"
-              alt="내 일지"
-            />
-            <span
-              className={cn(
-                'absolute right-2 bottom-2 flex h-7 w-7 items-center',
-                'justify-center rounded-full border-2 border-white',
-                'bg-main-500 text-white shadow-sm'
-              )}
-              aria-hidden
-            >
-              <Icon name="Plus" size={14} />
-            </span>
-          </div>
-          <div className="flex flex-col gap-0.5 px-0.5">
+          <Card.Thumb className="bg-main-100 aspect-[4/5]">
+            <Stripe tone="peach" />
+            <Card.Overlay position="top-right">
+              <span
+                className={cn(
+                  'flex h-7 w-7 items-center justify-center rounded-full',
+                  'bg-main-500 border-2 border-white text-white shadow-sm'
+                )}
+                aria-hidden
+              >
+                <Icon name="Plus" size={14} />
+              </span>
+            </Card.Overlay>
+          </Card.Thumb>
+          <Card.Body className="gap-1.5 p-3">
             <Text
               size="caption2"
-              weight="bold"
-              className="truncate text-gray-900"
+              weight="extrabold"
+              className={cn(
+                'truncate leading-snug tracking-tight text-gray-900'
+              )}
             >
               내 일지
             </Text>
-            <Text
-              size="caption3"
-              weight="medium"
-              className="text-gray-500"
-            >
-              새 일지 작성하기
-            </Text>
-          </div>
-        </button>
+            <Card.Meta>
+              <span className="inline-flex min-w-0 items-center gap-1.5">
+                <span
+                  className={cn(
+                    'relative h-5 w-5 shrink-0 overflow-hidden rounded-full',
+                    'bg-gray-100'
+                  )}
+                  aria-hidden
+                >
+                  {hasMyImage ? (
+                    <Image
+                      src={myImageUrl as string}
+                      alt=""
+                      fill
+                      sizes="20px"
+                      className="object-cover"
+                    />
+                  ) : null}
+                </span>
+                <span
+                  className={cn(
+                    'truncate text-[11px] font-medium text-gray-500'
+                  )}
+                >
+                  새 일지 작성하기
+                </span>
+              </span>
+            </Card.Meta>
+          </Card.Body>
+        </Card>
       ) : null}
       {groups.map((group, index) => {
         const seen = isGroupAllSeen(group);
@@ -101,86 +131,102 @@ export default function StoryRing({
           resolveDiaryImageUrl(preview?.diaryThumbnail ?? null) ?? undefined;
         const profileUrl =
           resolveDiaryImageUrl(group.profileImage) ?? undefined;
+        const hasThumbnail = isValidNextImageSrc(thumbnailUrl);
+        const hasProfile = isValidNextImageSrc(profileUrl);
         const name = group.userName?.trim() || `친구 ${group.userId}`;
         const title = preview?.diaryTitle ?? '';
         const time = preview ? formatStoryDate(preview.createdAt) : '';
+        const tone = pickToneByUserId(group.userId);
 
         return (
-          <button
+          <Card
             key={group.userId}
-            type="button"
+            interactive
+            radius="md"
+            role="button"
+            tabIndex={0}
             onClick={() => onSelect(index)}
+            aria-label={`${name} 스토리 열기`}
             className={cn(
-              'flex flex-shrink-0 cursor-pointer flex-col gap-2 p-0',
-              'border-0 bg-transparent text-left',
-              'transition-transform hover:-translate-y-0.5',
+              'flex-shrink-0 transition-all duration-300 ease-out',
+              'hover:shadow-warm',
               cardWidthClass
             )}
-            aria-label={`${name} 스토리 열기`}
           >
-            <div
-              className={cn(
-                'rounded-3 relative aspect-4/5 w-full overflow-hidden',
-                'border-2 bg-gray-100',
-                seen ? 'border-gray-200' : 'border-[#ff5722]'
-              )}
-            >
-              {thumbnailUrl ? (
+            <Card.Thumb className="bg-main-100 aspect-[4/5]">
+              {hasThumbnail ? (
                 <Image
-                  src={thumbnailUrl}
+                  src={thumbnailUrl as string}
                   alt={title}
                   fill
                   sizes="(min-width: 1024px) 140px, 120px"
                   className="object-cover"
                 />
               ) : (
-                <ImagePlaceholder
-                  className="h-full w-full"
-                  logoSize="sm"
-                />
+                <Stripe tone={tone} />
               )}
-              <div
-                className={cn(
-                  'absolute inset-x-0 bottom-0 z-10 flex items-center',
-                  'gap-1.5 bg-linear-to-t from-black/70 via-black/30',
-                  'to-transparent px-2 py-2'
-                )}
-              >
-                <CircleAvatar
-                  size={22}
-                  imageUrl={profileUrl}
-                  tone="cream"
-                  alt={name}
-                />
-                <Text
-                  size="caption2"
-                  weight="bold"
-                  className="truncate text-white"
-                >
-                  {name}
-                </Text>
-              </div>
-            </div>
-            <div className="flex flex-col gap-0.5 px-0.5">
+              {!seen ? (
+                <Card.Overlay position="top-left">
+                  <span
+                    className={cn(
+                      'bg-brand inline-flex items-center gap-1 rounded-full',
+                      'px-2 py-0.5 text-[10px] font-extrabold text-white',
+                      'shadow-sm'
+                    )}
+                  >
+                    NEW
+                  </span>
+                </Card.Overlay>
+              ) : null}
+            </Card.Thumb>
+            <Card.Body className="gap-1.5 p-3">
               <Text
                 size="caption2"
-                weight="bold"
+                weight="extrabold"
                 className={cn(
-                  'truncate',
+                  'truncate leading-snug tracking-tight',
                   seen ? 'text-gray-500' : 'text-gray-900'
                 )}
               >
-                {title}
+                {title || name}
               </Text>
-              <Text
-                size="caption3"
-                weight="medium"
-                className="text-gray-500"
-              >
-                {time}
-              </Text>
-            </div>
-          </button>
+              <Card.Meta>
+                <span className="inline-flex min-w-0 items-center gap-1.5">
+                  <span
+                    className={cn(
+                      'relative h-5 w-5 shrink-0 overflow-hidden',
+                      'rounded-full bg-gray-100'
+                    )}
+                    aria-hidden
+                  >
+                    {hasProfile ? (
+                      <Image
+                        src={profileUrl as string}
+                        alt=""
+                        fill
+                        sizes="20px"
+                        className="object-cover"
+                      />
+                    ) : null}
+                  </span>
+                  <span
+                    className={cn(
+                      'truncate text-[11px] font-medium text-gray-500'
+                    )}
+                  >
+                    {name}
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    'shrink-0 text-[11px] font-medium text-gray-400'
+                  )}
+                >
+                  {time}
+                </span>
+              </Card.Meta>
+            </Card.Body>
+          </Card>
         );
       })}
     </div>

@@ -15,7 +15,8 @@ export default function HomeMobileHeader(): React.ReactElement {
   return (
     <header
       className={cn(
-        'sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between',
+        'sticky top-0 z-30 flex shrink-0 items-center justify-between',
+        'h-14-safe pt-safe-top',
         'border-b border-gray-200 bg-white px-4 lg:hidden'
       )}
     >

@@ -3,6 +3,7 @@
 import { Button } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
+import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
@@ -186,6 +187,8 @@ export default function AppLayoutShell({
 }): React.ReactElement {
   const pathname = usePathname();
   const router = useRouter();
+
+  useTokenRefreshOnResume();
 
   const hasMounted = useSyncExternalStore(
     NOOP_SUBSCRIBE,

@@ -63,6 +63,15 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* PWA / iOS 노치 안전 영역 — sticky/fixed 상단 헤더용 */
+  .pt-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  /* h-14 (3.5rem) 컨텐츠 높이는 유지하면서 노치 영역만큼 위로 확장 */
+  .h-14-safe {
+    height: calc(3.5rem + env(safe-area-inset-top));
+  }
 }
 
 /* Diary 페이지 컨테이너 너비 기반 6/4/3/2 컬럼 */

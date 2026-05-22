@@ -32,7 +32,8 @@ export function FriendPageShell({
     <div className="min-h-screen w-full">
       <div
         className={cn(
-          'sticky top-0 z-30 flex h-14 items-center gap-3',
+          'sticky top-0 z-30 flex items-center gap-3',
+          'h-14-safe pt-safe-top',
           'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
           'lg:hidden',
         )}

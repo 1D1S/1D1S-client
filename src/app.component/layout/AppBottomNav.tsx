@@ -2,7 +2,6 @@
 
 import { BottomNav } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
-import { useIsMobileWebApp } from '@module/utils/userAgent';
 import { BookOpen, Home, LayoutGrid, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
@@ -31,7 +30,6 @@ export default function AppBottomNav({
   className,
 }: AppBottomNavProps): React.ReactElement {
   const router = useRouter();
-  const isMobileWebApp = useIsMobileWebApp();
 
   // 하단 탭 4개 경로를 마운트 시 prefetch — 모바일은 hover 가 없어
   // <Link> 자동 prefetch 가 트리거되지 않으므로 수동 워밍업이 필요하다.
@@ -57,8 +55,7 @@ export default function AppBottomNav({
       }))}
       className={cn(
         'sticky bottom-0 z-30',
-        isMobileWebApp &&
-          'pb-[calc(0.875rem+env(safe-area-inset-bottom))]',
+        'pb-[calc(0.875rem+env(safe-area-inset-bottom))]',
         className
       )}
     />
