@@ -4,7 +4,9 @@ import {
   Button,
   Card,
   Dialog,
+  DialogBody,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -173,6 +175,10 @@ export function ChallengeDetailScreen({
   const summaryEndDate = summary?.endDate ?? '';
   const summaryMaxParticipantCnt = summary?.maxParticipantCnt ?? 0;
   const summaryParticipantCnt = summary?.participantCnt ?? 0;
+  // 단체 챌린지 여부는 participationType 으로 직접 판정한다.
+  // maxParticipantCnt 로 추론하면 "제한없음"(null/0) GROUP 챌린지가 개인으로
+  // 잘못 잡혀 참여하기 버튼이 사라지는 버그가 있었다.
+  const isGroupChallenge = summary?.participationType === 'GROUP';
   const isChallengeCurrentlyOngoing = isChallengeOngoing(
     summaryStartDate,
     summaryEndDate
@@ -200,7 +206,7 @@ export function ChallengeDetailScreen({
   const isMidJoinBlocked = !allowMidJoin && isChallengeCurrentlyOngoing;
   const canJoin =
     canJoinByStatus &&
-    summaryMaxParticipantCnt > 1 &&
+    isGroupChallenge &&
     !isChallengeAlreadyEnded &&
     !isMidJoinBlocked;
   const previewDiaries = challengeDiariesData?.items ?? [];
@@ -219,8 +225,8 @@ export function ChallengeDetailScreen({
       return;
     }
 
-    if (summaryMaxParticipantCnt <= 1) {
-      toast.error('최대 참여 인원이 2명 이상인 챌린지만 신청할 수 있습니다.');
+    if (!isGroupChallenge) {
+      toast.error('단체 챌린지에만 참여 신청을 보낼 수 있습니다.');
       return;
     }
 
@@ -458,10 +464,15 @@ export function ChallengeDetailScreen({
     summary.endDate
   );
   const remainingLabel = getRemainingLabel(summary.endDate);
-  const participantsLabel =
-    summaryMaxParticipantCnt > 1
+  // 표시 규칙:
+  //   - 개인 챌린지: "개인 챌린지"
+  //   - 단체 + 최대 인원 지정: "X/Y명 참여"
+  //   - 단체 + 제한없음: "X명 참여 · 제한없음"
+  const participantsLabel = !isGroupChallenge
+    ? '개인 챌린지'
+    : summaryMaxParticipantCnt > 0
       ? `${summaryParticipantCnt}/${summaryMaxParticipantCnt}명 참여`
-      : '개인 챌린지';
+      : `${summaryParticipantCnt}명 참여 · 제한없음`;
   const heroMetaLabel = `${participantsLabel} · ${remainingLabel}`;
 
   // CTA 결정 로직: 호스트 / 참여 중 / 대기 / 신청 가능 / 신청 불가
@@ -541,14 +552,23 @@ export function ChallengeDetailScreen({
 
   const freeGoalModal = (
     <Dialog open={showFreeGoalModal} onOpenChange={setShowFreeGoalModal}>
-      <DialogContent className="gap-5 px-6 py-6 sm:max-w-[460px]">
-        <DialogHeader>
-          <DialogTitle>내 목표 입력</DialogTitle>
+      {/*
+        디자인 시스템의 Dialog 는 Header/Body/Footer 가 각자 자체 padding 을
+        가지므로 DialogContent 엔 `p-0 gap-0` 을 줘 이중 padding 을 막는다.
+        Footer 는 기본 회색 bg + 상단 border 가 있어, 취소 버튼은 outlined 로
+        둬야 회색 배경 위에서도 또렷하게 보인다.
+      */}
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[460px]">
+        <DialogHeader className="flex-col items-start gap-1.5 pb-2">
+          <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
+            내 목표 입력
+          </DialogTitle>
+          <DialogDescription className="text-[13px] leading-relaxed text-gray-500">
+            챌린지에서 달성할 목표를 입력하고 Enter 를 눌러 추가해 주세요.
+            (최대 5개)
+          </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-3">
-          <Text size="body2" weight="regular" className="text-gray-500">
-            챌린지에서 달성할 목표를 입력하고 Enter를 눌러 추가해 주세요.
-          </Text>
+        <DialogBody>
           <GoalAddList
             goals={freeGoalInputs}
             onGoalsChange={setFreeGoalInputs}
@@ -556,19 +576,19 @@ export function ChallengeDetailScreen({
             inputAriaLabel="목표 입력"
             maxGoals={5}
           />
-        </div>
-        <DialogFooter className="flex-row gap-2">
+        </DialogBody>
+        <DialogFooter>
           <Button
             size="medium"
-            variant="ghost"
-            className="flex-1"
+            variant="outlined"
+            className="min-w-[80px]"
             onClick={() => setShowFreeGoalModal(false)}
           >
             취소
           </Button>
           <Button
             size="medium"
-            className="flex-1"
+            className="min-w-[112px]"
             disabled={joinChallenge.isPending}
             onClick={handleFreeGoalSubmit}
           >
@@ -581,14 +601,16 @@ export function ChallengeDetailScreen({
 
   const editGoalModal = (
     <Dialog open={showEditGoalModal} onOpenChange={setShowEditGoalModal}>
-      <DialogContent className="gap-5 px-6 py-6 sm:max-w-[460px]">
-        <DialogHeader>
-          <DialogTitle>내 목표 수정</DialogTitle>
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[460px]">
+        <DialogHeader className="flex-col items-start gap-1.5 pb-2">
+          <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
+            내 목표 수정
+          </DialogTitle>
+          <DialogDescription className="text-[13px] leading-relaxed text-gray-500">
+            새 목표를 입력하고 Enter 를 눌러 추가해 주세요. (최대 5개)
+          </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-3">
-          <Text size="body2" weight="regular" className="text-gray-500">
-            새 목표를 입력하고 Enter를 눌러 추가해 주세요.
-          </Text>
+        <DialogBody>
           <GoalAddList
             goals={editGoalInputs}
             onGoalsChange={setEditGoalInputs}
@@ -596,19 +618,19 @@ export function ChallengeDetailScreen({
             inputAriaLabel="목표 입력"
             maxGoals={5}
           />
-        </div>
-        <DialogFooter className="flex-row gap-2">
+        </DialogBody>
+        <DialogFooter>
           <Button
             size="medium"
-            variant="ghost"
-            className="flex-1"
+            variant="outlined"
+            className="min-w-[80px]"
             onClick={() => setShowEditGoalModal(false)}
           >
             취소
           </Button>
           <Button
             size="medium"
-            className="flex-1"
+            className="min-w-[96px]"
             disabled={updateParticipantGoal.isPending}
             onClick={handleEditGoalSubmit}
           >
@@ -624,14 +646,16 @@ export function ChallengeDetailScreen({
       open={showEditChallengeGoalsModal}
       onOpenChange={setShowEditChallengeGoalsModal}
     >
-      <DialogContent className="gap-5 px-6 py-6 sm:max-w-[460px]">
-        <DialogHeader>
-          <DialogTitle>챌린지 목표 수정</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-3">
-          <Text size="body2" weight="regular" className="text-gray-500">
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[460px]">
+        <DialogHeader className="flex-col items-start gap-1.5 pb-2">
+          <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
+            챌린지 목표 수정
+          </DialogTitle>
+          <DialogDescription className="text-[13px] leading-relaxed text-gray-500">
             챌린지 시작 전에만 목표를 수정할 수 있습니다.
-          </Text>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogBody className="flex flex-col gap-3">
           <div className="flex flex-col gap-2">
             {challengeGoalInputs.map((goal) => (
               <div key={goal.id} className="flex items-center gap-2">
@@ -680,19 +704,19 @@ export function ChallengeDetailScreen({
           >
             + 목표 추가
           </Button>
-        </div>
-        <DialogFooter className="flex-row gap-2">
+        </DialogBody>
+        <DialogFooter>
           <Button
             size="medium"
-            variant="ghost"
-            className="flex-1"
+            variant="outlined"
+            className="min-w-[80px]"
             onClick={() => setShowEditChallengeGoalsModal(false)}
           >
             취소
           </Button>
           <Button
             size="medium"
-            className="flex-1"
+            className="min-w-[96px]"
             disabled={updateChallenge.isPending}
             onClick={handleEditChallengeGoalsSubmit}
           >

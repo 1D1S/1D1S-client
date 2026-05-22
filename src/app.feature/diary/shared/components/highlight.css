@@ -1,0 +1,10 @@
+/* highlight.js github 테마 — 일지 본문에 코드블록이 있을 때만 로드된다.
+   DiaryContentRenderer 가 import 하므로 비-일지 페이지에는 포함되지 않는다. */
+@import 'highlight.js/styles/github.css';
+
+/* github 테마는 .hljs 에 흰 배경/패딩을 강제한다. wrapper 가 배경을 제어하도록
+   토큰 색상만 남긴다. */
+.hljs {
+  background: transparent;
+  padding: 0;
+}

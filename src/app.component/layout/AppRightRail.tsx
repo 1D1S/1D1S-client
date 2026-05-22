@@ -5,7 +5,7 @@ import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 const CHALLENGE_DETAIL_PATH_REGEX = /^\/challenge\/(\d+)(?:\/|$)/;
 
@@ -89,15 +89,29 @@ export default function AppRightRail({
   const contentVisible = !isAuthLoading;
   const contentHidden = !contentVisible;
 
-  const handleWriteDiaryClick = (): void => {
+  // 사용자가 참여 중인 챌린지 id 집합. `challenges` 는 사이드바 데이터에서
+  // 내려온 "참여 중인 챌린지" 목록이므로 여기에 포함된 챌린지에 대해서만
+  // 해당 챌린지 일지로 직행한다. (id 는 사이드바에서 String 으로 정규화됨)
+  const participatingChallengeIds = useMemo(
+    () => new Set(challenges.map((challenge) => challenge.id)),
+    [challenges]
+  );
+
+  // 일지 쓰기 라우팅 규칙:
+  //   - 챌린지 상세 경로(`/challenge/:id...`) 에 있고 그 챌린지에 참여 중 → 해당 챌린지의 일지로
+  //   - 그 외(미참여 챌린지 상세 포함) → 일반 일지 쓰기 페이지
+  const handleWriteDiaryClick = useCallback((): void => {
     const challengeIdMatch = pathname?.match(CHALLENGE_DETAIL_PATH_REGEX);
     const challengeId = challengeIdMatch?.[1];
+    const isParticipating = challengeId
+      ? participatingChallengeIds.has(challengeId)
+      : false;
     router.push(
-      challengeId
+      isParticipating
         ? `/diary/create?challengeId=${challengeId}`
         : '/diary/create'
     );
-  };
+  }, [pathname, router, participatingChallengeIds]);
 
   return (
     <aside className={ASIDE_CLASS}>

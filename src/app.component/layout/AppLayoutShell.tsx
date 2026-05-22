@@ -1,23 +1,17 @@
 'use client';
 
 import { Button } from '@1d1s/design-system';
-import { useSidebar } from '@feature/member/hooks/useMemberQueries';
-import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
-import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import React, {
-  useEffect,
-  useMemo,
-  useSyncExternalStore,
-} from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
 import AppBottomNav from './AppBottomNav';
 import { AppLayoutProvider } from './AppLayoutContext';
 import AppRightRail from './AppRightRail';
 import AppTopNav from './AppTopNav';
+import { useAuthLayoutState } from './useAuthLayoutState';
 
 const TOP_NAV_HIDDEN_ROUTES = [
   '/auth/login',
@@ -52,10 +46,6 @@ const BOTTOM_NAV_HIDDEN_ROUTES = [
   '/terms',
   '/privacy',
 ];
-
-const NOOP_SUBSCRIBE = (): (() => void) => () => {};
-const MS_PER_DAY = 1000 * 60 * 60 * 24;
-const ENDLESS_MIN_YEAR = 2090;
 
 function matchesRoute(pathname: string, routes: readonly string[]): boolean {
   return routes.some(
@@ -113,73 +103,6 @@ function needsBackButton(pathname: string): boolean {
   return false;
 }
 
-function isLikelyLegacyEndless(challenge: {
-  title?: string;
-  startDate?: string;
-  endDate?: string;
-}): boolean {
-  if (!challenge.title?.includes('무기한')) {
-    return false;
-  }
-  const start = new Date(challenge.startDate ?? '').getTime();
-  const end = new Date(challenge.endDate ?? '').getTime();
-  if (Number.isNaN(start) || Number.isNaN(end) || end <= start) {
-    return false;
-  }
-  const durationDays = Math.ceil((end - start) / MS_PER_DAY);
-  return durationDays === 7;
-}
-
-function resolveHasDeadline(challenge: {
-  title?: string;
-  startDate?: string;
-  endDate?: string;
-  hasDeadline?: boolean;
-  periodType?: string;
-}): boolean {
-  if (typeof challenge.hasDeadline === 'boolean') {
-    return challenge.hasDeadline;
-  }
-  if (challenge.periodType === 'ENDLESS') {
-    return false;
-  }
-  if (isLikelyLegacyEndless(challenge)) {
-    return false;
-  }
-  const endDate = challenge.endDate?.trim();
-  if (!endDate) {
-    return false;
-  }
-  const parsedEnd = new Date(endDate);
-  if (Number.isNaN(parsedEnd.getTime())) {
-    return false;
-  }
-  return parsedEnd.getUTCFullYear() < ENDLESS_MIN_YEAR;
-}
-
-function calculateProgress(
-  startDate: string,
-  endDate: string,
-  now: number
-): number {
-  const start = new Date(startDate).getTime();
-  const end = new Date(endDate).getTime();
-  if (Number.isNaN(start) || Number.isNaN(end) || end <= start || now <= 0) {
-    return 0;
-  }
-  const total = Math.max(1, Math.ceil((end - start) / MS_PER_DAY));
-  const elapsed = Math.max(0, Math.ceil((now - start) / MS_PER_DAY));
-  return Math.min(100, Math.round((elapsed / total) * 100));
-}
-
-let mountTimestamp = 0;
-function getMountTimestamp(): number {
-  if (mountTimestamp === 0) {
-    mountTimestamp = Date.now();
-  }
-  return mountTimestamp;
-}
-
 export default function AppLayoutShell({
   children,
 }: {
@@ -190,36 +113,10 @@ export default function AppLayoutShell({
 
   useTokenRefreshOnResume();
 
-  const hasMounted = useSyncExternalStore(
-    NOOP_SUBSCRIBE,
-    () => true,
-    () => false
-  );
-  const now = useSyncExternalStore(NOOP_SUBSCRIBE, getMountTimestamp, () => 0);
-
-  const hasTokenHint = hasMounted && authStorage.hasTokens();
-
-  const {
-    data: sidebarData,
-    isLoading: isSidebarLoading,
-    isFetching: isSidebarFetching,
-  } = useSidebar();
-
-  const isLoggedIn =
-    hasMounted &&
-    hasTokenHint &&
-    (Boolean(sidebarData) || isSidebarLoading || isSidebarFetching);
-
-  // SSR/하이드레이션 직후에는 클라이언트에서만 읽히는 토큰 힌트(localStorage,
-  // 쿠키)를 알 수 없어 무조건 게스트로 렌더된다. 그대로 노출하면 로그인 상태
-  // 사용자가 새로고침할 때 매번 게스트→로그인으로 깜빡인다. 토큰 만료로
-  // 401이 떨어지기 직전에도 같은 구간을 거치면서 직전 사용자 정보가 노출될
-  // 수 있다. 인증 확정 전(`hasMounted` 이전 + 토큰 힌트는 있으나 사이드바
-  // 쿼리가 아직 pending)까지는 사용자 정보 영역을 스켈레톤으로 가린다.
-  // 401 → forceLogout 경로에서 sidebarData=null 로 응답이 도착하므로
-  // `!sidebarData` 대신 쿼리 상태(`isSidebarLoading`)를 기준으로 판정한다.
-  const isAuthLoading =
-    !hasMounted || (hasTokenHint && isSidebarLoading);
+  // 인증/사이드바 상태는 별도 hook 으로 묶었다. shell 은 라우트 가시성 판단과
+  // 핸들러 안정화에만 집중한다.
+  const { isLoggedIn, isAuthLoading, hasUnread, sidebarData, railChallenges } =
+    useAuthLayoutState();
 
   useEffect(() => {
     if (
@@ -235,26 +132,6 @@ export default function AppLayoutShell({
       router.replace('/signup');
     }
   }, [isLoggedIn, sidebarData, pathname, router]);
-
-  const { data: unreadData } = useUnreadCount({ enabled: isLoggedIn });
-  const hasUnread = isLoggedIn && (unreadData?.unreadCount ?? 0) > 0;
-
-  const railChallenges = useMemo(() => {
-    if (!sidebarData) {
-      return [];
-    }
-    return sidebarData.challengeList.map((ch) => {
-      const hasDeadline = resolveHasDeadline(ch);
-      return {
-        id: String(ch.challengeId),
-        title: ch.title,
-        progress: hasDeadline
-          ? calculateProgress(ch.startDate, ch.endDate, now)
-          : 0,
-        hasDeadline,
-      };
-    });
-  }, [sidebarData, now]);
 
   const isLoginPage = matchesRoute(pathname, TOP_NAV_HIDDEN_ROUTES);
   // TopNav 가시성: 로그인/회원가입 페이지면 완전 제거. 그 외엔 CSS로 처리.
@@ -275,13 +152,39 @@ export default function AppLayoutShell({
   const bottomNavRespClass = 'lg:hidden';
   const activeNavId = resolveActiveNavId(pathname);
 
+  // 프로필 아바타 클릭 — pathname 이 변해 AppLayoutShell 이 재렌더돼도
+  // 핸들러 참조가 안정적이어야 자식 컴포넌트의 재렌더를 피한다.
+  const handleProfileClick = useCallback((): void => {
+    if (!isLoggedIn) {
+      router.push('/login');
+      return;
+    }
+    router.push('/mypage');
+  }, [isLoggedIn, router]);
+
+  const handleBackClick = useCallback((): void => {
+    router.back();
+  }, [router]);
+
+  const handleRailChallengeClick = useCallback(
+    (id: string): void => {
+      router.push(`/challenge/${id}`);
+    },
+    [router]
+  );
+
+  // Context value 객체를 매 렌더마다 새로 만들면 모든 구독자가 재렌더된다.
+  // showRightRail 이 실제로 바뀔 때만 새 객체를 만든다.
+  const layoutContextValue = useMemo(
+    () => ({
+      hasRightSidebar: showRightRail,
+      isRightSidebarCollapsed: false,
+    }),
+    [showRightRail]
+  );
+
   return (
-    <AppLayoutProvider
-      value={{
-        hasRightSidebar: showRightRail,
-        isRightSidebarCollapsed: false,
-      }}
-    >
+    <AppLayoutProvider value={layoutContextValue}>
       <div className="flex min-h-screen w-full flex-col bg-white">
         {showTopNav ? (
           <AppTopNav
@@ -291,20 +194,14 @@ export default function AppLayoutShell({
             hasUnread={hasUnread}
             streakDays={sidebarData?.streakCount ?? 0}
             profileImageUrl={sidebarData?.profileUrl}
-            onProfileClick={() => {
-              if (!isLoggedIn) {
-                router.push('/login');
-                return;
-              }
-              router.push('/mypage');
-            }}
+            onProfileClick={handleProfileClick}
             className={topNavRespClass}
           />
         ) : null}
 
         {showBackButton ? (
           <div className="hidden shrink-0 px-7 pt-3 lg:flex">
-            <Button variant="ghost" size="small" onClick={() => router.back()}>
+            <Button variant="ghost" size="small" onClick={handleBackClick}>
               <ArrowLeft className="mr-1 h-4 w-4" />
               뒤로가기
             </Button>
@@ -330,7 +227,7 @@ export default function AppLayoutShell({
                 streakDays={sidebarData?.streakCount ?? 0}
                 todayGoalCount={sidebarData?.todayGoalCount ?? 0}
                 challenges={railChallenges}
-                onChallengeClick={(id) => router.push(`/challenge/${id}`)}
+                onChallengeClick={handleRailChallengeClick}
               />
             </div>
           ) : null}

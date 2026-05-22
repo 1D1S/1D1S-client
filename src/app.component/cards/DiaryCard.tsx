@@ -48,7 +48,7 @@ export interface DiaryCardProps {
   className?: string;
 }
 
-export default function DiaryCard({
+function DiaryCard({
   imageUrl,
   profileImageUrl,
   percent,
@@ -190,3 +190,8 @@ export default function DiaryCard({
     </Card>
   );
 }
+
+// 일지 보드는 무한 스크롤로 수십 장이 누적되므로 동일 props 재렌더를 피하기
+// 위해 React.memo 로 감싼다. 부모는 onClick/onLikeToggle 을 useCallback 으로
+// 안정화해야 한다.
+export default React.memo(DiaryCard);

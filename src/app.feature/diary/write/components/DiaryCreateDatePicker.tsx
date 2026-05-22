@@ -3,7 +3,12 @@
 import { Calendar } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { formatDateISO } from '@module/utils/date';
-import * as Popover from '@radix-ui/react-popover';
+import {
+  Content as PopoverContent,
+  Portal as PopoverPortal,
+  Root as PopoverRoot,
+  Trigger as PopoverTrigger,
+} from '@radix-ui/react-popover';
 import { CalendarDays, ChevronDown } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
@@ -67,8 +72,8 @@ export function DiaryCreateDatePicker({
   );
 
   return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Trigger asChild>
+    <PopoverRoot open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <button
           type="button"
           className={cn(
@@ -91,10 +96,10 @@ export function DiaryCreateDatePicker({
           </div>
           <ChevronDown className="h-5 w-5 text-gray-600" />
         </button>
-      </Popover.Trigger>
+      </PopoverTrigger>
 
-      <Popover.Portal>
-        <Popover.Content
+      <PopoverPortal>
+        <PopoverContent
           className={cn(
             'rounded-4 z-50 w-auto border border-gray-300 bg-white p-2 text-gray-900',
             'shadow-[0_10px_20px_rgba(34,34,34,0.12)] outline-none',
@@ -135,8 +140,8 @@ export function DiaryCreateDatePicker({
             }}
             initialFocus
           />
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+        </PopoverContent>
+      </PopoverPortal>
+    </PopoverRoot>
   );
 }

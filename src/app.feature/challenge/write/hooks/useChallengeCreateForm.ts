@@ -134,7 +134,9 @@ export function useChallengeCreateForm(): ReturnType<
       participationType: 'INDIVIDUAL',
       memberCountNumber: '2',
       goalType: 'FIXED',
-      allowMidJoin: false,
+      // 챌린지 시작 후에도 다른 사용자들이 자유롭게 합류할 수 있도록 기본값을
+      // 허용으로 둔다. 작성자는 필요 시 토글로 비허용으로 바꿀 수 있다.
+      allowMidJoin: true,
       goals: [],
     },
   });

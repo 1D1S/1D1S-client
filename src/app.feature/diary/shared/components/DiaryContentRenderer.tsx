@@ -1,8 +1,13 @@
 'use client';
 
+import './highlight.css';
+
 import { cn } from '@module/utils/cn';
 import hljs from 'highlight.js/lib/common';
 import React, { useEffect, useRef } from 'react';
+
+// highlight.js github 테마는 일지 본문이 렌더될 때만 필요하므로 글로벌이 아닌
+// 컴포넌트 레벨에서 import 한다.
 
 interface DiaryContentRendererProps {
   html: string;

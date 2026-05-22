@@ -10,9 +10,8 @@ import { normalizeApiError } from '@module/api/error';
 import { useInViewObserver } from '@module/hooks/useInViewObserver';
 import { cn } from '@module/utils/cn';
 import { getDateTimestamp } from '@module/utils/date';
-import { motion } from 'framer-motion';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   useLikeDiary,
@@ -81,6 +80,59 @@ function getDiaryAchievementRate(diary: DiaryItem): number {
 
   return Math.min(100, Math.max(0, rawAchievementRate));
 }
+
+interface DiaryListItemProps {
+  item: DiaryItem;
+  onCardClick(id: number): void;
+  onLikeToggle(diary: DiaryItem): void;
+}
+
+// 매 렌더마다 `() => handleCardClick(item.id)` 같은 인라인 람다를 만들지 않고,
+// 안정적인 핸들러와 item 만 props 로 받는다. React.memo 로 감싸 부모(보드)가
+// 재렌더돼도 동일 item 카드는 재렌더를 건너뛴다.
+const DiaryListItem = React.memo(
+  ({
+    item,
+    onCardClick,
+    onLikeToggle,
+  }: DiaryListItemProps): React.ReactElement => {
+  const diaryInfo = getDiaryInfo(item);
+  const authorInfo = getDiaryAuthorInfo(item);
+
+  const handleClick = useCallback(() => {
+    onCardClick(item.id);
+  }, [onCardClick, item.id]);
+
+  const handleLike = useCallback(() => {
+    onLikeToggle(item);
+  }, [onLikeToggle, item]);
+
+  return (
+    <div className="min-w-0 self-start">
+      <DiaryCard
+        imageUrl={item.imgUrl?.[0]}
+        profileImageUrl={
+          resolveDiaryImageUrl(authorInfo?.profileImage) ?? undefined
+        }
+        percent={getDiaryAchievementRate(item)}
+        isLiked={item.likeInfo.likedByMe}
+        likes={item.likeInfo.likeCnt}
+        title={item.title}
+        user={authorInfo?.nickname ?? '익명'}
+        challengeLabel={
+          item.challenge?.title ||
+          getCategoryLabel(item.challenge?.category) ||
+          '챌린지'
+        }
+        emotion={mapFeelingToEmotion(diaryInfo?.feeling ?? 'NONE')}
+        onLikeToggle={handleLike}
+        onClick={handleClick}
+      />
+    </div>
+  );
+  }
+);
+DiaryListItem.displayName = 'DiaryListItem';
 
 export default function DiaryListScreen(): React.ReactElement {
   const router = useRouter();
@@ -152,33 +204,43 @@ export default function DiaryListScreen(): React.ReactElement {
   );
   const hasLoadedDiaries = sortedDiaries.length > 0;
 
-  const handleCardClick = (id: number): void => {
-    if (!isLoggedIn) {
-      setLoginDialogDescription('일지 상세는 로그인 후 이용할 수 있습니다.');
-      setShowLoginDialog(true);
-      return;
-    }
-    router.push(`/diary/${id}`);
-  };
+  // useCallback 으로 핸들러 참조를 안정화 — DiaryCard 는 React.memo 로
+  // 감싸여 있어 부모 재렌더 시에도 props 가 같으면 재렌더를 건너뛴다.
+  const handleCardClick = useCallback(
+    (id: number): void => {
+      if (!isLoggedIn) {
+        setLoginDialogDescription('일지 상세는 로그인 후 이용할 수 있습니다.');
+        setShowLoginDialog(true);
+        return;
+      }
+      router.push(`/diary/${id}`);
+    },
+    [isLoggedIn, router]
+  );
 
-  const handleLikeToggle = (diary: DiaryItem): void => {
-    if (!isLoggedIn) {
-      setLoginDialogDescription('좋아요 기능은 로그인 후 이용할 수 있습니다.');
-      setShowLoginDialog(true);
-      return;
-    }
+  const handleLikeToggle = useCallback(
+    (diary: DiaryItem): void => {
+      if (!isLoggedIn) {
+        setLoginDialogDescription(
+          '좋아요 기능은 로그인 후 이용할 수 있습니다.'
+        );
+        setShowLoginDialog(true);
+        return;
+      }
 
-    if (isLikePending) {
-      return;
-    }
+      if (isLikePending) {
+        return;
+      }
 
-    if (diary.likeInfo.likedByMe) {
-      unlikeDiary.mutate(diary.id);
-      return;
-    }
+      if (diary.likeInfo.likedByMe) {
+        unlikeDiary.mutate(diary.id);
+        return;
+      }
 
-    likeDiary.mutate(diary.id);
-  };
+      likeDiary.mutate(diary.id);
+    },
+    [isLoggedIn, isLikePending, likeDiary, unlikeDiary]
+  );
 
   return (
     <div className="min-h-screen w-full">
@@ -271,42 +333,14 @@ export default function DiaryListScreen(): React.ReactElement {
               'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
             )}
           >
-            {sortedDiaries.map((item) => {
-              const diaryInfo = getDiaryInfo(item);
-              const authorInfo = getDiaryAuthorInfo(item);
-
-              return (
-                <motion.div
-                  key={item.id}
-                  layout
-                  className="min-w-0 self-start"
-                  transition={{ type: 'spring', stiffness: 280, damping: 30 }}
-                >
-                  <DiaryCard
-                    imageUrl={item.imgUrl?.[0]}
-                    profileImageUrl={
-                      resolveDiaryImageUrl(authorInfo?.profileImage) ??
-                      undefined
-                    }
-                    percent={getDiaryAchievementRate(item)}
-                    isLiked={item.likeInfo.likedByMe}
-                    likes={item.likeInfo.likeCnt}
-                    title={item.title}
-                    user={authorInfo?.nickname ?? '익명'}
-                    challengeLabel={
-                      item.challenge?.title ||
-                      getCategoryLabel(item.challenge?.category) ||
-                      '챌린지'
-                    }
-                    emotion={mapFeelingToEmotion(
-                      diaryInfo?.feeling ?? 'NONE'
-                    )}
-                    onLikeToggle={() => handleLikeToggle(item)}
-                    onClick={() => handleCardClick(item.id)}
-                  />
-                </motion.div>
-              );
-            })}
+            {sortedDiaries.map((item) => (
+              <DiaryListItem
+                key={item.id}
+                item={item}
+                onCardClick={handleCardClick}
+                onLikeToggle={handleLikeToggle}
+              />
+            ))}
           </div>
         ) : null}
 

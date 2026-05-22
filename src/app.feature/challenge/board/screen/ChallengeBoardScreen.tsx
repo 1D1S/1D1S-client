@@ -17,19 +17,72 @@ import { useInViewObserver } from '@module/hooks/useInViewObserver';
 import { cn } from '@module/utils/cn';
 import { X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 // TODO: 카테고리 토글 복구 시 사용. 현재 화면에서 임시 비활성화됨.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import ChallengeBoardFilters from '../components/ChallengeBoardFilters';
 import { toCategoryParam } from '../consts/categoryFilters';
 import { useChallengeList } from '../hooks/useChallengeQueries';
-import type { ChallengeCategory } from '../type/challenge';
+import type {
+  ChallengeCategory,
+  ChallengeListItem,
+} from '../type/challenge';
 import {
   formatChallengeRemainingLabel,
   isChallengeEnded,
   isInfiniteChallengeEndDate,
 } from '../utils/challengePeriod';
+
+interface ChallengeBoardCardItemProps {
+  challenge: ChallengeListItem;
+  onCardClick(challengeId: number): void;
+}
+
+// 카드 매핑에서 인라인 람다·파생 계산을 제거해 React.memo(ChallengeCard) 가
+// 실제로 재렌더를 건너뛸 수 있도록 한다.
+const ChallengeBoardCardItem = React.memo(
+  ({
+    challenge,
+    onCardClick,
+  }: ChallengeBoardCardItemProps): React.ReactElement => {
+  const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
+  const ended = isChallengeEnded(challenge.endDate);
+  const remainingLabel = formatChallengeRemainingLabel(
+    challenge.endDate,
+    isInfinite,
+    ended
+  );
+
+  const handleClick = useCallback(() => {
+    onCardClick(challenge.challengeId);
+  }, [onCardClick, challenge.challengeId]);
+
+  return (
+    <ChallengeCard
+      title={challenge.title}
+      category={getCategoryLabel(challenge.category)}
+      categoryIcon={
+        <CategoryIcon category={challenge.category} className="h-3 w-3" />
+      }
+      stripeTone={getCategoryStripeTone(challenge.category)}
+      imageUrl={challenge.thumbnailImage}
+      currentParticipantCount={challenge.participantCnt}
+      maxParticipantCount={challenge.maxParticipantCnt}
+      remainingLabel={remainingLabel}
+      startDate={challenge.startDate}
+      endDate={challenge.endDate}
+      isInfinite={isInfinite}
+      goalType={challenge.goalType}
+      isGroup={challenge.participationType === 'GROUP'}
+      isEnded={ended}
+      participants={challenge.randomParticipants}
+      onClick={handleClick}
+    />
+  );
+  }
+);
+ChallengeBoardCardItem.displayName = 'ChallengeBoardCardItem';
 
 export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
@@ -69,23 +122,41 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
   }, [isLoginRequired, pathname, router, searchParams]);
 
-  const requireAuth = (description: string, action: () => void): void => {
-    if (!isLoggedIn) {
-      setLoginDialogDescription(description);
-      setShowLoginDialog(true);
-      return;
-    }
-    action();
-  };
+  const requireAuth = useCallback(
+    (description: string, action: () => void): void => {
+      if (!isLoggedIn) {
+        setLoginDialogDescription(description);
+        setShowLoginDialog(true);
+        return;
+      }
+      action();
+    },
+    [isLoggedIn]
+  );
 
-  const handleSearch = (): void => {
+  const handleSearch = useCallback((): void => {
     setQuery(inputValue);
-  };
+  }, [inputValue]);
 
-  const handleClear = (): void => {
+  const handleClear = useCallback((): void => {
     setInputValue('');
     setQuery('');
-  };
+  }, []);
+
+  const handleCreateChallenge = useCallback((): void => {
+    requireAuth('챌린지 만들기는 로그인 후 이용할 수 있습니다.', () =>
+      router.push('/challenge/create')
+    );
+  }, [requireAuth, router]);
+
+  const handleChallengeCardClick = useCallback(
+    (challengeId: number): void => {
+      requireAuth('챌린지 상세는 로그인 후 이용할 수 있습니다.', () =>
+        router.push(`/challenge/${challengeId}`)
+      );
+    },
+    [requireAuth, router]
+  );
 
   const {
     data,
@@ -139,12 +210,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           </Text>
           <button
             type="button"
-            onClick={() =>
-              requireAuth(
-                '챌린지 만들기는 로그인 후 이용할 수 있습니다.',
-                () => router.push('/challenge/create')
-              )
-            }
+            onClick={handleCreateChallenge}
             className={cn(
               'bg-main-800 inline-flex items-center gap-1 rounded-full',
               'px-3 py-1.5 text-[11px] font-extrabold text-white',
@@ -201,12 +267,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           </div>
           <Button
             size="medium"
-            onClick={() =>
-              requireAuth(
-                '챌린지 만들기는 로그인 후 이용할 수 있습니다.',
-                () => router.push('/challenge/create')
-              )
-            }
+            onClick={handleCreateChallenge}
             className="self-start whitespace-nowrap lg:self-auto"
           >
             <span className="flex items-center gap-1">
@@ -274,50 +335,13 @@ export default function ChallengeBoardScreen(): React.ReactElement {
                 'grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4'
               )}
             >
-              {challenges.map((challenge) => {
-                const isInfinite = isInfiniteChallengeEndDate(
-                  challenge.endDate
-                );
-                const ended = isChallengeEnded(challenge.endDate);
-                const remainingLabel = formatChallengeRemainingLabel(
-                  challenge.endDate,
-                  isInfinite,
-                  ended
-                );
-
-                return (
-                  <ChallengeCard
-                    key={challenge.challengeId}
-                    title={challenge.title}
-                    category={getCategoryLabel(challenge.category)}
-                    categoryIcon={
-                      <CategoryIcon
-                        category={challenge.category}
-                        className="h-3 w-3"
-                      />
-                    }
-                    stripeTone={getCategoryStripeTone(challenge.category)}
-                    imageUrl={challenge.thumbnailImage}
-                    currentParticipantCount={challenge.participantCnt}
-                    maxParticipantCount={challenge.maxParticipantCnt}
-                    remainingLabel={remainingLabel}
-                    startDate={challenge.startDate}
-                    endDate={challenge.endDate}
-                    isInfinite={isInfinite}
-                    goalType={challenge.goalType}
-                    isGroup={challenge.participationType === 'GROUP'}
-                    isEnded={ended}
-                    participants={challenge.randomParticipants}
-                    onClick={() =>
-                      requireAuth(
-                        '챌린지 상세는 로그인 후 이용할 수 있습니다.',
-                        () =>
-                          router.push(`/challenge/${challenge.challengeId}`)
-                      )
-                    }
-                  />
-                );
-              })}
+              {challenges.map((challenge) => (
+                <ChallengeBoardCardItem
+                  key={challenge.challengeId}
+                  challenge={challenge}
+                  onCardClick={handleChallengeCardClick}
+                />
+              ))}
             </div>
           ) : (
             <div className="flex w-full justify-center py-16">

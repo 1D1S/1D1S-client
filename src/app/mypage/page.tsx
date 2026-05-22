@@ -1,32 +1,10 @@
-'use client';
-
-import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import MyPageScreen from '@feature/member/mypage/screen/MyPageScreen';
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useSyncExternalStore } from 'react';
+import React from 'react';
 
-const NOOP_SUBSCRIBE = (): (() => void) => () => {};
-
-export default function MyPage(): React.ReactElement | null {
-  const router = useRouter();
-  // 하이드레이션 직후 useIsLoggedIn 이 일시적으로 false 인 구간에 useEffect 가
-  // /login 으로 라우팅하는 것을 막기 위한 hasMounted 가드.
-  const hasMounted = useSyncExternalStore(
-    NOOP_SUBSCRIBE,
-    () => true,
-    () => false,
-  );
-  const isLoggedIn = useIsLoggedIn();
-
-  useEffect(() => {
-    if (hasMounted && !isLoggedIn) {
-      router.replace('/login');
-    }
-  }, [hasMounted, isLoggedIn, router]);
-
-  if (!isLoggedIn) {
-    return null;
-  }
-
+// 인증 가드는 `src/app.module/middleware/auth.ts` 의 미들웨어가 처리한다.
+// 토큰 쿠키가 없으면 미들웨어가 /login 으로 서버 단계에서 리다이렉트하므로
+// 클라이언트 useEffect 가드를 제거하고 RSC 단순 wrapper 로만 둔다.
+// 결과적으로 비로그인 사용자에게 빈 화면이 잠깐 보이는 깜빡임이 사라진다.
+export default function MyPage(): React.ReactElement {
   return <MyPageScreen />;
 }

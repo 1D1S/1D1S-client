@@ -52,12 +52,12 @@ export function ChallengeDetailHero({
           className="object-cover"
         />
       ) : (
-        <div
-          className="absolute inset-0"
-          style={{ background: gradient }}
-          aria-hidden
-        >
-          <Stripe tone="rgba(255,255,255,0.16)" radius={0} />
+        // 카드 placeholder 와 같은 불투명 톤으로 줄무늬를 그린다.
+        // 이전엔 `rgba(255,255,255,0.16)` 반투명 흰색을 넘겨, 디자인 시스템의
+        // `repeating-linear-gradient(..., color, color×98% + black×2%, ...)`
+        // 양 밴드가 모두 반투명이 되어 카드의 또렷한 줄무늬와 달라 보였다.
+        <div className="absolute inset-0" aria-hidden>
+          <Stripe tone={accent} radius={0} />
         </div>
       )}
       {imageUrl ? (

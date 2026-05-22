@@ -7,7 +7,7 @@ import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import Stories from '@feature/stories/components/Stories';
 import { cn } from '@module/utils/cn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import HomeMobileHeader from '../components/HomeMobileHeader';
 import HomeQuickActions from '../components/HomeQuickActions';
@@ -47,17 +47,52 @@ export default function HomeScreen(): React.ReactElement {
     }
   }
 
-  const handleDialogOpenChange = (open: boolean): void => {
-    setShowLoginDialog(open);
-    if (!open && isLoginRequired) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete('loginRequired');
-      const query = params.toString();
-      router.replace(query ? `${pathname}?${query}` : pathname, {
-        scroll: false,
-      });
-    }
-  };
+  const handleDialogOpenChange = useCallback(
+    (open: boolean): void => {
+      setShowLoginDialog(open);
+      if (!open && isLoginRequired) {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('loginRequired');
+        const query = params.toString();
+        router.replace(query ? `${pathname}?${query}` : pathname, {
+          scroll: false,
+        });
+      }
+    },
+    [setShowLoginDialog, isLoginRequired, searchParams, router, pathname]
+  );
+
+  const handleMoreChallenges = useCallback(
+    () => router.push('/challenge'),
+    [router]
+  );
+
+  const handleChallengeClick = useCallback(
+    (challengeId: number): void => {
+      if (!isLoggedIn) {
+        setShowLoginDialog(true);
+        return;
+      }
+      router.push(`/challenge/${challengeId}`);
+    },
+    [isLoggedIn, setShowLoginDialog, router]
+  );
+
+  const handleMoreDiaries = useCallback(
+    () => router.push('/diary'),
+    [router]
+  );
+
+  const handleDiaryClick = useCallback(
+    (diaryId: number): void => {
+      if (!isLoggedIn) {
+        setShowLoginDialog(true);
+        return;
+      }
+      router.push(`/diary/${diaryId}`);
+    },
+    [isLoggedIn, setShowLoginDialog, router]
+  );
 
   const {
     randomChallenges,
@@ -127,14 +162,8 @@ export default function HomeScreen(): React.ReactElement {
           isLoading={isChallengesLoading}
           isError={isChallengesError}
           errorMessage={challengesErrorMessage}
-          onMoreClick={() => router.push('/challenge')}
-          onChallengeClick={(challengeId) => {
-            if (!isLoggedIn) {
-              setShowLoginDialog(true);
-              return;
-            }
-            router.push(`/challenge/${challengeId}`);
-          }}
+          onMoreClick={handleMoreChallenges}
+          onChallengeClick={handleChallengeClick}
         />
 
         <HomeRandomDiariesSection
@@ -143,14 +172,8 @@ export default function HomeScreen(): React.ReactElement {
           isError={isDiariesError}
           errorMessage={diariesErrorMessage}
           isLikePending={isLikePending}
-          onMoreClick={() => router.push('/diary')}
-          onDiaryClick={(diaryId) => {
-            if (!isLoggedIn) {
-              setShowLoginDialog(true);
-              return;
-            }
-            router.push(`/diary/${diaryId}`);
-          }}
+          onMoreClick={handleMoreDiaries}
+          onDiaryClick={handleDiaryClick}
           onLikeToggle={onLikeToggle}
         />
 

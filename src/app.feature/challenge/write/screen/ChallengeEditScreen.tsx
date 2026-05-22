@@ -41,7 +41,7 @@ import type {
 const NOOP_SUBSCRIBE = (): (() => void) => () => {};
 
 function resolveMemberCountDefaults(
-  maxParticipantCnt: number,
+  maxParticipantCnt: number | null | undefined,
   isGroup: boolean
 ): {
   memberCount?: ChallengeEditFormValues['memberCount'];
@@ -49,6 +49,11 @@ function resolveMemberCountDefaults(
 } {
   if (!isGroup) {
     return {};
+  }
+  // GROUP 챌린지에서 maxParticipantCnt 가 null/undefined 면 "제한없음" 으로
+  // 생성된 챌린지. 0/음수 같은 비정상 값도 같은 취급.
+  if (maxParticipantCnt == null || maxParticipantCnt <= 0) {
+    return { memberCount: 'unlimited' };
   }
   const presetSizes: Array<2 | 5 | 10> = [2, 5, 10];
   if (presetSizes.includes(maxParticipantCnt as 2 | 5 | 10)) {
@@ -71,7 +76,11 @@ function buildEditDefaults(
   const summary = data.challengeSummary;
   const detail = data.challengeDetail;
   const goals = data.challengeGoals;
-  const isGroup = (summary.maxParticipantCnt ?? 0) > 1;
+  // GROUP 여부는 participationType 으로 직접 판정한다. 이전엔
+  // `maxParticipantCnt > 1` 로 추론했는데, "제한없음" 으로 만든 GROUP 챌린지는
+  // maxParticipantCnt 가 null 이라 개인 챌린지로 잘못 인식되어 편집 화면이
+  // INDIVIDUAL 로 떴다.
+  const isGroup = summary.participationType === 'GROUP';
   const memberDefaults = resolveMemberCountDefaults(
     summary.maxParticipantCnt,
     isGroup

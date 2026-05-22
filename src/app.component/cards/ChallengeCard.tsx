@@ -5,7 +5,7 @@ import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
 import { CalendarDays, Target, Users } from 'lucide-react';
 import Image from 'next/image';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 export type ChallengeCardGoalType = 'FIXED' | 'FLEXIBLE';
 
@@ -105,7 +105,7 @@ function buildPeriodInfo(
   };
 }
 
-export default function ChallengeCard({
+function ChallengeCard({
   title,
   category,
   categoryIcon,
@@ -134,7 +134,12 @@ export default function ChallengeCard({
     ? visibleParticipants.length
     : Math.min(3, Math.max(0, currentParticipantCount));
   const extraCount = Math.max(0, currentParticipantCount - visibleAvatars);
-  const period = buildPeriodInfo(startDate, endDate, isInfinite);
+  // 날짜 파싱·포맷팅은 startDate/endDate/isInfinite 가 바뀔 때만 재계산.
+  // 보드 스크롤·필터 변경처럼 부모가 재렌더돼도 동일 props 면 캐시 유지.
+  const period = useMemo(
+    () => buildPeriodInfo(startDate, endDate, isInfinite),
+    [startDate, endDate, isInfinite]
+  );
   const hasMaxCount =
     typeof maxParticipantCount === 'number' && maxParticipantCount > 0;
   const participantCountLabel = hasMaxCount
@@ -289,3 +294,8 @@ export default function ChallengeCard({
     </Card>
   );
 }
+
+// 보드/리스트에서 12+ 개 카드를 렌더하므로 React.memo 로 동일 props 시 재렌더를
+// 건너뛴다. 부모(ChallengeBoardScreen) 는 onClick 을 useCallback 으로 안정화해야
+// 효과를 얻는다.
+export default React.memo(ChallengeCard);

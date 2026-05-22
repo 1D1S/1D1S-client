@@ -60,7 +60,13 @@ function makeQueryClient(): QueryClient {
           return failureCount < 2;
         },
         refetchOnWindowFocus: false,
-        staleTime: 60 * 1000,
+        // 탭 전환마다 unmount/remount 되어도 캐시가 fresh 면 재요청하지 않는다.
+        refetchOnMount: false,
+        // 보드/홈 등 읽기 위주 데이터는 5분간 fresh 유지.
+        // 개별 훅에서 더 엄격한 값으로 override 가능.
+        staleTime: 5 * 60 * 1000,
+        // 다른 탭에 머무는 동안 기존 탭의 캐시가 삭제되지 않도록 30분 보관.
+        gcTime: 30 * 60 * 1000,
       },
       mutations: {
         retry: false,
