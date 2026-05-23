@@ -9,9 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@1d1s/design-system';
-import {
-  useAddToHomeScreenTarget,
-} from '@module/hooks/useAddToHomeScreenTarget';
+import { useAddToHomeScreenTarget } from '@module/hooks/useAddToHomeScreenTarget';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useCallback, useState, useSyncExternalStore } from 'react';
 
@@ -71,10 +69,7 @@ export function AddToHomeScreenPrompt(): React.ReactElement | null {
   const isOnGuidePage = pathname?.startsWith(GUIDE_PATH) ?? false;
 
   const isOpen = Boolean(
-    target &&
-      !persistedDismiss &&
-      !sessionDismissed &&
-      !isOnGuidePage
+    target && !persistedDismiss && !sessionDismissed && !isOnGuidePage
   );
 
   return (
@@ -91,8 +86,8 @@ export function AddToHomeScreenPrompt(): React.ReactElement | null {
           <DialogTitle>홈 화면에 추가해보세요</DialogTitle>
         </DialogHeader>
         <DialogBody>
-          1Day 1Streak 을 홈 화면에 추가하면 앱처럼 더 빠르게 열고,
-          매일 챌린지를 잊지 않고 이어갈 수 있어요.
+          1Day 1Streak 을 홈 화면에 추가하면 앱처럼 더 빠르게 열고, 매일
+          챌린지를 잊지 않고 이어갈 수 있어요.
         </DialogBody>
         <DialogFooter>
           <Button
@@ -103,11 +98,7 @@ export function AddToHomeScreenPrompt(): React.ReactElement | null {
           >
             다시 보지 않기
           </Button>
-          <Button
-            type="button"
-            size="medium"
-            onClick={handleGoToGuide}
-          >
+          <Button type="button" size="medium" onClick={handleGoToGuide}>
             가이드 보러가기
           </Button>
         </DialogFooter>

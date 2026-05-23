@@ -72,7 +72,7 @@ export function MyPageProfileCard({
         onClick={() => router.push('/mypage/settings')}
         className={cn(
           'h-10 w-10 p-0',
-          'bg-gray-100 text-gray-600 hover:bg-gray-200',
+          'bg-gray-100 text-gray-600 hover:bg-gray-200'
         )}
       >
         <Settings className="h-4 w-4" />
@@ -94,7 +94,7 @@ export function MyPageProfileCard({
                 className={cn(
                   'relative flex h-8 w-8 items-center justify-center',
                   'rounded-lg text-gray-500 transition-colors',
-                  'hover:bg-gray-100',
+                  'hover:bg-gray-100'
                 )}
               >
                 <Bell className="h-[18px] w-[18px]" />
@@ -103,7 +103,7 @@ export function MyPageProfileCard({
                     aria-hidden
                     className={cn(
                       'absolute top-1.5 right-1.5 h-1.5 w-1.5',
-                      'bg-brand rounded-full',
+                      'bg-brand rounded-full'
                     )}
                   />
                 ) : null}
@@ -114,7 +114,7 @@ export function MyPageProfileCard({
                 onClick={() => router.push('/mypage/settings')}
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-lg',
-                  'text-gray-500 transition-colors hover:bg-gray-100',
+                  'text-gray-500 transition-colors hover:bg-gray-100'
                 )}
               >
                 <Settings className="h-[18px] w-[18px]" />
@@ -126,7 +126,7 @@ export function MyPageProfileCard({
           <div
             className={cn(
               'h-18 w-18 shrink-0 overflow-hidden rounded-full',
-              'border-[3px] border-white',
+              'border-[3px] border-white'
             )}
           >
             <CircleAvatar imageUrl={profileUrl} size={66} />
@@ -141,13 +141,13 @@ export function MyPageProfileCard({
           <div
             className={cn(
               'border-main-200 rounded-[12px] border bg-white',
-              'px-3 py-3 text-center',
+              'px-3 py-3 text-center'
             )}
           >
             <div
               className={cn(
                 'text-main-800 flex items-center justify-center gap-1',
-                'text-[20px] font-extrabold',
+                'text-[20px] font-extrabold'
               )}
             >
               <Icon name="Flame" size={16} aria-hidden />
@@ -158,7 +158,7 @@ export function MyPageProfileCard({
           <div
             className={cn(
               'rounded-[12px] border border-gray-200 bg-white',
-              'px-3 py-3 text-center',
+              'px-3 py-3 text-center'
             )}
           >
             <div className="text-[20px] font-extrabold text-gray-900">
@@ -169,7 +169,7 @@ export function MyPageProfileCard({
           <div
             className={cn(
               'rounded-[12px] border border-gray-200 bg-white',
-              'px-3 py-3 text-center',
+              'px-3 py-3 text-center'
             )}
           >
             <div className="text-[20px] font-extrabold text-gray-900">
@@ -186,14 +186,14 @@ export function MyPageProfileCard({
         className={cn(
           'rounded-4 relative -mt-25 hidden border border-gray-200 bg-white',
           'p-5 shadow-sm',
-          'lg:flex lg:flex-row lg:items-center lg:gap-5 lg:p-6',
+          'lg:flex lg:flex-row lg:items-center lg:gap-5 lg:p-6'
         )}
       >
         <div className="flex shrink-0 justify-center sm:block">
           <div
             className={cn(
               'h-24 w-24 overflow-hidden rounded-full border-4',
-              'border-white shadow-md',
+              'border-white shadow-md'
             )}
           >
             <CircleAvatar imageUrl={profileUrl} size={88} />
@@ -207,7 +207,7 @@ export function MyPageProfileCard({
           <div
             className={cn(
               'mt-3 flex flex-wrap justify-center gap-4',
-              'sm:justify-start',
+              'sm:justify-start'
             )}
           >
             <ProfileStat label="작성한 일지" value={totalDiaryCount} />
@@ -222,7 +222,7 @@ export function MyPageProfileCard({
         <div
           className={cn(
             'flex shrink-0 items-center gap-2',
-            'justify-center sm:justify-end',
+            'justify-center sm:justify-end'
           )}
         >
           {actions ?? defaultActions}

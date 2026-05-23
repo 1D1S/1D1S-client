@@ -5,13 +5,10 @@ const GOAL_TYPE_LABELS: Record<GoalType, string> = {
   FLEXIBLE: '자유 목표',
 };
 
-export function formatChallengeTypeLabel(
-  goalType?: string | null
-): string {
+export function formatChallengeTypeLabel(goalType?: string | null): string {
   if (!goalType) {
     return '-';
   }
 
   return GOAL_TYPE_LABELS[goalType as GoalType] ?? goalType;
 }
-

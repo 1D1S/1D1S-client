@@ -61,8 +61,7 @@ export default function ProfileSettingsScreen(): React.ReactElement {
 
   const trimmedNickname = nickname.trim();
   const isSameAsCurrent = trimmedNickname === data?.nickname;
-  const isFormatValid =
-    !validateNickname(trimmedNickname) && !isSameAsCurrent;
+  const isFormatValid = !validateNickname(trimmedNickname) && !isSameAsCurrent;
   const checkedNickname = checkNickname.variables;
   const isCheckCurrent = checkedNickname === trimmedNickname;
   const showCheckSuccess = isCheckCurrent && checkNickname.isSuccess;

@@ -12,12 +12,7 @@ export function NotificationItemSkeleton({
   withActions = false,
 }: NotificationItemSkeletonProps): React.ReactElement {
   return (
-    <div
-      className={cn(
-        'flex w-full items-start gap-3 px-4 py-3.5',
-        className
-      )}
-    >
+    <div className={cn('flex w-full items-start gap-3 px-4 py-3.5', className)}>
       <Skeleton shape="circle" className="h-9 w-9 shrink-0" />
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <Skeleton shape="text" className="h-3.5 w-[85%]" />
@@ -69,9 +64,7 @@ export function FriendItemSkeleton({
   className,
 }: FriendItemSkeletonProps): React.ReactElement {
   return (
-    <div
-      className={cn('flex items-center gap-3 px-4 py-3', className)}
-    >
+    <div className={cn('flex items-center gap-3 px-4 py-3', className)}>
       <Skeleton shape="circle" className="h-10 w-10 shrink-0" />
       <Skeleton shape="text" className="h-4 w-32 flex-1" />
       <Skeleton shape="pill" className="h-8 w-16 shrink-0" />
@@ -89,9 +82,7 @@ export function FriendRequestItemSkeleton({
   actionCount = 2,
 }: FriendRequestItemSkeletonProps): React.ReactElement {
   return (
-    <div
-      className={cn('flex items-center gap-3 px-4 py-3', className)}
-    >
+    <div className={cn('flex items-center gap-3 px-4 py-3', className)}>
       <Skeleton shape="circle" className="h-10 w-10 shrink-0" />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <Skeleton shape="text" className="h-4 w-28" />

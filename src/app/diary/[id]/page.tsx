@@ -22,10 +22,7 @@ export default async function DiaryDetailPage({
 
   const isAuthenticated = await hasServerAccessToken();
   if (!isAuthenticated) {
-    const target = await resolveLoginRequiredRedirect(
-      '/diary',
-      `/diary/${id}`
-    );
+    const target = await resolveLoginRequiredRedirect('/diary', `/diary/${id}`);
     redirect(target);
   }
 

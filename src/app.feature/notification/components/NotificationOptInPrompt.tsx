@@ -36,8 +36,7 @@ export function NotificationOptInPrompt({
   const [dismissed, setDismissed] = useState(false);
 
   const { data: prefs } = useNotificationPreferences({ enabled: active });
-  const { mutate: updatePrefs, isPending } =
-    useUpdateNotificationPreferences();
+  const { mutate: updatePrefs, isPending } = useUpdateNotificationPreferences();
   const { subscribe } = useWebPushSubscription();
 
   useEffect(() => {
@@ -75,7 +74,7 @@ export function NotificationOptInPrompt({
           }
           onComplete();
         },
-      },
+      }
     );
   }
 
@@ -85,9 +84,7 @@ export function NotificationOptInPrompt({
     onComplete();
   }
 
-  const isOpen = Boolean(
-    active && prefs && !prefs.pushEnabled && !dismissed,
-  );
+  const isOpen = Boolean(active && prefs && !prefs.pushEnabled && !dismissed);
 
   return (
     <ConfirmDialog

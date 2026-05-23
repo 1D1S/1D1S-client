@@ -247,7 +247,8 @@ export default function ChallengeCreateScreen(): React.ReactElement {
             >
               {canSubmit ? (
                 <>
-                  <Check className="h-3.5 w-3.5" />입력 완료 · 만들 준비가 됐어요
+                  <Check className="h-3.5 w-3.5" />
+                  입력 완료 · 만들 준비가 됐어요
                 </>
               ) : (
                 '필수 항목을 입력해 주세요'

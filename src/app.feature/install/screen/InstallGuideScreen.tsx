@@ -38,8 +38,7 @@ const IOS_STEPS: InstallStep[] = [
 const ANDROID_STEPS: InstallStep[] = [
   {
     title: 'Chrome 우측 상단 메뉴를 누르세요',
-    description:
-      '주소창 옆에 있는 점 세 개(⋮) 아이콘을 눌러 메뉴를 엽니다.',
+    description: '주소창 옆에 있는 점 세 개(⋮) 아이콘을 눌러 메뉴를 엽니다.',
   },
   {
     title: '"홈 화면에 추가" 또는 "앱 설치"를 누르세요',

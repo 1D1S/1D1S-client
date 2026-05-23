@@ -55,7 +55,7 @@ export function MyDiaryListScreen(): React.ReactElement {
 
   const diaryCards = useMemo(
     () => buildDiaryCardViewModels(diaryItems, nickname),
-    [diaryItems, nickname],
+    [diaryItems, nickname]
   );
 
   const hasDiaries = diaryCards.length > 0;
@@ -95,7 +95,7 @@ export function MyDiaryListScreen(): React.ReactElement {
           'sticky top-0 z-30 flex items-center gap-3',
           'h-14-safe pt-safe-top',
           'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden',
+          'lg:hidden'
         )}
       >
         <button
@@ -104,7 +104,7 @@ export function MyDiaryListScreen(): React.ReactElement {
           onClick={() => router.back()}
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100',
+            'text-gray-700 transition-colors hover:bg-gray-100'
           )}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -121,13 +121,13 @@ export function MyDiaryListScreen(): React.ReactElement {
       <div
         className={cn(
           'mx-auto w-full max-w-[1200px]',
-          'px-5 py-5 lg:px-8 lg:py-10',
+          'px-5 py-5 lg:px-8 lg:py-10'
         )}
       >
         <header
           className={cn(
             'hidden flex-col gap-4 border-b border-gray-100 pb-5',
-            'lg:flex lg:flex-row lg:items-end lg:justify-between',
+            'lg:flex lg:flex-row lg:items-end lg:justify-between'
           )}
         >
           <div className="flex flex-col gap-1.5">
@@ -145,10 +145,7 @@ export function MyDiaryListScreen(): React.ReactElement {
         </header>
 
         {showSkeleton ? (
-          <DiaryCardSkeletonGrid
-            count={MY_DIARY_PAGE_SIZE}
-            className="mt-6"
-          />
+          <DiaryCardSkeletonGrid count={MY_DIARY_PAGE_SIZE} className="mt-6" />
         ) : null}
 
         {isError && !hasDiaries ? (
@@ -165,7 +162,7 @@ export function MyDiaryListScreen(): React.ReactElement {
           <div
             className={cn(
               'data-fade-in mt-6 grid gap-4',
-              'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
+              'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
             )}
           >
             {diaryCards.map((diary) => (
@@ -181,9 +178,7 @@ export function MyDiaryListScreen(): React.ReactElement {
                 challengeLabel={diary.challengeLabel}
                 emotion={diary.emotion}
                 onClick={() => router.push(`/diary/${diary.id}`)}
-                onLikeToggle={() =>
-                  handleLikeToggle(diary.id, diary.isLiked)
-                }
+                onLikeToggle={() => handleLikeToggle(diary.id, diary.isLiked)}
               />
             ))}
           </div>

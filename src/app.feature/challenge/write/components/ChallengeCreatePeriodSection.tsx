@@ -84,11 +84,7 @@ export function ChallengeCreatePeriodSection(): React.ReactElement {
 
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Text
-            size="caption1"
-            weight="bold"
-            className="block text-gray-600"
-          >
+          <Text size="caption1" weight="bold" className="block text-gray-600">
             시작일
           </Text>
           <FormField
@@ -153,9 +149,7 @@ export function ChallengeCreatePeriodSection(): React.ReactElement {
                           maxLength={3}
                           placeholder="1 ~ 730"
                           value={field.value ?? ''}
-                          onChange={(
-                            event: ChangeEvent<HTMLInputElement>
-                          ) => {
+                          onChange={(event: ChangeEvent<HTMLInputElement>) => {
                             field.onChange(
                               event.target.value.replace(/\D/g, '')
                             );

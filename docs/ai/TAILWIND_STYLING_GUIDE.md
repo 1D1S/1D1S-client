@@ -22,9 +22,15 @@
 ```css
 /* globals.css에 정의된 반응형 그리드 (예: 일지 카드) */
 /* .diary-card-grid: 2 -> 3 -> 4 -> 6 columns */
-@container (min-width: 640px)  { /* 3 cols */ }
-@container (min-width: 900px)  { /* 4 cols */ }
-@container (min-width: 1200px) { /* 6 cols */ }
+@container (min-width: 640px) {
+  /* 3 cols */
+}
+@container (min-width: 900px) {
+  /* 4 cols */
+}
+@container (min-width: 1200px) {
+  /* 6 cols */
+}
 ```
 
 루트 폰트 사이즈도 미디어 쿼리로 단계 조정: `14px → 15px(≥640) → 16px(≥1024)`.
@@ -33,10 +39,10 @@
 
 ```tsx
 // 모바일 표시, PC 숨김
-className="flex md:hidden"
+className = 'flex md:hidden';
 
 // 모바일 숨김, PC 표시
-className="hidden md:block"
+className = 'hidden md:block';
 ```
 
 ---
@@ -128,14 +134,14 @@ ESLint Tailwind 플러그인은 `cn` / `clsx` / `cva` callee를 인식하도록
 `@1d1s/design-system`의 `globals.css`에서 oklch 기반 변수(`--gray-50` 등)로
 정의된다.
 
-| 계열   | 범위      | 용도                   |
-| ------ | --------- | ---------------------- |
-| Gray   | 50 - 900  | 중립 톤, 배경, 텍스트  |
-| Main   | 100 - 900 | 브랜드 색상 (오렌지/피치) |
-| Green  | 400 - 800 | 성공, 긍정적 상태      |
-| Blue   | 200 - 600 | 정보, 링크             |
-| Red    | 300 - 500 | 에러, 위험             |
-| White / Black / warning / accent | -- | 시스템 토큰 |
+| 계열                             | 범위      | 용도                      |
+| -------------------------------- | --------- | ------------------------- |
+| Gray                             | 50 - 900  | 중립 톤, 배경, 텍스트     |
+| Main                             | 100 - 900 | 브랜드 색상 (오렌지/피치) |
+| Green                            | 400 - 800 | 성공, 긍정적 상태         |
+| Blue                             | 200 - 600 | 정보, 링크                |
+| Red                              | 300 - 500 | 에러, 위험                |
+| White / Black / warning / accent | --        | 시스템 토큰               |
 
 ```tsx
 // CSS 변수로 정의된 색상 사용
@@ -153,14 +159,14 @@ className="border-y border-[#d9d9d9]"
 
 ## 타이포그래피 (`src/app.styles/typography.css`)
 
-| 클래스     | 크기    | 용도         |
-| ---------- | ------- | ------------ |
-| `text-xs`  | 12px    | 캡션         |
-| `text-sm`  | 14px    | 보조 텍스트  |
-| `text-base`| 16px    | 본문         |
-| `text-lg`  | 18px    | 소제목       |
-| `text-xl`  | 20px    | 제목         |
-| `text-2xl` | 24px    | 큰 제목      |
+| 클래스      | 크기 | 용도        |
+| ----------- | ---- | ----------- |
+| `text-xs`   | 12px | 캡션        |
+| `text-sm`   | 14px | 보조 텍스트 |
+| `text-base` | 16px | 본문        |
+| `text-lg`   | 18px | 소제목      |
+| `text-xl`   | 20px | 제목        |
+| `text-2xl`  | 24px | 큰 제목     |
 
 폰트 패밀리: **Pretendard** (기본, `src/app.lib/font.ts`에서 로딩)
 

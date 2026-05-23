@@ -21,11 +21,7 @@ interface MemberProfileScreenProps {
   memberId: number;
 }
 
-function MobileBackHeader({
-  title,
-}: {
-  title: string;
-}): React.ReactElement {
+function MobileBackHeader({ title }: { title: string }): React.ReactElement {
   const router = useRouter();
   return (
     <div
@@ -33,7 +29,7 @@ function MobileBackHeader({
         'sticky top-0 z-30 flex items-center gap-3',
         'h-14-safe pt-safe-top',
         'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-        'lg:hidden',
+        'lg:hidden'
       )}
     >
       <button
@@ -42,7 +38,7 @@ function MobileBackHeader({
         onClick={() => router.back()}
         className={cn(
           'flex h-8 w-8 items-center justify-center rounded-lg',
-          'text-gray-700 transition-colors hover:bg-gray-100',
+          'text-gray-700 transition-colors hover:bg-gray-100'
         )}
       >
         <ArrowLeft className="h-5 w-5" />
@@ -119,7 +115,7 @@ export default function MemberProfileScreen({
       <div
         className={cn(
           'mx-auto w-full max-w-[1200px]',
-          'px-5 py-5 lg:px-8 lg:py-10',
+          'px-5 py-5 lg:px-8 lg:py-10'
         )}
       >
         <MyPageProfileCard
@@ -143,7 +139,7 @@ export default function MemberProfileScreen({
             <div
               className={cn(
                 'mt-6 grid grid-cols-1 gap-4',
-                'lg:grid-cols-2 lg:gap-5',
+                'lg:grid-cols-2 lg:gap-5'
               )}
             >
               <MyPageStreakHeroCard
@@ -179,7 +175,7 @@ export default function MemberProfileScreen({
         ) : (
           <div
             className={cn(
-              'rounded-3 mt-8 border border-gray-200 p-8 text-center',
+              'rounded-3 mt-8 border border-gray-200 p-8 text-center'
             )}
           >
             <Text size="body1" weight="medium" className="text-gray-500">

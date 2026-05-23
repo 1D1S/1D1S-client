@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  ConfirmDialog,
-  Icon,
-  StepIndicator,
-  Text,
-} from '@1d1s/design-system';
+import { ConfirmDialog, Icon, StepIndicator, Text } from '@1d1s/design-system';
 import { Form } from '@component/ui/Form';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import { notifyApiError } from '@module/api/errorNotify';
@@ -202,9 +197,7 @@ export function SignUpScreen(): React.ReactElement {
           size="caption1"
           weight="regular"
           as="div"
-          className={cn(
-            'absolute top-7 right-8 hidden text-gray-600 lg:block'
-          )}
+          className={cn('absolute top-7 right-8 hidden text-gray-600 lg:block')}
         >
           이미 계정이 있으세요?{' '}
           <Link

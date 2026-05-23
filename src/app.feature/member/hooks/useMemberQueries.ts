@@ -13,7 +13,11 @@ import {
 
 import { memberApi } from '../api/memberApi';
 import { MEMBER_QUERY_KEYS } from '../consts/queryKeys';
-import type { MemberProfileData, MyPageData, SidebarData } from '../type/member';
+import type {
+  MemberProfileData,
+  MyPageData,
+  SidebarData,
+} from '../type/member';
 import { useIsLoggedIn } from './useIsLoggedIn';
 
 // 레거시 키: 이전 버전이 localStorage에 사이드바를 캐싱했음. 토큰 만료 시점에

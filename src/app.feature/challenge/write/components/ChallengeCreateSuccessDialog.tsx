@@ -45,7 +45,11 @@ export function ChallengeCreateSuccessDialog({
         <DialogHeader className="mt-8 items-center">
           <DialogTitle>
             <DialogDescription>
-              <Text size="heading1" weight="bold" className="text-center text-black">
+              <Text
+                size="heading1"
+                weight="bold"
+                className="text-center text-black"
+              >
                 챌린지 만들기가 완료되었습니다!
               </Text>
             </DialogDescription>

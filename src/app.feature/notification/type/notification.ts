@@ -1,8 +1,4 @@
-export type NotificationCategory =
-  | 'FRIEND'
-  | 'DIARY'
-  | 'CHALLENGE'
-  | 'SYSTEM';
+export type NotificationCategory = 'FRIEND' | 'DIARY' | 'CHALLENGE' | 'SYSTEM';
 
 export type NotificationType =
   | 'FRIEND_REQUEST'

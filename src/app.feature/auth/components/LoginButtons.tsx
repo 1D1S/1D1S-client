@@ -10,7 +10,9 @@ import { OAuthProvider } from '../type/auth';
 const LAST_PROVIDER_KEY = '1d1s:last-oauth-provider';
 
 export function getLastOAuthProvider(): OAuthProvider | null {
-  if (typeof window === 'undefined') {return null;}
+  if (typeof window === 'undefined') {
+    return null;
+  }
   const value = window.localStorage.getItem(LAST_PROVIDER_KEY);
   if (value === 'kakao' || value === 'naver' || value === 'google') {
     return value;

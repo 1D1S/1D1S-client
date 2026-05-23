@@ -56,7 +56,9 @@ export function DiaryReportDialog({
   };
 
   const handleSubmit = (): void => {
-    if (!selectedType || !content.trim()) {return;}
+    if (!selectedType || !content.trim()) {
+      return;
+    }
 
     reportMutation.mutate(
       {
@@ -91,80 +93,78 @@ export function DiaryReportDialog({
 
   return (
     <>
-    <Dialog
-      open={open}
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          handleClose();
-        }
-      }}
-    >
-      <DialogContent size="sm">
-        <DialogHeader>
-          <DialogTitle>일지 신고하기</DialogTitle>
-          <DialogDescription className="sr-only">
-            일지를 신고하는 양식입니다.
-          </DialogDescription>
-        </DialogHeader>
+      <Dialog
+        open={open}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleClose();
+          }
+        }}
+      >
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle>일지 신고하기</DialogTitle>
+            <DialogDescription className="sr-only">
+              일지를 신고하는 양식입니다.
+            </DialogDescription>
+          </DialogHeader>
 
-        <DialogBody className="flex flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <Text size="body2" weight="bold" className="text-gray-900">
-              신고 사유
-            </Text>
-            <RadioGroup
-              name="diary-report-type"
-              options={REPORT_OPTIONS}
-              value={selectedType ?? undefined}
-              onChange={(value): void =>
-                setSelectedType(value as ReportType)
-              }
+          <DialogBody className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <Text size="body2" weight="bold" className="text-gray-900">
+                신고 사유
+              </Text>
+              <RadioGroup
+                name="diary-report-type"
+                options={REPORT_OPTIONS}
+                value={selectedType ?? undefined}
+                onChange={(value): void => setSelectedType(value as ReportType)}
+              />
+            </div>
+
+            <TextArea
+              label="상세 내용"
+              placeholder="신고 내용을 상세히 적어주세요."
+              rows={4}
+              value={content}
+              onChange={(event): void => setContent(event.target.value)}
             />
-          </div>
+          </DialogBody>
 
-          <TextArea
-            label="상세 내용"
-            placeholder="신고 내용을 상세히 적어주세요."
-            rows={4}
-            value={content}
-            onChange={(event): void => setContent(event.target.value)}
-          />
-        </DialogBody>
+          <DialogFooter>
+            <Button
+              size="medium"
+              variant="ghost"
+              className="flex-1"
+              onClick={handleClose}
+            >
+              취소
+            </Button>
+            <Button
+              size="medium"
+              className="flex-1"
+              disabled={
+                !selectedType || !content.trim() || reportMutation.isPending
+              }
+              onClick={handleSubmit}
+            >
+              {reportMutation.isPending ? '처리중...' : '신고하기'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        <DialogFooter>
-          <Button
-            size="medium"
-            variant="ghost"
-            className="flex-1"
-            onClick={handleClose}
-          >
-            취소
-          </Button>
-          <Button
-            size="medium"
-            className="flex-1"
-            disabled={
-              !selectedType || !content.trim() || reportMutation.isPending
-            }
-            onClick={handleSubmit}
-          >
-            {reportMutation.isPending ? '처리중...' : '신고하기'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    <AlertDialog
-      open={alertState !== null}
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          handleAlertConfirm();
-        }
-      }}
-      title={alertState?.kind === 'success' ? '신고 접수 완료' : '신고 실패'}
-      description={alertState?.message ?? ''}
-      onConfirm={handleAlertConfirm}
-    />
+      <AlertDialog
+        open={alertState !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleAlertConfirm();
+          }
+        }}
+        title={alertState?.kind === 'success' ? '신고 접수 완료' : '신고 실패'}
+        description={alertState?.message ?? ''}
+        onConfirm={handleAlertConfirm}
+      />
     </>
   );
 }

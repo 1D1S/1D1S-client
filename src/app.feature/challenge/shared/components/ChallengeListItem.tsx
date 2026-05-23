@@ -80,8 +80,7 @@ export function ChallengeListItem({
         isPicker
           ? 'gap-3 border border-gray-200 p-3 sm:gap-4 sm:p-4'
           : 'gap-3 p-3 sm:gap-4 sm:p-4',
-        onClick &&
-          'hover:shadow-warm transition-all duration-200',
+        onClick && 'hover:shadow-warm transition-all duration-200',
         className
       )}
     >
@@ -113,9 +112,7 @@ export function ChallengeListItem({
       <div
         className={cn(
           'flex min-w-0 flex-1 flex-col',
-          isPicker
-            ? 'justify-between gap-2'
-            : 'justify-between gap-2'
+          isPicker ? 'justify-between gap-2' : 'justify-between gap-2'
         )}
       >
         <div className="flex min-w-0 flex-col gap-1.5">

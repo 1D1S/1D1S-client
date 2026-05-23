@@ -33,7 +33,9 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then((windowClients) => {
       const existing = windowClients.find((client) => client.url === url);
-      if (existing) { return existing.focus(); }
+      if (existing) {
+        return existing.focus();
+      }
       return clients.openWindow(url);
     })
   );

@@ -62,12 +62,7 @@ export function ChallengeProgressCard({
                 : 'text-gray-500 hover:bg-gray-100'
             )}
           >
-            <Heart
-              className={cn(
-                'h-3 w-3',
-                likedByMe && 'fill-current'
-              )}
-            />
+            <Heart className={cn('h-3 w-3', likedByMe && 'fill-current')} />
             {likeCount ?? 0}
           </button>
         ) : null}

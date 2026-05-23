@@ -48,33 +48,29 @@ export function ChallengeCreateDialog({
         <div className="h-px w-full bg-gray-200" />
 
         <div className="flex flex-col gap-4 p-6">
-        <DialogDescription asChild>
-          <Text
-            size="heading2"
-            weight="bold"
-            className="block text-center text-black"
-            id="challenge-create-dialog"
-          >
-            위와 같이 챌린지를 만드시겠습니까?
-          </Text>
-        </DialogDescription>
-
-        <DialogFooter className="grid grid-cols-2 gap-3 sm:gap-3">
-          <DialogClose asChild>
-            <Button variant="outlined" type="button">
-              취소
-            </Button>
-          </DialogClose>
-          <DialogClose asChild>
-            <Button
-              variant="default"
-              type="submit"
-              onClick={onConfirm}
+          <DialogDescription asChild>
+            <Text
+              size="heading2"
+              weight="bold"
+              className="block text-center text-black"
+              id="challenge-create-dialog"
             >
-              챌린지 만들기
-            </Button>
-          </DialogClose>
-        </DialogFooter>
+              위와 같이 챌린지를 만드시겠습니까?
+            </Text>
+          </DialogDescription>
+
+          <DialogFooter className="grid grid-cols-2 gap-3 sm:gap-3">
+            <DialogClose asChild>
+              <Button variant="outlined" type="button">
+                취소
+              </Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button variant="default" type="submit" onClick={onConfirm}>
+                챌린지 만들기
+              </Button>
+            </DialogClose>
+          </DialogFooter>
         </div>
       </DialogContent>
     </Dialog>

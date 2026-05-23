@@ -61,9 +61,7 @@ export function ChallengeEditDialogContent({
         {category ? (
           <div className="flex">
             <Tag
-              icon={
-                <Icon name={category.iconName} className="h-3.5 w-3.5" />
-              }
+              icon={<Icon name={category.iconName} className="h-3.5 w-3.5" />}
             >
               {category.label}
             </Tag>

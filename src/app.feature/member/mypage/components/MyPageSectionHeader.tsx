@@ -20,12 +20,7 @@ export function MyPageSectionHeader({
   className,
 }: MyPageSectionHeaderProps): React.ReactElement {
   return (
-    <div
-      className={cn(
-        'flex items-baseline justify-between gap-3',
-        className,
-      )}
-    >
+    <div className={cn('flex items-baseline justify-between gap-3', className)}>
       <div className="min-w-0">
         <Text size="display2" weight="bold" className="text-gray-900">
           {title}

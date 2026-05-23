@@ -50,7 +50,9 @@ if (requestedProtocol === 'https' && !shouldUseHttps) {
 
 const protocol = shouldUseHttps ? 'https' : 'http';
 const defaultPort = shouldUseHttps ? 443 : 3000;
-const port = Number(process.env.LOCAL_ALIAS_PORT || process.env.PORT || defaultPort);
+const port = Number(
+  process.env.LOCAL_ALIAS_PORT || process.env.PORT || defaultPort
+);
 const localUrl =
   port === (shouldUseHttps ? 443 : 80)
     ? `${protocol}://${localAliasHost}`

@@ -15,10 +15,7 @@ import { cn } from '@module/utils/cn';
 import React, { useState } from 'react';
 
 import { useReportComment } from '../hooks/useDiaryCommentMutations';
-import {
-  CommentReportType,
-  CreateCommentReportRequest,
-} from '../type/comment';
+import { CommentReportType, CreateCommentReportRequest } from '../type/comment';
 
 type ReportAlertState =
   | { kind: 'success'; message: string }
@@ -160,9 +157,7 @@ export function CommentReportDialog({
                         )}
                       >
                         {isSelected ? (
-                          <span
-                            className="bg-main-500 h-2 w-2 rounded-full"
-                          />
+                          <span className="bg-main-500 h-2 w-2 rounded-full" />
                         ) : null}
                       </span>
                       <Text size="body2" weight="medium">
@@ -179,7 +174,9 @@ export function CommentReportDialog({
               className={cn(
                 'grid transition-[grid-template-rows,opacity]',
                 'duration-300 ease-out motion-reduce:transition-none',
-                isEtc ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                isEtc
+                  ? 'grid-rows-[1fr] opacity-100'
+                  : 'grid-rows-[0fr] opacity-0'
               )}
             >
               <div className="overflow-hidden">

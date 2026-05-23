@@ -97,40 +97,40 @@ const DiaryListItem = React.memo(
     onCardClick,
     onLikeToggle,
   }: DiaryListItemProps): React.ReactElement => {
-  const diaryInfo = getDiaryInfo(item);
-  const authorInfo = getDiaryAuthorInfo(item);
+    const diaryInfo = getDiaryInfo(item);
+    const authorInfo = getDiaryAuthorInfo(item);
 
-  const handleClick = useCallback(() => {
-    onCardClick(item.id);
-  }, [onCardClick, item.id]);
+    const handleClick = useCallback(() => {
+      onCardClick(item.id);
+    }, [onCardClick, item.id]);
 
-  const handleLike = useCallback(() => {
-    onLikeToggle(item);
-  }, [onLikeToggle, item]);
+    const handleLike = useCallback(() => {
+      onLikeToggle(item);
+    }, [onLikeToggle, item]);
 
-  return (
-    <div className="min-w-0 self-start">
-      <DiaryCard
-        imageUrl={item.imgUrl?.[0]}
-        profileImageUrl={
-          resolveDiaryImageUrl(authorInfo?.profileImage) ?? undefined
-        }
-        percent={getDiaryAchievementRate(item)}
-        isLiked={item.likeInfo.likedByMe}
-        likes={item.likeInfo.likeCnt}
-        title={item.title}
-        user={authorInfo?.nickname ?? '익명'}
-        challengeLabel={
-          item.challenge?.title ||
-          getCategoryLabel(item.challenge?.category) ||
-          '챌린지'
-        }
-        emotion={mapFeelingToEmotion(diaryInfo?.feeling ?? 'NONE')}
-        onLikeToggle={handleLike}
-        onClick={handleClick}
-      />
-    </div>
-  );
+    return (
+      <div className="min-w-0 self-start">
+        <DiaryCard
+          imageUrl={item.imgUrl?.[0]}
+          profileImageUrl={
+            resolveDiaryImageUrl(authorInfo?.profileImage) ?? undefined
+          }
+          percent={getDiaryAchievementRate(item)}
+          isLiked={item.likeInfo.likedByMe}
+          likes={item.likeInfo.likeCnt}
+          title={item.title}
+          user={authorInfo?.nickname ?? '익명'}
+          challengeLabel={
+            item.challenge?.title ||
+            getCategoryLabel(item.challenge?.category) ||
+            '챌린지'
+          }
+          emotion={mapFeelingToEmotion(diaryInfo?.feeling ?? 'NONE')}
+          onLikeToggle={handleLike}
+          onClick={handleClick}
+        />
+      </div>
+    );
   }
 );
 DiaryListItem.displayName = 'DiaryListItem';
@@ -143,9 +143,8 @@ export default function DiaryListScreen(): React.ReactElement {
   const isLoggedIn = useIsLoggedIn();
   const [sortMode] = useState<SortMode>('latest');
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [loginDialogDescription, setLoginDialogDescription] = useState(
-    '로그인 후 이용할 수 있습니다.'
-  );
+  const [loginDialogDescription, setLoginDialogDescription] =
+    useState('로그인 후 이용할 수 있습니다.');
 
   const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
   if (isLoginRequired !== prevIsLoginRequired) {
@@ -312,10 +311,7 @@ export default function DiaryListScreen(): React.ReactElement {
         </header>
 
         {showSkeleton ? (
-          <DiaryCardSkeletonGrid
-            count={12}
-            className="mt-6"
-          />
+          <DiaryCardSkeletonGrid count={12} className="mt-6" />
         ) : null}
 
         {isError && !hasLoadedDiaries ? (

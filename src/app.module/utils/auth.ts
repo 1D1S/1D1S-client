@@ -14,8 +14,8 @@ const AUTH_HINT_COOKIE_DOMAIN = '.1day1streak.com';
  *   이 경우는 플래그/힌트 쿠키로 폴백 판정한다.
  */
 function hasReadableAccessTokenCookie(): boolean {
-  return ACCESS_TOKEN_COOKIE_CANDIDATES.some(
-    (name) => Boolean(Cookies.get(name))
+  return ACCESS_TOKEN_COOKIE_CANDIDATES.some((name) =>
+    Boolean(Cookies.get(name))
   );
 }
 

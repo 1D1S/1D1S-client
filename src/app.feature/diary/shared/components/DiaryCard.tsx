@@ -14,9 +14,7 @@ import React, { useState } from 'react';
 
 type Emotion = 'happy' | 'soso' | 'sad';
 
-function CommentIcon(
-  props: React.SVGProps<SVGSVGElement>
-): React.ReactElement {
+function CommentIcon(props: React.SVGProps<SVGSVGElement>): React.ReactElement {
   return (
     <svg
       width="24"
@@ -112,10 +110,7 @@ function ImageSection({
           className="bg-main-800 hover:bg-main-900 inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-1.5 text-white shadow-[0_4px_10px_rgba(34,34,34,0.25)] transition-colors"
         >
           <Heart
-            className={cn(
-              'h-3.5 w-3.5 text-white',
-              isLiked && 'fill-current'
-            )}
+            className={cn('h-3.5 w-3.5 text-white', isLiked && 'fill-current')}
           />
           <Text size="body2" weight="bold" className="text-white">
             {likeCount}

@@ -24,11 +24,7 @@ function useInvalidateFriendQueries(): () => void {
   };
 }
 
-export function useSendFriendRequest(): UseMutationResult<
-  void,
-  Error,
-  number
-> {
+export function useSendFriendRequest(): UseMutationResult<void, Error, number> {
   const invalidate = useInvalidateFriendQueries();
   return useMutation({
     mutationFn: (toMemberId: number) => friendApi.sendRequest(toMemberId),

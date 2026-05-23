@@ -4,9 +4,9 @@
 
 ## 개요
 
-| 방식 | 용도                          | 클라이언트                            |
-| ---- | ----------------------------- | ------------------------------------- |
-| REST | 모든 데이터 CRUD + 인증       | Axios (브라우저 4개 + 서버 1개)        |
+| 방식 | 용도                    | 클라이언트                      |
+| ---- | ----------------------- | ------------------------------- |
+| REST | 모든 데이터 CRUD + 인증 | Axios (브라우저 4개 + 서버 1개) |
 
 ---
 
@@ -30,11 +30,11 @@ src/app.module/api/
 
 ### 인스턴스 종류 (브라우저)
 
-| 인스턴스           | 용도                          | 인증 | 401/302 처리                                    |
-| ------------------ | ----------------------------- | ---- | ----------------------------------------------- |
-| `apiClient`        | 메인 API 호출                 | O    | 토큰 갱신 후 재시도, 실패 시 홈 리다이렉트       |
-| `publicApiClient`  | 비인증 엔드포인트             | X    | 갱신/리다이렉트 없음, 401이 아닌 에러만 토스트   |
-| `tokenClient`      | 토큰 갱신 전용 (auth/token 등) | X    | 인터셉터 없음 (순환 방지)                       |
+| 인스턴스           | 용도                           | 인증 | 401/302 처리                                                   |
+| ------------------ | ------------------------------ | ---- | -------------------------------------------------------------- |
+| `apiClient`        | 메인 API 호출                  | O    | 토큰 갱신 후 재시도, 실패 시 홈 리다이렉트                     |
+| `publicApiClient`  | 비인증 엔드포인트              | X    | 갱신/리다이렉트 없음, 401이 아닌 에러만 토스트                 |
+| `tokenClient`      | 토큰 갱신 전용 (auth/token 등) | X    | 인터셉터 없음 (순환 방지)                                      |
 | `silentAuthClient` | 선택적 인증 (사이드바 등)      | O    | 401/302 → 토큰 갱신 후 1회 재시도, 이후 호출부에서 forceLogout |
 
 ### 서버(RSC) 헬퍼
@@ -132,12 +132,9 @@ export function useDiaryList(params: DiaryListParams) {
   return useInfiniteQuery({
     queryKey: DIARY_QUERY_KEYS.list(params),
     initialPageParam: undefined,
-    queryFn: ({ pageParam }) =>
-      getDiaryList({ ...params, cursor: pageParam }),
+    queryFn: ({ pageParam }) => getDiaryList({ ...params, cursor: pageParam }),
     getNextPageParam: (lastPage) =>
-      lastPage.pageInfo.hasNextPage
-        ? lastPage.pageInfo.nextCursor
-        : undefined,
+      lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.nextCursor : undefined,
   });
 }
 
@@ -237,9 +234,9 @@ export default async function Page() {
 
 ### 엔드포인트 (Next.js API Routes)
 
-| 경로                       | 메서드 | 설명                            |
-| -------------------------- | ------ | ------------------------------- |
-| `/api/revalidate/diary`    | POST   | 일지 관련 ISR/캐시 무효화 트리거 |
+| 경로                    | 메서드 | 설명                             |
+| ----------------------- | ------ | -------------------------------- |
+| `/api/revalidate/diary` | POST   | 일지 관련 ISR/캐시 무효화 트리거 |
 
 ---
 
@@ -247,13 +244,14 @@ export default async function Page() {
 
 ### 저장 방식
 
-| 저장소               | 용도                                              | 관리 |
-| -------------------- | ------------------------------------------------- | ---- |
-| HTTP-Only Cookie     | Access Token, Refresh Token                       | 백엔드 |
-| localStorage         | 인증 플래그 (`1d1s:isAuthenticated`)               | 프론트엔드 |
-| 도메인 공유 Cookie   | 인증 힌트 (`1d1s:hasSession`, `.1day1streak.com`) | 프론트엔드 |
+| 저장소             | 용도                                              | 관리       |
+| ------------------ | ------------------------------------------------- | ---------- |
+| HTTP-Only Cookie   | Access Token, Refresh Token                       | 백엔드     |
+| localStorage       | 인증 플래그 (`1d1s:isAuthenticated`)              | 프론트엔드 |
+| 도메인 공유 Cookie | 인증 힌트 (`1d1s:hasSession`, `.1day1streak.com`) | 프론트엔드 |
 
 `authStorage.hasTokens()`는 하이브리드 전략:
+
 1. JS에서 읽히는 access 토큰 쿠키 존재 → true (개발 환경 `devAccessToken`)
 2. 없으면 localStorage 플래그 또는 도메인 공유 힌트 쿠키로 폴백
    (HttpOnly 상용 환경 대응 — 401 응답 시 즉시 `clearTokens()`로 정리)
@@ -272,10 +270,10 @@ API 요청
 
 ### Cookie 이름
 
-| 환경        | Access Token         | Refresh Token         |
-| ----------- | -------------------- | --------------------- |
-| Development | `devAccessToken`     | `devRefreshToken`     |
-| Production  | `accessToken`        | `refreshToken`        |
+| 환경        | Access Token     | Refresh Token     |
+| ----------- | ---------------- | ----------------- |
+| Development | `devAccessToken` | `devRefreshToken` |
+| Production  | `accessToken`    | `refreshToken`    |
 
 환경변수로 커스텀 가능: `NEXT_PUBLIC_ACCESS_TOKEN_COOKIE_NAME` /
 `NEXT_PUBLIC_REFRESH_TOKEN_COOKIE_NAME`. 미들웨어/JS는 두 이름 모두 후보로
@@ -303,15 +301,15 @@ interface NormalizedApiError {
 
 ### 상태 코드별 메시지
 
-| 상태 코드 | 기본 메시지                              |
-| --------- | ---------------------------------------- |
-| 400       | 잘못된 요청입니다.                       |
-| 401       | 로그인이 필요하거나 세션이 만료되었습니다. |
-| 403       | 접근 권한이 없습니다.                    |
-| 404       | 요청한 리소스를 찾을 수 없습니다.        |
-| 408 / 504 | 요청/응답 시간이 초과되었습니다.         |
-| 429       | 요청이 너무 많습니다.                    |
-| 500-503   | 서버 오류 / 일시적 장애 메시지           |
+| 상태 코드 | 기본 메시지                                   |
+| --------- | --------------------------------------------- |
+| 400       | 잘못된 요청입니다.                            |
+| 401       | 로그인이 필요하거나 세션이 만료되었습니다.    |
+| 403       | 접근 권한이 없습니다.                         |
+| 404       | 요청한 리소스를 찾을 수 없습니다.             |
+| 408 / 504 | 요청/응답 시간이 초과되었습니다.              |
+| 429       | 요청이 너무 많습니다.                         |
+| 500-503   | 서버 오류 / 일시적 장애 메시지                |
 | 네트워크  | 네트워크 연결을 확인한 뒤 다시 시도해 주세요. |
 
 ### `notifyApiError()` — `errorNotify.ts` (`'use client'`)

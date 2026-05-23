@@ -31,7 +31,12 @@ import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft, Check, Lightbulb } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import type {
   ChallengeDetailResponse,
@@ -122,7 +127,11 @@ function buildUpdatePayload(
   if (values.isGroup && values.allowMidJoin !== defaults.allowMidJoin) {
     payload.allowMidJoin = values.allowMidJoin;
   }
-  if (values.isGroup && !values.isStarted && values.memberCount !== 'unlimited') {
+  if (
+    values.isGroup &&
+    !values.isStarted &&
+    values.memberCount !== 'unlimited'
+  ) {
     const raw =
       values.memberCount === 'etc'
         ? values.memberCountNumber
@@ -302,7 +311,8 @@ function ChallengeEditScreenContent({
                       'font-extrabold text-gray-900'
                     )}
                   >
-                    <Lightbulb className="h-3.5 w-3.5" />안내
+                    <Lightbulb className="h-3.5 w-3.5" />
+                    안내
                   </div>
                   참여 형태와 목표 유형, 진행 기간은 수정할 수 없어요.
                 </div>
@@ -333,7 +343,8 @@ function ChallengeEditScreenContent({
             >
               {canSubmit ? (
                 <>
-                  <Check className="h-3.5 w-3.5" />변경 사항을 저장할 수 있어요
+                  <Check className="h-3.5 w-3.5" />
+                  변경 사항을 저장할 수 있어요
                 </>
               ) : (
                 '필수 항목을 확인해 주세요'
@@ -433,9 +444,7 @@ export default function ChallengeEditScreen({
   if (isLoading || !defaults || !data) {
     return (
       <div
-        className={cn(
-          'flex min-h-screen items-center justify-center bg-white'
-        )}
+        className={cn('flex min-h-screen items-center justify-center bg-white')}
       >
         <Text size="body1" weight="medium" className="text-gray-500">
           불러오는 중...

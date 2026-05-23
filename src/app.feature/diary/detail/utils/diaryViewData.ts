@@ -142,9 +142,7 @@ function resolveFirstImage(...rawSources: unknown[]): string | null {
   return null;
 }
 
-export function getDiaryInfo(
-  diary: DiaryDetail
-): DiaryInfoWithAliases | null {
+export function getDiaryInfo(diary: DiaryDetail): DiaryInfoWithAliases | null {
   const diaryWithAliases = diary as DiaryDetailWithAliases;
   return diaryWithAliases.diaryInfoDto ?? diaryWithAliases.diaryInfo ?? null;
 }
@@ -221,9 +219,7 @@ export function formatCommentDateTime(value: string): string {
   return `${year}.${month}.${day} ${hours}:${minutes}`;
 }
 
-export function sortCommentsByOldest(
-  comments: DiaryComment[]
-): DiaryComment[] {
+export function sortCommentsByOldest(comments: DiaryComment[]): DiaryComment[] {
   return [...comments].sort((leftComment, rightComment) => {
     const timeDiff =
       parseCommentTimestamp(leftComment.createdAt) -

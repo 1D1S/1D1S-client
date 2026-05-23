@@ -5,10 +5,7 @@ export const MEMBER_QUERY_KEYS = {
   profiles: () => [...MEMBER_QUERY_KEYS.all, 'profile'] as const,
   profile: (memberId: number) =>
     [...MEMBER_QUERY_KEYS.profiles(), memberId] as const,
-  profileDiariesInfinite: (
-    memberId: number,
-    params?: { size?: number }
-  ) =>
+  profileDiariesInfinite: (memberId: number, params?: { size?: number }) =>
     [
       ...MEMBER_QUERY_KEYS.profiles(),
       memberId,

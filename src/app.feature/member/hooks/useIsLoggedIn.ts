@@ -21,14 +21,12 @@ export function useIsLoggedIn(): boolean {
   const hasMounted = useSyncExternalStore(
     NOOP_SUBSCRIBE,
     () => true,
-    () => false,
+    () => false
   );
   const { data, isLoading, isFetching } = useSidebar();
   const hasTokenHint = hasMounted && authStorage.hasTokens();
 
   return (
-    hasMounted &&
-    hasTokenHint &&
-    (Boolean(data) || isLoading || isFetching)
+    hasMounted && hasTokenHint && (Boolean(data) || isLoading || isFetching)
   );
 }

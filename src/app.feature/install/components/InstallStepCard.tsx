@@ -41,12 +41,7 @@ export function InstallStepCard({
         >
           {stepNumber}
         </span>
-        <Text
-          as="h3"
-          size="body1"
-          weight="bold"
-          className="text-gray-900"
-        >
+        <Text as="h3" size="body1" weight="bold" className="text-gray-900">
           {title}
         </Text>
       </header>

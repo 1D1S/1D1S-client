@@ -40,7 +40,7 @@ export function LegalPageShell({
           'sticky top-0 z-30 flex items-center gap-3',
           'h-14-safe pt-safe-top',
           'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden',
+          'lg:hidden'
         )}
       >
         <button
@@ -49,7 +49,7 @@ export function LegalPageShell({
           onClick={() => router.back()}
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100',
+            'text-gray-700 transition-colors hover:bg-gray-100'
           )}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -66,13 +66,13 @@ export function LegalPageShell({
       <section
         className={cn(
           'mx-auto w-full max-w-[820px]',
-          'px-5 py-5 lg:px-8 lg:py-10',
+          'px-5 py-5 lg:px-8 lg:py-10'
         )}
       >
         <header
           className={cn(
             'hidden flex-col gap-2 border-b border-gray-100 pb-6',
-            'lg:flex',
+            'lg:flex'
           )}
         >
           <Text
@@ -100,10 +100,7 @@ export function LegalPageShell({
 
         <div className="mt-4 flex flex-col gap-7 lg:mt-8">
           {sections.map((section) => (
-            <article
-              key={section.heading}
-              className="flex flex-col gap-2"
-            >
+            <article key={section.heading} className="flex flex-col gap-2">
               <Text
                 as="h2"
                 size="heading2"
@@ -115,9 +112,7 @@ export function LegalPageShell({
               <Text
                 size="body2"
                 weight="regular"
-                className={cn(
-                  'leading-7 whitespace-pre-line text-gray-700',
-                )}
+                className={cn('leading-7 whitespace-pre-line text-gray-700')}
               >
                 {section.body}
               </Text>
@@ -128,9 +123,7 @@ export function LegalPageShell({
             <Text
               size="caption1"
               weight="regular"
-              className={cn(
-                'mt-2 leading-6 whitespace-pre-line text-gray-500',
-              )}
+              className={cn('mt-2 leading-6 whitespace-pre-line text-gray-500')}
             >
               {footer}
             </Text>

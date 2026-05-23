@@ -126,10 +126,18 @@ export default function OnboardingPage(): React.ReactElement {
                 <Icon className="text-main-800 h-5 w-5" />
               </div>
               <div className="flex flex-col gap-1">
-                <Text size="body1" weight="bold" className="block text-gray-900">
+                <Text
+                  size="body1"
+                  weight="bold"
+                  className="block text-gray-900"
+                >
                   {title}
                 </Text>
-                <Text size="body2" weight="regular" className="block text-gray-500">
+                <Text
+                  size="body2"
+                  weight="regular"
+                  className="block text-gray-500"
+                >
                   {description}
                 </Text>
               </div>

@@ -19,13 +19,8 @@ import { Notification } from '../type/notification';
 
 export function NotificationScreen(): React.JSX.Element {
   const router = useRouter();
-  const {
-    data,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useNotificationsInfinite();
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useNotificationsInfinite();
   const showSkeleton = useMinimumLoading(isLoading);
   const { mutate: markAsRead } = useMarkAsRead();
   const { mutate: markAllAsRead } = useMarkAllAsRead();
@@ -58,7 +53,7 @@ export function NotificationScreen(): React.JSX.Element {
           'sticky top-0 z-30 flex items-center gap-3',
           'h-14-safe pt-safe-top',
           'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden',
+          'lg:hidden'
         )}
       >
         <button
@@ -67,7 +62,7 @@ export function NotificationScreen(): React.JSX.Element {
           onClick={() => router.back()}
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100',
+            'text-gray-700 transition-colors hover:bg-gray-100'
           )}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -95,13 +90,13 @@ export function NotificationScreen(): React.JSX.Element {
       <div
         className={cn(
           'mx-auto w-full max-w-[1200px]',
-          'px-5 py-5 lg:px-8 lg:py-10',
+          'px-5 py-5 lg:px-8 lg:py-10'
         )}
       >
         <header
           className={cn(
             'hidden flex-col gap-4 border-b border-gray-100 pb-5',
-            'lg:flex lg:flex-row lg:items-end lg:justify-between',
+            'lg:flex lg:flex-row lg:items-end lg:justify-between'
           )}
         >
           <div className="flex flex-col gap-1.5">
@@ -124,7 +119,7 @@ export function NotificationScreen(): React.JSX.Element {
               onClick={() => markAllAsRead()}
               className={cn(
                 'text-main-800 hover:text-main-900 transition-colors',
-                'self-end',
+                'self-end'
               )}
             >
               <Text size="body2" weight="medium" className="text-inherit">
@@ -140,13 +135,13 @@ export function NotificationScreen(): React.JSX.Element {
           <div
             className={cn(
               'mt-6 flex flex-col items-center justify-center gap-4',
-              'rounded-3 border border-gray-200 bg-white py-16',
+              'rounded-3 border border-gray-200 bg-white py-16'
             )}
           >
             <div
               className={cn(
                 'flex h-16 w-16 items-center justify-center',
-                'bg-main-200/60 text-main-800 rounded-full',
+                'bg-main-200/60 text-main-800 rounded-full'
               )}
             >
               <Bell className="h-8 w-8" />
@@ -161,7 +156,7 @@ export function NotificationScreen(): React.JSX.Element {
               className={cn(
                 'rounded-3 data-fade-in mt-6 overflow-hidden',
                 'border border-gray-200 bg-white',
-                'divide-y divide-gray-100',
+                'divide-y divide-gray-100'
               )}
             >
               {notifications.map((notification) => (

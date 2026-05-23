@@ -34,9 +34,9 @@ export function useNotificationsInfinite(): UseInfiniteQueryResult<
   });
 }
 
-export function useUnreadCount(
-  options?: { enabled?: boolean }
-): UseQueryResult<UnreadCount, Error> {
+export function useUnreadCount(options?: {
+  enabled?: boolean;
+}): UseQueryResult<UnreadCount, Error> {
   return useQuery({
     queryKey: NOTIFICATION_QUERY_KEYS.unreadCount(),
     // 헤더 뱃지 전용. 세션 만료/302 redirect 로 응답이 envelope 형태가 아니거나
@@ -57,9 +57,9 @@ export function useUnreadCount(
   });
 }
 
-export function useNotificationPreferences(
-  options?: { enabled?: boolean }
-): UseQueryResult<NotificationPreferences, Error> {
+export function useNotificationPreferences(options?: {
+  enabled?: boolean;
+}): UseQueryResult<NotificationPreferences, Error> {
   return useQuery({
     queryKey: NOTIFICATION_QUERY_KEYS.preferences(),
     queryFn: () => notificationApi.getPreferences(),

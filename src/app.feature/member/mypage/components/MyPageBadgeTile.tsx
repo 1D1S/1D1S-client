@@ -1,8 +1,4 @@
-import {
-  AchievementBadge,
-  Icon,
-  type IconName,
-} from '@1d1s/design-system';
+import { AchievementBadge, Icon, type IconName } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 
@@ -17,12 +13,7 @@ interface MyPageBadgeTileProps {
 
 function SproutBadgeIcon(): React.ReactElement {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className="h-5 w-5"
-      aria-hidden
-    >
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
       <path
         d="M12 20V13"
         stroke="currentColor"

@@ -30,9 +30,7 @@ export function ChallengeCreateChip({
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full border',
         'font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-        size === 'sm'
-          ? 'px-3 py-1.5 text-[11px]'
-          : 'px-3.5 py-2 text-[12px]',
+        size === 'sm' ? 'px-3 py-1.5 text-[11px]' : 'px-3.5 py-2 text-[12px]',
         active
           ? 'border-main-800 bg-main-800 text-white'
           : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'

@@ -97,8 +97,7 @@ export const challengeDetailApi = {
     return requestData<ChallengeDiaryListResponse>(apiClient, {
       url: `/diaries/challenges/${challengeId}`,
       method: 'GET',
-      params:
-        Object.keys(requestParams).length > 0 ? requestParams : undefined,
+      params: Object.keys(requestParams).length > 0 ? requestParams : undefined,
     });
   },
 };

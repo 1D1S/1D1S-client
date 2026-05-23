@@ -27,7 +27,7 @@ export default function MyPageScreen(): React.ReactElement | null {
   const hasMounted = useSyncExternalStore(
     NOOP_SUBSCRIBE,
     () => true,
-    () => false,
+    () => false
   );
   const isLoggedIn = useIsLoggedIn();
   const { data, isLoading } = useMyPage();
@@ -64,7 +64,7 @@ export default function MyPageScreen(): React.ReactElement | null {
       <div
         className={cn(
           'mx-auto w-full max-w-[1200px]',
-          'px-5 py-5 lg:px-8 lg:py-10',
+          'px-5 py-5 lg:px-8 lg:py-10'
         )}
       >
         <MyPageProfileCard
@@ -86,7 +86,7 @@ export default function MyPageScreen(): React.ReactElement | null {
         <div
           className={cn(
             'mt-6 hidden grid-cols-1 gap-4',
-            'lg:grid lg:grid-cols-2 lg:gap-5',
+            'lg:grid lg:grid-cols-2 lg:gap-5'
           )}
         >
           <MyPageStreakHeroCard

@@ -53,7 +53,9 @@ export function Step2({
               <span className="text-main-800 font-extrabold">
                 {selectedTopics.length}개 선택
               </span>{' '}
-              <span className="text-gray-400">(최대 {MAX_SELECTABLE_TOPICS}개)</span>
+              <span className="text-gray-400">
+                (최대 {MAX_SELECTABLE_TOPICS}개)
+              </span>
             </Text>
             <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
               {SIGN_UP_TOPIC_OPTIONS.map((option) => {
@@ -84,9 +86,7 @@ export function Step2({
                         return;
                       }
                       const nextTopics = nextChecked
-                        ? Array.from(
-                            new Set([...currentTopics, option.value])
-                          )
+                        ? Array.from(new Set([...currentTopics, option.value]))
                         : currentTopics.filter(
                             (topic) => topic !== option.value
                           );

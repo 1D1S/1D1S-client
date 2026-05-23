@@ -9,12 +9,12 @@
 
 의도에 따라 아래 파이프라인 중 하나를 실행합니다.
 
-| 커맨드                  | 설명                                                              |
-| ----------------------- | ----------------------------------------------------------------- |
-| `/ods-feature {요청}`   | 신규 기능 개발 — Screen → Component → Hook 계층 준수              |
-| `/ods-api {요청}`       | REST API 연동 작업 + TanStack Query 훅 생성                      |
-| `/ods-refactor {요청}`  | 구조 개선, 성능 최적화, 중복 제거                                 |
-| `/ods-review {요청}`    | 코드 리뷰 + `docs/ai/TECH_DEBT.md` Golden Principles 위반 스캔   |
+| 커맨드                 | 설명                                                           |
+| ---------------------- | -------------------------------------------------------------- |
+| `/ods-feature {요청}`  | 신규 기능 개발 — Screen → Component → Hook 계층 준수           |
+| `/ods-api {요청}`      | REST API 연동 작업 + TanStack Query 훅 생성                    |
+| `/ods-refactor {요청}` | 구조 개선, 성능 최적화, 중복 제거                              |
+| `/ods-review {요청}`   | 코드 리뷰 + `docs/ai/TECH_DEBT.md` Golden Principles 위반 스캔 |
 
 ---
 
@@ -50,12 +50,12 @@
 
 ## 하네스별 기본 로드 문서
 
-| 하네스          | 기본 로드 문서                                                                 |
-| --------------- | ------------------------------------------------------------------------------ |
-| `/ods-feature`  | `docs/ai/ARCHITECTURE.md`, `docs/ai/CONVENTIONS.md`, `docs/ai/DEVELOPMENT.md` |
-| `/ods-api`      | `docs/ai/API.md`, `docs/ai/DEVELOPMENT.md`, `docs/ai/CONVENTIONS.md`          |
+| 하네스          | 기본 로드 문서                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| `/ods-feature`  | `docs/ai/ARCHITECTURE.md`, `docs/ai/CONVENTIONS.md`, `docs/ai/DEVELOPMENT.md`                    |
+| `/ods-api`      | `docs/ai/API.md`, `docs/ai/DEVELOPMENT.md`, `docs/ai/CONVENTIONS.md`                             |
 | `/ods-refactor` | `docs/ai/ARCHITECTURE.md`, `docs/ai/CONVENTIONS.md`, 필요 시 `docs/ai/TAILWIND_STYLING_GUIDE.md` |
-| `/ods-review`   | `docs/ai/ARCHITECTURE.md`, `docs/ai/CONVENTIONS.md`, `docs/ai/WORKFLOWS.md`   |
+| `/ods-review`   | `docs/ai/ARCHITECTURE.md`, `docs/ai/CONVENTIONS.md`, `docs/ai/WORKFLOWS.md`                      |
 
 상황에 따라 `docs/ai/ROUTE_ACCESS_POLICY.md`와
 `docs/ai/BRANCH_RELEASE_POLICY.md`를 추가 로드한다.
@@ -209,15 +209,15 @@
 
 > `docs/ai/` — AI 최적화 버전 (한국어, 표/코드 블록 중심, 산문 최소화)
 
-| 문서                                                                   | 로드 조건                                                 |
-| ---------------------------------------------------------------------- | --------------------------------------------------------- |
-| [docs/ai/ARCHITECTURE.md](docs/ai/ARCHITECTURE.md)                     | 시스템 구조, Provider 체인, 모듈 계층, 상태관리 파악 시   |
+| 문서                                                                   | 로드 조건                                                     |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------- |
+| [docs/ai/ARCHITECTURE.md](docs/ai/ARCHITECTURE.md)                     | 시스템 구조, Provider 체인, 모듈 계층, 상태관리 파악 시       |
 | [docs/ai/API.md](docs/ai/API.md)                                       | REST API, Axios 클라이언트, TanStack Query 패턴, 토큰 갱신 시 |
-| [docs/ai/DEVELOPMENT.md](docs/ai/DEVELOPMENT.md)                       | 개발 환경 설정, 명령어, 기능 개발 패턴, 트러블슈팅 시     |
-| [docs/ai/CONVENTIONS.md](docs/ai/CONVENTIONS.md)                       | 코딩 컨벤션, 네이밍, 파일 구조 규칙 확인 시               |
-| [docs/ai/TAILWIND_STYLING_GUIDE.md](docs/ai/TAILWIND_STYLING_GUIDE.md) | 스타일링, Tailwind 클래스, 반응형 작업 시                 |
-| [docs/ai/ROUTE_ACCESS_POLICY.md](docs/ai/ROUTE_ACCESS_POLICY.md)       | 라우트 접근 권한, 인증 미들웨어, 토큰 검증 시             |
-| [docs/ai/BRANCH_RELEASE_POLICY.md](docs/ai/BRANCH_RELEASE_POLICY.md)   | 브랜치 전략, 릴리즈 프로세스 확인 시                      |
-| [docs/ai/WORKFLOWS.md](docs/ai/WORKFLOWS.md)                           | CI/CD, ESLint 설정, PR Check 확인 시                      |
-| [docs/ai/TECH_DEBT.md](docs/ai/TECH_DEBT.md)                           | 기술 부채 스캔 기준, 정리 프로세스, 등록 방법 확인 시     |
-| [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md)                               | AI 문서 인덱스, 원본 매핑 정보 확인 시                    |
+| [docs/ai/DEVELOPMENT.md](docs/ai/DEVELOPMENT.md)                       | 개발 환경 설정, 명령어, 기능 개발 패턴, 트러블슈팅 시         |
+| [docs/ai/CONVENTIONS.md](docs/ai/CONVENTIONS.md)                       | 코딩 컨벤션, 네이밍, 파일 구조 규칙 확인 시                   |
+| [docs/ai/TAILWIND_STYLING_GUIDE.md](docs/ai/TAILWIND_STYLING_GUIDE.md) | 스타일링, Tailwind 클래스, 반응형 작업 시                     |
+| [docs/ai/ROUTE_ACCESS_POLICY.md](docs/ai/ROUTE_ACCESS_POLICY.md)       | 라우트 접근 권한, 인증 미들웨어, 토큰 검증 시                 |
+| [docs/ai/BRANCH_RELEASE_POLICY.md](docs/ai/BRANCH_RELEASE_POLICY.md)   | 브랜치 전략, 릴리즈 프로세스 확인 시                          |
+| [docs/ai/WORKFLOWS.md](docs/ai/WORKFLOWS.md)                           | CI/CD, ESLint 설정, PR Check 확인 시                          |
+| [docs/ai/TECH_DEBT.md](docs/ai/TECH_DEBT.md)                           | 기술 부채 스캔 기준, 정리 프로세스, 등록 방법 확인 시         |
+| [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md)                               | AI 문서 인덱스, 원본 매핑 정보 확인 시                        |

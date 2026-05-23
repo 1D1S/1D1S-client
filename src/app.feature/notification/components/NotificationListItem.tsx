@@ -20,12 +20,18 @@ function resolveTargetUrl(notification: Notification): string | null {
     return '/mypage/friend';
   }
   const { targetType, targetId } = notification;
-  if (!targetType || !targetId) { return null; }
+  if (!targetType || !targetId) {
+    return null;
+  }
   if (targetType.startsWith('MEMBER') || targetType.startsWith('FRIEND')) {
     return `/member/${targetId}`;
   }
-  if (targetType.startsWith('DIARY')) { return `/diary/${targetId}`; }
-  if (targetType.startsWith('CHALLENGE')) { return `/challenge/${targetId}`; }
+  if (targetType.startsWith('DIARY')) {
+    return `/diary/${targetId}`;
+  }
+  if (targetType.startsWith('CHALLENGE')) {
+    return `/challenge/${targetId}`;
+  }
   return null;
 }
 
@@ -50,8 +56,12 @@ export function NotificationListItem({
   const showAvatar = actorNickname !== null;
 
   function handleActivate(): void {
-    if (!isRead) { onRead?.(id); }
-    if (targetUrl) { router.push(targetUrl); }
+    if (!isRead) {
+      onRead?.(id);
+    }
+    if (targetUrl) {
+      router.push(targetUrl);
+    }
   }
 
   const handleKeyDown =
@@ -68,7 +78,7 @@ export function NotificationListItem({
         'transition-colors hover:bg-gray-50',
         'focus-visible:bg-gray-50 focus-visible:outline-none',
         !isRead && 'bg-main-200/40 hover:bg-main-200/60',
-        !targetUrl && 'cursor-default',
+        !targetUrl && 'cursor-default'
       )}
     >
       {showAvatar && (

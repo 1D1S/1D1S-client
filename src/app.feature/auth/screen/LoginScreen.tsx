@@ -8,10 +8,7 @@ import React from 'react';
 import { BrandPanel } from '../components/BrandPanel';
 import { getLastOAuthProvider, LoginButton } from '../components/LoginButtons';
 import { LoginMobileView } from '../components/LoginMobileView';
-import {
-  getOrderedProviders,
-  PROVIDER_META,
-} from '../consts/providerMeta';
+import { getOrderedProviders, PROVIDER_META } from '../consts/providerMeta';
 import { OAuthProvider } from '../type/auth';
 import { getLaunchStreakDay } from '../utils/streakDay';
 

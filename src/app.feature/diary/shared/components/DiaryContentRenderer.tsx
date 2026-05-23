@@ -50,7 +50,7 @@ export function DiaryContentRenderer({
         '[&_:not(pre)>code]:rounded [&_:not(pre)>code]:bg-gray-100',
         '[&_:not(pre)>code]:px-1 [&_:not(pre)>code]:py-0.5',
         '[&_:not(pre)>code]:text-[0.875rem]',
-        className,
+        className
       )}
       dangerouslySetInnerHTML={{ __html: html }}
     />

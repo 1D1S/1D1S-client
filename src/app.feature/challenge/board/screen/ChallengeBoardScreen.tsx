@@ -24,10 +24,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ChallengeBoardFilters from '../components/ChallengeBoardFilters';
 import { toCategoryParam } from '../consts/categoryFilters';
 import { useChallengeList } from '../hooks/useChallengeQueries';
-import type {
-  ChallengeCategory,
-  ChallengeListItem,
-} from '../type/challenge';
+import type { ChallengeCategory, ChallengeListItem } from '../type/challenge';
 import {
   formatChallengeRemainingLabel,
   isChallengeEnded,
@@ -46,40 +43,40 @@ const ChallengeBoardCardItem = React.memo(
     challenge,
     onCardClick,
   }: ChallengeBoardCardItemProps): React.ReactElement => {
-  const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
-  const ended = isChallengeEnded(challenge.endDate);
-  const remainingLabel = formatChallengeRemainingLabel(
-    challenge.endDate,
-    isInfinite,
-    ended
-  );
+    const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
+    const ended = isChallengeEnded(challenge.endDate);
+    const remainingLabel = formatChallengeRemainingLabel(
+      challenge.endDate,
+      isInfinite,
+      ended
+    );
 
-  const handleClick = useCallback(() => {
-    onCardClick(challenge.challengeId);
-  }, [onCardClick, challenge.challengeId]);
+    const handleClick = useCallback(() => {
+      onCardClick(challenge.challengeId);
+    }, [onCardClick, challenge.challengeId]);
 
-  return (
-    <ChallengeCard
-      title={challenge.title}
-      category={getCategoryLabel(challenge.category)}
-      categoryIcon={
-        <CategoryIcon category={challenge.category} className="h-3 w-3" />
-      }
-      stripeTone={getCategoryStripeTone(challenge.category)}
-      imageUrl={challenge.thumbnailImage}
-      currentParticipantCount={challenge.participantCnt}
-      maxParticipantCount={challenge.maxParticipantCnt}
-      remainingLabel={remainingLabel}
-      startDate={challenge.startDate}
-      endDate={challenge.endDate}
-      isInfinite={isInfinite}
-      goalType={challenge.goalType}
-      isGroup={challenge.participationType === 'GROUP'}
-      isEnded={ended}
-      participants={challenge.randomParticipants}
-      onClick={handleClick}
-    />
-  );
+    return (
+      <ChallengeCard
+        title={challenge.title}
+        category={getCategoryLabel(challenge.category)}
+        categoryIcon={
+          <CategoryIcon category={challenge.category} className="h-3 w-3" />
+        }
+        stripeTone={getCategoryStripeTone(challenge.category)}
+        imageUrl={challenge.thumbnailImage}
+        currentParticipantCount={challenge.participantCnt}
+        maxParticipantCount={challenge.maxParticipantCnt}
+        remainingLabel={remainingLabel}
+        startDate={challenge.startDate}
+        endDate={challenge.endDate}
+        isInfinite={isInfinite}
+        goalType={challenge.goalType}
+        isGroup={challenge.participationType === 'GROUP'}
+        isEnded={ended}
+        participants={challenge.randomParticipants}
+        onClick={handleClick}
+      />
+    );
   }
 );
 ChallengeBoardCardItem.displayName = 'ChallengeBoardCardItem';
@@ -92,9 +89,8 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   const isLoggedIn = useIsLoggedIn();
 
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [loginDialogDescription, setLoginDialogDescription] = useState(
-    '로그인 후 이용할 수 있습니다.'
-  );
+  const [loginDialogDescription, setLoginDialogDescription] =
+    useState('로그인 후 이용할 수 있습니다.');
   const [inputValue, setInputValue] = useState('');
   const [query, setQuery] = useState('');
   // TODO: 카테고리 토글 복구 시 setCategory 사용. 현재 임시 비활성화.
@@ -106,9 +102,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     setPrevIsLoginRequired(isLoginRequired);
     if (isLoginRequired && !isLoggedIn) {
       setShowLoginDialog(true);
-      setLoginDialogDescription(
-        '챌린지 상세는 로그인 후 이용할 수 있습니다.'
-      );
+      setLoginDialogDescription('챌린지 상세는 로그인 후 이용할 수 있습니다.');
     }
   }
 
@@ -158,17 +152,12 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     [requireAuth, router]
   );
 
-  const {
-    data,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useChallengeList({
-    limit: 12,
-    keyword: query || undefined,
-    category: toCategoryParam(category),
-  });
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useChallengeList({
+      limit: 12,
+      keyword: query || undefined,
+      category: toCategoryParam(category),
+    });
 
   const { ref, inView } = useInViewObserver();
 
@@ -271,8 +260,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
             className="self-start whitespace-nowrap lg:self-auto"
           >
             <span className="flex items-center gap-1">
-              <Icon name="Plus" size={16} />
-              새 챌린지
+              <Icon name="Plus" size={16} />새 챌린지
             </span>
           </Button>
         </header>
@@ -368,13 +356,12 @@ export default function ChallengeBoardScreen(): React.ReactElement {
             ref={ref}
             className="mt-6 flex h-10 w-full items-center justify-center"
           >
-            {isFetchingNextPage
-              ? null
-              : !hasNextPage && challenges.length > 0 ? (
-                  <Text size="body2" className="text-gray-400">
-                    마지막 챌린지입니다.
-                  </Text>
-                ) : null}
+            {isFetchingNextPage ? null : !hasNextPage &&
+              challenges.length > 0 ? (
+              <Text size="body2" className="text-gray-400">
+                마지막 챌린지입니다.
+              </Text>
+            ) : null}
           </div>
         </div>
       </div>

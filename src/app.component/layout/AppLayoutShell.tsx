@@ -1,12 +1,8 @@
 'use client';
 
 import { Button } from '@1d1s/design-system';
-import {
-  AddToHomeScreenPrompt,
-} from '@feature/install/components/AddToHomeScreenPrompt';
-import {
-  BrowserPermissionPrompt,
-} from '@feature/notification/components/BrowserPermissionPrompt';
+import { AddToHomeScreenPrompt } from '@feature/install/components/AddToHomeScreenPrompt';
+import { BrowserPermissionPrompt } from '@feature/notification/components/BrowserPermissionPrompt';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
@@ -229,9 +225,7 @@ export default function AppLayoutShell({
                 isAuthLoading={isAuthLoading}
                 nickname={sidebarData?.nickname ?? '사용자'}
                 handle={
-                  sidebarData?.nickname
-                    ? `@${sidebarData.nickname}`
-                    : undefined
+                  sidebarData?.nickname ? `@${sidebarData.nickname}` : undefined
                 }
                 profileImageUrl={sidebarData?.profileUrl}
                 streakDays={sidebarData?.streakCount ?? 0}
@@ -244,10 +238,7 @@ export default function AppLayoutShell({
         </div>
 
         {showBottomNav ? (
-          <AppBottomNav
-            activeId={activeNavId}
-            className={bottomNavRespClass}
-          />
+          <AppBottomNav activeId={activeNavId} className={bottomNavRespClass} />
         ) : null}
 
         {!isLoginPage ? <BrowserPermissionPrompt /> : null}

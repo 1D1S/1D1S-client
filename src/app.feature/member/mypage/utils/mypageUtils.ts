@@ -101,9 +101,7 @@ export interface HeatmapEntry {
 export function buildHeatmapData(
   calendar: StreakCalendarItem[]
 ): HeatmapEntry[] {
-  const calendarMap = new Map(
-    calendar.map((item) => [item.date, item.count])
-  );
+  const calendarMap = new Map(calendar.map((item) => [item.date, item.count]));
   const today = new Date();
   const start = new Date(today);
   start.setDate(today.getDate() - (HEATMAP_TOTAL_DAYS - 1));

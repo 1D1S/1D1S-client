@@ -65,11 +65,7 @@ export function ChallengeCreateGoalSection(): React.ReactElement {
 
       {isIndividual ? (
         <div className="border-main-200 bg-main-100 rounded-2 mt-3 border px-4 py-3">
-          <Text
-            size="caption1"
-            weight="bold"
-            className="text-main-900 block"
-          >
+          <Text size="caption1" weight="bold" className="text-main-900 block">
             개인 챌린지는 자동으로 고정 목표로 진행돼요.
           </Text>
         </div>
@@ -77,11 +73,7 @@ export function ChallengeCreateGoalSection(): React.ReactElement {
 
       {goalType === 'FIXED' ? (
         <div className="mt-4 space-y-2">
-          <Text
-            size="caption1"
-            weight="bold"
-            className="block text-gray-600"
-          >
+          <Text size="caption1" weight="bold" className="block text-gray-600">
             공통 목표
           </Text>
           <FormField
@@ -109,11 +101,7 @@ export function ChallengeCreateGoalSection(): React.ReactElement {
         </div>
       ) : (
         <div className="mt-4 space-y-2">
-          <Text
-            size="caption1"
-            weight="bold"
-            className="block text-gray-600"
-          >
+          <Text size="caption1" weight="bold" className="block text-gray-600">
             나의 시작 목표
           </Text>
           <FormField

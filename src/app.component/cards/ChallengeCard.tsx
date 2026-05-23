@@ -130,9 +130,10 @@ function ChallengeCard({
   const participationLabel = isGroup ? '단체' : '개인';
   const goalLabel = goalType ? GOAL_TYPE_LABELS[goalType] : null;
   const visibleParticipants = (participants ?? []).slice(0, 3);
-  const visibleAvatars = visibleParticipants.length > 0
-    ? visibleParticipants.length
-    : Math.min(3, Math.max(0, currentParticipantCount));
+  const visibleAvatars =
+    visibleParticipants.length > 0
+      ? visibleParticipants.length
+      : Math.min(3, Math.max(0, currentParticipantCount));
   const extraCount = Math.max(0, currentParticipantCount - visibleAvatars);
   // 날짜 파싱·포맷팅은 startDate/endDate/isInfinite 가 바뀔 때만 재계산.
   // 보드 스크롤·필터 변경처럼 부모가 재렌더돼도 동일 props 면 캐시 유지.
@@ -213,9 +214,7 @@ function ChallengeCard({
               className={cn(
                 'inline-flex items-center rounded-full px-2.5 py-1',
                 'text-[11px] font-bold shadow-sm',
-                isGroup
-                  ? 'bg-main-800 text-white'
-                  : 'bg-white text-gray-900'
+                isGroup ? 'bg-main-800 text-white' : 'bg-white text-gray-900'
               )}
             >
               {participationLabel}

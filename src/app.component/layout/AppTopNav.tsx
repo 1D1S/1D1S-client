@@ -111,11 +111,7 @@ export default function AppTopNav({
           태블릿 이하에서만 로그인/아바타 클러스터 노출. 데스크탑은
           RightRail 이 인증 영역을 대신하므로 숨긴다.
         */}
-        <div
-          className={cn(
-            'flex h-9 items-center gap-2 lg:hidden'
-          )}
-        >
+        <div className={cn('flex h-9 items-center gap-2 lg:hidden')}>
           {isAuthLoading ? (
             <Skeleton
               shape="circle"

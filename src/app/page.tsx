@@ -19,9 +19,7 @@ function HomeLoadingSkeleton(): React.ReactElement {
     <div className="mx-auto w-full max-w-[1200px] px-5 py-7 lg:px-8 lg:py-10">
       <div className="flex flex-col gap-4">
         <div className="-mx-5 lg:-mx-8">
-          <div
-            className="scrollbar-hide flex w-full gap-3 overflow-x-auto px-5 py-3.5 lg:px-8"
-          >
+          <div className="scrollbar-hide flex w-full gap-3 overflow-x-auto px-5 py-3.5 lg:px-8">
             {Array.from({ length: 5 }).map((_, index) => (
               <div
                 key={index}

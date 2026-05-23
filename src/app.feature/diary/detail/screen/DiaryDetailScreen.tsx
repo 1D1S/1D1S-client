@@ -106,10 +106,7 @@ function DiaryActionToolbar({
         )}
       >
         <Heart
-          className={cn(
-            'h-3.5 w-3.5',
-            diaryData.likedByMe && 'fill-current'
-          )}
+          className={cn('h-3.5 w-3.5', diaryData.likedByMe && 'fill-current')}
         />
         좋아요 {diaryData.likeCount}
       </button>
@@ -271,8 +268,7 @@ function DiaryCommentSection({
           profileImageUrl: comment.author.profileImage ?? undefined,
         },
         isAuthor:
-          (currentMemberId !== null &&
-            comment.author.id === currentMemberId) ||
+          (currentMemberId !== null && comment.author.id === currentMemberId) ||
           (currentMemberId === null &&
             Boolean(authorNickname) &&
             Boolean(currentUserNickname) &&
@@ -321,9 +317,7 @@ function DiaryCommentSection({
     const out: Array<{ id: number; isDeleted: boolean }> = [];
     for (const comment of commentItems) {
       out.push({ id: comment.id, isDeleted: comment.isDeleted });
-      const replies = sortCommentsByOldest(
-        commentRepliesMap[comment.id] ?? []
-      );
+      const replies = sortCommentsByOldest(commentRepliesMap[comment.id] ?? []);
       for (const reply of replies) {
         out.push({ id: reply.id, isDeleted: reply.isDeleted });
       }
@@ -392,9 +386,7 @@ function DiaryCommentSection({
     if (!li || !commentWrapperRef.current.contains(li)) {
       return;
     }
-    const allLis = Array.from(
-      commentWrapperRef.current.querySelectorAll('li')
-    );
+    const allLis = Array.from(commentWrapperRef.current.querySelectorAll('li'));
     const liIndex = allLis.indexOf(li);
     if (liIndex < 0) {
       return;
@@ -890,11 +882,7 @@ function DiaryDetailView({
                     {diaryData.feelingEmoji}
                   </span>
                 )}
-                <Text
-                  size="caption1"
-                  weight="medium"
-                  className="text-gray-600"
-                >
+                <Text size="caption1" weight="medium" className="text-gray-600">
                   오늘의 기분 · {diaryData.feelingLabel}
                 </Text>
                 <span
@@ -928,11 +916,7 @@ function DiaryDetailView({
                     {diaryData.feelingEmoji}
                   </span>
                 )}
-                <Text
-                  size="caption1"
-                  weight="medium"
-                  className="text-gray-600"
-                >
+                <Text size="caption1" weight="medium" className="text-gray-600">
                   오늘의 기분 · {diaryData.feelingLabel}
                 </Text>
                 <span
@@ -963,11 +947,7 @@ function DiaryDetailView({
                     className="text-[15px] leading-[1.9]"
                   />
                 ) : (
-                  <Text
-                    size="body2"
-                    weight="regular"
-                    className="text-gray-500"
-                  >
+                  <Text size="body2" weight="regular" className="text-gray-500">
                     작성된 내용이 없습니다.
                   </Text>
                 )}

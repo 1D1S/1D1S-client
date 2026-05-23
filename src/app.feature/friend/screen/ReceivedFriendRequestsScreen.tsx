@@ -1,9 +1,7 @@
 'use client';
 
 import { Button, Text } from '@1d1s/design-system';
-import {
-  FriendRequestListSkeleton,
-} from '@component/skeletons/ListItemSkeleton';
+import { FriendRequestListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
@@ -54,59 +52,59 @@ export default function ReceivedFriendRequestsScreen(): React.ReactElement {
           actionCount={2}
         />
       ) : (
-      <section
-        className={cn(
-          'mt-3 overflow-hidden border-y border-gray-100 bg-white',
-          'data-fade-in lg:mt-6 lg:rounded-[14px] lg:border',
-        )}
-      >
-        {isError ? (
-          <div className="flex w-full justify-center py-10">
-            <Text size="body2" className="text-red-500">
-              {error
-                ? normalizeApiError(error).message
-                : '받은 친구 신청을 불러오지 못했습니다.'}
-            </Text>
-          </div>
-        ) : requests.length === 0 ? (
-          <div className="flex w-full justify-center py-10">
-            <Text size="body2" className="text-gray-500">
-              받은 친구 신청이 없습니다.
-            </Text>
-          </div>
-        ) : (
-          requests.map((request, idx) => (
-            <React.Fragment key={request.requestId}>
-              {idx > 0 ? <div className="ml-16 h-px bg-gray-100" /> : null}
-              <FriendRequestListItem
-                request={request}
-                actions={
-                  <>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      disabled={isMutating}
-                      onClick={() => handleAccept(request.requestId)}
-                    >
-                      수락
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      size="sm"
-                      disabled={isMutating}
-                      onClick={() =>
-                        handleReject(request.requestId, request.nickname)
-                      }
-                    >
-                      거절
-                    </Button>
-                  </>
-                }
-              />
-            </React.Fragment>
-          ))
-        )}
-      </section>
+        <section
+          className={cn(
+            'mt-3 overflow-hidden border-y border-gray-100 bg-white',
+            'data-fade-in lg:mt-6 lg:rounded-[14px] lg:border'
+          )}
+        >
+          {isError ? (
+            <div className="flex w-full justify-center py-10">
+              <Text size="body2" className="text-red-500">
+                {error
+                  ? normalizeApiError(error).message
+                  : '받은 친구 신청을 불러오지 못했습니다.'}
+              </Text>
+            </div>
+          ) : requests.length === 0 ? (
+            <div className="flex w-full justify-center py-10">
+              <Text size="body2" className="text-gray-500">
+                받은 친구 신청이 없습니다.
+              </Text>
+            </div>
+          ) : (
+            requests.map((request, idx) => (
+              <React.Fragment key={request.requestId}>
+                {idx > 0 ? <div className="ml-16 h-px bg-gray-100" /> : null}
+                <FriendRequestListItem
+                  request={request}
+                  actions={
+                    <>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        disabled={isMutating}
+                        onClick={() => handleAccept(request.requestId)}
+                      >
+                        수락
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="sm"
+                        disabled={isMutating}
+                        onClick={() =>
+                          handleReject(request.requestId, request.nickname)
+                        }
+                      >
+                        거절
+                      </Button>
+                    </>
+                  }
+                />
+              </React.Fragment>
+            ))
+          )}
+        </section>
       )}
     </FriendPageShell>
   );

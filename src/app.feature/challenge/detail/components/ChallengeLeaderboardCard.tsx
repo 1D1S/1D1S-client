@@ -62,9 +62,7 @@ export function ChallengeLeaderboardCard({
               >
                 <button
                   type="button"
-                  onClick={() =>
-                    onMemberClick?.(entry.memberId)
-                  }
+                  onClick={() => onMemberClick?.(entry.memberId)}
                   className={cn(
                     'flex w-full cursor-pointer items-center gap-2.5',
                     'rounded-md px-2 py-2.5 text-left transition-colors',

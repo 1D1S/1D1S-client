@@ -52,7 +52,7 @@ export function BrowserPermissionPrompt(): React.ReactElement {
   const hasMounted = useSyncExternalStore(
     NOOP_SUBSCRIBE,
     () => true,
-    () => false,
+    () => false
   );
 
   const router = useRouter();
@@ -114,7 +114,7 @@ export function BrowserPermissionPrompt(): React.ReactElement {
       permission !== 'unsupported' &&
       !persistedDismiss &&
       !sessionDismissed &&
-      !isOnSettingsPage,
+      !isOnSettingsPage
   );
 
   return (
@@ -155,11 +155,7 @@ export function BrowserPermissionPrompt(): React.ReactElement {
             닫기
           </Button>
           {isDenied ? (
-            <Button
-              type="button"
-              size="medium"
-              onClick={handleGoToSettings}
-            >
+            <Button type="button" size="medium" onClick={handleGoToSettings}>
               알림 설정으로 이동
             </Button>
           ) : (

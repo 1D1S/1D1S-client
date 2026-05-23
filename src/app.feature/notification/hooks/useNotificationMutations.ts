@@ -1,4 +1,8 @@
-import { useMutation, UseMutationResult, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  UseMutationResult,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import { notificationApi } from '../api/notificationApi';
 import { NOTIFICATION_QUERY_KEYS } from '../consts/queryKeys';
@@ -8,7 +12,9 @@ import {
   WebPushEndpointRequest,
 } from '../type/notification';
 
-interface PrefContext { previous: NotificationPreferences | undefined }
+interface PrefContext {
+  previous: NotificationPreferences | undefined;
+}
 
 export function useMarkAsRead(): UseMutationResult<void, Error, number> {
   const queryClient = useQueryClient();

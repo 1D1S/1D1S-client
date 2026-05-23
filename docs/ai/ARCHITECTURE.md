@@ -4,20 +4,20 @@
 
 ## 기술 스택
 
-| 레이어             | 기술                                 |
-| ------------------ | ------------------------------------ |
-| 런타임             | Node.js 20+, pnpm 10.11             |
-| 프레임워크         | Next.js 16.1.5 (App Router, Turbopack) |
-| 언어               | TypeScript 5.8.2                     |
-| UI                 | React 19.2.4, Tailwind CSS 4.1       |
-| 디자인 시스템      | @1d1s/design-system (^1.2.2)        |
-| HTTP 클라이언트    | Axios 1.9                           |
-| 서버 상태          | TanStack React Query v5             |
-| 폼                 | React Hook Form 7 + Zod 3 + @hookform/resolvers |
-| 에디터             | Tiptap 3.22 (일지 작성)             |
-| 애니메이션         | Framer Motion 12                    |
-| UI 컴포넌트        | Radix UI, CVA, Vaul, Sonner, cmdk   |
-| Dead code 검사     | Knip 6                              |
+| 레이어          | 기술                                            |
+| --------------- | ----------------------------------------------- |
+| 런타임          | Node.js 20+, pnpm 10.11                         |
+| 프레임워크      | Next.js 16.1.5 (App Router, Turbopack)          |
+| 언어            | TypeScript 5.8.2                                |
+| UI              | React 19.2.4, Tailwind CSS 4.1                  |
+| 디자인 시스템   | @1d1s/design-system (^1.2.2)                    |
+| HTTP 클라이언트 | Axios 1.9                                       |
+| 서버 상태       | TanStack React Query v5                         |
+| 폼              | React Hook Form 7 + Zod 3 + @hookform/resolvers |
+| 에디터          | Tiptap 3.22 (일지 작성)                         |
+| 애니메이션      | Framer Motion 12                                |
+| UI 컴포넌트     | Radix UI, CVA, Vaul, Sonner, cmdk               |
+| Dead code 검사  | Knip 6                                          |
 
 ---
 
@@ -119,27 +119,27 @@ src/
 
 ### Route Group / Path -> URL 매핑
 
-| 경로                         | URL                                    | 주요 페이지              |
-| ---------------------------- | -------------------------------------- | ------------------------ |
-| `(auth)`                     | `/login`, `/signup`                    | 로그인, 회원가입         |
-| `(auth)/login/oauth2/code/`  | `/login/oauth2/code/[provider]`        | OAuth2 콜백              |
-| `challenge/`                 | `/challenge`, `/challenge/[id]`        | 챌린지 목록/상세         |
-| `challenge/[id]/edit/`       | `/challenge/[id]/edit`                 | 챌린지 수정              |
-| `challenge/[id]/diary/`      | `/challenge/[id]/diary`                | 챌린지별 일지 목록       |
-| `challenge/create/`          | `/challenge/create`                    | 챌린지 작성              |
-| `diary/`                     | `/diary`, `/diary/[id]`                | 일지 목록/상세           |
-| `diary/create/`              | `/diary/create`                        | 일지 작성                |
-| `member/[memberId]/`         | `/member/[memberId]`                   | 회원 프로필              |
-| `member/[memberId]/diary/`   | `/member/[memberId]/diary`             | 회원의 일지 목록         |
-| `mypage/`                    | `/mypage`                              | 마이페이지               |
-| `mypage/diary/`              | `/mypage/diary`                        | 내 일지 목록             |
-| `mypage/friend/`             | `/mypage/friend`, `received`, `sent`   | 친구/요청 관리           |
-| `mypage/settings/`           | `/mypage/settings`, `profile`, `notifications` | 설정              |
-| `notification/`              | `/notification`                        | 알림                     |
-| `onboarding/`                | `/onboarding`                          | 온보딩                   |
-| `inquiry/`                   | `/inquiry`                             | 문의                     |
-| `privacy/`, `terms/`         | `/privacy`, `/terms`                   | 법적 고지 (legal)        |
-| `api/revalidate/diary/`      | `/api/revalidate/diary`                | ISR 무효화 API           |
+| 경로                        | URL                                            | 주요 페이지        |
+| --------------------------- | ---------------------------------------------- | ------------------ |
+| `(auth)`                    | `/login`, `/signup`                            | 로그인, 회원가입   |
+| `(auth)/login/oauth2/code/` | `/login/oauth2/code/[provider]`                | OAuth2 콜백        |
+| `challenge/`                | `/challenge`, `/challenge/[id]`                | 챌린지 목록/상세   |
+| `challenge/[id]/edit/`      | `/challenge/[id]/edit`                         | 챌린지 수정        |
+| `challenge/[id]/diary/`     | `/challenge/[id]/diary`                        | 챌린지별 일지 목록 |
+| `challenge/create/`         | `/challenge/create`                            | 챌린지 작성        |
+| `diary/`                    | `/diary`, `/diary/[id]`                        | 일지 목록/상세     |
+| `diary/create/`             | `/diary/create`                                | 일지 작성          |
+| `member/[memberId]/`        | `/member/[memberId]`                           | 회원 프로필        |
+| `member/[memberId]/diary/`  | `/member/[memberId]/diary`                     | 회원의 일지 목록   |
+| `mypage/`                   | `/mypage`                                      | 마이페이지         |
+| `mypage/diary/`             | `/mypage/diary`                                | 내 일지 목록       |
+| `mypage/friend/`            | `/mypage/friend`, `received`, `sent`           | 친구/요청 관리     |
+| `mypage/settings/`          | `/mypage/settings`, `profile`, `notifications` | 설정               |
+| `notification/`             | `/notification`                                | 알림               |
+| `onboarding/`               | `/onboarding`                                  | 온보딩             |
+| `inquiry/`                  | `/inquiry`                                     | 문의               |
+| `privacy/`, `terms/`        | `/privacy`, `/terms`                           | 법적 고지 (legal)  |
+| `api/revalidate/diary/`     | `/api/revalidate/diary`                        | ISR 무효화 API     |
 
 ### Page -> Screen 패턴
 
@@ -220,12 +220,12 @@ app.feature/{기능명}/{서브모듈}/
 
 ## 상태 관리
 
-| 상태 유형          | 도구                  | 용도                              |
-| ------------------ | --------------------- | --------------------------------- |
-| 서버 상태          | TanStack Query v5     | API 데이터 캐싱, 무한 스크롤, RSC prefetch |
-| 폼 상태            | React Hook Form + Zod | 폼 입력, 검증 (`zodResolver`)     |
-| 로컬 UI 상태       | React useState/useReducer | 모달, 토글, 일시적 UI 상태   |
-| 인증 상태          | HTTP-Only Cookie + localStorage 플래그 + 도메인 공유 힌트 쿠키 | 토큰 저장 + 인증 힌트 |
+| 상태 유형    | 도구                                                           | 용도                                       |
+| ------------ | -------------------------------------------------------------- | ------------------------------------------ |
+| 서버 상태    | TanStack Query v5                                              | API 데이터 캐싱, 무한 스크롤, RSC prefetch |
+| 폼 상태      | React Hook Form + Zod                                          | 폼 입력, 검증 (`zodResolver`)              |
+| 로컬 UI 상태 | React useState/useReducer                                      | 모달, 토글, 일시적 UI 상태                 |
+| 인증 상태    | HTTP-Only Cookie + localStorage 플래그 + 도메인 공유 힌트 쿠키 | 토큰 저장 + 인증 힌트                      |
 
 ---
 
@@ -248,14 +248,14 @@ app.feature/{기능명}/{서브모듈}/
 
 ## 스타일 & 정적 자산
 
-| 항목             | 위치                              |
-| ---------------- | --------------------------------- |
-| 글로벌 CSS       | `src/app.styles/globals.css`      |
-| 색상 팔레트      | `src/app.styles/colors.css`       |
-| 타이포그래피     | `src/app.styles/typography.css`   |
-| 애니메이션       | `src/app.styles/animation.css`    |
-| 그림자           | `src/app.styles/shadow.css`       |
-| Tailwind 설정    | `src/app.styles/globals.css` (`@theme`) |
-| 폰트 로딩        | `src/app.lib/font.ts` (Pretendard) |
-| 정적 자산        | `public/`                         |
-| 디자인 시스템    | `@1d1s/design-system` (Tailwind `@source` 등록) |
+| 항목          | 위치                                            |
+| ------------- | ----------------------------------------------- |
+| 글로벌 CSS    | `src/app.styles/globals.css`                    |
+| 색상 팔레트   | `src/app.styles/colors.css`                     |
+| 타이포그래피  | `src/app.styles/typography.css`                 |
+| 애니메이션    | `src/app.styles/animation.css`                  |
+| 그림자        | `src/app.styles/shadow.css`                     |
+| Tailwind 설정 | `src/app.styles/globals.css` (`@theme`)         |
+| 폰트 로딩     | `src/app.lib/font.ts` (Pretendard)              |
+| 정적 자산     | `public/`                                       |
+| 디자인 시스템 | `@1d1s/design-system` (Tailwind `@source` 등록) |

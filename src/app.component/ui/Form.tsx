@@ -141,11 +141,4 @@ function FormMessage({
   );
 }
 
-export {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-  useFormField,
-};
+export { Form, FormControl, FormField, FormItem, FormMessage, useFormField };

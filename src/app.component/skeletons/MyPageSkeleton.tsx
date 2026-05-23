@@ -22,10 +22,7 @@ export function MyPageSkeleton(): React.ReactElement {
           )}
         >
           <div className="flex items-center gap-4">
-            <Skeleton
-              shape="circle"
-              className="h-20 w-20 lg:h-24 lg:w-24"
-            />
+            <Skeleton shape="circle" className="h-20 w-20 lg:h-24 lg:w-24" />
             <div className="flex flex-col gap-2">
               <Skeleton shape="text" className="h-5 w-32" />
               <Skeleton shape="text" className="h-3.5 w-40" />
@@ -96,14 +93,11 @@ export function MyPageSkeleton(): React.ReactElement {
             <div
               className={cn(
                 'grid grid-cols-2 gap-2.5',
-                'sm:grid-cols-3 md:grid-cols-5 md:gap-3',
+                'sm:grid-cols-3 md:grid-cols-5 md:gap-3'
               )}
             >
               {Array.from({ length: 5 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center gap-2"
-                >
+                <div key={index} className="flex flex-col items-center gap-2">
                   <Skeleton shape="circle" className="h-14 w-14" />
                   <Skeleton shape="text" className="h-2.5 w-10" />
                 </div>
@@ -116,14 +110,11 @@ export function MyPageSkeleton(): React.ReactElement {
             <Skeleton shape="text" className="h-5 w-32" />
             <div className="-mx-5 overflow-x-auto px-5 py-2">
               <div className="flex w-max gap-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="w-[220px] shrink-0"
-                >
-                  <ChallengeCardSkeleton />
-                </div>
-              ))}
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="w-[220px] shrink-0">
+                    <ChallengeCardSkeleton />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -133,14 +124,11 @@ export function MyPageSkeleton(): React.ReactElement {
             <Skeleton shape="text" className="h-5 w-20" />
             <div className="overflow-x-auto">
               <div className="flex w-max gap-3 py-2">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="w-[240px] shrink-0"
-                >
-                  <DiaryCardSkeleton />
-                </div>
-              ))}
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <div key={index} className="w-[240px] shrink-0">
+                    <DiaryCardSkeleton />
+                  </div>
+                ))}
               </div>
             </div>
           </div>

@@ -29,7 +29,7 @@ export function MyPageBadgesSection({
       <div
         className={cn(
           'mt-4 grid grid-cols-2 gap-2.5',
-          'sm:grid-cols-3 md:grid-cols-5 md:gap-3',
+          'sm:grid-cols-3 md:grid-cols-5 md:gap-3'
         )}
       >
         {badges.map((badge) => (

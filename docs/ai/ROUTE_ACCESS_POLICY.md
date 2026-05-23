@@ -4,19 +4,19 @@
 
 ## 관련 파일
 
-| 역할                | 파일                                              |
-| ------------------- | ------------------------------------------------- |
-| 미들웨어 진입점     | `src/middleware.ts` (matcher) → `proxy` re-export |
-| 미들웨어 체인       | `src/app.module/middleware/middleware.ts`         |
-| 인증 미들웨어       | `src/app.module/middleware/auth.ts`               |
-| 보안 헤더 미들웨어  | `src/app.module/middleware/headers.ts`            |
-| 보안 미들웨어       | `src/app.module/middleware/security.ts`           |
-| 리다이렉트 미들웨어 | `src/app.module/middleware/redirect.ts`           |
-| 로깅 미들웨어       | `src/app.module/middleware/logging.ts`            |
-| 토큰 유틸 (클라이언트) | `src/app.module/utils/auth.ts` (`authStorage`) |
-| 토큰 쿠키 이름      | `src/app.module/utils/tokenCookie.ts`             |
-| 서버 사이드 토큰 헬퍼 | `src/app.module/utils/serverAuth.ts`            |
-| 로그인 필요 다이얼로그 | `src/app.component/LoginRequiredDialog.tsx`    |
+| 역할                   | 파일                                              |
+| ---------------------- | ------------------------------------------------- |
+| 미들웨어 진입점        | `src/middleware.ts` (matcher) → `proxy` re-export |
+| 미들웨어 체인          | `src/app.module/middleware/middleware.ts`         |
+| 인증 미들웨어          | `src/app.module/middleware/auth.ts`               |
+| 보안 헤더 미들웨어     | `src/app.module/middleware/headers.ts`            |
+| 보안 미들웨어          | `src/app.module/middleware/security.ts`           |
+| 리다이렉트 미들웨어    | `src/app.module/middleware/redirect.ts`           |
+| 로깅 미들웨어          | `src/app.module/middleware/logging.ts`            |
+| 토큰 유틸 (클라이언트) | `src/app.module/utils/auth.ts` (`authStorage`)    |
+| 토큰 쿠키 이름         | `src/app.module/utils/tokenCookie.ts`             |
+| 서버 사이드 토큰 헬퍼  | `src/app.module/utils/serverAuth.ts`              |
+| 로그인 필요 다이얼로그 | `src/app.component/LoginRequiredDialog.tsx`       |
 
 ---
 
@@ -25,27 +25,27 @@
 ### `authStorage` (`src/app.module/utils/auth.ts`)
 
 ```ts
-authStorage.markAuthenticated()
+authStorage.markAuthenticated();
 // -> localStorage '1d1s:isAuthenticated' = 'true'
 // -> domain cookie '1d1s:hasSession' = '1' (.1day1streak.com, 7일)
 
-authStorage.clearTokens()
+authStorage.clearTokens();
 // -> localStorage '1d1s:isAuthenticated' 제거
 // -> domain + host cookie '1d1s:hasSession' 모두 제거
 
-authStorage.hasTokens()
+authStorage.hasTokens();
 // 1) JS에서 읽히는 access 토큰 쿠키 존재 → true
 // 2) 없으면 localStorage 플래그 또는 도메인 공유 힌트 쿠키로 폴백
 ```
 
 ### 토큰 저장
 
-| 저장소               | 내용                                  | 관리 주체   |
-| -------------------- | ------------------------------------- | ----------- |
-| HTTP-Only Cookie     | Access Token                          | 백엔드      |
-| HTTP-Only Cookie     | Refresh Token                         | 백엔드      |
-| localStorage         | `1d1s:isAuthenticated` (인증 플래그)  | 프론트엔드  |
-| 도메인 공유 Cookie   | `1d1s:hasSession` (서브도메인 힌트)   | 프론트엔드  |
+| 저장소             | 내용                                 | 관리 주체  |
+| ------------------ | ------------------------------------ | ---------- |
+| HTTP-Only Cookie   | Access Token                         | 백엔드     |
+| HTTP-Only Cookie   | Refresh Token                        | 백엔드     |
+| localStorage       | `1d1s:isAuthenticated` (인증 플래그) | 프론트엔드 |
+| 도메인 공유 Cookie | `1d1s:hasSession` (서브도메인 힌트)  | 프론트엔드 |
 
 ---
 
@@ -55,19 +55,19 @@ authStorage.hasTokens()
 
 ### list-redirect (목록으로 보냄 + `loginRequired=true`)
 
-| 라우트 패턴                | 미인증 시 리다이렉트                   |
-| -------------------------- | -------------------------------------- |
-| `/challenge/{id}`          | `/challenge?loginRequired=true`        |
-| `/diary/{id}`              | `/diary?loginRequired=true`            |
+| 라우트 패턴       | 미인증 시 리다이렉트            |
+| ----------------- | ------------------------------- |
+| `/challenge/{id}` | `/challenge?loginRequired=true` |
+| `/diary/{id}`     | `/diary?loginRequired=true`     |
 
 ### login-redirect (`/login`으로 보냄)
 
-| 라우트 패턴                | 동작                |
-| -------------------------- | ------------------- |
-| `/challenge/{id}/edit`     | `/login`으로 리다이렉트 |
-| `/challenge/create`        | `/login`으로 리다이렉트 |
-| `/mypage` (하위 포함)      | `/login`으로 리다이렉트 |
-| `/notification`            | `/login`으로 리다이렉트 |
+| 라우트 패턴            | 동작                    |
+| ---------------------- | ----------------------- |
+| `/challenge/{id}/edit` | `/login`으로 리다이렉트 |
+| `/challenge/create`    | `/login`으로 리다이렉트 |
+| `/mypage` (하위 포함)  | `/login`으로 리다이렉트 |
+| `/notification`        | `/login`으로 리다이렉트 |
 
 ### 토큰 검증 로직
 
@@ -86,13 +86,14 @@ authStorage.hasTokens()
 
 ## 보안 헤더 (`src/app.module/middleware/headers.ts`)
 
-| 헤더                    | 값                                  |
-| ----------------------- | ----------------------------------- |
-| Content-Security-Policy | `default-src 'self'` + 허용 도메인  |
-| X-Frame-Options         | `DENY`                              |
-| Cache-Control           | `public, max-age=3600`              |
+| 헤더                    | 값                                 |
+| ----------------------- | ---------------------------------- |
+| Content-Security-Policy | `default-src 'self'` + 허용 도메인 |
+| X-Frame-Options         | `DENY`                             |
+| Cache-Control           | `public, max-age=3600`             |
 
 CSP `connect-src`에 동적으로 추가되는 도메인:
+
 - `NEXT_PUBLIC_ODOS_API_URL`
 - `NEXT_PUBLIC_ODOS_IMAGE_URL`
 - `NEXT_PUBLIC_ODOS_IMAGE_BASE_URL`

@@ -48,11 +48,7 @@ export function PendingMemberItem({
           tone="cream"
         />
         <div className="flex min-w-0 flex-col items-start gap-1">
-          <Text
-            size="body2"
-            weight="bold"
-            className="truncate text-gray-900"
-          >
+          <Text size="body2" weight="bold" className="truncate text-gray-900">
             {name}
           </Text>
           <Tag tone="gray" size="xs">

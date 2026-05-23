@@ -14,9 +14,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 import { toast } from 'sonner';
 
-import {
-  useUpdateNotificationPreferences,
-} from '../hooks/useNotificationMutations';
+import { useUpdateNotificationPreferences } from '../hooks/useNotificationMutations';
 import { useNotificationPreferences } from '../hooks/useNotificationQueries';
 import { useWebPushSubscription } from '../hooks/useWebPushSubscription';
 import { NotificationPreferences } from '../type/notification';
@@ -40,7 +38,7 @@ function ToggleRow({
     <div
       className={cn(
         'flex items-center justify-between px-5 py-4',
-        disabled && 'opacity-40',
+        disabled && 'opacity-40'
       )}
     >
       <div className="flex flex-col gap-0.5">
@@ -65,14 +63,14 @@ function ToggleRow({
           'focus-visible:ring-2 focus-visible:outline-none',
           'focus-visible:ring-main-800',
           value ? 'bg-main-800' : 'bg-gray-200',
-          disabled && 'cursor-not-allowed',
+          disabled && 'cursor-not-allowed'
         )}
       >
         <span
           className={cn(
             'pointer-events-none inline-block h-5 w-5 rounded-full',
             'bg-white shadow-sm transition-transform duration-200',
-            value ? 'translate-x-5' : 'translate-x-0',
+            value ? 'translate-x-5' : 'translate-x-0'
           )}
         />
       </button>
@@ -80,7 +78,10 @@ function ToggleRow({
   );
 }
 
-interface WebPushLabelEntry { icon: React.ReactElement; text: string }
+interface WebPushLabelEntry {
+  icon: React.ReactElement;
+  text: string;
+}
 
 const WEB_PUSH_LABEL: Record<string, WebPushLabelEntry> = {
   subscribed: {
@@ -125,7 +126,7 @@ function openBrowserSettings(): void {
   const url = getBrowserSettingsUrl();
   if (!url) {
     toast.info(
-      '브라우저/기기 설정 → 알림에서 1Day 1Streak 의 권한을 허용해주세요.',
+      '브라우저/기기 설정 → 알림에서 1Day 1Streak 의 권한을 허용해주세요.'
     );
     return;
   }
@@ -134,7 +135,7 @@ function openBrowserSettings(): void {
     try {
       await navigator.clipboard?.writeText(url);
       toast.success(
-        '설정 주소를 복사했어요. 새 탭 주소창에 붙여넣어 열어주세요.',
+        '설정 주소를 복사했어요. 새 탭 주소창에 붙여넣어 열어주세요.'
       );
     } catch {
       toast.info(`주소창에 "${url}" 을 입력해 열어주세요.`);
@@ -158,9 +159,11 @@ export function NotificationSettingsScreen(): React.ReactElement {
 
   function handleChange(
     key: keyof NotificationPreferences,
-    next: boolean,
+    next: boolean
   ): void {
-    if (!data) { return; }
+    if (!data) {
+      return;
+    }
     updatePreferences({ ...data, [key]: next });
   }
 
@@ -181,7 +184,7 @@ export function NotificationSettingsScreen(): React.ReactElement {
         className={cn(
           'fixed top-0 right-0 left-0 z-30 flex h-14 items-center gap-3',
           'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden',
+          'lg:hidden'
         )}
       >
         <button
@@ -190,7 +193,7 @@ export function NotificationSettingsScreen(): React.ReactElement {
           onClick={() => router.back()}
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100',
+            'text-gray-700 transition-colors hover:bg-gray-100'
           )}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -226,10 +229,18 @@ export function NotificationSettingsScreen(): React.ReactElement {
               {status === 'idle' || status === 'loading' ? (
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col gap-0.5">
-                    <Text size="body1" weight="medium" className="text-gray-800">
+                    <Text
+                      size="body1"
+                      weight="medium"
+                      className="text-gray-800"
+                    >
                       브라우저 알림 허용
                     </Text>
-                    <Text size="caption1" weight="regular" className="text-gray-400">
+                    <Text
+                      size="caption1"
+                      weight="regular"
+                      className="text-gray-400"
+                    >
                       이 기기 브라우저로 실시간 알림을 받습니다
                     </Text>
                   </div>
@@ -237,7 +248,9 @@ export function NotificationSettingsScreen(): React.ReactElement {
                     variant="outlined"
                     size="small"
                     disabled={status === 'loading'}
-                    onClick={() => { void subscribe(); }}
+                    onClick={() => {
+                      void subscribe();
+                    }}
                   >
                     {status === 'loading' ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -276,7 +289,9 @@ export function NotificationSettingsScreen(): React.ReactElement {
                     size="body2"
                     weight="regular"
                     className={cn(
-                      status === 'subscribed' ? 'text-gray-700' : 'text-gray-500',
+                      status === 'subscribed'
+                        ? 'text-gray-700'
+                        : 'text-gray-500'
                     )}
                   >
                     {WEB_PUSH_LABEL[status]?.text}

@@ -71,11 +71,7 @@ export function ChallengeEditGoalSection(): React.ReactElement {
 
       {canEditGoals ? (
         <div className="mt-4 space-y-2">
-          <Text
-            size="caption1"
-            weight="bold"
-            className="block text-gray-600"
-          >
+          <Text size="caption1" weight="bold" className="block text-gray-600">
             공통 목표
           </Text>
           <FormField
@@ -103,11 +99,7 @@ export function ChallengeEditGoalSection(): React.ReactElement {
         </div>
       ) : isFixedGoal ? (
         <div className="mt-4 space-y-2">
-          <Text
-            size="caption1"
-            weight="bold"
-            className="block text-gray-600"
-          >
+          <Text size="caption1" weight="bold" className="block text-gray-600">
             공통 목표
           </Text>
           {goals.length > 0 ? (
@@ -136,11 +128,7 @@ export function ChallengeEditGoalSection(): React.ReactElement {
             'border-main-200 bg-main-100 rounded-2 mt-3 border px-4 py-3'
           )}
         >
-          <Text
-            size="caption1"
-            weight="bold"
-            className="text-main-900 block"
-          >
+          <Text size="caption1" weight="bold" className="text-main-900 block">
             자유 목표 챌린지는 참여자가 자신만의 목표를 직접 설정해요.
           </Text>
         </div>

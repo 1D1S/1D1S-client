@@ -168,15 +168,12 @@ export function MemberDiaryListScreen({
                 }
                 onUserClick={
                   diary.authorInfoDto?.id
-                    ? () =>
-                        router.push(`/member/${diary.authorInfoDto!.id}`)
+                    ? () => router.push(`/member/${diary.authorInfoDto!.id}`)
                     : undefined
                 }
                 onChallengeClick={() => {
                   if (diary.challenge?.challengeId) {
-                    router.push(
-                      `/challenge/${diary.challenge.challengeId}`
-                    );
+                    router.push(`/challenge/${diary.challenge.challengeId}`);
                   }
                 }}
                 date={getRelativeTimeLabel(

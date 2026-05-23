@@ -65,10 +65,7 @@ import {
   useUpdateParticipantGoal,
 } from '../hooks/useChallengeMutations';
 import { ChallengeDiaryItem } from '../type/challengeDiary';
-import {
-  buildHeroGradient,
-  getCategoryAccent,
-} from '../utils/challengeAccent';
+import { buildHeroGradient, getCategoryAccent } from '../utils/challengeAccent';
 import {
   EMPTY_GOALS,
   EMPTY_PARTICIPANTS,
@@ -210,8 +207,7 @@ export function ChallengeDetailScreen({
     !isChallengeAlreadyEnded &&
     !isMidJoinBlocked;
   const previewDiaries = challengeDiariesData?.items ?? [];
-  const hasMoreDiaries =
-    challengeDiariesData?.pageInfo.hasNextPage ?? false;
+  const hasMoreDiaries = challengeDiariesData?.pageInfo.hasNextPage ?? false;
 
   const isActionLoading =
     joinChallenge.isPending ||
@@ -447,10 +443,7 @@ export function ChallengeDetailScreen({
 
   const accentColor = getCategoryAccent(summary.category);
   const heroGradient = buildHeroGradient(accentColor);
-  const dateRangeText = formatDateRange(
-    summary.startDate,
-    summary.endDate
-  );
+  const dateRangeText = formatDateRange(summary.startDate, summary.endDate);
   const remainingLabel = getRemainingLabel(summary.endDate);
   // 표시 규칙:
   //   - 개인 챌린지: "개인 챌린지"
@@ -552,8 +545,8 @@ export function ChallengeDetailScreen({
             내 목표 입력
           </DialogTitle>
           <DialogDescription className="text-[13px] leading-relaxed text-gray-500">
-            챌린지에서 달성할 목표를 입력하고 Enter 를 눌러 추가해 주세요.
-            (최대 5개)
+            챌린지에서 달성할 목표를 입력하고 Enter 를 눌러 추가해 주세요. (최대
+            5개)
           </DialogDescription>
         </DialogHeader>
         <DialogBody>
@@ -770,198 +763,241 @@ export function ChallengeDetailScreen({
           description="최근 3일 동안 작성 가능한 날짜를 모두 사용했습니다."
         />
 
-      {/* 히어로 + 모바일 floating 뒤로가기 */}
-      <div className="relative">
-        <ChallengeDetailHero
-          title={summary.title}
-          categoryLabel={getCategoryLabel(summary.category)}
-          typeLabel={`${formatChallengeTypeLabel(summary.goalType)} 챌린지`}
-          metaLabel={heroMetaLabel}
-          imageUrl={summary.thumbnailImage ?? undefined}
-          accent={accentColor}
-          gradient={heroGradient}
-          bleed
-          hideTextOnMobile
-        />
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={() => router.back()}
-          className={cn(
-            'absolute left-3.5 z-10 flex h-9 w-9',
-            'top-[calc(0.875rem+env(safe-area-inset-top))]',
-            'items-center justify-center rounded-full bg-white/90',
-            'text-gray-700 shadow-sm backdrop-blur',
-            'transition hover:bg-white lg:hidden'
-          )}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* 모바일 컨텐츠 헤더 — 히어로 위로 오버레이 */}
-      <div
-        className={cn(
-          'relative z-10 -mt-5 rounded-t-[20px] bg-white px-5 pt-5 pb-1',
-          'lg:hidden'
-        )}
-      >
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Tag tone="brand" size="sm">
-            {getCategoryLabel(summary.category)}
-          </Tag>
-          <Tag tone="gray" size="sm">
-            {formatChallengeTypeLabel(summary.goalType)}
-          </Tag>
-        </div>
-        <Text
-          as="h1"
-          size="heading1"
-          weight="extrabold"
-          className="mt-2.5 block tracking-[-0.5px] break-keep text-gray-900"
-        >
-          {summary.title}
-        </Text>
-        <div className="mt-1.5 flex items-center justify-between gap-2">
-          <Text
-            size="caption1"
-            weight="regular"
-            className="min-w-0 flex-1 text-gray-500"
-          >
-            {heroMetaLabel}
-          </Text>
+        {/* 히어로 + 모바일 floating 뒤로가기 */}
+        <div className="relative">
+          <ChallengeDetailHero
+            title={summary.title}
+            categoryLabel={getCategoryLabel(summary.category)}
+            typeLabel={`${formatChallengeTypeLabel(summary.goalType)} 챌린지`}
+            metaLabel={heroMetaLabel}
+            imageUrl={summary.thumbnailImage ?? undefined}
+            accent={accentColor}
+            gradient={heroGradient}
+            bleed
+            hideTextOnMobile
+          />
           <button
             type="button"
-            onClick={handleToggleLike}
-            disabled={isActionLoading}
-            aria-label={
-              summary.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'
-            }
+            aria-label="뒤로가기"
+            onClick={() => router.back()}
             className={cn(
-              'flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1',
-              'text-[12px] font-bold transition-colors disabled:opacity-50',
-              summary.likeInfo.likedByMe
-                ? 'text-main-800 bg-main-100 hover:bg-main-200/70'
-                : 'text-gray-500 hover:bg-gray-100'
+              'absolute left-3.5 z-10 flex h-9 w-9',
+              'top-[calc(0.875rem+env(safe-area-inset-top))]',
+              'items-center justify-center rounded-full bg-white/90',
+              'text-gray-700 shadow-sm backdrop-blur',
+              'transition hover:bg-white lg:hidden'
             )}
           >
-            <Heart
-              className={cn(
-                'h-3.5 w-3.5',
-                summary.likeInfo.likedByMe && 'fill-current'
-              )}
-            />
-            {summary.likeInfo.likeCnt}
+            <ArrowLeft className="h-4 w-4" />
           </button>
         </div>
 
-        {activeParticipants.length > 0 ? (
-          <div
-            className={cn(
-              'mt-4 flex items-center gap-2.5 rounded-[12px]',
-              'bg-main-100 px-3.5 py-3'
-            )}
+        {/* 모바일 컨텐츠 헤더 — 히어로 위로 오버레이 */}
+        <div
+          className={cn(
+            'relative z-10 -mt-5 rounded-t-[20px] bg-white px-5 pt-5 pb-1',
+            'lg:hidden'
+          )}
+        >
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Tag tone="brand" size="sm">
+              {getCategoryLabel(summary.category)}
+            </Tag>
+            <Tag tone="gray" size="sm">
+              {formatChallengeTypeLabel(summary.goalType)}
+            </Tag>
+          </div>
+          <Text
+            as="h1"
+            size="heading1"
+            weight="extrabold"
+            className="mt-2.5 block tracking-[-0.5px] break-keep text-gray-900"
           >
-            <div className="flex">
-              {activeParticipants.slice(0, 4).map((participant, idx) => (
-                <div
-                  key={participant.participantId}
-                  className={cn(
-                    'h-7 w-7 overflow-hidden rounded-full',
-                    'bg-main-200 border-2 border-white',
-                    idx > 0 && '-ml-2.5'
-                  )}
-                >
-                  {participant.profileImg ? (
-                    <Image
-                      src={participant.profileImg}
-                      alt=""
-                      width={28}
-                      height={28}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <Image
-                      src="/DefaultProfile.png"
-                      alt=""
-                      width={28}
-                      height={28}
-                      className="h-full w-full object-cover"
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
+            {summary.title}
+          </Text>
+          <div className="mt-1.5 flex items-center justify-between gap-2">
             <Text
               size="caption1"
               weight="regular"
-              className="text-gray-700"
+              className="min-w-0 flex-1 text-gray-500"
             >
-              <span className="font-extrabold">
-                {activeParticipants.length}명
-              </span>
-              이 함께 도전 중이에요
+              {heroMetaLabel}
             </Text>
-          </div>
-        ) : null}
-      </div>
-
-      <div
-        className={cn(
-          'relative z-10 flex w-full flex-col gap-3 px-5 pt-3',
-          'sm:pt-6 md:px-6 lg:gap-4 lg:px-8 lg:pt-8'
-        )}
-      >
-        {isHost && pendingParticipants.length > 0 ? (
-          <Card radius="lg" className="border-main-300 p-5 md:p-6">
-            <div className="flex items-center gap-2">
-              <CircleAlert className="text-main-800 h-5 w-5" />
-              <Text size="heading2" weight="bold" className="text-gray-900">
-                참여 인원 대기
-              </Text>
-              <Tag tone="brand" size="sm">
-                {pendingParticipants.length}명
-              </Tag>
-            </div>
-            <div
+            <button
+              type="button"
+              onClick={handleToggleLike}
+              disabled={isActionLoading}
+              aria-label={summary.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'}
               className={cn(
-                'mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3'
+                'flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1',
+                'text-[12px] font-bold transition-colors disabled:opacity-50',
+                summary.likeInfo.likedByMe
+                  ? 'text-main-800 bg-main-100 hover:bg-main-200/70'
+                  : 'text-gray-500 hover:bg-gray-100'
               )}
             >
-              {pendingParticipants.map((participant) => (
-                <PendingMemberItem
-                  key={participant.participantId}
-                  name={participant.nickname}
-                  joinedAt={formatRelativeJoinedText(participant.status)}
-                  profileImg={participant.profileImg}
-                  onProfileClick={() =>
-                    router.push(`/member/${participant.memberId}`)
-                  }
-                  onAccept={() =>
-                    handleAcceptParticipant(participant.participantId)
-                  }
-                  onReject={() =>
-                    handleRejectParticipant(participant.participantId)
-                  }
-                  isLoading={
-                    acceptParticipant.isPending ||
-                    rejectParticipant.isPending
-                  }
-                />
-              ))}
+              <Heart
+                className={cn(
+                  'h-3.5 w-3.5',
+                  summary.likeInfo.likedByMe && 'fill-current'
+                )}
+              />
+              {summary.likeInfo.likeCnt}
+            </button>
+          </div>
+
+          {activeParticipants.length > 0 ? (
+            <div
+              className={cn(
+                'mt-4 flex items-center gap-2.5 rounded-[12px]',
+                'bg-main-100 px-3.5 py-3'
+              )}
+            >
+              <div className="flex">
+                {activeParticipants.slice(0, 4).map((participant, idx) => (
+                  <div
+                    key={participant.participantId}
+                    className={cn(
+                      'h-7 w-7 overflow-hidden rounded-full',
+                      'bg-main-200 border-2 border-white',
+                      idx > 0 && '-ml-2.5'
+                    )}
+                  >
+                    {participant.profileImg ? (
+                      <Image
+                        src={participant.profileImg}
+                        alt=""
+                        width={28}
+                        height={28}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <Image
+                        src="/DefaultProfile.png"
+                        alt=""
+                        width={28}
+                        height={28}
+                        className="h-full w-full object-cover"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <Text size="caption1" weight="regular" className="text-gray-700">
+                <span className="font-extrabold">
+                  {activeParticipants.length}명
+                </span>
+                이 함께 도전 중이에요
+              </Text>
             </div>
-          </Card>
-        ) : null}
+          ) : null}
+        </div>
 
         <div
           className={cn(
-            'grid grid-cols-1 gap-4',
-            'lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-7'
+            'relative z-10 flex w-full flex-col gap-3 px-5 pt-3',
+            'sm:pt-6 md:px-6 lg:gap-4 lg:px-8 lg:pt-8'
           )}
         >
-          {/* 메인 콘텐츠: 소개 → 목표 → 참여자 일지 */}
-          <div className="flex min-w-0 flex-col gap-3.5 lg:gap-4">
-            {detail.description?.trim() ? (
+          {isHost && pendingParticipants.length > 0 ? (
+            <Card radius="lg" className="border-main-300 p-5 md:p-6">
+              <div className="flex items-center gap-2">
+                <CircleAlert className="text-main-800 h-5 w-5" />
+                <Text size="heading2" weight="bold" className="text-gray-900">
+                  참여 인원 대기
+                </Text>
+                <Tag tone="brand" size="sm">
+                  {pendingParticipants.length}명
+                </Tag>
+              </div>
+              <div
+                className={cn('mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3')}
+              >
+                {pendingParticipants.map((participant) => (
+                  <PendingMemberItem
+                    key={participant.participantId}
+                    name={participant.nickname}
+                    joinedAt={formatRelativeJoinedText(participant.status)}
+                    profileImg={participant.profileImg}
+                    onProfileClick={() =>
+                      router.push(`/member/${participant.memberId}`)
+                    }
+                    onAccept={() =>
+                      handleAcceptParticipant(participant.participantId)
+                    }
+                    onReject={() =>
+                      handleRejectParticipant(participant.participantId)
+                    }
+                    isLoading={
+                      acceptParticipant.isPending || rejectParticipant.isPending
+                    }
+                  />
+                ))}
+              </div>
+            </Card>
+          ) : null}
+
+          <div
+            className={cn(
+              'grid grid-cols-1 gap-4',
+              'lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-7'
+            )}
+          >
+            {/* 메인 콘텐츠: 소개 → 목표 → 참여자 일지 */}
+            <div className="flex min-w-0 flex-col gap-3.5 lg:gap-4">
+              {detail.description?.trim() ? (
+                <section
+                  className={cn(
+                    'rounded-[14px] border border-gray-100 bg-gray-50',
+                    'lg:border-gray-200 lg:bg-white',
+                    'p-4 sm:p-5 lg:p-6'
+                  )}
+                >
+                  <Text
+                    as="h2"
+                    size="heading2"
+                    weight="extrabold"
+                    className="mb-3 block tracking-[-0.3px] text-gray-900"
+                  >
+                    챌린지 소개
+                  </Text>
+                  <ExpandableText>{detail.description}</ExpandableText>
+                  <div className="mt-3 hidden flex-wrap items-center gap-1.5 lg:flex">
+                    <Tag tone="brand" size="sm">
+                      {getCategoryLabel(summary.category)}
+                    </Tag>
+                    <Tag tone="gray" size="sm">
+                      {formatChallengeTypeLabel(summary.goalType)}
+                    </Tag>
+                  </div>
+                </section>
+              ) : null}
+
+              <ChallengeRulesCard
+                goals={goals.map((goal) => goal.content)}
+                isFreeChallenge={isFreeChallenge}
+                editLabel={
+                  isHost && !isChallengeStarted && !isFreeChallenge
+                    ? '수정'
+                    : !isHost &&
+                        isFreeChallenge &&
+                        isParticipating &&
+                        !isChallengeStarted
+                      ? '내 목표 수정'
+                      : undefined
+                }
+                onEdit={
+                  isHost && !isChallengeStarted && !isFreeChallenge
+                    ? handleOpenEditChallengeGoalsModal
+                    : !isHost &&
+                        isFreeChallenge &&
+                        isParticipating &&
+                        !isChallengeStarted
+                      ? handleOpenEditGoalModal
+                      : undefined
+                }
+              />
+
               <section
                 className={cn(
                   'rounded-[14px] border border-gray-100 bg-gray-50',
@@ -969,157 +1005,103 @@ export function ChallengeDetailScreen({
                   'p-4 sm:p-5 lg:p-6'
                 )}
               >
-                <Text
-                  as="h2"
-                  size="heading2"
-                  weight="extrabold"
-                  className="mb-3 block tracking-[-0.3px] text-gray-900"
-                >
-                  챌린지 소개
-                </Text>
-                <ExpandableText>{detail.description}</ExpandableText>
-                <div className="mt-3 hidden flex-wrap items-center gap-1.5 lg:flex">
-                  <Tag tone="brand" size="sm">
-                    {getCategoryLabel(summary.category)}
-                  </Tag>
-                  <Tag tone="gray" size="sm">
-                    {formatChallengeTypeLabel(summary.goalType)}
-                  </Tag>
-                </div>
-              </section>
-            ) : null}
-
-            <ChallengeRulesCard
-              goals={goals.map((goal) => goal.content)}
-              isFreeChallenge={isFreeChallenge}
-              editLabel={
-                isHost && !isChallengeStarted && !isFreeChallenge
-                  ? '수정'
-                  : !isHost &&
-                      isFreeChallenge &&
-                      isParticipating &&
-                      !isChallengeStarted
-                    ? '내 목표 수정'
-                    : undefined
-              }
-              onEdit={
-                isHost && !isChallengeStarted && !isFreeChallenge
-                  ? handleOpenEditChallengeGoalsModal
-                  : !isHost &&
-                      isFreeChallenge &&
-                      isParticipating &&
-                      !isChallengeStarted
-                    ? handleOpenEditGoalModal
-                    : undefined
-              }
-            />
-
-            <section
-              className={cn(
-                'rounded-[14px] border border-gray-100 bg-gray-50',
-                'lg:border-gray-200 lg:bg-white',
-                'p-4 sm:p-5 lg:p-6'
-              )}
-            >
-              <div className="mb-3 flex items-baseline justify-between gap-2">
-                <Text
-                  as="h2"
-                  size="heading2"
-                  weight="extrabold"
-                  className="tracking-[-0.3px] text-gray-900"
-                >
-                  참여자 일지{' '}
+                <div className="mb-3 flex items-baseline justify-between gap-2">
                   <Text
-                    size="caption1"
-                    weight="regular"
-                    className="ml-1 text-gray-500"
+                    as="h2"
+                    size="heading2"
+                    weight="extrabold"
+                    className="tracking-[-0.3px] text-gray-900"
                   >
-                    · 최근 {Math.min(previewDiaries.length, 4)}개
+                    참여자 일지{' '}
+                    <Text
+                      size="caption1"
+                      weight="regular"
+                      className="ml-1 text-gray-500"
+                    >
+                      · 최근 {Math.min(previewDiaries.length, 4)}개
+                    </Text>
                   </Text>
-                </Text>
-                {hasMoreDiaries ? (
-                  <Link
-                    href={`/challenge/${id}/diary`}
-                    className={cn(
-                      'text-main-800 text-[12px] font-semibold',
-                      'hover:underline'
-                    )}
-                  >
-                    전체 보기 →
-                  </Link>
-                ) : null}
-              </div>
-              <ChallengeDiaryGrid
-                diaries={previewDiaries.slice(0, 4)}
-                isLoading={isDiariesLoading}
-                onDiaryClick={(diaryId) => router.push(`/diary/${diaryId}`)}
-                onLikeToggle={handleDiaryLikeToggle}
-                gridClassName={cn(
-                  'scrollbar-hide flex gap-3 overflow-x-auto',
-                  'sm:grid sm:gap-2.5 sm:overflow-visible',
-                  'sm:grid-cols-[repeat(auto-fill,minmax(160px,200px))]'
-                )}
-                itemClassName="w-[170px] shrink-0 sm:w-auto"
-              />
-            </section>
-          </div>
-
-          {/* 우측 sticky rail: 진행률 + 리더보드 */}
-          <aside
-            className={cn(
-              'flex min-w-0 flex-col gap-3.5',
-              'lg:sticky lg:top-6 lg:self-start'
-            )}
-          >
-            <div className="hidden lg:block">
-              <ChallengeProgressCard
-                progressPercent={participationRate}
-                participantsLabel={participantsLabel}
-                remainingLabel={dateRangeText}
-                ctaLabel={ctaConfig.label}
-                onCtaClick={ctaConfig.onClick}
-                ctaDisabled={ctaConfig.disabled}
-                ctaVariant={ctaConfig.variant}
-                showCta={ctaConfig.show}
-                ctaHint={ctaConfig.hint}
-                isInfinite={isEndless}
-                likeCount={summary.likeInfo.likeCnt}
-                likedByMe={summary.likeInfo.likedByMe}
-                onToggleLike={handleToggleLike}
-                isLikePending={isActionLoading}
-              />
+                  {hasMoreDiaries ? (
+                    <Link
+                      href={`/challenge/${id}/diary`}
+                      className={cn(
+                        'text-main-800 text-[12px] font-semibold',
+                        'hover:underline'
+                      )}
+                    >
+                      전체 보기 →
+                    </Link>
+                  ) : null}
+                </div>
+                <ChallengeDiaryGrid
+                  diaries={previewDiaries.slice(0, 4)}
+                  isLoading={isDiariesLoading}
+                  onDiaryClick={(diaryId) => router.push(`/diary/${diaryId}`)}
+                  onLikeToggle={handleDiaryLikeToggle}
+                  gridClassName={cn(
+                    'scrollbar-hide flex gap-3 overflow-x-auto',
+                    'sm:grid sm:gap-2.5 sm:overflow-visible',
+                    'sm:grid-cols-[repeat(auto-fill,minmax(160px,200px))]'
+                  )}
+                  itemClassName="w-[170px] shrink-0 sm:w-auto"
+                />
+              </section>
             </div>
 
-            <ChallengeLeaderboardCard
-              entries={activeParticipants.map((participant) => ({
-                participantId: participant.participantId,
-                memberId: participant.memberId,
-                nickname: participant.nickname,
-                profileImg: participant.profileImg,
-                isHost: participant.status === 'HOST',
-              }))}
-              onMemberClick={(memberId) =>
-                router.push(`/member/${memberId}`)
-              }
-            />
+            {/* 우측 sticky rail: 진행률 + 리더보드 */}
+            <aside
+              className={cn(
+                'flex min-w-0 flex-col gap-3.5',
+                'lg:sticky lg:top-6 lg:self-start'
+              )}
+            >
+              <div className="hidden lg:block">
+                <ChallengeProgressCard
+                  progressPercent={participationRate}
+                  participantsLabel={participantsLabel}
+                  remainingLabel={dateRangeText}
+                  ctaLabel={ctaConfig.label}
+                  onCtaClick={ctaConfig.onClick}
+                  ctaDisabled={ctaConfig.disabled}
+                  ctaVariant={ctaConfig.variant}
+                  showCta={ctaConfig.show}
+                  ctaHint={ctaConfig.hint}
+                  isInfinite={isEndless}
+                  likeCount={summary.likeInfo.likeCnt}
+                  likedByMe={summary.likeInfo.likedByMe}
+                  onToggleLike={handleToggleLike}
+                  isLikePending={isActionLoading}
+                />
+              </div>
 
-            {!isHost && isParticipating ? (
-              <button
-                type="button"
-                onClick={handleLeaveChallenge}
-                disabled={leaveChallenge.isPending}
-                className={cn(
-                  'mt-1 self-center text-[12px] text-gray-500',
-                  'underline-offset-2 hover:text-gray-700 hover:underline',
-                  'disabled:opacity-50'
-                )}
-              >
-                챌린지 나가기
-              </button>
-            ) : null}
-          </aside>
+              <ChallengeLeaderboardCard
+                entries={activeParticipants.map((participant) => ({
+                  participantId: participant.participantId,
+                  memberId: participant.memberId,
+                  nickname: participant.nickname,
+                  profileImg: participant.profileImg,
+                  isHost: participant.status === 'HOST',
+                }))}
+                onMemberClick={(memberId) => router.push(`/member/${memberId}`)}
+              />
+
+              {!isHost && isParticipating ? (
+                <button
+                  type="button"
+                  onClick={handleLeaveChallenge}
+                  disabled={leaveChallenge.isPending}
+                  className={cn(
+                    'mt-1 self-center text-[12px] text-gray-500',
+                    'underline-offset-2 hover:text-gray-700 hover:underline',
+                    'disabled:opacity-50'
+                  )}
+                >
+                  챌린지 나가기
+                </button>
+              ) : null}
+            </aside>
+          </div>
         </div>
-      </div>
       </div>
 
       {/* 모바일 sticky bottom CTA — data-fade-in 래퍼 밖에 둔다:

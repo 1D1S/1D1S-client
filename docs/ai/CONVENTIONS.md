@@ -4,14 +4,14 @@
 
 ## 파일 위치 규칙
 
-| 코드 종류           | 위치                  |
-| ------------------- | --------------------- |
-| 라우트 / 페이지     | `src/app/`            |
-| 도메인 기능         | `src/app.feature/`    |
-| 공용 컴포넌트       | `src/app.component/`  |
-| 핵심 모듈           | `src/app.module/`     |
-| 전역 상수           | `src/app.constants/`  |
-| 전역 스타일         | `src/app.styles/`     |
+| 코드 종류                  | 위치                                            |
+| -------------------------- | ----------------------------------------------- |
+| 라우트 / 페이지            | `src/app/`                                      |
+| 도메인 기능                | `src/app.feature/`                              |
+| 공용 컴포넌트              | `src/app.component/`                            |
+| 핵심 모듈                  | `src/app.module/`                               |
+| 전역 상수                  | `src/app.constants/`                            |
+| 전역 스타일                | `src/app.styles/`                               |
 | RSC/client 공용 라이브러리 | `src/app.lib/` (font, Prefetch, getQueryClient) |
 
 ### 파일 확장자
@@ -41,16 +41,17 @@
 
 ### 파일명 (.tsx → PascalCase / .ts → camelCase)
 
-| 종류     | 확장자 | 규칙                      | 예시                          |
-| -------- | ------ | ------------------------- | ----------------------------- |
-| 컴포넌트 | `.tsx` | PascalCase                | `ChallengeCard.tsx`           |
-| Screen   | `.tsx` | PascalCase + `Screen`     | `ChallengeListScreen.tsx`     |
-| 훅       | `.ts`  | `use` 접두사 + camelCase  | `useDiaryQueries.ts`          |
-| API      | `.ts`  | camelCase + `Api`         | `diaryBoardApi.ts`            |
-| 타입     | `.ts`  | camelCase                 | `challenge.ts`, `diary.ts`    |
-| 상수/Query Key | `.ts` | camelCase             | `queryKeys.ts`, `categories.ts` |
+| 종류           | 확장자 | 규칙                     | 예시                            |
+| -------------- | ------ | ------------------------ | ------------------------------- |
+| 컴포넌트       | `.tsx` | PascalCase               | `ChallengeCard.tsx`             |
+| Screen         | `.tsx` | PascalCase + `Screen`    | `ChallengeListScreen.tsx`       |
+| 훅             | `.ts`  | `use` 접두사 + camelCase | `useDiaryQueries.ts`            |
+| API            | `.ts`  | camelCase + `Api`        | `diaryBoardApi.ts`              |
+| 타입           | `.ts`  | camelCase                | `challenge.ts`, `diary.ts`      |
+| 상수/Query Key | `.ts`  | camelCase                | `queryKeys.ts`, `categories.ts` |
 
 예외:
+
 - Next.js 규약 파일은 소문자: `page.tsx`, `layout.tsx`, `route.ts`,
   `loading.tsx`, `not-found.tsx`, `middleware.ts` 등
 - 배럴 파일이 필요한 경우 `index.tsx` / `index.ts` 사용 (예:
@@ -59,11 +60,11 @@
 ### 변수 / 함수
 
 ```ts
-const userName = 'John';           // 변수: camelCase
-const MAX_LENGTH = 1000;           // 상수: SCREAMING_SNAKE_CASE
-const isActive = true;             // 불리언: is / has / should 접두사
-function handleClick() {}          // 이벤트 핸들러: handle 접두사
-function fetchData() {}            // 동작 함수: 동사로 시작
+const userName = 'John'; // 변수: camelCase
+const MAX_LENGTH = 1000; // 상수: SCREAMING_SNAKE_CASE
+const isActive = true; // 불리언: is / has / should 접두사
+function handleClick() {} // 이벤트 핸들러: handle 접두사
+function fetchData() {} // 동작 함수: 동사로 시작
 ```
 
 ### 컴포넌트 / Props
@@ -76,7 +77,9 @@ export default function ChallengeCard() {}
 export default function ChallengeListScreen() {}
 
 // Props: 컴포넌트명 + Props 또는 짧게 Props
-interface ChallengeCardProps { /* ... */ }
+interface ChallengeCardProps {
+  /* ... */
+}
 ```
 
 ### Query Key Factory
@@ -117,11 +120,7 @@ const user = data as User;
 
 // 타입 가드 사용 권장
 function isUser(data: unknown): data is User {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'id' in data
-  );
+  return typeof data === 'object' && data !== null && 'id' in data;
 }
 ```
 
@@ -148,10 +147,7 @@ interface Props {
   onEdit?: (id: string) => void;
 }
 
-export default function ChallengeCard({
-  challenge,
-  onEdit,
-}: Props) {
+export default function ChallengeCard({ challenge, onEdit }: Props) {
   // 1. 외부 훅 (useRouter, useQuery 등)
   // 2. 상태 (useState)
   // 3. Ref (useRef)
@@ -175,27 +171,37 @@ export default function ChallengeCard({
 
 ```tsx
 // 단순 조건
-{isVisible && <Modal />}
+{
+  isVisible && <Modal />;
+}
 
 // 이항 조건
-{isLoading ? <Skeleton /> : <Content />}
+{
+  isLoading ? <Skeleton /> : <Content />;
+}
 
 // Early return
 if (loading) return <Loading />;
 return <Content />;
 
 // 중첩 삼항 금지
-{a ? (b ? <X /> : <Y />) : <Z />}
+{
+  a ? b ? <X /> : <Y /> : <Z />;
+}
 ```
 
 ### 리스트 렌더링
 
 ```tsx
 // 고유 key 사용
-{posts.map((post) => <Card key={post.id} />)}
+{
+  posts.map((post) => <Card key={post.id} />);
+}
 
 // index를 key로 사용 금지
-{posts.map((_, i) => <Card key={i} />)}
+{
+  posts.map((_, i) => <Card key={i} />);
+}
 ```
 
 ---
@@ -252,19 +258,19 @@ import type { Diary } from '../type/diary';
 
 ## 코드 품질 기준
 
-| 항목              | 기준                                       |
-| ----------------- | ------------------------------------------ |
-| 들여쓰기          | 스페이스 2칸                               |
-| 최대 줄 길이      | 80자 (ESLint `max-len` error)              |
-| 따옴표            | 단일 따옴표 (`quotes: single`)             |
-| 세미콜론          | 필수 (`semi: always`)                      |
-| 함수 스타일       | 선언식 + 화살표 허용 (`func-style`)        |
-| 배열 타입         | `T[]` (단순) / `ReadonlyArray<T>` (readonly) |
-| 타입 정의         | `interface` 강제                           |
-| `var`             | 금지 (`no-var`)                            |
-| `const` 선호      | `prefer-const`                             |
-| `parseInt`/`parseFloat` | `Number()` 사용 (no-restricted-globals) |
-| 포맷팅            | Prettier (printWidth 80, trailingComma es5) |
-| 린트              | ESLint `--max-warnings=0` (CI는 -1 = 모두 fail) |
-| 커밋              | Conventional Commits 형식                  |
-| 미사용 파일/export | Knip 통과 (`pnpm knip`)                    |
+| 항목                    | 기준                                            |
+| ----------------------- | ----------------------------------------------- |
+| 들여쓰기                | 스페이스 2칸                                    |
+| 최대 줄 길이            | 80자 (ESLint `max-len` error)                   |
+| 따옴표                  | 단일 따옴표 (`quotes: single`)                  |
+| 세미콜론                | 필수 (`semi: always`)                           |
+| 함수 스타일             | 선언식 + 화살표 허용 (`func-style`)             |
+| 배열 타입               | `T[]` (단순) / `ReadonlyArray<T>` (readonly)    |
+| 타입 정의               | `interface` 강제                                |
+| `var`                   | 금지 (`no-var`)                                 |
+| `const` 선호            | `prefer-const`                                  |
+| `parseInt`/`parseFloat` | `Number()` 사용 (no-restricted-globals)         |
+| 포맷팅                  | Prettier (printWidth 80, trailingComma es5)     |
+| 린트                    | ESLint `--max-warnings=0` (CI는 -1 = 모두 fail) |
+| 커밋                    | Conventional Commits 형식                       |
+| 미사용 파일/export      | Knip 통과 (`pnpm knip`)                         |

@@ -115,8 +115,7 @@ export default function StoryViewer({
     return null;
   }
 
-  const thumbnailUrl =
-    resolveDiaryImageUrl(story.diaryThumbnail) ?? undefined;
+  const thumbnailUrl = resolveDiaryImageUrl(story.diaryThumbnail) ?? undefined;
   const profileUrl = resolveDiaryImageUrl(group.profileImage) ?? undefined;
   const name = group.userName?.trim() || `친구 ${group.userId}`;
   const hasMultiple = group.stories.length > 1;
@@ -190,11 +189,7 @@ export default function StoryViewer({
           )}
 
           {hasMultiple ? (
-            <div
-              className={cn(
-                'absolute inset-x-3 top-3 z-10 flex gap-1'
-              )}
-            >
+            <div className={cn('absolute inset-x-3 top-3 z-10 flex gap-1')}>
               {group.stories.map((_, index) => (
                 <div
                   key={index}
@@ -273,13 +268,11 @@ export default function StoryViewer({
                 >
                   {name}
                 </Text>
-                <Text
-                  size="caption3"
-                  weight="medium"
-                  className="text-gray-500"
-                >
+                <Text size="caption3" weight="medium" className="text-gray-500">
                   {formatStoryDate(story.createdAt)}
-                  {hasMultiple ? ` · ${diaryIndex + 1}/${group.stories.length}` : ''}
+                  {hasMultiple
+                    ? ` · ${diaryIndex + 1}/${group.stories.length}`
+                    : ''}
                 </Text>
               </div>
             </div>

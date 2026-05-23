@@ -354,7 +354,6 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
             )}
           />
         </div>
-
       </div>
 
       <div className="mt-8 flex justify-end">

@@ -123,11 +123,7 @@ export function BrandPanel({
               <span className="h-[22px] w-[22px] overflow-hidden rounded-full">
                 <Stripe tone={chip.tone} label="" radius={0} />
               </span>
-              <Text
-                size="caption2"
-                weight="bold"
-                className="text-white/95"
-              >
+              <Text size="caption2" weight="bold" className="text-white/95">
                 {chip.name}
               </Text>
             </div>
@@ -137,7 +133,6 @@ export function BrandPanel({
           </div>
         ))}
       </div>
-
     </section>
   );
 }

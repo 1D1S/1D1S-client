@@ -69,7 +69,7 @@ export function MyPageDiarySection({
       {diaryCards.length === 0 ? (
         <div
           className={cn(
-            'rounded-3 mt-4 border border-gray-200 p-6 text-center',
+            'rounded-3 mt-4 border border-gray-200 p-6 text-center'
           )}
         >
           <Text size="body1" weight="medium" className="text-gray-500">
@@ -91,9 +91,7 @@ export function MyPageDiarySection({
                   user={diary.user}
                   challengeLabel={diary.challengeLabel}
                   emotion={diary.emotion}
-                  onLikeToggle={() =>
-                    handleLikeToggle(diary.id, diary.isLiked)
-                  }
+                  onLikeToggle={() => handleLikeToggle(diary.id, diary.isLiked)}
                   onClick={() => router.push(`/diary/${diary.id}`)}
                 />
               </div>

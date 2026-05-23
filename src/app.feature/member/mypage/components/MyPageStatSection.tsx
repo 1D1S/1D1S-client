@@ -26,12 +26,7 @@ export function MyPageStatSection({
         title="활동 통계"
         subtitle="나의 활동 기록과 성장 지표"
       />
-      <div
-        className={cn(
-          'mt-4 grid grid-cols-2 gap-2.5',
-          'sm:grid-cols-4',
-        )}
-      >
+      <div className={cn('mt-4 grid grid-cols-2 gap-2.5', 'sm:grid-cols-4')}>
         <MyPageStatTile
           label="현재 스트릭"
           value={streak.currentStreak}

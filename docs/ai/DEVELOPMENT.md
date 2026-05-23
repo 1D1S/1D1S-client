@@ -100,7 +100,7 @@ import { requestData } from '@module/api/request';
 import type { Feature, FeatureListParams } from '../type/feature';
 
 export async function getFeatureList(
-  params: FeatureListParams,
+  params: FeatureListParams
 ): Promise<Feature[]> {
   return requestData<Feature[]>(apiClient, {
     url: '/features',
@@ -109,9 +109,7 @@ export async function getFeatureList(
   });
 }
 
-export async function createFeature(
-  body: CreateFeatureBody,
-): Promise<Feature> {
+export async function createFeature(body: CreateFeatureBody): Promise<Feature> {
   return requestData<Feature>(apiClient, {
     url: '/features',
     method: 'POST',
@@ -153,9 +151,7 @@ export function useFeatureList(params: FeatureListParams) {
     queryFn: ({ pageParam }) =>
       getFeatureList({ ...params, cursor: pageParam }),
     getNextPageParam: (lastPage) =>
-      lastPage.pageInfo.hasNextPage
-        ? lastPage.pageInfo.nextCursor
-        : undefined,
+      lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.nextCursor : undefined,
   });
 }
 ```
@@ -212,10 +208,8 @@ export default function NewFeatureScreen() {
 // src/app/new-feature/page.tsx
 import { Suspense } from 'react';
 
-import NewFeatureScreen
-  from '@feature/new-feature/screen/NewFeatureScreen';
-import { FEATURE_QUERY_KEYS }
-  from '@feature/new-feature/consts/queryKeys';
+import NewFeatureScreen from '@feature/new-feature/screen/NewFeatureScreen';
+import { FEATURE_QUERY_KEYS } from '@feature/new-feature/consts/queryKeys';
 
 import { Prefetch } from '@/app.lib/Prefetch';
 import { getServerFeatureList } from '@module/api/serverApi';
@@ -252,7 +246,8 @@ export default function NewFeaturePage() {
 import { z } from 'zod';
 
 export const featureSchema = z.object({
-  title: z.string()
+  title: z
+    .string()
     .min(1, '제목을 입력해주세요')
     .max(50, '50자 이내로 입력해주세요'),
   category: z.enum(['DEV', 'EXERCISE', 'BOOK'], {
@@ -270,10 +265,7 @@ export type FeatureFormData = z.infer<typeof featureSchema>;
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
-import {
-  featureSchema,
-  type FeatureFormData,
-} from '../type/featureSchema';
+import { featureSchema, type FeatureFormData } from '../type/featureSchema';
 
 export function useFeatureForm() {
   return useForm<FeatureFormData>({
@@ -302,15 +294,15 @@ export function useFeatureForm() {
 
 ## 트러블슈팅
 
-| 문제                       | 해결                                              |
-| -------------------------- | ------------------------------------------------- |
-| HTTPS 인증서 문제          | `pnpm init:local-dns` 재실행                      |
-| `.env.local` 사용 시 실행 실패 | `.env.local`은 차단됨, `.env` 만 사용              |
-| 의존성 충돌                | `pnpm clean` (node_modules + .next 삭제 후 재설치) |
-| 타입 캐시 꼬임             | `rm -rf .next && pnpm dev`                         |
-| API 연결 실패              | `.env`의 `NEXT_PUBLIC_ODOS_API_URL` 확인           |
-| 토큰 갱신 무한 루프        | `interceptors.ts`의 `_retry` 플래그 확인           |
-| Knip false positive        | `knip.config.ts`의 `ignoreDependencies` 또는 `ignore` 에 등록 |
+| 문제                           | 해결                                                          |
+| ------------------------------ | ------------------------------------------------------------- |
+| HTTPS 인증서 문제              | `pnpm init:local-dns` 재실행                                  |
+| `.env.local` 사용 시 실행 실패 | `.env.local`은 차단됨, `.env` 만 사용                         |
+| 의존성 충돌                    | `pnpm clean` (node_modules + .next 삭제 후 재설치)            |
+| 타입 캐시 꼬임                 | `rm -rf .next && pnpm dev`                                    |
+| API 연결 실패                  | `.env`의 `NEXT_PUBLIC_ODOS_API_URL` 확인                      |
+| 토큰 갱신 무한 루프            | `interceptors.ts`의 `_retry` 플래그 확인                      |
+| Knip false positive            | `knip.config.ts`의 `ignoreDependencies` 또는 `ignore` 에 등록 |
 
 ---
 

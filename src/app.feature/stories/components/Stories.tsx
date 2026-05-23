@@ -33,11 +33,7 @@ function StoryRingSkeleton(): React.ReactElement {
       aria-label="스토리 불러오는 중"
     >
       {Array.from({ length: 5 }).map((_, index) => (
-        <Card
-          key={index}
-          radius="md"
-          className="w-[140px] flex-shrink-0"
-        >
+        <Card key={index} radius="md" className="w-[140px] flex-shrink-0">
           <Card.Thumb className="aspect-[4/5] bg-gray-100">
             <div className="skeleton-pulse h-full w-full bg-gray-200" />
           </Card.Thumb>
@@ -45,9 +41,7 @@ function StoryRingSkeleton(): React.ReactElement {
             {/* 실제 Text caption2 + leading-snug = 14px * 1.375 ≈ 19px */}
             <div className="flex h-[19px] items-center">
               <div
-                className={cn(
-                  'skeleton-pulse h-3 w-3/4 rounded bg-gray-200'
-                )}
+                className={cn('skeleton-pulse h-3 w-3/4 rounded bg-gray-200')}
               />
             </div>
             <Card.Meta>
@@ -70,9 +64,7 @@ function StoryRingSkeleton(): React.ReactElement {
               </span>
               <span className="inline-flex h-4 shrink-0 items-center">
                 <span
-                  className={cn(
-                    'skeleton-pulse h-2.5 w-8 rounded bg-gray-200'
-                  )}
+                  className={cn('skeleton-pulse h-2.5 w-8 rounded bg-gray-200')}
                 />
               </span>
             </Card.Meta>
@@ -125,9 +117,7 @@ function StoryLoginPrompt({
           <Text
             size="caption2"
             weight="extrabold"
-            className={cn(
-              'truncate leading-snug tracking-tight text-gray-900'
-            )}
+            className={cn('truncate leading-snug tracking-tight text-gray-900')}
           >
             친구 스토리
           </Text>
@@ -141,9 +131,7 @@ function StoryLoginPrompt({
                 aria-hidden
               />
               <span
-                className={cn(
-                  'truncate text-[11px] font-medium text-gray-500'
-                )}
+                className={cn('truncate text-[11px] font-medium text-gray-500')}
               >
                 로그인하고 확인하기
               </span>

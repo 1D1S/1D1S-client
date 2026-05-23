@@ -3,9 +3,7 @@
 import { useSocialLogin } from '@feature/auth/hooks/useAuthQueries';
 import { OAuthProvider } from '@feature/auth/type/auth';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
-import {
-  NotificationOptInPrompt,
-} from '@feature/notification/components/NotificationOptInPrompt';
+import { NotificationOptInPrompt } from '@feature/notification/components/NotificationOptInPrompt';
 import { authStorage } from '@module/utils/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -66,10 +64,7 @@ function OAuthCallbackContent(): React.ReactElement {
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-gray-500">로그인 처리 중...</p>
       </div>
-      <NotificationOptInPrompt
-        active={optInActive}
-        onComplete={finishToHome}
-      />
+      <NotificationOptInPrompt active={optInActive} onComplete={finishToHome} />
     </>
   );
 }

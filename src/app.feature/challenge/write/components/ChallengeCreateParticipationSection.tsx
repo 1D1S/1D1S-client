@@ -81,11 +81,7 @@ export function ChallengeCreateParticipationSection(): React.ReactElement {
       {isGroup ? (
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Text
-              size="caption1"
-              weight="bold"
-              className="block text-gray-600"
-            >
+            <Text size="caption1" weight="bold" className="block text-gray-600">
               최대 인원
             </Text>
             <FormField
@@ -123,9 +119,7 @@ export function ChallengeCreateParticipationSection(): React.ReactElement {
                         placeholder="2 ~ 100"
                         value={field.value ?? ''}
                         onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                          field.onChange(
-                            event.target.value.replace(/\D/g, '')
-                          );
+                          field.onChange(event.target.value.replace(/\D/g, ''));
                         }}
                         className={cn(
                           'rounded-2 w-full border border-gray-200',
@@ -142,11 +136,7 @@ export function ChallengeCreateParticipationSection(): React.ReactElement {
           </div>
 
           <div className="space-y-2">
-            <Text
-              size="caption1"
-              weight="bold"
-              className="block text-gray-600"
-            >
+            <Text size="caption1" weight="bold" className="block text-gray-600">
               중도 참여
             </Text>
             <FormField
@@ -157,9 +147,7 @@ export function ChallengeCreateParticipationSection(): React.ReactElement {
                   <FormControl>
                     <ChallengeCreateSegmentToggle
                       value={field.value ? 'ALLOW' : 'BEFORE_START'}
-                      onChange={(value) =>
-                        field.onChange(value === 'ALLOW')
-                      }
+                      onChange={(value) => field.onChange(value === 'ALLOW')}
                       ariaLabel="중도 참여 허용"
                       options={[
                         { value: 'BEFORE_START', label: '시작 전까지만' },

@@ -4,8 +4,7 @@ import { type ChallengeCategory } from '@feature/challenge/board/type/challenge'
 function shade(hex: string, amount: number): string {
   const cleaned = hex.replace('#', '');
   const num = Number.parseInt(cleaned, 16);
-  const clamp = (value: number): number =>
-    Math.max(0, Math.min(255, value));
+  const clamp = (value: number): number => Math.max(0, Math.min(255, value));
   const red = clamp(((num >> 16) & 0xff) + amount);
   const green = clamp(((num >> 8) & 0xff) + amount);
   const blue = clamp((num & 0xff) + amount);
@@ -14,9 +13,7 @@ function shade(hex: string, amount: number): string {
     .padStart(6, '0')}`;
 }
 
-export function getCategoryAccent(
-  category?: ChallengeCategory | null
-): string {
+export function getCategoryAccent(category?: ChallengeCategory | null): string {
   return getCategoryStripeTone(category);
 }
 

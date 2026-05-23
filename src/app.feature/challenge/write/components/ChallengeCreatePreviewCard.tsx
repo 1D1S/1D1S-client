@@ -116,9 +116,7 @@ export function ChallengeCreatePreviewCard(): React.ReactElement {
           weight="bold"
           className="mt-2.5 mb-1.5 block min-h-[22px] -tracking-[0.3px] text-gray-900"
         >
-          {values.title || (
-            <span className="text-gray-400">챌린지 제목</span>
-          )}
+          {values.title || <span className="text-gray-400">챌린지 제목</span>}
         </Text>
 
         <Text
@@ -127,9 +125,7 @@ export function ChallengeCreatePreviewCard(): React.ReactElement {
           className="block min-h-9 leading-relaxed text-gray-600"
         >
           {values.description || (
-            <span className="text-gray-400">
-              한 줄 설명이 여기 표시돼요
-            </span>
+            <span className="text-gray-400">한 줄 설명이 여기 표시돼요</span>
           )}
         </Text>
 

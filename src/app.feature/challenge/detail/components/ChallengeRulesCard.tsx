@@ -72,11 +72,7 @@ export function ChallengeRulesCard({
                 'lg:bg-gray-50'
               )}
             >
-              <Text
-                size="body2"
-                weight="extrabold"
-                className="text-main-800"
-              >
+              <Text size="body2" weight="extrabold" className="text-main-800">
                 {index + 1}.
               </Text>
               <Text

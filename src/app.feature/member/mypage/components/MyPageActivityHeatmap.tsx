@@ -33,7 +33,7 @@ export function MyPageActivityHeatmap({
     <div
       className={cn(
         'rounded-4 flex h-full flex-col border border-gray-200',
-        'bg-white p-6',
+        'bg-white p-6'
       )}
     >
       <Text size="caption1" weight="bold" className="text-gray-500">
@@ -66,9 +66,7 @@ export function MyPageActivityHeatmap({
               <div className="flex flex-col gap-0.5">
                 <span className="font-semibold">{dateLabel}</span>
                 <span className="text-gray-200">
-                  {entry.count > 0
-                    ? `활동 ${entry.count}개`
-                    : '기록 없음'}
+                  {entry.count > 0 ? `활동 ${entry.count}개` : '기록 없음'}
                 </span>
               </div>
             );

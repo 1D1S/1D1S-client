@@ -42,9 +42,10 @@ export const silentAuthClient: AxiosInstance = (() => {
     (response) => response,
     async (error) => {
       const status = error?.response?.status;
-      const config = error?.config as import('axios').InternalAxiosRequestConfig & {
-        _retried?: boolean;
-      };
+      const config =
+        error?.config as import('axios').InternalAxiosRequestConfig & {
+          _retried?: boolean;
+        };
 
       // 401(access 만료) / 302(세션 만료 redirect) → 토큰 재발급 후 재시도
       if ((status === 401 || status === 302) && config && !config._retried) {

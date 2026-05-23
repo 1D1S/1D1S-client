@@ -8,13 +8,17 @@ type ProtectedRoute =
   | { pattern: RegExp; type: 'login-redirect' };
 
 const PROTECTED_ROUTES: ProtectedRoute[] = [
-  { pattern: /^\/challenge\/\d+\/?$/, type: 'list-redirect', fallback: '/challenge' },
-  { pattern: /^\/diary\/\d+\/?$/,    type: 'list-redirect', fallback: '/diary' },
+  {
+    pattern: /^\/challenge\/\d+\/?$/,
+    type: 'list-redirect',
+    fallback: '/challenge',
+  },
+  { pattern: /^\/diary\/\d+\/?$/, type: 'list-redirect', fallback: '/diary' },
 
   { pattern: /^\/challenge\/\d+\/edit\/?$/, type: 'login-redirect' },
-  { pattern: /^\/challenge\/create\/?$/,    type: 'login-redirect' },
-  { pattern: /^\/mypage(\/.*)?$/,           type: 'login-redirect' },
-  { pattern: /^\/notification\/?$/,         type: 'login-redirect' },
+  { pattern: /^\/challenge\/create\/?$/, type: 'login-redirect' },
+  { pattern: /^\/mypage(\/.*)?$/, type: 'login-redirect' },
+  { pattern: /^\/notification\/?$/, type: 'login-redirect' },
 ];
 
 export interface AuthCheckResult {
@@ -50,9 +54,7 @@ interface RefreshSuccess {
   accessTokenCookie: { name: string; value: string };
 }
 
-async function refreshTokens(
-  req: NextRequest
-): Promise<RefreshSuccess | null> {
+async function refreshTokens(req: NextRequest): Promise<RefreshSuccess | null> {
   const cookieHeader = req.headers.get('cookie');
   if (!cookieHeader) {
     return null;

@@ -44,10 +44,7 @@ export function ChallengeEditDialog({
       <DialogContent className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-[520px]">
         <DialogTitle className="sr-only">챌린지 수정 미리보기</DialogTitle>
         <div className="min-h-0 flex-1 overflow-y-auto p-6 pt-10">
-          <ChallengeEditDialogContent
-            startDate={startDate}
-            endDate={endDate}
-          />
+          <ChallengeEditDialogContent startDate={startDate} endDate={endDate} />
         </div>
 
         <div className="h-px w-full bg-gray-200" />

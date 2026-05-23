@@ -32,12 +32,7 @@ export function MyPageStatTile({
   tone = 'white',
 }: MyPageStatTileProps): React.ReactElement {
   return (
-    <div
-      className={cn(
-        'rounded-3 border p-4',
-        toneClass[tone],
-      )}
-    >
+    <div className={cn('rounded-3 border p-4', toneClass[tone])}>
       <div className="flex items-center gap-1.5">
         {iconName && (
           <span
@@ -56,7 +51,7 @@ export function MyPageStatTile({
       <div
         className={cn(
           'mt-1.5 text-2xl font-extrabold tracking-[-0.4px]',
-          'leading-none text-gray-900 tabular-nums',
+          'leading-none text-gray-900 tabular-nums'
         )}
       >
         {value}

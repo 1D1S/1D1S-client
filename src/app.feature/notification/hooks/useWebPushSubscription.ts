@@ -5,9 +5,7 @@ import { useRegisterEndpoint } from './useNotificationMutations';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = atob(base64);
   return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
 }
@@ -27,11 +25,17 @@ export function useWebPushSubscription(): {
   const { mutateAsync: registerEndpoint } = useRegisterEndpoint();
 
   useEffect(() => {
-    if (!('serviceWorker' in navigator)) { return; }
+    if (!('serviceWorker' in navigator)) {
+      return;
+    }
     navigator.serviceWorker.getRegistration('/sw.js').then((reg) => {
-      if (!reg) { return; }
+      if (!reg) {
+        return;
+      }
       reg.pushManager.getSubscription().then((sub) => {
-        if (sub) { setStatus('subscribed'); }
+        if (sub) {
+          setStatus('subscribed');
+        }
       });
     });
   }, []);

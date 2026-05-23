@@ -93,4 +93,3 @@ export function useMyDiariesInfinite(
       lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.page + 1 : undefined,
   });
 }
-

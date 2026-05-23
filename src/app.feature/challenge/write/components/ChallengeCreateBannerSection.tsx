@@ -95,11 +95,7 @@ export function ChallengeCreateBannerSection(): React.ReactElement {
         </div>
 
         <div className="space-y-1.5">
-          <Text
-            size="caption1"
-            weight="bold"
-            className="block text-gray-600"
-          >
+          <Text size="caption1" weight="bold" className="block text-gray-600">
             챌린지 제목
           </Text>
           <FormField
@@ -126,11 +122,7 @@ export function ChallengeCreateBannerSection(): React.ReactElement {
         </div>
 
         <div className="space-y-2">
-          <Text
-            size="caption1"
-            weight="bold"
-            className="block text-gray-600"
-          >
+          <Text size="caption1" weight="bold" className="block text-gray-600">
             카테고리
           </Text>
           <FormField
@@ -145,10 +137,7 @@ export function ChallengeCreateBannerSection(): React.ReactElement {
                       active={field.value === option.value}
                       onClick={() => field.onChange(option.value)}
                       icon={
-                        <Icon
-                          name={option.iconName}
-                          className="h-3.5 w-3.5"
-                        />
+                        <Icon name={option.iconName} className="h-3.5 w-3.5" />
                       }
                       ariaLabel={`${option.label} 카테고리`}
                     >
@@ -163,11 +152,7 @@ export function ChallengeCreateBannerSection(): React.ReactElement {
         </div>
 
         <div className="space-y-1.5">
-          <Text
-            size="caption1"
-            weight="bold"
-            className="block text-gray-600"
-          >
+          <Text size="caption1" weight="bold" className="block text-gray-600">
             설명 <span className="text-gray-400">(선택)</span>
           </Text>
           <FormField

@@ -26,9 +26,7 @@ interface FriendRequestRaw {
   createdAt?: string;
 }
 
-function normalizeReceivedRequest(
-  raw: FriendRequestRaw
-): FriendRequestSummary {
+function normalizeReceivedRequest(raw: FriendRequestRaw): FriendRequestSummary {
   return {
     requestId: raw.requestId,
     memberId: raw.fromMemberId ?? 0,

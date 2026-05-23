@@ -82,7 +82,11 @@ export function ChallengeEditPeriodSection({
           <Text size="caption2" weight="bold" className="block text-gray-500">
             시작일
           </Text>
-          <Text size="body2" weight="bold" className="mt-0.5 block text-gray-900">
+          <Text
+            size="body2"
+            weight="bold"
+            className="mt-0.5 block text-gray-900"
+          >
             {startLabel}
           </Text>
         </div>
@@ -90,7 +94,11 @@ export function ChallengeEditPeriodSection({
           <Text size="caption2" weight="bold" className="block text-gray-500">
             종료일
           </Text>
-          <Text size="body2" weight="bold" className="mt-0.5 block text-gray-900">
+          <Text
+            size="body2"
+            weight="bold"
+            className="mt-0.5 block text-gray-900"
+          >
             {endLabel}
           </Text>
         </div>
@@ -98,7 +106,11 @@ export function ChallengeEditPeriodSection({
           <Text size="caption2" weight="bold" className="block text-gray-500">
             진행 일수
           </Text>
-          <Text size="body2" weight="bold" className="mt-0.5 block text-gray-900">
+          <Text
+            size="body2"
+            weight="bold"
+            className="mt-0.5 block text-gray-900"
+          >
             {isEndless ? '무제한' : `${durationDays}일`}
           </Text>
         </div>
