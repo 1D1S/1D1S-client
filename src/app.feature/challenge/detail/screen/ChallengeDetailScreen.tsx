@@ -28,6 +28,7 @@ import {
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft, CircleAlert, Heart, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -89,6 +90,7 @@ export function ChallengeDetailScreen({
   const router = useRouter();
 
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
+  const showSkeleton = useMinimumLoading(isLoading);
 
   const joinChallenge = useJoinChallenge();
   const leaveChallenge = useLeaveChallenge();
@@ -423,7 +425,7 @@ export function ChallengeDetailScreen({
     );
   }
 
-  if (isLoading) {
+  if (showSkeleton) {
     return <ChallengeDetailSkeleton />;
   }
 

@@ -18,6 +18,12 @@ export function DiaryCardSkeleton({
     >
       <div className="relative aspect-[4/5] w-full bg-gray-100">
         <Skeleton shape="rect" className="absolute inset-0 rounded-none" />
+        <div className="absolute top-2 left-2 z-10">
+          <Skeleton shape="pill" className="h-5 w-12" />
+        </div>
+        <div className="absolute top-2 right-2 z-10">
+          <Skeleton shape="circle" className="h-8 w-8" />
+        </div>
       </div>
       <div className="flex flex-col gap-1.5 p-3">
         <Skeleton shape="text" className="h-3.5 w-[80%]" />
@@ -31,7 +37,10 @@ export function DiaryCardSkeleton({
             <Skeleton shape="circle" className="h-5 w-5" />
             <Skeleton shape="text" className="h-2.5 w-12" />
           </div>
-          <Skeleton shape="text" className="h-2.5 w-6" />
+          <div className="flex items-center gap-1">
+            <Skeleton shape="circle" className="h-3 w-3" />
+            <Skeleton shape="text" className="h-2.5 w-6" />
+          </div>
         </div>
       </div>
     </div>

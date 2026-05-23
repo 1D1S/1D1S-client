@@ -1,7 +1,9 @@
 'use client';
 
 import { Button, Text } from '@1d1s/design-system';
-import { FriendListSkeleton } from '@component/skeletons/ListItemSkeleton';
+import {
+  FriendRequestListSkeleton,
+} from '@component/skeletons/ListItemSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
@@ -34,7 +36,11 @@ export default function SentFriendRequestsScreen(): React.ReactElement {
   return (
     <FriendPageShell title="보낸 친구 신청">
       {showSkeleton ? (
-        <FriendListSkeleton count={4} className="mt-3 lg:mt-6" />
+        <FriendRequestListSkeleton
+          count={4}
+          className="mt-3 lg:mt-6"
+          actionCount={1}
+        />
       ) : (
       <section
         className={cn(

@@ -2,6 +2,7 @@
 
 import { Text } from '@1d1s/design-system';
 import { Skeleton } from '@component/Skeleton';
+import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleton';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -13,7 +14,8 @@ export function DiaryDetailSkeleton(): React.ReactElement {
   return (
     <div
       className={cn(
-        'min-h-screen w-full bg-white pb-[72px]',
+        'min-h-screen w-full bg-white',
+        'pb-[calc(112px+env(safe-area-inset-bottom))]',
         'lg:pb-0'
       )}
     >
@@ -162,20 +164,20 @@ export function DiaryDetailSkeleton(): React.ReactElement {
 
           {/* 데스크탑 댓글 사이드바 */}
           <aside className="hidden lg:block">
-            <div className="flex flex-col gap-3">
-              <Skeleton shape="text" className="h-4 w-20" />
-              <Skeleton
-                shape="rounded"
-                className="h-24 w-full rounded-[14px]"
-              />
-              <Skeleton
-                shape="rounded"
-                className="h-16 w-full rounded-[12px]"
-              />
-              <Skeleton
-                shape="rounded"
-                className="h-16 w-full rounded-[12px]"
-              />
+            <div
+              className={cn(
+                'rounded-[14px] border border-gray-200 bg-white',
+                'sticky top-5'
+              )}
+            >
+              <div className="p-5">
+                <Skeleton shape="text" className="mb-3 h-4 w-24" />
+                <DiaryCommentsSkeleton count={3} />
+                <div className="mt-3 flex items-end gap-1.5">
+                  <Skeleton shape="rounded" className="h-[68px] flex-1" />
+                  <Skeleton shape="rounded" className="h-8 w-12 rounded-lg" />
+                </div>
+              </div>
             </div>
           </aside>
         </div>

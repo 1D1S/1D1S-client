@@ -1,4 +1,6 @@
 import { Skeleton } from '@component/Skeleton';
+import { ChallengeCardSkeleton } from '@component/skeletons/ChallengeCardSkeleton';
+import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 
@@ -46,6 +48,14 @@ export function MyPageSkeleton(): React.ReactElement {
         </div>
 
         <div className="px-5 lg:px-0">
+          {/* 친구 진입 */}
+          <div className="mt-6">
+            <Skeleton
+              shape="rounded"
+              className="h-[64px] w-full rounded-[14px]"
+            />
+          </div>
+
           {/* Streak hero + Heatmap — 데스크탑 */}
           <div
             className={cn(
@@ -65,25 +75,31 @@ export function MyPageSkeleton(): React.ReactElement {
 
           {/* 통계 섹션 — 데스크탑 */}
           <div className="mt-8 hidden lg:block">
-            <Skeleton
-              shape="rounded"
-              className="h-[140px] w-full rounded-2xl"
-            />
-          </div>
-
-          {/* 친구 진입 */}
-          <div className="mt-6">
-            <Skeleton
-              shape="rounded"
-              className="h-[64px] w-full rounded-[14px]"
-            />
+            <div className="flex flex-col gap-3">
+              <Skeleton shape="text" className="h-5 w-24" />
+              <Skeleton shape="text" className="h-3.5 w-44" />
+            </div>
+            <div className="mt-4 grid grid-cols-4 gap-2.5">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton
+                  key={index}
+                  shape="rounded"
+                  className="h-[114px] w-full rounded-xl"
+                />
+              ))}
+            </div>
           </div>
 
           {/* 배지 섹션 */}
           <div className="mt-8 flex flex-col gap-3">
             <Skeleton shape="text" className="h-5 w-24" />
-            <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
-              {Array.from({ length: 8 }).map((_, index) => (
+            <div
+              className={cn(
+                'grid grid-cols-2 gap-2.5',
+                'sm:grid-cols-3 md:grid-cols-5 md:gap-3',
+              )}
+            >
+              {Array.from({ length: 5 }).map((_, index) => (
                 <div
                   key={index}
                   className="flex flex-col items-center gap-2"
@@ -98,37 +114,34 @@ export function MyPageSkeleton(): React.ReactElement {
           {/* 활성 챌린지 */}
           <div className="mt-8 flex flex-col gap-3">
             <Skeleton shape="text" className="h-5 w-32" />
-            <div
-              className={cn(
-                'grid grid-cols-1 gap-3 sm:grid-cols-2',
-                'lg:grid-cols-3'
-              )}
-            >
+            <div className="-mx-5 overflow-x-auto px-5 py-2">
+              <div className="flex w-max gap-3">
               {Array.from({ length: 3 }).map((_, index) => (
-                <Skeleton
+                <div
                   key={index}
-                  shape="rounded"
-                  className="h-[120px] w-full rounded-2xl"
-                />
+                  className="w-[220px] shrink-0"
+                >
+                  <ChallengeCardSkeleton />
+                </div>
               ))}
+              </div>
             </div>
           </div>
 
           {/* 내 일지 */}
           <div className="mt-8 flex flex-col gap-3">
             <Skeleton shape="text" className="h-5 w-20" />
-            <div
-              className={cn(
-                'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5'
-              )}
-            >
+            <div className="overflow-x-auto">
+              <div className="flex w-max gap-3 py-2">
               {Array.from({ length: 5 }).map((_, index) => (
-                <Skeleton
+                <div
                   key={index}
-                  shape="rounded"
-                  className="aspect-[4/5] w-full rounded-2xl"
-                />
+                  className="w-[240px] shrink-0"
+                >
+                  <DiaryCardSkeleton />
+                </div>
               ))}
+              </div>
             </div>
           </div>
         </div>

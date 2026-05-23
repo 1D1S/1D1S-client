@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, CircleAvatar, Text } from '@1d1s/design-system';
+import { Button, CircleAvatar, Icon, Text } from '@1d1s/design-system';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
 import { cn } from '@module/utils/cn';
@@ -29,7 +29,6 @@ function ProfileStat({ label, value }: ProfileStatProps): React.ReactElement {
 interface MyPageProfileCardProps {
   nickname: string;
   profileUrl: string;
-  email?: string;
   totalDiaryCount: number;
   totalChallengeCount: number;
   completedFiniteChallengeCount: number;
@@ -41,12 +40,11 @@ interface MyPageProfileCardProps {
 
 /**
  * 배너에 -60px 마진으로 겹쳐 올라오는 프로필 카드.
- * 좌측 96px 아바타 + 닉네임/핸들/스탯 + 우측 액션.
+ * 좌측 96px 아바타 + 닉네임/스탯 + 우측 액션.
  */
 export function MyPageProfileCard({
   nickname,
   profileUrl,
-  email,
   totalDiaryCount,
   totalChallengeCount,
   completedFiniteChallengeCount,
@@ -57,9 +55,6 @@ export function MyPageProfileCard({
   const isLoggedIn = useIsLoggedIn();
   const { data: unreadData } = useUnreadCount({ enabled: isLoggedIn });
   const hasUnread = isLoggedIn && (unreadData?.unreadCount ?? 0) > 0;
-  const handle = email
-    ? `@${email.split('@')[0]}`
-    : `@${nickname}`;
   const defaultActions = (
     <>
       <Button
@@ -140,9 +135,6 @@ export function MyPageProfileCard({
             <Text size="heading1" weight="extrabold" className="text-gray-900">
               {nickname}
             </Text>
-            <Text size="caption1" weight="regular" className="text-gray-500">
-              {handle}
-            </Text>
           </div>
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2.5">
@@ -152,8 +144,14 @@ export function MyPageProfileCard({
               'px-3 py-3 text-center',
             )}
           >
-            <div className="text-main-800 text-[20px] font-extrabold">
-              🔥 {currentStreak ?? 0}
+            <div
+              className={cn(
+                'text-main-800 flex items-center justify-center gap-1',
+                'text-[20px] font-extrabold',
+              )}
+            >
+              <Icon name="Flame" size={16} aria-hidden />
+              <span>{currentStreak ?? 0}</span>
             </div>
             <div className="mt-0.5 text-[10px] text-gray-500">스트릭</div>
           </div>
@@ -206,11 +204,6 @@ export function MyPageProfileCard({
           <Text size="display2" weight="bold" className="text-gray-900">
             {nickname}
           </Text>
-          <div className="mt-1">
-            <Text size="caption1" weight="regular" className="text-gray-500">
-              {handle}
-            </Text>
-          </div>
           <div
             className={cn(
               'mt-3 flex flex-wrap justify-center gap-4',

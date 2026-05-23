@@ -8,6 +8,23 @@
   }
 }
 
+/* 스켈레톤 기본 펄스.
+   Tailwind 기본 animate-pulse(약 1s 주기)보다 살짝 느리게 설정해
+   번쩍이는 느낌을 줄인다. */
+@keyframes skeletonPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.skeleton-pulse {
+  animation: skeletonPulse 1.65s ease-in-out infinite;
+}
+
 .animate-draw-check-1 {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
@@ -25,17 +42,15 @@
    그 컨테이너에 `data-fade-in` 클래스를 붙이면 부드럽게 나타난다. */
 @keyframes contentFadeIn {
   from {
-    opacity: 0;
-    transform: translateY(4px);
+    opacity: 0.35;
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 .data-fade-in {
-  animation: contentFadeIn 280ms cubic-bezier(0.2, 0, 0, 1) both;
+  animation: contentFadeIn 360ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

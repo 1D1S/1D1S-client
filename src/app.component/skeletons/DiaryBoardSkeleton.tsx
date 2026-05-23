@@ -1,3 +1,4 @@
+import { Skeleton } from '@component/Skeleton';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { cn } from '@module/utils/cn';
 import React from 'react';
@@ -14,7 +15,8 @@ export function DiaryBoardSkeleton(): React.ReactElement {
       {/* 모바일 sticky 헤더 */}
       <div
         className={cn(
-          'sticky top-0 z-20 border-b border-gray-100',
+          'sticky top-0 z-20 flex items-center justify-between',
+          'gap-3 border-b border-gray-100',
           'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
           'backdrop-blur lg:hidden'
         )}
@@ -26,6 +28,7 @@ export function DiaryBoardSkeleton(): React.ReactElement {
         >
           일지
         </h1>
+        <Skeleton shape="pill" className="h-8 w-18 shrink-0" />
       </div>
 
       <div

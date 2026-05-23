@@ -119,12 +119,16 @@ export default function HomeStreakSlot({
             <span
               aria-hidden
               className={cn(
-                'my-1 inline-block h-7 w-32 animate-pulse rounded',
+                'skeleton-pulse my-1 inline-block h-7 w-32 rounded',
                 'bg-white/70'
               )}
             />
           ) : (
-            <div className="mt-0.5 flex items-baseline gap-1">
+            <div
+              className={cn(
+                'data-fade-in mt-0.5 flex items-baseline gap-1'
+              )}
+            >
               <span
                 className={cn(
                   'text-main-800 text-[26px] leading-none font-extrabold',
@@ -138,7 +142,12 @@ export default function HomeStreakSlot({
               </span>
             </div>
           )}
-          <span className="mt-1.5 text-[11px] text-gray-500">
+          <span
+            className={cn(
+              'mt-1.5 text-[11px] text-gray-500',
+              !isStreakLoading && 'data-fade-in'
+            )}
+          >
             {isStreakLoading
               ? ' '
               : remaining === 0

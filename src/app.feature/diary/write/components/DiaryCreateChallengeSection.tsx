@@ -1,7 +1,10 @@
 'use client';
 
 import { Card, Icon, Stripe, Text } from '@1d1s/design-system';
-import { getCategoryLabel } from '@constants/categories';
+import {
+  getCategoryLabel,
+  getCategoryStripeTone,
+} from '@constants/categories';
 import {
   isChallengeEnded,
   isChallengeOngoing,
@@ -41,46 +44,42 @@ function EmptyChallengeCard({
       onClick={onClick}
       onKeyDown={createActivationKeydownHandler(onClick)}
       className={cn(
-        'flex gap-3 overflow-hidden p-0 sm:gap-4',
-        'border-main-400 bg-main-100/40 border-2 border-dashed',
-        'hover:border-main-800 hover:bg-main-100/70'
+        'flex items-center gap-3 overflow-hidden rounded-[14px] p-3',
+        'sm:gap-4 sm:p-4',
+        'border-main-300 bg-main-100/20 border',
+        'hover:border-main-500 hover:bg-main-100/35'
       )}
     >
       <div
         className={cn(
-          'bg-main-100 relative h-[104px] w-[104px] shrink-0',
-          'overflow-hidden sm:h-[120px] sm:w-[120px]'
+          'bg-main-100 relative aspect-video w-[126px] shrink-0',
+          'overflow-hidden rounded-[10px] sm:w-[154px]'
         )}
       >
         <Stripe tone="peach" />
-        <span
-          className={cn(
-            'bg-main-200 text-main-800 absolute top-1/2 left-1/2',
-            'flex h-10 w-10 -translate-x-1/2 -translate-y-1/2',
-            'items-center justify-center rounded-full'
-          )}
-        >
-          <Icon name="Flag" size={20} />
-        </span>
       </div>
 
-      <div
-        className={cn(
-          'flex min-w-0 flex-1 flex-col justify-center gap-1.5',
-          'py-3 pr-3 sm:py-4 sm:pr-4'
-        )}
-      >
-        <Text
-          as="p"
-          size="body2"
-          weight="extrabold"
-          className="text-main-800 truncate sm:text-[17px]"
-        >
-          챌린지를 선택해주세요
-        </Text>
-        <Text size="caption2" weight="regular" className="text-gray-500">
-          참여 중인 챌린지 중에서 골라보세요.
-        </Text>
+      <div className="flex min-w-0 flex-1 flex-col justify-between gap-2">
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <Text
+            as="p"
+            size="body2"
+            weight="extrabold"
+            className="text-main-900 truncate sm:text-[17px]"
+          >
+            챌린지를 선택해주세요
+          </Text>
+          <Text size="caption2" weight="regular" className="text-main-700">
+            참여 중인 챌린지 중에서 골라보세요.
+          </Text>
+        </div>
+
+        <span className="text-main-800 inline-flex items-center gap-1">
+          <Text size="caption2" weight="bold" className="text-main-800">
+            챌린지 선택하기
+          </Text>
+          <Icon name="ChevronRight" size={13} className="text-main-800" />
+        </span>
       </div>
     </Card>
   );
@@ -127,6 +126,7 @@ export function DiaryCreateChallengeSection({
             selectedChallenge.endDate
           )}
           isEnded={isChallengeEnded(selectedChallenge.endDate)}
+          stripeTone={getCategoryStripeTone(selectedChallenge.category)}
           onClick={openPicker}
         />
       ) : isInitialChallengeLoading ? (

@@ -1,8 +1,10 @@
 'use client';
 
+import { Card, Stripe, Text } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
+import { Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
@@ -12,50 +14,197 @@ import StoryRing from './StoryRing';
 import StoryViewer from './StoryViewer';
 
 interface StoriesProps {
-  /** 로그인 여부 — 비로그인 시 호출 자체를 막는다. */
-  enabled?: boolean;
+  /** 스토리 조회 가능 여부 */
+  isLoggedIn: boolean;
+  /** 스토리 조회 쿼리 활성화 여부 */
+  fetchEnabled?: boolean;
+  /** 비로그인 상태에서 스토리 영역 클릭 시 동작 */
+  onRequireLogin?(): void;
 }
 
 function StoryRingSkeleton(): React.ReactElement {
   return (
     <div
       className={cn(
-        'scrollbar-hide flex w-full gap-3 overflow-x-auto px-5 py-3.5'
+        'scrollbar-hide flex w-full overflow-x-auto',
+        'gap-3 px-5 py-3.5 lg:px-8'
       )}
       aria-busy
       aria-label="스토리 불러오는 중"
     >
       {Array.from({ length: 5 }).map((_, index) => (
-        <div
+        <Card
           key={index}
-          className="flex w-[140px] flex-shrink-0 flex-col gap-2"
+          radius="md"
+          className="w-[140px] flex-shrink-0"
         >
-          <div
+          <Card.Thumb className="aspect-[4/5] bg-gray-100">
+            <div className="skeleton-pulse h-full w-full bg-gray-200" />
+          </Card.Thumb>
+          <Card.Body className="gap-1.5 p-3">
+            {/* 실제 Text caption2 + leading-snug = 14px * 1.375 ≈ 19px */}
+            <div className="flex h-[19px] items-center">
+              <div
+                className={cn(
+                  'skeleton-pulse h-3 w-3/4 rounded bg-gray-200'
+                )}
+              />
+            </div>
+            <Card.Meta>
+              <span className="inline-flex min-w-0 items-center gap-1.5">
+                <span
+                  className={cn(
+                    'relative h-5 w-5 shrink-0 overflow-hidden',
+                    'skeleton-pulse rounded-full bg-gray-100'
+                  )}
+                  aria-hidden
+                />
+                {/* 실제 text-[11px] 라인박스 ≈ 16px */}
+                <span className="inline-flex h-4 items-center">
+                  <span
+                    className={cn(
+                      'skeleton-pulse h-2.5 w-12 rounded bg-gray-200'
+                    )}
+                  />
+                </span>
+              </span>
+              <span className="inline-flex h-4 shrink-0 items-center">
+                <span
+                  className={cn(
+                    'skeleton-pulse h-2.5 w-8 rounded bg-gray-200'
+                  )}
+                />
+              </span>
+            </Card.Meta>
+          </Card.Body>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function StoryLoginPrompt({
+  onRequireLogin,
+}: {
+  onRequireLogin?(): void;
+}): React.ReactElement {
+  return (
+    <div
+      className={cn(
+        'scrollbar-hide flex w-full overflow-x-auto',
+        'gap-3 px-5 py-3.5 lg:px-8'
+      )}
+    >
+      <Card
+        interactive
+        radius="md"
+        role="button"
+        tabIndex={0}
+        onClick={onRequireLogin}
+        aria-label="로그인 후 스토리 확인"
+        className={cn(
+          'w-[140px] flex-shrink-0 transition-all duration-300 ease-out',
+          'hover:shadow-warm'
+        )}
+      >
+        <Card.Thumb className="bg-main-100 aspect-[4/5]">
+          <Stripe tone="peach" />
+          <Card.Overlay position="top-right">
+            <span
+              className={cn(
+                'flex h-7 w-7 items-center justify-center rounded-full',
+                'border-2 border-white bg-white text-gray-500 shadow-sm'
+              )}
+              aria-hidden
+            >
+              <Lock className="h-3.5 w-3.5" />
+            </span>
+          </Card.Overlay>
+        </Card.Thumb>
+        <Card.Body className="gap-1.5 p-3">
+          <Text
+            size="caption2"
+            weight="extrabold"
             className={cn(
-              'rounded-3 aspect-4/5 w-full animate-pulse bg-gray-200'
+              'truncate leading-snug tracking-tight text-gray-900'
             )}
-          />
-          <div className="flex flex-col gap-1 px-0.5">
-            <div className="h-3 w-3/4 animate-pulse rounded bg-gray-200" />
-            <div className="h-2.5 w-1/2 animate-pulse rounded bg-gray-200" />
-          </div>
-        </div>
+          >
+            친구 스토리
+          </Text>
+          <Card.Meta>
+            <span className="inline-flex min-w-0 items-center gap-1.5">
+              <span
+                className={cn(
+                  'relative h-5 w-5 shrink-0 overflow-hidden rounded-full',
+                  'bg-gray-100'
+                )}
+                aria-hidden
+              />
+              <span
+                className={cn(
+                  'truncate text-[11px] font-medium text-gray-500'
+                )}
+              >
+                로그인하고 확인하기
+              </span>
+            </span>
+          </Card.Meta>
+        </Card.Body>
+      </Card>
+
+      {Array.from({ length: 4 }).map((_, index) => (
+        <Card
+          key={index}
+          interactive
+          radius="md"
+          role="button"
+          tabIndex={0}
+          onClick={onRequireLogin}
+          aria-label="로그인 후 스토리 확인"
+          className={cn(
+            'w-[140px] flex-shrink-0 transition-all duration-300 ease-out',
+            'hover:shadow-warm'
+          )}
+        >
+          <Card.Thumb className="bg-main-100 aspect-[4/5]">
+            <Stripe tone="peach" />
+          </Card.Thumb>
+          <Card.Body className="gap-1.5 p-3">
+            <div className="h-3 w-3/4 rounded bg-gray-200" />
+            <Card.Meta>
+              <span className="inline-flex min-w-0 items-center gap-1.5">
+                <span
+                  className={cn(
+                    'relative h-5 w-5 shrink-0 overflow-hidden rounded-full',
+                    'bg-gray-100'
+                  )}
+                  aria-hidden
+                />
+                <span className="h-2.5 w-12 rounded bg-gray-200" />
+              </span>
+            </Card.Meta>
+          </Card.Body>
+        </Card>
       ))}
     </div>
   );
 }
 
 export default function Stories({
-  enabled = true,
-}: StoriesProps): React.ReactElement | null {
+  isLoggedIn,
+  fetchEnabled = true,
+  onRequireLogin,
+}: StoriesProps): React.ReactElement {
   const router = useRouter();
   const [openIndex, setOpenIndex] = useState<number>(-1);
-  const { data, isPending } = useStories({ enabled });
+  const { data, isPending } = useStories({
+    enabled: fetchEnabled && isLoggedIn,
+  });
   const { data: sidebar } = useSidebar();
   const showSkeleton = useMinimumLoading(isPending);
 
-  if (!enabled) {
-    return null;
+  if (!isLoggedIn) {
+    return <StoryLoginPrompt onRequireLogin={onRequireLogin} />;
   }
 
   // SSR/하이드레이션 시점엔 아직 데이터가 없으므로 isPending=true 가 된다.

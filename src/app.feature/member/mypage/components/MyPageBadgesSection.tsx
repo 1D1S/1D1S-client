@@ -35,7 +35,7 @@ export function MyPageBadgesSection({
         {badges.map((badge) => (
           <MyPageBadgeTile
             key={badge.id}
-            emoji={badge.emoji}
+            badgeId={badge.id}
             label={badge.label}
             tone={badge.tone}
             achieved={badge.achieved}

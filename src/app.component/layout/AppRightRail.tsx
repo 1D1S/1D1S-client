@@ -136,8 +136,14 @@ export default function AppRightRail({
               'transition hover:brightness-105'
             )}
           >
-            <span aria-hidden className="text-[28px]">
-              🔥
+            <span
+              aria-hidden
+              className={cn(
+                'inline-flex items-center justify-center',
+                'animate-flame-flicker text-red-500'
+              )}
+            >
+              <Icon name="Flame" size={28} />
             </span>
             <span className="text-[13px] font-extrabold text-gray-900">
               게스트
@@ -169,32 +175,47 @@ export default function AppRightRail({
         >
           {/* Profile card */}
           <div className="flex items-center gap-3">
-            <span
+            <button
+              type="button"
+              onClick={() => router.push('/mypage')}
+              tabIndex={contentHidden ? -1 : 0}
+              aria-label="마이페이지로 이동"
               className={cn(
-                'h-12 w-12 overflow-hidden rounded-full',
-                'border-main-200 bg-main-100 border-2'
+                'rounded-2 -m-1 flex min-w-0 flex-1 items-center gap-3 p-1',
+                'text-left transition hover:bg-gray-50'
               )}
             >
-              {profileImageUrl ? (
-                <Image
-                  src={profileImageUrl}
-                  alt={nickname}
-                  width={48}
-                  height={48}
-                  className="h-full w-full object-cover"
-                />
-              ) : null}
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[14px] font-extrabold text-gray-900">
-                {nickname}
-              </div>
-              {handle ? (
-                <div className="truncate text-[11px] text-gray-500">
-                  {handle}
+              <span
+                className={cn(
+                  'h-12 w-12 shrink-0 overflow-hidden rounded-full',
+                  'border-main-200 bg-main-100 border-2'
+                )}
+              >
+                {profileImageUrl ? (
+                  <Image
+                    src={profileImageUrl}
+                    alt={nickname}
+                    width={48}
+                    height={48}
+                    className="h-full w-full object-cover"
+                  />
+                ) : null}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div
+                  className={cn(
+                    'truncate text-[14px] font-extrabold text-gray-900'
+                  )}
+                >
+                  {nickname}
                 </div>
-              ) : null}
-            </div>
+                {handle ? (
+                  <div className="truncate text-[11px] text-gray-500">
+                    {handle}
+                  </div>
+                ) : null}
+              </div>
+            </button>
             <button
               type="button"
               aria-label="설정"
@@ -209,6 +230,14 @@ export default function AppRightRail({
           {/* Streak hero */}
           <StreakHero
             days={streakDays}
+            icon={
+              <Icon
+                name="Flame"
+                size={22}
+                aria-hidden
+                className="animate-flame-flicker text-red-500"
+              />
+            }
             meta={`오늘의 목표 ${todayGoalCount}개`}
           />
 

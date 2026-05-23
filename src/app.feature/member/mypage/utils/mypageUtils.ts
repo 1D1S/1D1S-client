@@ -27,7 +27,6 @@ export type AchievementBadgeTone =
 
 export interface MyPageBadge {
   id: string;
-  emoji: string;
   label: string;
   tone: AchievementBadgeTone;
   achieved: boolean;
@@ -134,31 +133,26 @@ export function buildMyPageBadges(streak: MyPageStreak): MyPageBadge[] {
   const definitions: Array<Omit<MyPageBadge, 'achieved'>> = [
     {
       id: 'streak-7',
-      emoji: '🔥',
       label: `${Math.max(currentStreak, 7)}일 연속`,
       tone: 'peach',
     },
     {
       id: 'first-finish',
-      emoji: '🏆',
       label: '첫 완주',
       tone: 'main',
     },
     {
       id: 'diary-30',
-      emoji: '📖',
       label: '30개 일지',
       tone: 'green',
     },
     {
       id: 'challenge-3',
-      emoji: '🎯',
       label: '챌린지 3개',
       tone: 'blue',
     },
     {
       id: 'streak-30',
-      emoji: '🌱',
       label: '30일 스트릭',
       tone: 'mint',
     },

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
  * 네트워크가 매우 빠를 때 스켈레톤이 한 프레임만 깜빡이고 사라지는 현상을
  * 막기 위해 사용한다. 필요 시 이 값을 조정한다.
  */
-export const SKELETON_MIN_DURATION_MS = 300;
+export const SKELETON_MIN_DURATION_MS = 550;
 
 /**
  * `isLoading` 이 true 였던 순간부터 최소 `minMs` 만큼은 true 로 유지한다.

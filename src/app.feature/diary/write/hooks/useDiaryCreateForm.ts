@@ -51,6 +51,7 @@ interface UseDiaryCreateFormResult {
   memberChallenges: ChallengeListItem[];
   isMemberChallengesLoading: boolean;
   isInitialChallengeLoading: boolean;
+  isCheckingChallengeAvailability: boolean;
   /** 챌린지 선택 후 checkWrite 확인이 완료되고 작성 가능한 날짜가 있을 때 true */
   isSelectedChallengeConfirmed: boolean;
   goals: ChallengeGoal[];
@@ -224,6 +225,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     disabledAchievedDateKeySet,
     selectedChallenge?.startDate
   );
+  const isCheckingChallengeAvailability =
+    Boolean(selectedChallenge) && isChallengeCheckWriteDatesLoading;
 
   // checkWrite 확인 완료 + 작성 가능한 날짜 존재 여부
   // 수정 모드에선 editModeDateKey가 제외되므로 항상 true (로딩 완료 후)
@@ -390,11 +393,13 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   }, [achievedDate, disabledAchievedDateKeySet, isEditMode, selectedChallenge]);
 
   const handleSelectChallenge = useCallback((challenge: ChallengeListItem) => {
+    unavailableDialogShownForChallengeIdRef.current = null;
     setSelectedChallengeId(challenge.challengeId);
     setAchievedGoalIds([]);
   }, []);
 
   const handleClearChallenge = useCallback(() => {
+    unavailableDialogShownForChallengeIdRef.current = null;
     setSelectedChallengeId(null);
     setAchievedGoalIds([]);
   }, []);
@@ -450,6 +455,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
 
   const closeCreateUnavailableDialog = useCallback(() => {
     setIsCreateUnavailableDialogOpen(false);
+    unavailableDialogShownForChallengeIdRef.current = null;
     setSelectedChallengeId(null);
     setAchievedGoalIds([]);
   }, []);
@@ -560,6 +566,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     memberChallenges: ongoingMemberChallenges,
     isMemberChallengesLoading,
     isInitialChallengeLoading,
+    isCheckingChallengeAvailability,
     isSelectedChallengeConfirmed,
     goals,
     achievedGoalIds,

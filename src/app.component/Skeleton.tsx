@@ -24,7 +24,7 @@ export function Skeleton({
     <div
       aria-hidden
       className={cn(
-        'animate-pulse bg-gray-200/80',
+        'skeleton-pulse bg-gray-200/80',
         SHAPE_CLASS[shape],
         className
       )}

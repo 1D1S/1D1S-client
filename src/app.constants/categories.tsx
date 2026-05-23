@@ -15,21 +15,24 @@ export const CATEGORY_OPTIONS: ReadonlyArray<{
   { value: 'ECONOMY', label: '경제', iconName: 'Trophy' },
 ];
 
+// 카테고리별 stripe/hero accent 색. 같은 보드/일지 화면에 여러 카테고리가
+// 동시에 노출되므로 색이 겹치면 구분이 어렵다. 색상환을 7등분해 각 카테고리에
+// 고유 hue 를 배정한다. (extras: 레거시 카테고리, 필요 시에만 사용)
 const CATEGORY_STRIPE_TONES: Record<string, string> = {
   ALL: '#ff7043',
-  DEV: '#7c3aed',
-  EXERCISE: '#ff7043',
-  BOOK: '#3eb489',
-  MUSIC: '#1666ba',
-  STUDY: '#a78bfa',
-  LEISURE: '#ff9800',
-  ECONOMY: '#3eb489',
-  HEALTH: '#3eb489',
-  HOBBY: '#ff9800',
-  OTHER: '#ff7043',
+  DEV: '#7c3aed',      // violet
+  STUDY: '#6366f1',    // indigo
+  MUSIC: '#2563eb',    // blue
+  ECONOMY: '#0d9488',  // teal
+  BOOK: '#16a34a',     // green
+  LEISURE: '#f59e0b',  // amber
+  EXERCISE: '#ef4444', // red
+  HEALTH: '#10b981',   // emerald
+  HOBBY: '#ec4899',    // pink
+  OTHER: '#6b7280',    // gray
 };
 
-const DEFAULT_STRIPE_TONE = '#ff7043';
+const DEFAULT_STRIPE_TONE = '#6b7280';
 
 const EXTRA_CATEGORY_LABELS: Record<string, string> = {
   ALL: '전체',

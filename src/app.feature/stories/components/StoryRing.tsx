@@ -52,7 +52,7 @@ export default function StoryRing({
     <div
       className={cn(
         'scrollbar-hide flex w-full overflow-x-auto',
-        compact ? 'gap-2.5 px-4 py-3' : 'gap-3 px-5 py-3.5'
+        compact ? 'gap-2.5 px-4 py-3' : 'gap-3 px-5 py-3.5 lg:px-8'
       )}
     >
       {showMySlot ? (

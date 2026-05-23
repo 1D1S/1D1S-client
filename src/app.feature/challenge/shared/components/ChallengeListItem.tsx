@@ -23,6 +23,10 @@ export interface ChallengeListItemProps {
   isEarlyEnded?: boolean;
   isOngoing: boolean;
   isEnded?: boolean;
+  variant?: 'default' | 'picker';
+  // 이미지가 없을 때 Stripe placeholder 색. 호출부에서
+  // getCategoryStripeTone(category) 결과를 넘기면 카테고리별 색이 적용된다.
+  stripeTone?: string;
   className?: string;
   onClick?(): void;
 }
@@ -42,6 +46,8 @@ export function ChallengeListItem({
   isEarlyEnded = false,
   isOngoing,
   isEnded = false,
+  variant = 'default',
+  stripeTone = 'peach',
   className,
   onClick,
 }: ChallengeListItemProps): React.ReactElement {
@@ -59,6 +65,7 @@ export function ChallengeListItem({
   const dateLabel = isInfiniteChallenge
     ? `${startDate} · 무한`
     : `${startDate} ~ ${endDate}`;
+  const isPicker = variant === 'picker';
 
   return (
     <Card
@@ -69,7 +76,10 @@ export function ChallengeListItem({
       onClick={onClick}
       onKeyDown={createActivationKeydownHandler(onClick)}
       className={cn(
-        'flex gap-3 overflow-hidden p-0 sm:gap-4',
+        'flex items-center overflow-hidden rounded-[14px]',
+        isPicker
+          ? 'gap-3 border border-gray-200 p-3 sm:gap-4 sm:p-4'
+          : 'gap-3 p-3 sm:gap-4 sm:p-4',
         onClick &&
           'hover:shadow-warm transition-all duration-200',
         className
@@ -77,8 +87,10 @@ export function ChallengeListItem({
     >
       <div
         className={cn(
-          'bg-main-100 relative h-[104px] w-[104px] shrink-0 overflow-hidden',
-          'sm:h-[120px] sm:w-[120px]'
+          'bg-main-100 relative shrink-0 overflow-hidden rounded-[10px]',
+          isPicker
+            ? 'h-[72px] w-[124px] sm:h-[80px] sm:w-[138px]'
+            : 'aspect-video w-[126px] self-center sm:w-[154px]'
         )}
       >
         {hasImage ? (
@@ -86,53 +98,71 @@ export function ChallengeListItem({
             src={imageUrl as string}
             alt={challengeTitle}
             fill
-            sizes="120px"
+            sizes={
+              isPicker
+                ? '(min-width: 640px) 138px, 124px'
+                : '(min-width: 640px) 154px, 126px'
+            }
             className="object-cover"
           />
         ) : (
-          <Stripe tone="peach" />
+          <Stripe tone={stripeTone} />
         )}
       </div>
 
       <div
         className={cn(
-          'flex min-w-0 flex-1 flex-col justify-center gap-1.5',
-          'py-3 pr-3 sm:py-4 sm:pr-4'
+          'flex min-w-0 flex-1 flex-col',
+          isPicker
+            ? 'justify-between gap-2'
+            : 'justify-between gap-2'
         )}
       >
-        <Text
-          as="p"
-          size="body2"
-          weight="extrabold"
-          className="truncate text-gray-900 sm:text-[17px]"
-        >
-          {challengeTitle}
-        </Text>
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <Text
+            as="p"
+            size="body2"
+            weight="extrabold"
+            className="truncate text-gray-900 sm:text-[17px]"
+          >
+            {challengeTitle}
+          </Text>
 
-        <div className="flex flex-wrap items-center gap-1.5">
-          {challengeCategory && (
-            <Tag tone="brand" size="xs">
-              {challengeCategory}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {challengeCategory && (
+              <Tag tone="brand" size="xs">
+                {challengeCategory}
+              </Tag>
+            )}
+            <Tag tone={statusTone} size="xs">
+              {statusLabel}
             </Tag>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1.5 text-gray-500">
+            <Icon name="Target" size={13} className="text-main-800" />
+            <Text size="caption2" weight="medium" className="text-gray-500">
+              {challengeType}
+            </Text>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-gray-400">
+            <Icon name="Calendar" size={12} />
+            <Text size="caption3" weight="regular" className="text-gray-400">
+              {dateLabel}
+            </Text>
+          </div>
+
+          {!isIndividual && (
+            <div className="flex items-center gap-1.5 text-gray-400">
+              <Icon name="People" size={12} />
+              <Text size="caption3" weight="regular" className="text-gray-400">
+                {currentUserCount}/{maxUserCount}명 참여중
+              </Text>
+            </div>
           )}
-          <Tag tone={statusTone} size="xs">
-            {statusLabel}
-          </Tag>
-        </div>
-
-        <div className="flex items-center gap-1.5 text-gray-500">
-          <Icon name="Target" size={13} className="text-main-800" />
-          <Text size="caption2" weight="medium" className="text-gray-500">
-            {challengeType}
-            {isIndividual ? '' : ` · ${currentUserCount}/${maxUserCount}`}
-          </Text>
-        </div>
-
-        <div className="hidden items-center gap-1.5 text-gray-400 sm:flex">
-          <Icon name="Calendar" size={12} />
-          <Text size="caption3" weight="regular" className="text-gray-400">
-            {dateLabel}
-          </Text>
         </div>
       </div>
     </Card>

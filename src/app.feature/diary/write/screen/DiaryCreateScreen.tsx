@@ -48,6 +48,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
     memberChallenges,
     isMemberChallengesLoading,
     isInitialChallengeLoading,
+    isCheckingChallengeAvailability,
     isSelectedChallengeConfirmed,
     goals,
     achievedGoalIds,
@@ -147,9 +148,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
                 isSelectedChallengeConfirmed ? selectedChallenge : null
               }
               isInitialChallengeLoading={isInitialChallengeLoading}
-              isCheckingAvailability={
-                Boolean(selectedChallenge) && !isSelectedChallengeConfirmed
-              }
+              isCheckingAvailability={isCheckingChallengeAvailability}
               challenges={memberChallenges}
               isChallengesLoading={isMemberChallengesLoading}
               onSelectChallenge={handleSelectChallenge}

@@ -50,7 +50,7 @@ export default function HomeWarmBanner({
         onClick={() => current.href && router.push(current.href)}
         className={cn(
           'shadow-warm h-full cursor-pointer transition',
-          'hover:brightness-105'
+          'data-fade-in hover:brightness-105'
         )}
       />
       {banners.length > 1 ? (

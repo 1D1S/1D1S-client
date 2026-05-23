@@ -10,7 +10,6 @@ import { cn } from '@module/utils/cn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useState } from 'react';
 
-import HomeMobileHeader from '../components/HomeMobileHeader';
 import HomeNoticeStrip from '../components/HomeNoticeStrip';
 import HomeQuickActions from '../components/HomeQuickActions';
 import HomeRandomChallengesSection from '../components/HomeRandomChallengesSection';
@@ -124,24 +123,34 @@ export default function HomeScreen({
   // 깜빡이는 것을 막기 위해 스켈레톤을 노출.
   const isStreakLoading =
     isLoggedIn && (isSidebarLoading || isSidebarFetching || !sidebar);
+  // 스토리 스켈레톤이 늦게 뜨지 않도록, "로그인 확정" 외에도
+  // sidebar 인증 판정이 진행 중이면 stories 쿼리를 선제 활성화한다.
+  const isStoriesEnabled =
+    isLoggedIn ||
+    isSidebarLoading ||
+    isSidebarFetching ||
+    (!hasMounted && initialHasAuthHint);
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white">
+    <>
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={handleDialogOpenChange}
         description={loginDialogDescription}
       />
-      <HomeMobileHeader />
       <div
         className={cn(
           'mx-auto flex w-full max-w-[1200px] flex-col gap-7',
           'px-5 py-7 lg:px-8 lg:py-10'
         )}
       >
-        {/* 친구들의 일지 스토리 — 비로그인 시 호출하지 않는다. */}
+        {/* 친구들의 일지 스토리 — 비로그인 시 로그인 유도 슬롯 노출 */}
         <div className="-mx-5 lg:-mx-8">
-          <Stories enabled={isLoggedIn} />
+          <Stories
+            isLoggedIn={isLoggedIn}
+            fetchEnabled={isStoriesEnabled}
+            onRequireLogin={() => setShowLoginDialog(true)}
+          />
         </div>
 
         {/* 모바일 인사 hero — 데스크탑/태블릿은 시안에 따라 생략 */}
@@ -198,6 +207,6 @@ export default function HomeScreen({
           <PageWatermark />
         </div>
       </div>
-    </div>
+    </>
   );
 }

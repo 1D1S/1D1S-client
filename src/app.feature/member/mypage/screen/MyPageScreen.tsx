@@ -49,17 +49,12 @@ export default function MyPageScreen(): React.ReactElement | null {
     return <MyPageSkeleton />;
   }
 
-  const { nickname, profileUrl, email, streak, challengeList } = data;
+  const { nickname, profileUrl, streak, challengeList } = data;
   const myDiaries = myDiariesData?.items ?? [];
   const hasMoreDiaries = myDiariesData?.pageInfo.hasNextPage ?? false;
 
   return (
-    <div
-      className={cn(
-        'min-h-screen w-full bg-white',
-        'data-fade-in'
-      )}
-    >
+    <div className="data-fade-in min-h-screen w-full bg-white">
       {/* Full-bleed gradient banner — 모바일에서는 프로필 카드가 페이지 헤더 역할 */}
       <div className="hidden lg:block">
         <MyPageHeroBanner />
@@ -75,7 +70,6 @@ export default function MyPageScreen(): React.ReactElement | null {
         <MyPageProfileCard
           nickname={nickname}
           profileUrl={profileUrl}
-          email={email}
           totalDiaryCount={streak.totalDiaryCount}
           totalChallengeCount={streak.totalChallengeCount ?? 0}
           completedFiniteChallengeCount={

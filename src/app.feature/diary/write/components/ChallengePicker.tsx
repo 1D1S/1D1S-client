@@ -9,7 +9,10 @@ import {
   Icon,
   Text,
 } from '@1d1s/design-system';
-import { getCategoryLabel } from '@constants/categories';
+import {
+  getCategoryLabel,
+  getCategoryStripeTone,
+} from '@constants/categories';
 import {
   isChallengeEnded,
   isChallengeOngoing,
@@ -102,6 +105,8 @@ export function ChallengePicker({
                     challenge.endDate
                   )}
                   isEnded={isChallengeEnded(challenge.endDate)}
+                  stripeTone={getCategoryStripeTone(challenge.category)}
+                  variant="picker"
                   onClick={() => {
                     onSelect?.(challenge);
                     onOpenChange(false);

@@ -13,6 +13,7 @@ import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleto
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import {
   ArrowLeft,
   Edit3,
@@ -745,7 +746,7 @@ function DiaryDetailView({
   return (
     <div
       className={cn(
-        'min-h-screen w-full bg-white',
+        'data-fade-in min-h-screen w-full bg-white',
         'pb-[calc(112px+env(safe-area-inset-bottom))]',
         'lg:pb-0'
       )}
@@ -1011,6 +1012,7 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
   const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId, {
     enabled: Boolean(safeDiaryId) && !isDeleting,
   });
+  const showSkeleton = useMinimumLoading(isLoading);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
   const challengeId = data?.challenge?.challengeId ?? 0;
@@ -1072,7 +1074,7 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
     );
   }
 
-  if (isLoading) {
+  if (showSkeleton) {
     return <DiaryDetailSkeleton />;
   }
 
@@ -1090,16 +1092,14 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
 
   return (
     <>
-      <div className="data-fade-in">
-        <DiaryDetailView
-          diaryData={mapDiaryToViewData(data, challengeDetailData)}
-          onLikeToggle={handleLikeToggle}
-          isLikePending={isLikePending}
-          isOwner={isOwner}
-          onDelete={handleDelete}
-          onRequireLogin={() => {}}
-        />
-      </div>
+      <DiaryDetailView
+        diaryData={mapDiaryToViewData(data, challengeDetailData)}
+        onLikeToggle={handleLikeToggle}
+        isLikePending={isLikePending}
+        isOwner={isOwner}
+        onDelete={handleDelete}
+        onRequireLogin={() => {}}
+      />
       {/* 모바일 sticky 댓글 입력바 — data-fade-in 래퍼 밖에 둔다:
           래퍼의 transform 이 containing block 을 만들어 position: fixed 가
           뷰포트 대신 래퍼 기준이 되는 문제를 피한다. */}

@@ -34,24 +34,28 @@ export function MyPageStatSection({
       >
         <MyPageStatTile
           label="현재 스트릭"
-          value={`🔥 ${streak.currentStreak}`}
+          value={streak.currentStreak}
+          iconName="Flame"
           tone="brand"
         />
         <MyPageStatTile
           label="최장 스트릭"
           value={`${streak.maxStreak}일`}
+          iconName="Endless"
           tone="white"
         />
         <MyPageStatTile
           label="작성한 일지"
           value={streak.totalDiaryCount}
           helper={`이번 달 ${streak.currentMonthDiaryCount}개`}
+          iconName="BookOpen"
           tone="white"
         />
         <MyPageStatTile
           label="목표 최장 스트릭"
           value={`${longestGoalStreak.streakCount}일`}
           helper={longestGoalStreak.goalTitle}
+          iconName="Target"
           tone="mint"
         />
       </div>

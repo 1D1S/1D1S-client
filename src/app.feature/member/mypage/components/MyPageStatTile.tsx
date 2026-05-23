@@ -1,4 +1,4 @@
-import { Text } from '@1d1s/design-system';
+import { Icon, type IconName, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 
@@ -8,6 +8,7 @@ interface MyPageStatTileProps {
   label: string;
   value: React.ReactNode;
   helper?: string;
+  iconName?: IconName;
   tone?: StatTileTone;
 }
 
@@ -27,6 +28,7 @@ export function MyPageStatTile({
   label,
   value,
   helper,
+  iconName,
   tone = 'white',
 }: MyPageStatTileProps): React.ReactElement {
   return (
@@ -36,9 +38,21 @@ export function MyPageStatTile({
         toneClass[tone],
       )}
     >
-      <Text size="caption2" weight="medium" className="text-gray-500">
-        {label}
-      </Text>
+      <div className="flex items-center gap-1.5">
+        {iconName && (
+          <span
+            className={cn(
+              'inline-flex h-4 w-4 items-center justify-center',
+              'text-gray-500'
+            )}
+          >
+            <Icon name={iconName} size={14} aria-hidden />
+          </span>
+        )}
+        <Text size="caption2" weight="medium" className="text-gray-500">
+          {label}
+        </Text>
+      </div>
       <div
         className={cn(
           'mt-1.5 text-2xl font-extrabold tracking-[-0.4px]',
