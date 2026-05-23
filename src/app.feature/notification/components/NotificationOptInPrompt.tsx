@@ -31,7 +31,7 @@ function shouldRequestBrowserPermission(): boolean {
 export function NotificationOptInPrompt({
   active,
   onComplete,
-}: NotificationOptInPromptProps): React.ReactElement | null {
+}: NotificationOptInPromptProps): React.ReactElement {
   const handled = useRef(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -88,10 +88,6 @@ export function NotificationOptInPrompt({
   const isOpen = Boolean(
     active && prefs && !prefs.pushEnabled && !dismissed,
   );
-
-  if (!isOpen) {
-    return null;
-  }
 
   return (
     <ConfirmDialog

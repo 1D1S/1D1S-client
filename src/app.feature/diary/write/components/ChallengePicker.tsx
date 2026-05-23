@@ -46,7 +46,7 @@ export function ChallengePicker({
         type="button"
         onClick={() => setIsOpen(true)}
         className={cn(
-          'rounded-3 border-main-200 bg-main-100/40',
+          'rounded-3 border-main-400 bg-main-100/60',
           'hover:border-main-800 hover:bg-main-100',
           'flex w-full items-center gap-2.5 border-2 border-dashed',
           'px-4 py-4 transition-colors'

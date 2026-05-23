@@ -31,7 +31,7 @@ export function DiaryAuthorRow({
       onClick={handleClick}
       disabled={!authorId}
       className={cn(
-        'flex w-full items-center gap-3 rounded-xl py-1 text-left',
+        'flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left',
         authorId && 'cursor-pointer transition-colors hover:bg-gray-50'
       )}
     >

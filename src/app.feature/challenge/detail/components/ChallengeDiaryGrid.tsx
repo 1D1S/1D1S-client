@@ -9,6 +9,7 @@ import {
   resolveDiaryImageUrl,
 } from '@feature/diary/shared/utils/diaryImageUrl';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React from 'react';
 
 import { ChallengeDiaryItem } from '../type/challengeDiary';
@@ -30,7 +31,8 @@ export function ChallengeDiaryGrid({
   gridClassName = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4',
   itemClassName,
 }: ChallengeDiaryGridProps): React.ReactElement {
-  if (isLoading) {
+  const showSkeleton = useMinimumLoading(isLoading);
+  if (showSkeleton) {
     return (
       <div className={gridClassName}>
         {Array.from({ length: 4 }).map((_, index) => (

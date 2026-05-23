@@ -4,6 +4,7 @@ import { Text } from '@1d1s/design-system';
 import { NotificationListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { useInViewObserver } from '@module/hooks/useInViewObserver';
 import { cn } from '@module/utils/cn';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft, Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo } from 'react';
@@ -25,6 +26,7 @@ export function NotificationScreen(): React.JSX.Element {
     hasNextPage,
     isFetchingNextPage,
   } = useNotificationsInfinite();
+  const showSkeleton = useMinimumLoading(isLoading);
   const { mutate: markAsRead } = useMarkAsRead();
   const { mutate: markAllAsRead } = useMarkAllAsRead();
   const { ref, inView } = useInViewObserver();
@@ -132,7 +134,7 @@ export function NotificationScreen(): React.JSX.Element {
           )}
         </header>
 
-        {isLoading ? (
+        {showSkeleton ? (
           <NotificationListSkeleton count={6} className="mt-6" />
         ) : !hasNotifications ? (
           <div

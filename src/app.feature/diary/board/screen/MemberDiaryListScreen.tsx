@@ -18,6 +18,7 @@ import { normalizeApiError } from '@module/api/error';
 import { useInViewObserver } from '@module/hooks/useInViewObserver';
 import { cn } from '@module/utils/cn';
 import { getRelativeTimeLabel } from '@module/utils/date';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -47,6 +48,7 @@ export function MemberDiaryListScreen({
     hasNextPage,
     isFetchingNextPage,
   } = useMemberProfileDiariesInfinite(memberIdNum, MEMBER_DIARY_PAGE_SIZE);
+  const showSkeleton = useMinimumLoading(isLoading);
   const { ref, inView } = useInViewObserver();
 
   const diaryItems = useMemo(() => {
@@ -108,7 +110,7 @@ export function MemberDiaryListScreen({
           </div>
         </div>
 
-        {isLoading ? (
+        {showSkeleton ? (
           <DiaryCardSkeletonGrid
             count={MEMBER_DIARY_PAGE_SIZE}
             className={cn(
@@ -128,7 +130,7 @@ export function MemberDiaryListScreen({
           </div>
         ) : null}
 
-        {!isLoading && hasDiaries ? (
+        {!showSkeleton && hasDiaries ? (
           <div
             className={cn(
               'data-fade-in mt-6 grid grid-cols-1 gap-4',
@@ -193,7 +195,7 @@ export function MemberDiaryListScreen({
           </div>
         ) : null}
 
-        {!isLoading && !isError && !hasDiaries ? (
+        {!showSkeleton && !isError && !hasDiaries ? (
           <div className="mt-10 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-gray-500">
               아직 작성한 일지가 없습니다.

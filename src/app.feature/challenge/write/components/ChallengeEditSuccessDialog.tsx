@@ -15,6 +15,10 @@ interface ChallengeEditSuccessDialogProps
   challengeId?: number;
 }
 
+// DialogContent의 close 애니메이션 길이(duration-200)와 동기화 — 닫힘 모션이
+// 끝난 뒤 라우팅이 일어나도록 한다.
+const CLOSE_ANIMATION_MS = 200;
+
 export function ChallengeEditSuccessDialog({
   challengeId,
   onOpenChange,
@@ -22,8 +26,9 @@ export function ChallengeEditSuccessDialog({
 }: ChallengeEditSuccessDialogProps): React.ReactElement {
   const router = useRouter();
 
-  const handleClose = (): void => {
+  const closeThen = (navigate: () => void): void => {
     onOpenChange?.(false);
+    window.setTimeout(navigate, CLOSE_ANIMATION_MS);
   };
 
   return (
@@ -80,10 +85,7 @@ export function ChallengeEditSuccessDialog({
           <Button
             variant="outlined"
             type="button"
-            onClick={() => {
-              handleClose();
-              router.back();
-            }}
+            onClick={() => closeThen(() => router.back())}
           >
             돌아가기
           </Button>
@@ -91,9 +93,10 @@ export function ChallengeEditSuccessDialog({
             variant="default"
             type="button"
             onClick={() => {
-              handleClose();
               if (challengeId !== undefined) {
-                router.push(`/challenge/${challengeId}`);
+                closeThen(() => router.push(`/challenge/${challengeId}`));
+              } else {
+                onOpenChange?.(false);
               }
             }}
           >

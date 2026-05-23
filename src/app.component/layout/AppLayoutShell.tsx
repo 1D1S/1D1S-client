@@ -1,6 +1,9 @@
 'use client';
 
 import { Button } from '@1d1s/design-system';
+import {
+  BrowserPermissionPrompt,
+} from '@feature/notification/components/BrowserPermissionPrompt';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
@@ -11,6 +14,7 @@ import AppBottomNav from './AppBottomNav';
 import { AppLayoutProvider } from './AppLayoutContext';
 import AppRightRail from './AppRightRail';
 import AppTopNav from './AppTopNav';
+import RouteProgressBar from './RouteProgressBar';
 import { useAuthLayoutState } from './useAuthLayoutState';
 
 const TOP_NAV_HIDDEN_ROUTES = [
@@ -185,6 +189,7 @@ export default function AppLayoutShell({
 
   return (
     <AppLayoutProvider value={layoutContextValue}>
+      <RouteProgressBar />
       <div className="flex min-h-screen w-full flex-col bg-white">
         {showTopNav ? (
           <AppTopNav
@@ -239,6 +244,8 @@ export default function AppLayoutShell({
             className={bottomNavRespClass}
           />
         ) : null}
+
+        {!isLoginPage ? <BrowserPermissionPrompt /> : null}
       </div>
     </AppLayoutProvider>
   );

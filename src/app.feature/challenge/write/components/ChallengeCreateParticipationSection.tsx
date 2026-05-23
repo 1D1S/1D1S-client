@@ -1,4 +1,4 @@
-import { Text, Toggle } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { type ChangeEvent } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -146,40 +146,28 @@ export function ChallengeCreateParticipationSection(): React.ReactElement {
               name="allowMidJoin"
               render={({ field }) => (
                 <FormItem>
-                  <div
-                    className={cn(
-                      'rounded-2 flex items-center justify-between gap-3',
-                      'border border-gray-200 bg-gray-50 px-4 py-3'
-                    )}
+                  <FormControl>
+                    <ChallengeCreateSegmentToggle
+                      value={field.value ? 'ALLOW' : 'BEFORE_START'}
+                      onChange={(value) =>
+                        field.onChange(value === 'ALLOW')
+                      }
+                      ariaLabel="중도 참여 허용"
+                      options={[
+                        { value: 'BEFORE_START', label: '시작 전까지만' },
+                        { value: 'ALLOW', label: '허용' },
+                      ]}
+                    />
+                  </FormControl>
+                  <Text
+                    size="caption1"
+                    weight="regular"
+                    className="mt-1 block text-gray-500"
                   >
-                    <div className="flex flex-col">
-                      <Text
-                        size="body2"
-                        weight="bold"
-                        className="text-gray-900"
-                      >
-                        {field.value ? '허용' : '시작 전까지만'}
-                      </Text>
-                      <Text
-                        size="caption1"
-                        weight="regular"
-                        className="text-gray-500"
-                      >
-                        {field.value
-                          ? '챌린지가 시작된 후에도 합류 가능'
-                          : '시작일 전에 모집을 마감해요'}
-                      </Text>
-                    </div>
-                    <FormControl>
-                      <Toggle
-                        checked={field.value}
-                        onChange={(event) =>
-                          field.onChange(event.target.checked)
-                        }
-                        aria-label="중도 참여 허용"
-                      />
-                    </FormControl>
-                  </div>
+                    {field.value
+                      ? '챌린지가 시작된 후에도 합류 가능'
+                      : '시작일 전에 모집을 마감해요'}
+                  </Text>
                 </FormItem>
               )}
             />

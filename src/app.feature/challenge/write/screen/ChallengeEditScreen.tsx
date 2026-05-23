@@ -274,7 +274,7 @@ function ChallengeEditScreenContent({
             </div>
 
             <aside className="hidden lg:block">
-              <div className="lg:sticky lg:top-6">
+              <div className="lg:sticky lg:top-[78px]">
                 <Text
                   size="caption2"
                   weight="extrabold"

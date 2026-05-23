@@ -2,6 +2,7 @@
 
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
@@ -49,14 +50,18 @@ export default function Stories({
 }: StoriesProps): React.ReactElement | null {
   const router = useRouter();
   const [openIndex, setOpenIndex] = useState<number>(-1);
-  const { data, isLoading } = useStories({ enabled });
+  const { data, isPending } = useStories({ enabled });
   const { data: sidebar } = useSidebar();
+  const showSkeleton = useMinimumLoading(isPending);
 
   if (!enabled) {
     return null;
   }
 
-  if (isLoading) {
+  // SSR/하이드레이션 시점엔 아직 데이터가 없으므로 isPending=true 가 된다.
+  // isLoading 대신 isPending 을 쓰면 서버/클라이언트 양쪽에서 모두 스켈레톤을
+  // 그리게 되어 hydration mismatch 없이 자연스럽게 데이터로 전환된다.
+  if (showSkeleton) {
     return <StoryRingSkeleton />;
   }
 
@@ -68,12 +73,14 @@ export default function Stories({
 
   return (
     <>
-      <StoryRing
-        groups={groups}
-        onSelect={setOpenIndex}
-        myProfileImage={sidebar?.profileUrl ?? null}
-        onAddStory={handleAddStory}
-      />
+      <div className="data-fade-in">
+        <StoryRing
+          groups={groups}
+          onSelect={setOpenIndex}
+          myProfileImage={sidebar?.profileUrl ?? null}
+          onAddStory={handleAddStory}
+        />
+      </div>
       {openIndex >= 0 ? (
         <StoryViewer
           groups={groups}

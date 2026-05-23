@@ -7,6 +7,7 @@ import {
   Text,
   TextField,
 } from '@1d1s/design-system';
+import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleton';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
@@ -585,13 +586,8 @@ function DiaryMobileCommentBar({
   };
 
   return (
-    <div
-      className={cn(
-        'fixed right-0 bottom-0 left-0 z-20 lg:hidden',
-        'border-t border-gray-100 bg-white',
-        'flex items-end gap-2 px-4 pt-2.5',
-        'pb-[calc(0.625rem+env(safe-area-inset-bottom))]'
-      )}
+    <MobileBottomActionBar
+      className={cn('flex items-end gap-2 bg-white px-4 pt-2.5')}
     >
       <TextField
         id="diary-comment-content-mobile"
@@ -617,7 +613,7 @@ function DiaryMobileCommentBar({
       >
         등록
       </Button>
-    </div>
+    </MobileBottomActionBar>
   );
 }
 
@@ -826,11 +822,16 @@ function DiaryDetailView({
               />
             )}
 
-            {/* Card 2 — Title + Emotion meter */}
+            <DiaryGoalsCard
+              checklistItems={diaryData.checklistItems}
+              checkedChecklistIds={diaryData.checkedChecklistIds}
+            />
+
+            {/* 제목 + 기분 + 이미지 + 본문 — 한 카드로 통합 */}
             <section
               className={cn(
-                'lg:rounded-[14px] lg:border lg:border-gray-200',
-                'lg:bg-white lg:p-6'
+                'rounded-[14px] border border-gray-200 bg-white',
+                'p-4 sm:p-5 lg:p-6'
               )}
             >
               <Text
@@ -912,43 +913,9 @@ function DiaryDetailView({
                   {diaryData.achievementPercent}% 달성
                 </span>
               </div>
-            </section>
 
-            {/* Card 3 — Goals (DiaryGoalsCard is itself the card) */}
-            <DiaryGoalsCard
-              checklistItems={diaryData.checklistItems}
-              checkedChecklistIds={diaryData.checkedChecklistIds}
-            />
-
-            {/* 모바일: 이미지 단독 블록 */}
-            {diaryData.contentImageUrl ? (
-              <div className="lg:hidden">
-                <DiaryHeroImage
-                  imageUrl={diaryData.contentImageUrl}
-                  title={diaryData.title}
-                  onOpen={() => setIsImageOpen(true)}
-                />
-              </div>
-            ) : null}
-
-            {/* Card 4 — Today's record (label + image + body) */}
-            <section
-              className={cn(
-                'rounded-[14px] border border-gray-200 bg-white',
-                'p-4 sm:p-5 lg:p-6'
-              )}
-            >
-              <Text
-                size="caption2"
-                weight="extrabold"
-                className={cn(
-                  'block tracking-[0.4px] text-gray-500 uppercase'
-                )}
-              >
-                오늘의 기록
-              </Text>
               {diaryData.contentImageUrl ? (
-                <div className="mt-3.5 hidden lg:block">
+                <div className="mt-4 sm:mt-5">
                   <DiaryHeroImage
                     imageUrl={diaryData.contentImageUrl}
                     title={diaryData.title}
@@ -956,7 +923,8 @@ function DiaryDetailView({
                   />
                 </div>
               ) : null}
-              <div className="mt-4">
+
+              <div className="mt-4 sm:mt-5">
                 {diaryData.hasContentHtml ? (
                   <DiaryContentRenderer
                     html={diaryData.contentHtml}

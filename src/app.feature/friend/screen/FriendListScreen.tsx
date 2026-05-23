@@ -5,6 +5,7 @@ import { FriendListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ChevronRight, Inbox, Send, UserMinus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -79,6 +80,7 @@ export default function FriendListScreen(): React.ReactElement {
     isError,
     error,
   } = useFriendList();
+  const showSkeleton = useMinimumLoading(isLoading);
   const { data: received } = useReceivedFriendRequests();
   const { data: sent } = useSentFriendRequests();
   const removeFriend = useRemoveFriend();
@@ -133,7 +135,7 @@ export default function FriendListScreen(): React.ReactElement {
           </Text>
         </div>
 
-        {isLoading ? (
+        {showSkeleton ? (
           <FriendListSkeleton count={5} />
         ) : (
         <div

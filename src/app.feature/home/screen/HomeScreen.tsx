@@ -5,6 +5,7 @@ import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import Stories from '@feature/stories/components/Stories';
+import { useHasMounted } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useState } from 'react';
@@ -19,12 +20,24 @@ import HomeWarmGreeting from '../components/HomeWarmGreeting';
 import { useHomeRandomData } from '../hooks/useHomeRandomData';
 import { useHomeRandomDiaryLike } from '../hooks/useHomeRandomDiaryLike';
 
-export default function HomeScreen(): React.ReactElement {
+interface HomeScreenProps {
+  /** 서버에서 쿠키로 평가한 로그인 힌트. SSR/하이드레이션 직후 비로그인 UI 가
+   *  잠깐 그려졌다가 로그인 UI 로 점프하는 시프트를 막기 위한 초기값. */
+  initialHasAuthHint?: boolean;
+}
+
+export default function HomeScreen({
+  initialHasAuthHint = false,
+}: HomeScreenProps): React.ReactElement {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isLoginRequired = searchParams.get('loginRequired') === 'true';
-  const isLoggedIn = useIsLoggedIn();
+  const hasMounted = useHasMounted();
+  const isLoggedInClient = useIsLoggedIn();
+  // SSR 및 하이드레이션 직후엔 서버 힌트를, mount 이후엔 권위 있는 클라이언트
+  // 판정을 사용한다. 두 값이 일치하지 않을 때만 1회 전환이 발생한다.
+  const isLoggedIn = hasMounted ? isLoggedInClient : initialHasAuthHint;
   const {
     data: sidebar,
     isLoading: isSidebarLoading,

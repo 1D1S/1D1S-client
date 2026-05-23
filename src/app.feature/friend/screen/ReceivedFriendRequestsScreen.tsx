@@ -5,6 +5,7 @@ import { FriendListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React from 'react';
 import { toast } from 'sonner';
 
@@ -18,6 +19,7 @@ import { useReceivedFriendRequests } from '../hooks/useFriendQueries';
 
 export default function ReceivedFriendRequestsScreen(): React.ReactElement {
   const { data, isLoading, isError, error } = useReceivedFriendRequests();
+  const showSkeleton = useMinimumLoading(isLoading);
   const acceptRequest = useAcceptFriendRequest();
   const rejectRequest = useRejectFriendRequest();
 
@@ -43,7 +45,7 @@ export default function ReceivedFriendRequestsScreen(): React.ReactElement {
 
   return (
     <FriendPageShell title="받은 친구 신청">
-      {isLoading ? (
+      {showSkeleton ? (
         <FriendListSkeleton count={4} className="mt-3 lg:mt-6" />
       ) : (
       <section

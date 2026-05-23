@@ -10,6 +10,7 @@ import {
   DialogTitle,
   Text,
 } from '@1d1s/design-system';
+import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { Form } from '@component/ui/Form';
 import { useCreateChallenge } from '@feature/challenge/detail/hooks/useChallengeMutations';
 import { ChallengeCreateBannerSection } from '@feature/challenge/write/components/ChallengeCreateBannerSection';
@@ -118,7 +119,12 @@ export default function ChallengeCreateScreen(): React.ReactElement {
   const canSubmit = form.formState.isValid && !createChallenge.isPending;
 
   return (
-    <div className="min-h-screen w-full pb-24">
+    <div
+      className={cn(
+        'min-h-screen w-full',
+        'pb-[calc(6rem+env(safe-area-inset-bottom))]'
+      )}
+    >
       {/* 모바일 sticky 헤더 — ← + 챌린지 만들기 */}
       <div
         className={cn(
@@ -183,7 +189,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
             </div>
 
             <aside className="hidden lg:block">
-              <div className="lg:sticky lg:top-6">
+              <div className="lg:sticky lg:top-[78px]">
                 <Text
                   size="caption2"
                   weight="extrabold"
@@ -213,10 +219,11 @@ export default function ChallengeCreateScreen(): React.ReactElement {
           </form>
         </div>
 
-        <div
+        <MobileBottomActionBar
+          hideOnDesktop={false}
           className={cn(
-            'fixed inset-x-0 bottom-0 z-20 border-t border-gray-200',
-            'bg-white/95 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] backdrop-blur'
+            'border-gray-200 px-0 pt-0',
+            'shadow-[0_-4px_20px_rgba(0,0,0,0.04)]'
           )}
         >
           <div
@@ -248,7 +255,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
               />
             </div>
           </div>
-        </div>
+        </MobileBottomActionBar>
       </Form>
 
       <ChallengeCreateSuccessDialog

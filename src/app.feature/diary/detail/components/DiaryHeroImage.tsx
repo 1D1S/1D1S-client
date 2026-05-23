@@ -18,7 +18,7 @@ export function DiaryHeroImage({
       type="button"
       onClick={onOpen}
       className={cn(
-        'relative aspect-[16/10] w-full cursor-zoom-in',
+        'relative aspect-[4/5] w-full cursor-zoom-in',
         'overflow-hidden rounded-2xl border border-gray-200 bg-gray-100'
       )}
     >

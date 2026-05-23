@@ -9,6 +9,7 @@ import {
 import { type ChallengeListItem } from '@feature/challenge/board/type/challenge';
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challengePeriod';
 import { cn } from '@module/utils/cn';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React from 'react';
 
 import {
@@ -33,6 +34,7 @@ export default function HomeRandomChallengesSection({
   onMoreClick,
   onChallengeClick,
 }: HomeRandomChallengesSectionProps): React.ReactElement {
+  const showSkeleton = useMinimumLoading(isLoading);
   return (
     <section className="w-full">
       <SectionHeader
@@ -41,7 +43,7 @@ export default function HomeRandomChallengesSection({
         actionLabel="전체보기 →"
         onActionClick={onMoreClick}
       />
-      {isLoading ? (
+      {showSkeleton ? (
         <div
           className={cn(
             '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-2',
@@ -64,7 +66,7 @@ export default function HomeRandomChallengesSection({
           </Text>
         </div>
       ) : null}
-      {!isLoading && !isError && challenges.length > 0 ? (
+      {!showSkeleton && !isError && challenges.length > 0 ? (
         <div
           className={cn(
             '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-2',
@@ -115,7 +117,7 @@ export default function HomeRandomChallengesSection({
           })}
         </div>
       ) : null}
-      {!isLoading && !isError && challenges.length === 0 ? (
+      {!showSkeleton && !isError && challenges.length === 0 ? (
         <div className="flex w-full justify-center py-8">
           <Text size="body2" weight="medium" className="text-gray-500">
             표시할 챌린지가 없습니다.

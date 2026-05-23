@@ -5,6 +5,7 @@ import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
 import { MyPageFriendsEntry } from '@feature/friend/components/MyPageFriendsEntry';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React from 'react';
 
 import { MyPageActiveChallenges } from '../components/MyPageActiveChallenges';
@@ -19,8 +20,9 @@ import { MyPageStreakHeroCard } from '../components/MyPageStreakHeroCard';
 export default function MyPageScreen(): React.ReactElement {
   const { data, isLoading } = useMyPage();
   const { data: myDiariesData } = useMyDiaries(5);
+  const showSkeleton = useMinimumLoading(isLoading);
 
-  if (isLoading || !data) {
+  if (showSkeleton || !data) {
     return <MyPageSkeleton />;
   }
 

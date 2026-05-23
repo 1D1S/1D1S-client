@@ -56,7 +56,7 @@ export function ChallengeLeaderboardCard({
               <li
                 key={entry.participantId}
                 className={cn(
-                  'flex items-center gap-2.5 py-2',
+                  'flex items-center',
                   !isLast && 'border-b border-gray-100'
                 )}
               >
@@ -67,7 +67,7 @@ export function ChallengeLeaderboardCard({
                   }
                   className={cn(
                     'flex w-full cursor-pointer items-center gap-2.5',
-                    'rounded-md text-left transition-colors',
+                    'rounded-md px-2 py-2.5 text-left transition-colors',
                     'hover:bg-gray-50'
                   )}
                 >

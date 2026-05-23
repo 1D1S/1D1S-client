@@ -148,6 +148,23 @@
 
 ---
 
+## 검증 및 테스트 정책
+
+- **Claude Preview 도구(`mcp__Claude_Preview__*`)를 사용하지 않는다.**
+  `preview_start`, `preview_screenshot`, `preview_click`, `preview_eval`,
+  `preview_snapshot`, `preview_console_logs`, `preview_network` 등 모든
+  preview 계열 도구 호출을 금지한다.
+- **Claude in Chrome 도구(`mcp__Claude_in_Chrome__*`)도 동일하게 사용하지 않는다.**
+- 이유: 사용자가 직접 브라우저에서 확인하며 테스트한다. Claude가 dev
+  server를 띄우거나 브라우저를 점유하면 사용자가 확인할 수 없다.
+- UI/프론트엔드 변경 사항을 "verify"해야 하는 상황에서도 **코드 수정과 정적
+  검증(`pnpm lint`, 타입 체크)까지만 수행**하고, 실제 브라우저 확인은
+  사용자에게 맡긴다. "테스트를 직접 돌려보지 않았다"고 명시할 것.
+- 사용자가 명시적으로 "preview로 띄워봐", "스크린샷 찍어봐"라고 요청한
+  경우에만 예외로 허용한다.
+
+---
+
 ## 아키텍처 불변량 (위반 금지)
 
 1. `'use client'`는 **최하위 리프** 컴포넌트에만 배치한다.

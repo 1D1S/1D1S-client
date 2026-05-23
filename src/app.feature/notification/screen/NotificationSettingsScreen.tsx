@@ -7,10 +7,12 @@ import {
   Bell,
   BellOff,
   BellRing,
+  ExternalLink,
   Loader2,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+import { toast } from 'sonner';
 
 import {
   useUpdateNotificationPreferences,
@@ -87,13 +89,66 @@ const WEB_PUSH_LABEL: Record<string, WebPushLabelEntry> = {
   },
   denied: {
     icon: <BellOff className="h-5 w-5 text-gray-400" />,
-    text: '브라우저에서 알림을 차단했습니다. 브라우저 설정에서 허용해 주세요.',
+    text: '브라우저에서 알림을 차단했습니다. 아래 버튼으로 사이트별 설정을 열어 알림을 "허용" 으로 변경해 주세요.',
   },
   error: {
     icon: <BellOff className="h-5 w-5 text-red-400" />,
     text: '알림 구독 중 오류가 발생했습니다. 다시 시도해 주세요.',
   },
 };
+
+/**
+ * 브라우저별 알림 설정 페이지 URL. 보안상 웹 페이지가 직접 navigate 할 수
+ * 없으므로 클립보드 복사 및 새 탭 시도 용도로만 사용한다.
+ */
+function getBrowserSettingsUrl(): string | null {
+  if (typeof navigator === 'undefined') {
+    return null;
+  }
+  const ua = navigator.userAgent.toLowerCase();
+  if (ua.includes('edg/')) {
+    return 'edge://settings/content/notifications';
+  }
+  if (ua.includes('opr/') || ua.includes('opera')) {
+    return 'opera://settings/siteSettings/notifications';
+  }
+  if (ua.includes('firefox')) {
+    return 'about:preferences#privacy';
+  }
+  if (ua.includes('chrome') || ua.includes('chromium')) {
+    return 'chrome://settings/content/notifications';
+  }
+  return null;
+}
+
+function openBrowserSettings(): void {
+  const url = getBrowserSettingsUrl();
+  if (!url) {
+    toast.info(
+      '브라우저/기기 설정 → 알림에서 1Day 1Streak 의 권한을 허용해주세요.',
+    );
+    return;
+  }
+
+  const copyAndNotify = async (): Promise<void> => {
+    try {
+      await navigator.clipboard?.writeText(url);
+      toast.success(
+        '설정 주소를 복사했어요. 새 탭 주소창에 붙여넣어 열어주세요.',
+      );
+    } catch {
+      toast.info(`주소창에 "${url}" 을 입력해 열어주세요.`);
+    }
+  };
+
+  void copyAndNotify();
+
+  try {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  } catch {
+    // 브라우저 정책상 차단되면 무시 — 클립보드 안내로 폴백.
+  }
+}
 
 export function NotificationSettingsScreen(): React.ReactElement {
   const router = useRouter();
@@ -190,6 +245,28 @@ export function NotificationSettingsScreen(): React.ReactElement {
                       <Bell className="h-4 w-4" />
                     )}
                     {status === 'loading' ? '처리 중...' : '알림 허용'}
+                  </Button>
+                </div>
+              ) : status === 'denied' ? (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    {WEB_PUSH_LABEL.denied?.icon}
+                    <Text
+                      size="body2"
+                      weight="regular"
+                      className="text-gray-500"
+                    >
+                      {WEB_PUSH_LABEL.denied?.text}
+                    </Text>
+                  </div>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={openBrowserSettings}
+                    className="self-start"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    사이트별 설정 열기
                   </Button>
                 </div>
               ) : (

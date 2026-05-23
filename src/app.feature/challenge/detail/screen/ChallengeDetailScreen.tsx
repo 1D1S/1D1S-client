@@ -16,6 +16,7 @@ import {
   TextField,
 } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
+import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSkeleton';
 import { getCategoryLabel } from '@constants/categories';
@@ -1144,14 +1145,7 @@ export function ChallengeDetailScreen({
           래퍼의 transform 이 containing block 을 만들어 position: fixed 가
           뷰포트 대신 래퍼 기준이 되는 문제를 피한다. */}
       {ctaConfig.show ? (
-        <div
-          className={cn(
-            'fixed right-0 bottom-0 left-0 z-20 lg:hidden',
-            'border-t border-gray-100 bg-white/95 backdrop-blur',
-            'px-5 pt-3',
-            'pb-[calc(1.25rem+env(safe-area-inset-bottom))]'
-          )}
-        >
+        <MobileBottomActionBar>
           <Button
             size="medium"
             variant={ctaConfig.variant}
@@ -1170,7 +1164,7 @@ export function ChallengeDetailScreen({
               {ctaConfig.hint}
             </Text>
           ) : null}
-        </div>
+        </MobileBottomActionBar>
       ) : null}
     </>
   );

@@ -10,6 +10,7 @@ import { normalizeApiError } from '@module/api/error';
 import { useInViewObserver } from '@module/hooks/useInViewObserver';
 import { cn } from '@module/utils/cn';
 import { getDateTimestamp } from '@module/utils/date';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -178,6 +179,7 @@ export default function DiaryListScreen(): React.ReactElement {
     hasNextPage,
     isFetchingNextPage,
   } = useDiaryList({ size: 12 });
+  const showSkeleton = useMinimumLoading(isLoading);
   const { ref, inView } = useInViewObserver();
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
   const diaries = useMemo(() => {
@@ -309,7 +311,7 @@ export default function DiaryListScreen(): React.ReactElement {
           </div>
         </header>
 
-        {isLoading ? (
+        {showSkeleton ? (
           <DiaryCardSkeletonGrid
             count={12}
             className="mt-6"
@@ -326,7 +328,7 @@ export default function DiaryListScreen(): React.ReactElement {
           </div>
         ) : null}
 
-        {!isLoading && hasLoadedDiaries ? (
+        {!showSkeleton && hasLoadedDiaries ? (
           <div
             className={cn(
               'data-fade-in mt-6 grid gap-4',
@@ -344,7 +346,7 @@ export default function DiaryListScreen(): React.ReactElement {
           </div>
         ) : null}
 
-        {!isLoading && !isError && !hasLoadedDiaries ? (
+        {!showSkeleton && !isError && !hasLoadedDiaries ? (
           <div className="mt-10 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-gray-500">
               아직 등록된 일지가 없습니다.

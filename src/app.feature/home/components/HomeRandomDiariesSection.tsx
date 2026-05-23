@@ -8,6 +8,7 @@ import {
   resolveDiaryImageUrl,
 } from '@feature/diary/shared/utils/diaryImageUrl';
 import { cn } from '@module/utils/cn';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React from 'react';
 
 import {
@@ -36,6 +37,7 @@ export default function HomeRandomDiariesSection({
   onDiaryClick,
   onLikeToggle,
 }: HomeRandomDiariesSectionProps): React.ReactElement {
+  const showSkeleton = useMinimumLoading(isLoading);
   return (
     <section className="w-full">
       <SectionHeader
@@ -44,7 +46,7 @@ export default function HomeRandomDiariesSection({
         actionLabel="전체보기 →"
         onActionClick={onMoreClick}
       />
-      {isLoading ? (
+      {showSkeleton ? (
         <div
           className={
             'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'
@@ -62,7 +64,7 @@ export default function HomeRandomDiariesSection({
           </Text>
         </div>
       ) : null}
-      {!isLoading && !isError && diaries.length > 0 ? (
+      {!showSkeleton && !isError && diaries.length > 0 ? (
         <div
           className={cn(
             'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4',
@@ -104,7 +106,7 @@ export default function HomeRandomDiariesSection({
           ))}
         </div>
       ) : null}
-      {!isLoading && !isError && diaries.length === 0 ? (
+      {!showSkeleton && !isError && diaries.length === 0 ? (
         <div className="flex w-full justify-center py-8">
           <Text size="body2" weight="medium" className="text-gray-500">
             표시할 일지가 없습니다.

@@ -467,6 +467,12 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       return;
     }
 
+    // mutation onSuccess 의 캐시 무효화가 마지막 작성 가능일을 사라지게 만들면
+    // useEffect 가 'unavailable' 다이얼로그를 띄울 수 있다. 제출 시작 시점에
+    // 가드를 올려, 제출-네비게이션 사이의 어떤 refetch 도 다이얼로그를
+    // 트리거하지 못하게 한다. 실패 시에만 가드를 해제한다.
+    submitSuccessRef.current = true;
+
     try {
       if (isEditMode && requestedDiaryId) {
         await updateDiary.mutateAsync({
@@ -489,7 +495,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
           });
         }
 
-        submitSuccessRef.current = true;
         router.push(`/diary/${requestedDiaryId}`);
         return;
       }
@@ -511,9 +516,9 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         });
       }
 
-      submitSuccessRef.current = true;
       router.push('/diary');
     } catch {
+      submitSuccessRef.current = false;
       toast.error('일지 저장 또는 썸네일 업로드에 실패했습니다.');
     }
   }, [

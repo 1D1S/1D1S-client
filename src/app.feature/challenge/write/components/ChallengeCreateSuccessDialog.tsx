@@ -19,6 +19,10 @@ interface ChallengeCreateSuccessDialogProps
  * ChallengeCreateSuccessDialog
  * 챌린지 생성 다이얼로그 컴포넌트
  */
+// DialogContent의 close 애니메이션 길이(duration-200)와 동기화 — 닫힘 모션이
+// 끝난 뒤 라우팅이 일어나도록 한다.
+const CLOSE_ANIMATION_MS = 200;
+
 export function ChallengeCreateSuccessDialog({
   challengeId,
   onOpenChange,
@@ -26,8 +30,9 @@ export function ChallengeCreateSuccessDialog({
 }: ChallengeCreateSuccessDialogProps): React.ReactElement {
   const router = useRouter();
 
-  const handleClose = (): void => {
+  const closeAndNavigate = (to: string): void => {
     onOpenChange?.(false);
+    window.setTimeout(() => router.push(to), CLOSE_ANIMATION_MS);
   };
 
   return (
@@ -80,10 +85,7 @@ export function ChallengeCreateSuccessDialog({
           <Button
             variant="outlined"
             type="button"
-            onClick={() => {
-              handleClose();
-              router.push('/');
-            }}
+            onClick={() => closeAndNavigate('/')}
           >
             홈
           </Button>
@@ -91,9 +93,10 @@ export function ChallengeCreateSuccessDialog({
             variant="default"
             type="button"
             onClick={() => {
-              handleClose();
               if (challengeId !== undefined) {
-                router.push(`/challenge/${challengeId}`);
+                closeAndNavigate(`/challenge/${challengeId}`);
+              } else {
+                onOpenChange?.(false);
               }
             }}
           >

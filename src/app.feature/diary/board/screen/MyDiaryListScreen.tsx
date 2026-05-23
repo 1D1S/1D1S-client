@@ -14,6 +14,7 @@ import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { normalizeApiError } from '@module/api/error';
 import { useInViewObserver } from '@module/hooks/useInViewObserver';
 import { cn } from '@module/utils/cn';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -40,6 +41,7 @@ export function MyDiaryListScreen(): React.ReactElement {
     hasNextPage,
     isFetchingNextPage,
   } = useMyDiariesInfinite(MY_DIARY_PAGE_SIZE);
+  const showSkeleton = useMinimumLoading(isLoading);
   const { ref, inView } = useInViewObserver();
 
   const diaryItems = useMemo(() => {
@@ -142,7 +144,7 @@ export function MyDiaryListScreen(): React.ReactElement {
           </div>
         </header>
 
-        {isLoading ? (
+        {showSkeleton ? (
           <DiaryCardSkeletonGrid
             count={MY_DIARY_PAGE_SIZE}
             className="mt-6"
@@ -159,7 +161,7 @@ export function MyDiaryListScreen(): React.ReactElement {
           </div>
         ) : null}
 
-        {!isLoading && hasDiaries ? (
+        {!showSkeleton && hasDiaries ? (
           <div
             className={cn(
               'data-fade-in mt-6 grid gap-4',
@@ -187,7 +189,7 @@ export function MyDiaryListScreen(): React.ReactElement {
           </div>
         ) : null}
 
-        {!isLoading && !isError && !hasDiaries ? (
+        {!showSkeleton && !isError && !hasDiaries ? (
           <div className="mt-10 flex w-full justify-center py-10">
             <Text size="body1" weight="medium" className="text-gray-500">
               아직 작성한 일지가 없습니다.
