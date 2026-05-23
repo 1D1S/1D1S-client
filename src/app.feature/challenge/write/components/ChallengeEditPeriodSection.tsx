@@ -1,4 +1,4 @@
-import { Text } from '@1d1s/design-system';
+import { Icon, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { formatDateKR } from '@module/utils/date';
 
@@ -57,11 +57,16 @@ export function ChallengeEditPeriodSection({
         onChange={() => undefined}
         ariaLabel="진행 기간 유형"
         options={[
-          { value: 'ENDLESS', label: '무제한', icon: '♾️', disabled: true },
+          {
+            value: 'ENDLESS',
+            label: '무제한',
+            icon: <Icon name="Endless" className="h-3.5 w-3.5" />,
+            disabled: true,
+          },
           {
             value: 'LIMITED',
             label: '기간 챌린지',
-            icon: '📅',
+            icon: <Icon name="Calendar" className="h-3.5 w-3.5" />,
             disabled: true,
           },
         ]}

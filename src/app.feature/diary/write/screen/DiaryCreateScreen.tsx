@@ -59,7 +59,6 @@ export default function DiaryCreateScreen(): React.ReactElement {
     isMissingChallengeDialogOpen,
     isCreateUnavailableDialogOpen,
     handleSelectChallenge,
-    handleClearChallenge,
     handleGoalIdsChange,
     handleThumbnailFileSelect,
     closeMissingChallengeDialog,
@@ -154,7 +153,6 @@ export default function DiaryCreateScreen(): React.ReactElement {
               challenges={memberChallenges}
               isChallengesLoading={isMemberChallengesLoading}
               onSelectChallenge={handleSelectChallenge}
-              onClearChallenge={handleClearChallenge}
             />
 
             <section>

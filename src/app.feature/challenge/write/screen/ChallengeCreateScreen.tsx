@@ -26,7 +26,7 @@ import {
 } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { cn } from '@module/utils/cn';
 import { add, format } from 'date-fns';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check, Lightbulb } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -208,8 +208,13 @@ export default function ChallengeCreateScreen(): React.ReactElement {
                     'text-gray-600'
                   )}
                 >
-                  <div className="mb-1 font-extrabold text-gray-900">
-                    💡 팁
+                  <div
+                    className={cn(
+                      'mb-1 flex items-center gap-1',
+                      'font-extrabold text-gray-900'
+                    )}
+                  >
+                    <Lightbulb className="h-3.5 w-3.5" />팁
                   </div>
                   제목은 동사로 시작하면 클릭률이 높아요. 예) “매일 30분 책
                   읽기”
@@ -236,13 +241,17 @@ export default function ChallengeCreateScreen(): React.ReactElement {
               size="caption1"
               weight="medium"
               className={cn(
-                'hidden text-gray-600 lg:inline',
+                'hidden items-center gap-1 text-gray-600 lg:inline-flex',
                 canSubmit && 'text-main-800 font-bold'
               )}
             >
-              {canSubmit
-                ? '✓ 입력 완료 · 만들 준비가 됐어요'
-                : '필수 항목을 입력해 주세요'}
+              {canSubmit ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />입력 완료 · 만들 준비가 됐어요
+                </>
+              ) : (
+                '필수 항목을 입력해 주세요'
+              )}
             </Text>
             <div className="w-full lg:ml-auto lg:w-auto">
               <ChallengeCreateDialog

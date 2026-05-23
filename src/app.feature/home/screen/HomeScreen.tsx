@@ -11,6 +11,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useState } from 'react';
 
 import HomeMobileHeader from '../components/HomeMobileHeader';
+import HomeNoticeStrip from '../components/HomeNoticeStrip';
 import HomeQuickActions from '../components/HomeQuickActions';
 import HomeRandomChallengesSection from '../components/HomeRandomChallengesSection';
 import HomeRandomDiariesSection from '../components/HomeRandomDiariesSection';
@@ -168,7 +169,10 @@ export default function HomeScreen({
           </div>
         </div>
 
-        <HomeQuickActions />
+        <div className="flex flex-col gap-3">
+          <HomeNoticeStrip />
+          <HomeQuickActions />
+        </div>
 
         <HomeRandomChallengesSection
           challenges={randomChallenges}

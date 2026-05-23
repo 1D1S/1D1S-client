@@ -1,4 +1,4 @@
-import { GoalAddList, Text } from '@1d1s/design-system';
+import { GoalAddList, Icon, Text } from '@1d1s/design-system';
 import { useFormContext } from 'react-hook-form';
 
 import {
@@ -35,11 +35,15 @@ export function ChallengeCreateGoalSection(): React.ReactElement {
               }}
               ariaLabel="목표 유형"
               options={[
-                { value: 'FIXED', label: '고정 목표', icon: '🎯' },
+                {
+                  value: 'FIXED',
+                  label: '고정 목표',
+                  icon: <Icon name="Target" className="h-3.5 w-3.5" />,
+                },
                 {
                   value: 'FLEXIBLE',
                   label: '자유 목표',
-                  icon: '✨',
+                  icon: <Icon name="PencilLine" className="h-3.5 w-3.5" />,
                   disabled: isIndividual,
                 },
               ]}

@@ -1,4 +1,4 @@
-import { DatePicker, Text } from '@1d1s/design-system';
+import { DatePicker, Icon, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { formatDateKR } from '@module/utils/date';
 import { add } from 'date-fns';
@@ -55,8 +55,16 @@ export function ChallengeCreatePeriodSection(): React.ReactElement {
               onChange={field.onChange}
               ariaLabel="진행 기간 유형"
               options={[
-                { value: 'ENDLESS', label: '무제한', icon: '♾️' },
-                { value: 'LIMITED', label: '기간 챌린지', icon: '📅' },
+                {
+                  value: 'ENDLESS',
+                  label: '무제한',
+                  icon: <Icon name="Endless" className="h-3.5 w-3.5" />,
+                },
+                {
+                  value: 'LIMITED',
+                  label: '기간 챌린지',
+                  icon: <Icon name="Calendar" className="h-3.5 w-3.5" />,
+                },
               ]}
             />
             <FormMessage />

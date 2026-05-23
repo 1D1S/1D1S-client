@@ -29,7 +29,7 @@ import {
 } from '@feature/challenge/write/hooks/useChallengeEditForm';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { cn } from '@module/utils/cn';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check, Lightbulb } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
@@ -296,8 +296,13 @@ function ChallengeEditScreenContent({
                     'text-gray-600'
                   )}
                 >
-                  <div className="mb-1 font-extrabold text-gray-900">
-                    💡 안내
+                  <div
+                    className={cn(
+                      'mb-1 flex items-center gap-1',
+                      'font-extrabold text-gray-900'
+                    )}
+                  >
+                    <Lightbulb className="h-3.5 w-3.5" />안내
                   </div>
                   참여 형태와 목표 유형, 진행 기간은 수정할 수 없어요.
                 </div>
@@ -322,13 +327,17 @@ function ChallengeEditScreenContent({
               size="caption1"
               weight="medium"
               className={cn(
-                'hidden text-gray-600 lg:inline',
+                'hidden items-center gap-1 text-gray-600 lg:inline-flex',
                 canSubmit && 'text-main-800 font-bold'
               )}
             >
-              {canSubmit
-                ? '✓ 변경 사항을 저장할 수 있어요'
-                : '필수 항목을 확인해 주세요'}
+              {canSubmit ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />변경 사항을 저장할 수 있어요
+                </>
+              ) : (
+                '필수 항목을 확인해 주세요'
+              )}
             </Text>
             <div className="w-full lg:ml-auto lg:w-auto">
               <ChallengeEditDialog

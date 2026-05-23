@@ -974,9 +974,7 @@ function DiaryDetailView({
 export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
-  const [dismissed, setDismissed] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const showAuthDialog = !isLoggedIn && !dismissed;
   const safeDiaryId = Number.isFinite(id) && id > 0 ? id : 0;
   const deleteDiary = useDeleteDiary();
   const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId, {
@@ -1008,11 +1006,6 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
   };
 
   const handleLikeToggle = (): void => {
-    if (!isLoggedIn) {
-      setDismissed(false);
-      return;
-    }
-
     if (!data || isLikePending) {
       return;
     }
@@ -1025,22 +1018,18 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
     likeDiary.mutate(data.id);
   };
 
-  const handleRequireLogin = (): void => {
-    setDismissed(false);
-  };
-
-  const authDialog = (
-    <LoginRequiredDialog
-      open={showAuthDialog}
-      onOpenChange={(open) => {
-        if (!open) {
-          setDismissed(true);
-        }
-      }}
-      title="간편 가입 후에 둘러보세요!"
-      description="일지 상세는 로그인 후 이용할 수 있습니다."
-    />
-  );
+  if (!isLoggedIn) {
+    return (
+      <LoginRequiredDialog
+        open
+        onOpenChange={() => {}}
+        title="간편 가입 후에 둘러보세요!"
+        description="일지 상세는 로그인 후 이용할 수 있습니다."
+        required
+        onClose={() => router.push('/diary')}
+      />
+    );
+  }
 
   if (!safeDiaryId) {
     return (
@@ -1053,32 +1042,23 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
   }
 
   if (isLoading) {
-    return (
-      <>
-        {authDialog}
-        <DiaryDetailSkeleton />
-      </>
-    );
+    return <DiaryDetailSkeleton />;
   }
 
   if (isError || !data) {
     return (
-      <>
-        {authDialog}
-        <div className="flex min-h-[40vh] items-center justify-center p-4">
-          <Text size="body1" weight="medium" className="text-red-600">
-            {error
-              ? normalizeApiError(error).message
-              : '일지 상세를 불러오지 못했습니다.'}
-          </Text>
-        </div>
-      </>
+      <div className="flex min-h-[40vh] items-center justify-center p-4">
+        <Text size="body1" weight="medium" className="text-red-600">
+          {error
+            ? normalizeApiError(error).message
+            : '일지 상세를 불러오지 못했습니다.'}
+        </Text>
+      </div>
     );
   }
 
   return (
     <>
-      {authDialog}
       <div className="data-fade-in">
         <DiaryDetailView
           diaryData={mapDiaryToViewData(data, challengeDetailData)}
@@ -1086,7 +1066,7 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
           isLikePending={isLikePending}
           isOwner={isOwner}
           onDelete={handleDelete}
-          onRequireLogin={handleRequireLogin}
+          onRequireLogin={() => {}}
         />
       </div>
       {/* 모바일 sticky 댓글 입력바 — data-fade-in 래퍼 밖에 둔다:
@@ -1095,7 +1075,7 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
       <DiaryMobileCommentBar
         diaryId={data.id}
         isLoggedIn={isLoggedIn}
-        onRequireLogin={handleRequireLogin}
+        onRequireLogin={() => {}}
       />
     </>
   );

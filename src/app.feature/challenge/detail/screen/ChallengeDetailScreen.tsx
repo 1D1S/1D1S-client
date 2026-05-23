@@ -90,6 +90,8 @@ export function ChallengeDetailScreen({
 
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
 
+  console.log('챌린지 상세 조회 데이터:', data);
+
   const joinChallenge = useJoinChallenge();
   const leaveChallenge = useLeaveChallenge();
   const likeChallenge = useLikeChallenge();
@@ -102,8 +104,6 @@ export function ChallengeDetailScreen({
   const unlikeDiary = useUnlikeDiary();
 
   const isLoggedIn = useIsLoggedIn();
-  const [dismissed, setDismissed] = useState(false);
-  const showAuthDialog = !isLoggedIn && !dismissed;
   // 히어로 위 floating 뒤로가기(top-3.5)가 스크롤로 가려지기 시작하는
   // 시점에 맞춰 sticky 헤더가 즉시 등장하도록 임계값을 8px로 둔다.
   const [isCompactHeaderVisible, setIsCompactHeaderVisible] = useState(false);
@@ -117,7 +117,6 @@ export function ChallengeDetailScreen({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const [showDiaryLikeDialog, setShowDiaryLikeDialog] = useState(false);
   const [showCreateUnavailableDialog, setShowCreateUnavailableDialog] =
     useState(false);
   const [showFreeGoalModal, setShowFreeGoalModal] = useState(false);
@@ -403,10 +402,6 @@ export function ChallengeDetailScreen({
   };
 
   const handleDiaryLikeToggle = (diary: ChallengeDiaryItem): void => {
-    if (!isLoggedIn) {
-      setShowDiaryLikeDialog(true);
-      return;
-    }
     if (likeDiary.isPending || unlikeDiary.isPending) {
       return;
     }
@@ -417,44 +412,36 @@ export function ChallengeDetailScreen({
     }
   };
 
-  const authDialog = (
-    <LoginRequiredDialog
-      open={showAuthDialog}
-      onOpenChange={(open) => {
-        if (!open) {
-          setDismissed(true);
-        }
-      }}
-      title="간편 가입 후에 둘러보세요!"
-      description="챌린지 상세는 로그인 후 이용할 수 있습니다."
-    />
-  );
+  if (!isLoggedIn) {
+    return (
+      <LoginRequiredDialog
+        open
+        onOpenChange={() => {}}
+        title="간편 가입 후에 둘러보세요!"
+        description="챌린지 상세는 로그인 후 이용할 수 있습니다."
+        required
+        onClose={() => router.push('/challenge')}
+      />
+    );
+  }
 
   if (isLoading) {
-    return (
-      <>
-        {authDialog}
-        <ChallengeDetailSkeleton />
-      </>
-    );
+    return <ChallengeDetailSkeleton />;
   }
 
   if (isError || !summary || !detail) {
     return (
-      <>
-        {authDialog}
-        <div
-          className={cn(
-            'flex min-h-[60vh] w-full items-center justify-center px-4'
-          )}
-        >
-          <Text size="body1" weight="medium" className="text-red-600">
-            {error
-              ? normalizeApiError(error).message
-              : '챌린지 상세 정보를 불러오지 못했습니다.'}
-          </Text>
-        </div>
-      </>
+      <div
+        className={cn(
+          'flex min-h-[60vh] w-full items-center justify-center px-4'
+        )}
+      >
+        <Text size="body1" weight="medium" className="text-red-600">
+          {error
+            ? normalizeApiError(error).message
+            : '챌린지 상세 정보를 불러오지 못했습니다.'}
+        </Text>
+      </div>
     );
   }
 
@@ -773,7 +760,6 @@ export function ChallengeDetailScreen({
             : 'pb-12'
         )}
       >
-        {authDialog}
         {freeGoalModal}
         {editGoalModal}
         {editChallengeGoalsModal}
@@ -782,10 +768,6 @@ export function ChallengeDetailScreen({
           onOpenChange={setShowCreateUnavailableDialog}
           title="새 일지를 작성할 수 없습니다."
           description="최근 3일 동안 작성 가능한 날짜를 모두 사용했습니다."
-        />
-        <LoginRequiredDialog
-          open={showDiaryLikeDialog}
-          onOpenChange={setShowDiaryLikeDialog}
         />
 
       {/* 히어로 + 모바일 floating 뒤로가기 */}

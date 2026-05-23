@@ -1,4 +1,4 @@
-import { Text } from '@1d1s/design-system';
+import { Icon, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { type ChangeEvent } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -51,8 +51,16 @@ export function ChallengeCreateParticipationSection(): React.ReactElement {
               }}
               ariaLabel="참여 형태"
               options={[
-                { value: 'INDIVIDUAL', label: '개인 챌린지', icon: '🙋' },
-                { value: 'GROUP', label: '단체 챌린지', icon: '👥' },
+                {
+                  value: 'INDIVIDUAL',
+                  label: '개인 챌린지',
+                  icon: <Icon name="Person" className="h-3.5 w-3.5" />,
+                },
+                {
+                  value: 'GROUP',
+                  label: '단체 챌린지',
+                  icon: <Icon name="People" className="h-3.5 w-3.5" />,
+                },
               ]}
             />
             <FormMessage />
