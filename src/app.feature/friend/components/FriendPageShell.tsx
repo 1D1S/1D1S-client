@@ -35,7 +35,7 @@ export function FriendPageShell({
           'sticky top-0 z-30 flex items-center gap-3',
           'h-14-safe pt-safe-top',
           'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden',
+          'lg:hidden'
         )}
       >
         <button
@@ -44,7 +44,7 @@ export function FriendPageShell({
           onClick={() => router.back()}
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100',
+            'text-gray-700 transition-colors hover:bg-gray-100'
           )}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -61,13 +61,13 @@ export function FriendPageShell({
       <div
         className={cn(
           'mx-auto w-full lg:max-w-[760px]',
-          'px-0 py-0 lg:px-8 lg:py-10',
+          'px-0 py-0 lg:px-8 lg:py-10'
         )}
       >
         <header
           className={cn(
             'hidden flex-col gap-1.5 border-b border-gray-100 pb-5',
-            'lg:flex',
+            'lg:flex'
           )}
         >
           <Text

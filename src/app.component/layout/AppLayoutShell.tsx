@@ -48,6 +48,8 @@ const BOTTOM_NAV_HIDDEN_ROUTES = [
   '/challenge/create',
   '/onboarding',
   '/notification',
+  '/notice',
+  '/inquiry',
   '/mypage/settings',
   '/mypage/friend',
   '/terms',

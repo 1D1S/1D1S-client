@@ -30,13 +30,13 @@ export function MyPageFriendsEntry(): React.ReactElement {
       className={cn(
         'group flex w-full items-center gap-3 rounded-[14px]',
         'border border-gray-200 bg-white px-4 py-4 text-left',
-        'transition-colors hover:bg-gray-50',
+        'transition-colors hover:bg-gray-50'
       )}
     >
       <span
         className={cn(
           'flex h-10 w-10 shrink-0 items-center justify-center',
-          'rounded-full bg-gray-100 text-gray-700',
+          'rounded-full bg-gray-100 text-gray-700'
         )}
         aria-hidden
       >
@@ -54,7 +54,7 @@ export function MyPageFriendsEntry(): React.ReactElement {
         <span
           className={cn(
             'inline-flex h-6 items-center justify-center',
-            'rounded-full bg-red-500 px-2 text-white',
+            'rounded-full bg-red-500 px-2 text-white'
           )}
         >
           <Text size="caption2" weight="bold" className="text-white">

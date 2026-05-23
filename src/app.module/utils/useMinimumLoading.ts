@@ -15,8 +15,18 @@ export function useMinimumLoading(
   isLoading: boolean,
   minMs: number = SKELETON_MIN_DURATION_MS
 ): boolean {
-  const [held, setHeld] = useState<boolean>(false);
+  // held 는 lazy initializer 로 mount 시점의 isLoading 을 그대로 받는다.
+  // 이렇게 해야 mount 직후 첫 렌더부터 스켈레톤이 보장된다.
+  const [held, setHeld] = useState<boolean>(isLoading);
   const startRef = useRef<number | null>(null);
+
+  // isLoading 이 false→true 로 바뀌는 순간을 render 단계에서 동기 감지.
+  // effect 안에서만 setHeld(true) 하면, isLoading=true 진입 직후 첫 렌더에서
+  // held=false 가 그대로 노출됐다가, effect 가 돌고 난 뒤에야 true 로
+  // 바뀌면서 한 프레임 깜빡임이 발생한다.
+  if (isLoading && !held) {
+    setHeld(true);
+  }
 
   useEffect(() => {
     if (isLoading) {
@@ -26,22 +36,15 @@ export function useMinimumLoading(
       return;
     }
 
-    const start = startRef.current;
-    if (start === null) {
-      return;
-    }
-    startRef.current = null;
-
-    const remaining = Math.max(0, minMs - (Date.now() - start));
-    if (remaining === 0) {
+    if (startRef.current === null) {
       return;
     }
 
-    // 로딩→완료 전환 시점에 한 번만 호출되므로 cascading 위험이 없다.
-    // 타이머가 끝나면 setHeld(false) 로 자연스럽게 풀린다.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setHeld(true);
+    const remaining = Math.max(0, minMs - (Date.now() - startRef.current));
+    // setHeld 는 timer 콜백(비동기)에서만 호출되므로 effect 안에서 직접
+    // setState 하지 않는다 — react-hooks/set-state-in-effect 위반 회피.
     const timer = setTimeout(() => {
+      startRef.current = null;
       setHeld(false);
     }, remaining);
 
@@ -50,5 +53,5 @@ export function useMinimumLoading(
     };
   }, [isLoading, minMs]);
 
-  return isLoading || held;
+  return held;
 }

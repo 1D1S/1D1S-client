@@ -37,13 +37,13 @@ function RequestEntryRow({
       onClick={onClick}
       className={cn(
         'flex w-full items-center gap-3 px-4 py-4 text-left',
-        'transition-colors hover:bg-gray-50',
+        'transition-colors hover:bg-gray-50'
       )}
     >
       <span
         className={cn(
           'flex h-9 w-9 shrink-0 items-center justify-center',
-          'rounded-full bg-gray-100 text-gray-700',
+          'rounded-full bg-gray-100 text-gray-700'
         )}
         aria-hidden
       >
@@ -58,7 +58,7 @@ function RequestEntryRow({
         <span
           className={cn(
             'inline-flex h-6 min-w-6 items-center justify-center',
-            'rounded-full bg-red-500 px-2 text-white',
+            'rounded-full bg-red-500 px-2 text-white'
           )}
         >
           <Text size="caption2" weight="bold" className="text-white">
@@ -74,12 +74,7 @@ function RequestEntryRow({
 export default function FriendListScreen(): React.ReactElement {
   const router = useRouter();
 
-  const {
-    data: friends,
-    isLoading,
-    isError,
-    error,
-  } = useFriendList();
+  const { data: friends, isLoading, isError, error } = useFriendList();
   const showSkeleton = useMinimumLoading(isLoading);
   const { data: received } = useReceivedFriendRequests();
   const { data: sent } = useSentFriendRequests();
@@ -105,7 +100,7 @@ export default function FriendListScreen(): React.ReactElement {
       <section
         className={cn(
           'mt-3 overflow-hidden border-y border-gray-100 bg-white',
-          'lg:mt-6 lg:rounded-[14px] lg:border',
+          'lg:mt-6 lg:rounded-[14px] lg:border'
         )}
       >
         <RequestEntryRow
@@ -138,52 +133,50 @@ export default function FriendListScreen(): React.ReactElement {
         {showSkeleton ? (
           <FriendListSkeleton count={5} />
         ) : (
-        <div
-          className={cn(
-            'data-fade-in overflow-hidden border-y border-gray-100 bg-white',
-            'lg:rounded-[14px] lg:border',
-          )}
-        >
-          {isError ? (
-            <div className="flex w-full justify-center py-10">
-              <Text size="body2" className="text-red-500">
-                {error
-                  ? normalizeApiError(error).message
-                  : '친구 목록을 불러오지 못했습니다.'}
-              </Text>
-            </div>
-          ) : friendList.length === 0 ? (
-            <div className="flex w-full justify-center py-10">
-              <Text size="body2" className="text-gray-500">
-                아직 친구가 없습니다.
-              </Text>
-            </div>
-          ) : (
-            friendList.map((friend, idx) => (
-              <React.Fragment key={friend.memberId}>
-                {idx > 0 ? (
-                  <div className="ml-16 h-px bg-gray-100" />
-                ) : null}
-                <FriendListItem
-                  friend={friend}
-                  action={
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      iconLeft={<UserMinus className="h-4 w-4" />}
-                      disabled={removeFriend.isPending}
-                      onClick={() =>
-                        handleRemove(friend.memberId, friend.nickname)
-                      }
-                    >
-                      삭제
-                    </Button>
-                  }
-                />
-              </React.Fragment>
-            ))
-          )}
-        </div>
+          <div
+            className={cn(
+              'data-fade-in overflow-hidden border-y border-gray-100 bg-white',
+              'lg:rounded-[14px] lg:border'
+            )}
+          >
+            {isError ? (
+              <div className="flex w-full justify-center py-10">
+                <Text size="body2" className="text-red-500">
+                  {error
+                    ? normalizeApiError(error).message
+                    : '친구 목록을 불러오지 못했습니다.'}
+                </Text>
+              </div>
+            ) : friendList.length === 0 ? (
+              <div className="flex w-full justify-center py-10">
+                <Text size="body2" className="text-gray-500">
+                  아직 친구가 없습니다.
+                </Text>
+              </div>
+            ) : (
+              friendList.map((friend, idx) => (
+                <React.Fragment key={friend.memberId}>
+                  {idx > 0 ? <div className="ml-16 h-px bg-gray-100" /> : null}
+                  <FriendListItem
+                    friend={friend}
+                    action={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        iconLeft={<UserMinus className="h-4 w-4" />}
+                        disabled={removeFriend.isPending}
+                        onClick={() =>
+                          handleRemove(friend.memberId, friend.nickname)
+                        }
+                      >
+                        삭제
+                      </Button>
+                    }
+                  />
+                </React.Fragment>
+              ))
+            )}
+          </div>
         )}
       </section>
     </FriendPageShell>

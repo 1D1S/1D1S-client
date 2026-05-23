@@ -127,11 +127,7 @@ export function InquiryScreen(): React.ReactElement {
                   <Mail className="h-5 w-5" />
                 </span>
                 <div className="flex flex-col gap-1">
-                  <Text
-                    size="body1"
-                    weight="bold"
-                    className="text-gray-900"
-                  >
+                  <Text size="body1" weight="bold" className="text-gray-900">
                     무엇을 도와드릴까요?
                   </Text>
                   <Text
@@ -139,8 +135,8 @@ export function InquiryScreen(): React.ReactElement {
                     weight="regular"
                     className="text-gray-500"
                   >
-                    문제가 발생하거나 추가됐으면 하는 기능이 있다면 아래
-                    버튼을 통해 문의를 남겨주세요.
+                    문제가 발생하거나 추가됐으면 하는 기능이 있다면 아래 버튼을
+                    통해 문의를 남겨주세요.
                   </Text>
                 </div>
               </div>

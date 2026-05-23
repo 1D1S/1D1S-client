@@ -55,7 +55,7 @@ const CodeBlockWithEscape = CodeBlockLowlight.extend({
 
         const textBefore = $from.parent.textContent.slice(
           0,
-          $from.parentOffset,
+          $from.parentOffset
         );
         if (textBefore.includes('\n')) {
           return false;
@@ -138,12 +138,7 @@ function toggleCodeBlockMerged(editor: Editor): void {
     ? [{ type: 'codeBlock', content: [{ type: 'text', text }] }]
     : [{ type: 'codeBlock' }];
 
-  editor
-    .chain()
-    .focus()
-    .deleteRange({ from, to })
-    .insertContent(content)
-    .run();
+  editor.chain().focus().deleteRange({ from, to }).insertContent(content).run();
 }
 
 export function DiaryContentEditor({
@@ -263,7 +258,7 @@ export function DiaryContentEditor({
               '[&_pre_code]:text-[0.875rem]',
               '[&_:not(pre)>code]:rounded [&_:not(pre)>code]:bg-gray-100',
               '[&_:not(pre)>code]:px-1 [&_:not(pre)>code]:py-0.5',
-              '[&_:not(pre)>code]:text-[0.875rem]',
+              '[&_:not(pre)>code]:text-[0.875rem]'
             )}
           />
         </div>

@@ -91,10 +91,7 @@ export default function HomeScreen({
     [isLoggedIn, setShowLoginDialog, router]
   );
 
-  const handleMoreDiaries = useCallback(
-    () => router.push('/diary'),
-    [router]
-  );
+  const handleMoreDiaries = useCallback(() => router.push('/diary'), [router]);
 
   const handleDiaryClick = useCallback(
     (diaryId: number): void => {
@@ -171,10 +168,7 @@ export default function HomeScreen({
         <div className="grid gap-3 lg:grid-cols-2 lg:gap-5">
           <HomeWarmBanner />
           <div className="hidden lg:block">
-            <HomeStreakSlot
-              isLoggedIn={isLoggedIn}
-              streakDays={streakDays}
-            />
+            <HomeStreakSlot isLoggedIn={isLoggedIn} streakDays={streakDays} />
           </div>
         </div>
 

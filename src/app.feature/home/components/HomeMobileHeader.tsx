@@ -30,9 +30,7 @@ export default function HomeMobileHeader(): React.ReactElement {
         >
           <Icon name="Logo" size={16} className="text-white" />
         </span>
-        <span
-          className="text-[15px] font-extrabold tracking-tight text-gray-900"
-        >
+        <span className="text-[15px] font-extrabold tracking-tight text-gray-900">
           1D1S
         </span>
       </Link>

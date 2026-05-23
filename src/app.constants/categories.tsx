@@ -20,16 +20,16 @@ export const CATEGORY_OPTIONS: ReadonlyArray<{
 // 고유 hue 를 배정한다. (extras: 레거시 카테고리, 필요 시에만 사용)
 const CATEGORY_STRIPE_TONES: Record<string, string> = {
   ALL: '#ff7043',
-  DEV: '#7c3aed',      // violet
-  STUDY: '#6366f1',    // indigo
-  MUSIC: '#2563eb',    // blue
-  ECONOMY: '#0d9488',  // teal
-  BOOK: '#16a34a',     // green
-  LEISURE: '#f59e0b',  // amber
+  DEV: '#7c3aed', // violet
+  STUDY: '#6366f1', // indigo
+  MUSIC: '#2563eb', // blue
+  ECONOMY: '#0d9488', // teal
+  BOOK: '#16a34a', // green
+  LEISURE: '#f59e0b', // amber
   EXERCISE: '#ef4444', // red
-  HEALTH: '#10b981',   // emerald
-  HOBBY: '#ec4899',    // pink
-  OTHER: '#6b7280',    // gray
+  HEALTH: '#10b981', // emerald
+  HOBBY: '#ec4899', // pink
+  OTHER: '#6b7280', // gray
 };
 
 const DEFAULT_STRIPE_TONE = '#6b7280';
@@ -72,9 +72,7 @@ export function getCategoryLabel(category?: string | null): string {
   return CATEGORY_LABELS[category] ?? category;
 }
 
-export function getCategoryIconName(
-  category?: string | null
-): IconName | null {
+export function getCategoryIconName(category?: string | null): IconName | null {
   if (!category) {
     return null;
   }

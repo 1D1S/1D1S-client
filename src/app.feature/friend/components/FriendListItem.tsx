@@ -25,7 +25,7 @@ export function FriendListItem({
     <div
       className={cn(
         'flex items-center gap-3 px-4 py-3',
-        'transition-colors hover:bg-gray-50',
+        'transition-colors hover:bg-gray-50'
       )}
     >
       <button
@@ -34,11 +34,7 @@ export function FriendListItem({
         className="flex flex-1 items-center gap-3 text-left"
       >
         <CircleAvatar size="md" imageUrl={friend.profileUrl} tone="peach" />
-        <Text
-          size="body1"
-          weight="medium"
-          className="truncate text-gray-900"
-        >
+        <Text size="body1" weight="medium" className="truncate text-gray-900">
           {friend.nickname}
         </Text>
       </button>

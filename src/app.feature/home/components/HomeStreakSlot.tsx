@@ -17,10 +17,18 @@ interface HomeStreakSlotProps {
 //   생략하고 연 단위 마일스톤을 다음 목표로 사용한다.
 //   예: 600 -> 730(2년), 900 -> 1095(3년), 1400 -> 1460(4년)
 export function getStreakGoal(days: number): number {
-  if (days < 30) {return 30;}
-  if (days < 50) {return 50;}
-  if (days < 100) {return 100;}
-  if (days < 200) {return 200;}
+  if (days < 30) {
+    return 30;
+  }
+  if (days < 50) {
+    return 50;
+  }
+  if (days < 100) {
+    return 100;
+  }
+  if (days < 200) {
+    return 200;
+  }
   const candidate = Math.floor(days / 100) * 100 + 100;
   const nextYear = (Math.floor(days / 365) + 1) * 365;
   if (nextYear > days && nextYear <= candidate + 100) {
@@ -30,8 +38,12 @@ export function getStreakGoal(days: number): number {
 }
 
 function getGoalLabel(goal: number): string {
-  if (goal === 30) {return '한 달';}
-  if (goal % 365 === 0) {return `${goal / 365}년`;}
+  if (goal === 30) {
+    return '한 달';
+  }
+  if (goal % 365 === 0) {
+    return `${goal / 365}년`;
+  }
   return `${goal}일`;
 }
 
@@ -125,9 +137,7 @@ export default function HomeStreakSlot({
             />
           ) : (
             <div
-              className={cn(
-                'data-fade-in mt-0.5 flex items-baseline gap-1'
-              )}
+              className={cn('data-fade-in mt-0.5 flex items-baseline gap-1')}
             >
               <span
                 className={cn(
@@ -184,9 +194,7 @@ export default function HomeStreakSlot({
       )}
     >
       <div className="mb-2 flex w-full items-center justify-between">
-        <span className="text-[11px] font-bold text-gray-600">
-          현재 스트릭
-        </span>
+        <span className="text-[11px] font-bold text-gray-600">현재 스트릭</span>
         <span aria-hidden className="animate-flame-flicker text-[18px]">
           🔥
         </span>

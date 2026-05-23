@@ -15,4 +15,3 @@ export function getDiaryAchievementRate(
   const rate = achievementRate ?? fallbackAchievementRate ?? 0;
   return Math.min(100, Math.max(0, rate));
 }
-

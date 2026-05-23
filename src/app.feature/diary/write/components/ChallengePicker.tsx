@@ -9,10 +9,7 @@ import {
   Icon,
   Text,
 } from '@1d1s/design-system';
-import {
-  getCategoryLabel,
-  getCategoryStripeTone,
-} from '@constants/categories';
+import { getCategoryLabel, getCategoryStripeTone } from '@constants/categories';
 import {
   isChallengeEnded,
   isChallengeOngoing,
@@ -53,9 +50,7 @@ export function ChallengePicker({
           {isLoading ? (
             <div className="flex flex-col items-center gap-2 py-10">
               <span
-                className={cn(
-                  'bg-main-100 h-9 w-9 animate-pulse rounded-full'
-                )}
+                className={cn('bg-main-100 h-9 w-9 animate-pulse rounded-full')}
               />
               <Text size="body2" className="text-gray-500">
                 불러오는 중입니다...
@@ -88,9 +83,7 @@ export function ChallengePicker({
                 <ChallengeListItem
                   key={challenge.challengeId}
                   challengeTitle={challenge.title}
-                  challengeType={formatChallengeTypeLabel(
-                    challenge.goalType
-                  )}
+                  challengeType={formatChallengeTypeLabel(challenge.goalType)}
                   challengeCategory={getCategoryLabel(challenge.category)}
                   imageUrl={challenge.thumbnailImage}
                   currentUserCount={challenge.participantCnt}

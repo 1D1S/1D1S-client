@@ -1,10 +1,7 @@
 'use client';
 
 import { Card, Icon, Stripe, Text } from '@1d1s/design-system';
-import {
-  getCategoryLabel,
-  getCategoryStripeTone,
-} from '@constants/categories';
+import { getCategoryLabel, getCategoryStripeTone } from '@constants/categories';
 import {
   isChallengeEnded,
   isChallengeOngoing,

@@ -28,7 +28,11 @@ export function DiaryCreateFinishSection({
   const leftColumn = (
     <div className="flex flex-col gap-5">
       <div>
-        <Text size="caption1" weight="bold" className="mb-2 block text-gray-600">
+        <Text
+          size="caption1"
+          weight="bold"
+          className="mb-2 block text-gray-600"
+        >
           언제의 기록인가요?
         </Text>
         <DiaryCreateDatePicker
@@ -44,7 +48,11 @@ export function DiaryCreateFinishSection({
       </div>
 
       <div>
-        <Text size="caption1" weight="bold" className="mb-2 block text-gray-600">
+        <Text
+          size="caption1"
+          weight="bold"
+          className="mb-2 block text-gray-600"
+        >
           오늘의 기분
         </Text>
         <DiaryCreateMoodSelector

@@ -55,9 +55,7 @@ export default function HomeWarmBanner({
       />
       {banners.length > 1 ? (
         <div
-          className={cn(
-            'absolute right-4 bottom-3 flex items-center gap-1.5'
-          )}
+          className={cn('absolute right-4 bottom-3 flex items-center gap-1.5')}
         >
           {banners.map((banner, i) => (
             <button

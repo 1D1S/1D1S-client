@@ -47,8 +47,7 @@ export function MemberFriendActionButton({
   const isLoggedIn = useIsLoggedIn();
   // requestId 가 필요한 상태에서만 보조 호출. 외부 prop 이 없으면 항상 호출.
   const needsRequestId =
-    relationStatus === 'REQUEST_SENT' ||
-    relationStatus === 'REQUEST_RECEIVED';
+    relationStatus === 'REQUEST_SENT' || relationStatus === 'REQUEST_RECEIVED';
   const shouldFetchRelation = relationStatus === undefined || needsRequestId;
   const { data: fetchedRelation, isLoading: isRelationLoading } =
     useFriendRelation(shouldFetchRelation ? memberId : 0);
@@ -87,7 +86,7 @@ export function MemberFriendActionButton({
       <div
         className={cn(
           'inline-flex h-10 items-center gap-2 rounded-xl',
-          'border border-gray-200 bg-gray-50 px-4',
+          'border border-gray-200 bg-gray-50 px-4'
         )}
         aria-hidden
       >
@@ -98,11 +97,7 @@ export function MemberFriendActionButton({
     );
   }
 
-  if (
-    status === 'SELF' ||
-    status === 'BLOCKED' ||
-    status === 'BLOCKED_BY'
-  ) {
+  if (status === 'SELF' || status === 'BLOCKED' || status === 'BLOCKED_BY') {
     return null;
   }
 
