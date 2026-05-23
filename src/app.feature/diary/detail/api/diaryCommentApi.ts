@@ -6,6 +6,7 @@ import {
 } from '@module/api/request';
 
 import {
+  CreateCommentReportRequest,
   CreateCommentRequest,
   DiaryComment,
   DiaryCommentAuthor,
@@ -164,4 +165,14 @@ export const diaryCommentApi = {
       method: 'DELETE',
     });
   },
+
+  reportComment: async (
+    commentId: number,
+    data: CreateCommentReportRequest
+  ): Promise<boolean> =>
+    requestData<boolean, CreateCommentReportRequest>(apiClient, {
+      url: `/comments/${commentId}/report`,
+      method: 'POST',
+      data,
+    }),
 };

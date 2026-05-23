@@ -47,7 +47,7 @@ export function ChallengeEditDialogContent({
   return (
     <div className="flex flex-col gap-4">
       {values.thumbnailPreviewUrl ? (
-        <div className="rounded-2 relative aspect-[16/9] w-full overflow-hidden">
+        <div className="rounded-2 relative aspect-[21/9] w-full overflow-hidden">
           <Image
             src={values.thumbnailPreviewUrl}
             alt="챌린지 대표 사진"

@@ -6,7 +6,10 @@ import {
 
 import { DIARY_QUERY_KEYS } from '../../board/consts/queryKeys';
 import { diaryCommentApi } from '../api/diaryCommentApi';
-import { CreateCommentRequest } from '../type/comment';
+import {
+  CreateCommentReportRequest,
+  CreateCommentRequest,
+} from '../type/comment';
 
 function invalidateDiaryCommentQueries(
   queryClient: ReturnType<typeof useQueryClient>,
@@ -54,5 +57,16 @@ export function useDeleteComment(
   return useMutation({
     mutationFn: (commentId: number) => diaryCommentApi.deleteComment(commentId),
     onSuccess: () => invalidateDiaryCommentQueries(queryClient, diaryId),
+  });
+}
+
+export function useReportComment(): UseMutationResult<
+  boolean,
+  Error,
+  { commentId: number; data: CreateCommentReportRequest }
+> {
+  return useMutation({
+    mutationFn: ({ commentId, data }) =>
+      diaryCommentApi.reportComment(commentId, data),
   });
 }

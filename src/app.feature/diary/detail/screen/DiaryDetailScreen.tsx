@@ -38,6 +38,7 @@ import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
 import { useSidebar } from '../../../member/hooks/useMemberQueries';
 import { useDiaryDetail } from '../../board/hooks/useDiaryQueries';
 import { DiaryContentRenderer } from '../../shared/components/DiaryContentRenderer';
+import { CommentReportDialog } from '../components/CommentReportDialog';
 import { DiaryAuthorRow } from '../components/DiaryAuthorRow';
 import {
   DiaryConnectedChallengeCard,
@@ -225,6 +226,9 @@ function DiaryCommentSection({
   const router = useRouter();
   const commentWrapperRef = useRef<HTMLDivElement>(null);
   const [commentContent, setCommentContent] = useState('');
+  const [reportTargetCommentId, setReportTargetCommentId] = useState<
+    number | null
+  >(null);
   const {
     data: commentsData,
     isLoading: isCommentsLoading,
@@ -481,6 +485,22 @@ function DiaryCommentSection({
     });
   };
 
+  const handleReportComment = (comment: CommentNode): void => {
+    const targetCommentId = Number(comment.id);
+
+    if (!Number.isFinite(targetCommentId) || targetCommentId <= 0) {
+      return;
+    }
+
+    if (deletedCommentIds.has(targetCommentId)) {
+      return;
+    }
+
+    requireAuthAction(() => {
+      setReportTargetCommentId(targetCommentId);
+    });
+  };
+
   return (
     <div
       className={cn(
@@ -519,6 +539,7 @@ function DiaryCommentSection({
               }
               onReplySubmit={handleReplySubmit}
               onDelete={handleDeleteComment}
+              onReport={handleReportComment}
               className={cn(
                 '[&_button]:shrink-0 [&_button]:whitespace-nowrap',
                 '[&_ul]:!pl-1.5'
@@ -526,6 +547,16 @@ function DiaryCommentSection({
             />
           </div>
         )}
+
+        <CommentReportDialog
+          commentId={reportTargetCommentId}
+          open={reportTargetCommentId !== null}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) {
+              setReportTargetCommentId(null);
+            }
+          }}
+        />
 
         <div className="mt-3 hidden items-end gap-1.5 lg:flex">
           <TextField

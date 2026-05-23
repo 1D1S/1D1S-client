@@ -3,15 +3,17 @@
 import {
   Button,
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  RadioGroup,
   Text,
+  TextArea,
 } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
-import { cn } from '@module/utils/cn';
 import React, { useState } from 'react';
 
 import { ReportType } from '../../board/type/diary';
@@ -28,10 +30,10 @@ interface DiaryReportDialogProps {
   onOpenChange(open: boolean): void;
 }
 
-const REPORT_TYPES: Array<{ type: ReportType; label: string }> = [
-  { type: 'BAD_TITLE_CONTENT', label: '부적절한 제목 및 내용' },
-  { type: 'BAD_IMAGE', label: '부적절한 이미지' },
-  { type: 'ETC', label: '기타 부적절한 다이어리' },
+const REPORT_OPTIONS: Array<{ value: ReportType; label: string }> = [
+  { value: 'BAD_TITLE_CONTENT', label: '부적절한 제목 및 내용' },
+  { value: 'BAD_IMAGE', label: '부적절한 이미지' },
+  { value: 'ETC', label: '기타 부적절한 다이어리' },
 ];
 
 export function DiaryReportDialog({
@@ -97,85 +99,39 @@ export function DiaryReportDialog({
         }
       }}
     >
-      <DialogContent className="gap-5 px-6 py-6 sm:max-w-[460px]">
-        <DialogHeader className="items-center text-center">
-          <DialogTitle asChild>
-            <Text
-              size="heading2"
-              weight="extrabold"
-              className="text-gray-900"
-            >
-              일지 신고하기
-            </Text>
-          </DialogTitle>
-          <DialogDescription className="hidden">
+      <DialogContent size="sm">
+        <DialogHeader>
+          <DialogTitle>일지 신고하기</DialogTitle>
+          <DialogDescription className="sr-only">
             일지를 신고하는 양식입니다.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-5">
+        <DialogBody className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <Text size="body2" weight="bold" className="text-gray-900">
               신고 사유
             </Text>
-            <div className="flex flex-col gap-2">
-              {REPORT_TYPES.map((rt) => {
-                const isSelected = selectedType === rt.type;
-                return (
-                  <button
-                    key={rt.type}
-                    type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    onClick={(): void => setSelectedType(rt.type)}
-                    className={cn(
-                      'flex w-full items-center gap-3 rounded-lg border',
-                      'px-3 py-2.5 text-left transition-colors',
-                      isSelected
-                        ? 'border-main-500 bg-main-50 text-main-900'
-                        : 'border-gray-200 text-gray-700 hover:bg-gray-50',
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'flex h-4 w-4 shrink-0 items-center justify-center',
-                        'rounded-full border-2',
-                        isSelected ? 'border-main-500' : 'border-gray-300',
-                      )}
-                    >
-                      {isSelected ? (
-                        <span
-                          className="bg-main-500 h-2 w-2 rounded-full"
-                        />
-                      ) : null}
-                    </span>
-                    <Text size="body2" weight="medium">
-                      {rt.label}
-                    </Text>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Text size="body2" weight="bold" className="text-gray-900">
-              상세 내용
-            </Text>
-            <textarea
-              className={cn(
-                'focus:border-main-400 focus:ring-main-400',
-                'h-28 w-full resize-none rounded-lg border border-gray-200',
-                'p-3 text-sm focus:ring-1 focus:outline-none',
-              )}
-              placeholder="신고 내용을 상세히 적어주세요."
-              value={content}
-              onChange={(event) => setContent(event.target.value)}
+            <RadioGroup
+              name="diary-report-type"
+              options={REPORT_OPTIONS}
+              value={selectedType ?? undefined}
+              onChange={(value): void =>
+                setSelectedType(value as ReportType)
+              }
             />
           </div>
-        </div>
 
-        <DialogFooter className="flex-row gap-2">
+          <TextArea
+            label="상세 내용"
+            placeholder="신고 내용을 상세히 적어주세요."
+            rows={4}
+            value={content}
+            onChange={(event): void => setContent(event.target.value)}
+          />
+        </DialogBody>
+
+        <DialogFooter>
           <Button
             size="medium"
             variant="ghost"

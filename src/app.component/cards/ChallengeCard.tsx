@@ -162,7 +162,7 @@ function ChallengeCard({
       )}
     >
       <Card.Thumb className="px-3 pt-3">
-        <div className="bg-main-100 relative aspect-[3/2] overflow-hidden rounded-2xl">
+        <div className="bg-main-100 relative aspect-[21/9] overflow-hidden rounded-lg">
           {imageUrl ? (
             <Image
               src={imageUrl}

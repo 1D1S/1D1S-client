@@ -35,3 +35,9 @@ export interface DiaryCommentListParams {
 export interface CreateCommentRequest {
   content: string;
 }
+
+export type CommentReportType = 'BAD_CONTENT' | 'SPAM' | 'ETC';
+
+export type CreateCommentReportRequest =
+  | { reportType: Exclude<CommentReportType, 'ETC'> }
+  | { reportType: 'ETC'; content: string };

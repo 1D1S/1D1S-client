@@ -2,6 +2,9 @@
 const isDev = process.env.NODE_ENV !== 'production';
 
 const nextConfig = {
+  compiler: {
+    removeConsole: isDev ? false : { exclude: ['error', 'warn'] },
+  },
   experimental: {
     webpackMemoryOptimizations: true,
     // 큰 라이브러리의 트리쉐이킹을 활성화해 초기 번들 크기를 줄인다.

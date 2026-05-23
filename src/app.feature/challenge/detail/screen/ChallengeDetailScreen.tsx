@@ -90,8 +90,6 @@ export function ChallengeDetailScreen({
 
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
 
-  console.log('챌린지 상세 조회 데이터:', data);
-
   const joinChallenge = useJoinChallenge();
   const leaveChallenge = useLeaveChallenge();
   const likeChallenge = useLikeChallenge();
@@ -919,14 +917,9 @@ export function ChallengeDetailScreen({
               <Text size="heading2" weight="bold" className="text-gray-900">
                 참여 인원 대기
               </Text>
-              <span
-                className={cn(
-                  'bg-main-200 text-main-800',
-                  'text-caption1 rounded-full px-2 py-0.5 font-bold'
-                )}
-              >
+              <Tag tone="brand" size="sm">
                 {pendingParticipants.length}명
-              </span>
+              </Tag>
             </div>
             <div
               className={cn(
@@ -938,6 +931,10 @@ export function ChallengeDetailScreen({
                   key={participant.participantId}
                   name={participant.nickname}
                   joinedAt={formatRelativeJoinedText(participant.status)}
+                  profileImg={participant.profileImg}
+                  onProfileClick={() =>
+                    router.push(`/member/${participant.memberId}`)
+                  }
                   onAccept={() =>
                     handleAcceptParticipant(participant.participantId)
                   }

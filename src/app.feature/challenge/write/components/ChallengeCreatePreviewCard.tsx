@@ -79,7 +79,7 @@ export function ChallengeCreatePreviewCard(): React.ReactElement {
         'rounded-3 overflow-hidden border border-gray-200 bg-white'
       )}
     >
-      <div className="relative h-[140px]">
+      <div className="relative aspect-[21/9] w-full">
         {values.thumbnailPreviewUrl ? (
           <Image
             src={values.thumbnailPreviewUrl}

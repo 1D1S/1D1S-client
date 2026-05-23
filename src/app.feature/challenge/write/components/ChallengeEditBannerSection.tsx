@@ -78,9 +78,9 @@ export function ChallengeEditBannerSection(): React.ReactElement {
             onSelectFile={handleSelectFile}
             onClear={handleClear}
             placeholderTitle="간판 사진 업로드"
-            placeholderSubtitle="1200×600 권장 · JPG/PNG"
+            placeholderSubtitle="2100×900 권장 · JPG/PNG"
             clearLabel="사진 제거"
-            dropZoneClassName="aspect-[2/1]"
+            dropZoneClassName="aspect-[21/9]"
           />
           {isUploading ? (
             <Text size="caption1" weight="regular" className="text-gray-500">
