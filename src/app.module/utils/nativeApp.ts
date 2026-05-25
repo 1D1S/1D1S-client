@@ -4,8 +4,6 @@
 // `1D1S-App/<version>` 토큰을 붙여 자신을 식별한다.
 const NATIVE_APP_UA_PATTERN = /1D1S-App/i;
 
-export const NATIVE_APP_UA_TOKEN = '1D1S-App';
-
 export function isNativeAppUserAgent(
   userAgent: string | null | undefined
 ): boolean {
