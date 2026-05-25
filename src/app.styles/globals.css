@@ -71,8 +71,20 @@
      `sticky top-0 ... lg:hidden` 패턴이고, 글로벌 AppTopNav 는 `hidden
      lg:flex` 로 이 셀렉터에 해당되지 않아 안전하다. `data-native-app`
      속성은 RootLayout 의 SSR + AppLayoutShell 의 useEffect 양쪽에서
-     관리되므로 SSR UA 누락도 자연스럽게 복구된다. */
-  html[data-native-app='true'] .sticky.top-0.lg\:hidden {
+     관리되므로 SSR UA 누락도 자연스럽게 복구된다.
+
+     예외: `data-native-keep` 이 붙은 헤더는 네이티브에서도 그대로 보인다.
+     /challenge, /diary 보드 헤더처럼 타이틀/검색을 그대로 노출하고 싶을 때
+     사용. 헤더는 유지하면서 안쪽 일부 요소(예: 인라인 추가 버튼) 만
+     숨기려면 그 요소에 `data-native-hide` 를 별도로 부착한다. */
+  html[data-native-app='true']
+    .sticky.top-0.lg\:hidden:not([data-native-keep]) {
+    display: none !important;
+  }
+
+  /* 네이티브에서 강제 숨김 마커. 헤더 외 임의 요소(인라인 버튼, 푸터,
+     PWA 프롬프트 등) 에 부착해 isNativeApp 분기를 JS 없이도 처리한다. */
+  html[data-native-app='true'] [data-native-hide] {
     display: none !important;
   }
   /* h-14 (3.5rem) 컨텐츠 높이는 유지하면서 노치 영역만큼 위로 확장 */
