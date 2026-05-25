@@ -21,7 +21,11 @@ export interface NativeNavPayload {
 
 export type NativeMessage =
   | { type: 'auth_state'; payload: NativeAuthPayload }
-  | { type: 'nav_state'; payload: NativeNavPayload };
+  | { type: 'nav_state'; payload: NativeNavPayload }
+  // 앱 부팅 1회. 웹이 첫 페인트 + 4탭 prefetch 워밍업까지 끝낸 시점.
+  // 네이티브 쉘은 이 신호를 받기 전까진 스플래시를 유지해, 사용자에게
+  // 빈 컨테이너나 절반만 로드된 UI 가 노출되지 않게 한다.
+  | { type: 'app_ready' };
 
 interface NativeChannel {
   postMessage(payload: string): void;

@@ -6,7 +6,7 @@ import {
   postNativeMessage,
 } from '@module/utils/nativeBridge';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import type { AuthLayoutState } from './useAuthLayoutState';
 
@@ -18,6 +18,11 @@ interface NativeBridgeProps {
 // 숨겨지면서 거기서 돌던 prefetch 도 같이 사라졌기에, NativeBridge 에서
 // 같은 워밍업을 재현한다.
 const NATIVE_TAB_ROUTES = ['/', '/challenge', '/diary', '/mypage'] as const;
+
+// prefetch 가 RSC payload 를 백그라운드로 받기 시작한 뒤, 첫 페인트가
+// 안정될 때까지 두는 grace. 너무 짧으면 네이티브 스플래시가 빨리 사라지며
+// 빈 화면이 잠시 노출되고, 너무 길면 사용자가 불필요하게 기다린다.
+const APP_READY_GRACE_MS = 400;
 
 /**
  * Flutter 네이티브 쉘이 띄운 WebView 내부에서만 마운트되는 동기화 컴포넌트.
@@ -59,6 +64,22 @@ export default function NativeBridge({
       router.prefetch('/login');
     }
   }, [router, isLoggedIn]);
+
+  // 앱 부팅 1회 신호. 네이티브 쉘이 스플래시를 dismiss 할 트리거다.
+  // prefetch 가 큐잉된 직후 짧은 grace 를 둬서, 첫 페인트가 안정된 상태
+  // 에서 사용자가 앱을 보게 한다. useRef 가드로 SPA 전환마다 재발화하지
+  // 않게 한다 — 백그라운드 복귀 등에서도 1회만.
+  const hasSignaledReady = useRef(false);
+  useEffect(() => {
+    if (hasSignaledReady.current) {
+      return;
+    }
+    hasSignaledReady.current = true;
+    const handle = window.setTimeout(() => {
+      postNativeMessage({ type: 'app_ready' });
+    }, APP_READY_GRACE_MS);
+    return () => window.clearTimeout(handle);
+  }, []);
 
   useEffect(() => {
     postNativeMessage({
