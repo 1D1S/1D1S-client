@@ -128,6 +128,19 @@ export default function AppLayoutShell({
   // UA 를 다시 점검해 chrome 중복을 방지한다.
   const isNativeApp = useIsNativeApp(isNativeAppFromServer);
 
+  // SSR 가 false 로 내려왔어도 클라이언트 감지가 true 로 바뀌면 <html> 의
+  // data 속성을 동기화해, globals.css 의 sticky 헤더 차단 규칙이 즉시
+  // 적용되도록 한다. RootLayout 은 App Router 에서 재렌더되지 않으므로
+  // 이 effect 가 유일한 갱신 경로다.
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+    document.documentElement.dataset.nativeApp = isNativeApp
+      ? 'true'
+      : 'false';
+  }, [isNativeApp]);
+
   useTokenRefreshOnResume();
 
   // 인증/사이드바 상태는 별도 hook 으로 묶었다. shell 은 라우트 가시성 판단과
