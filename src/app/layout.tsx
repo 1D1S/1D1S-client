@@ -93,7 +93,12 @@ export default async function RootLayout({
   const isNativeApp = isNativeAppUserAgent(headerList.get('user-agent'));
 
   return (
-    <html lang="ko">
+    // `data-native-app` 은 SSR UA 매칭 결과를 그대로 노출한다.
+    // globals.css 의 `[data-native-app="true"] .sticky.top-0.lg\:hidden` 규칙이
+    // 페이지별 모바일 sticky 헤더(HomeMobileHeader 등 19개) 를 일괄 숨긴다.
+    // SSR 가 false 로 내려와도 AppLayoutShell 의 useEffect 가 클라이언트
+    // 감지(useIsNativeApp) 결과로 같은 속성을 다시 세팅해 fail-safe 가 된다.
+    <html lang="ko" data-native-app={isNativeApp ? 'true' : 'false'}>
       <body
         className={cn(
           pretendard.variable,
