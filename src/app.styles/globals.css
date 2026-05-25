@@ -61,6 +61,20 @@
   .pt-safe-top {
     padding-top: env(safe-area-inset-top);
   }
+
+  /* Flutter 등 네이티브 쉘이 자체 헤더를 그리는 환경에서, 페이지가 자체적으로
+     그리는 모바일 sticky 헤더(HomeMobileHeader, 챌린지/일지 보드·상세·작성,
+     알림, 회원 프로필, 친구, 약관 등 약 19곳) 가 네이티브 헤더 아래로
+     중복돼 보이지 않도록 일괄 차단한다.
+
+     선택자 근거: 모바일 전용 sticky 상단 chrome 은 모두
+     `sticky top-0 ... lg:hidden` 패턴이고, 글로벌 AppTopNav 는 `hidden
+     lg:flex` 로 이 셀렉터에 해당되지 않아 안전하다. `data-native-app`
+     속성은 RootLayout 의 SSR + AppLayoutShell 의 useEffect 양쪽에서
+     관리되므로 SSR UA 누락도 자연스럽게 복구된다. */
+  html[data-native-app='true'] .sticky.top-0.lg\:hidden {
+    display: none !important;
+  }
   /* h-14 (3.5rem) 컨텐츠 높이는 유지하면서 노치 영역만큼 위로 확장 */
   .h-14-safe {
     height: calc(3.5rem + env(safe-area-inset-top));

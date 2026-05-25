@@ -6,7 +6,7 @@ import {
   postNativeMessage,
 } from '@module/utils/nativeBridge';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import type { AuthLayoutState } from './useAuthLayoutState';
 
@@ -14,11 +14,27 @@ interface NativeBridgeProps {
   authState: AuthLayoutState;
 }
 
+// 네이티브 하단 탭이 향하는 4개 라우트. 웹 AppBottomNav 가 네이티브에서
+// 숨겨지면서 거기서 돌던 prefetch 도 같이 사라졌기에, NativeBridge 에서
+// 같은 워밍업을 재현한다.
+const NATIVE_TAB_ROUTES = ['/', '/challenge', '/diary', '/mypage'] as const;
+
+// prefetch 가 RSC payload 를 백그라운드로 받기 시작한 뒤, 첫 페인트가
+// 안정될 때까지 두는 grace. 너무 짧으면 네이티브 스플래시가 빨리 사라지며
+// 빈 화면이 잠시 노출되고, 너무 길면 사용자가 불필요하게 기다린다.
+const APP_READY_GRACE_MS = 400;
+
 /**
  * Flutter 네이티브 쉘이 띄운 WebView 내부에서만 마운트되는 동기화 컴포넌트.
  *
  * - 네이티브 쉘에서 탭을 탭하면 `window.__NATIVE_NAV__('/...')` 호출 →
  *   `native:navigate` 이벤트 → 여기서 `router.push` 로 흡수해 SPA 전환.
+ *   Flutter 측 500ms 후 `location.assign` fallback 이 있어 listener 가
+ *   미처 attach 되기 전 풀 페이지 리로드가 발생할 수 있으므로 mount 시
+ *   가장 먼저 이 useEffect 가 돌도록 위쪽에 배치한다.
+ * - 마운트 시 4개 탭 라우트(+ 비로그인 시 /login) 를 prefetch — 네이티브
+ *   에서 web AppBottomNav 가 가려지면서 그쪽 prefetch 가 같이 죽었기에,
+ *   첫 탭 탭핑부터 SPA 전환이 즉시 일어나도록 워밍업한다.
  * - pathname 이 바뀔 때마다 네이티브에 `nav_state` 메시지 push → 네이티브
  *   하단 탭의 active 표시가 동기화된다.
  * - 인증/사이드바/알림 상태가 바뀔 때마다 `auth_state` 를 push → 네이티브
@@ -39,6 +55,31 @@ export default function NativeBridge({
     () => onNativeNavigateRequest((path) => router.push(path)),
     [router]
   );
+
+  useEffect(() => {
+    NATIVE_TAB_ROUTES.forEach((href) => {
+      router.prefetch(href);
+    });
+    if (!isLoggedIn) {
+      router.prefetch('/login');
+    }
+  }, [router, isLoggedIn]);
+
+  // 앱 부팅 1회 신호. 네이티브 쉘이 스플래시를 dismiss 할 트리거다.
+  // prefetch 가 큐잉된 직후 짧은 grace 를 둬서, 첫 페인트가 안정된 상태
+  // 에서 사용자가 앱을 보게 한다. useRef 가드로 SPA 전환마다 재발화하지
+  // 않게 한다 — 백그라운드 복귀 등에서도 1회만.
+  const hasSignaledReady = useRef(false);
+  useEffect(() => {
+    if (hasSignaledReady.current) {
+      return;
+    }
+    hasSignaledReady.current = true;
+    const handle = window.setTimeout(() => {
+      postNativeMessage({ type: 'app_ready' });
+    }, APP_READY_GRACE_MS);
+    return () => window.clearTimeout(handle);
+  }, []);
 
   useEffect(() => {
     postNativeMessage({
