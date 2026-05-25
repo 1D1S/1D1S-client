@@ -5,7 +5,9 @@ import AppLayoutShell from '@component/layout/AppLayoutShell';
 import ScrollToTop from '@component/layout/ScrollToTop';
 import { AppProviders } from '@module/providers';
 import { cn } from '@module/utils/cn';
+import { isNativeAppUserAgent } from '@module/utils/nativeApp';
 import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
 
 import { pretendard } from '@/app.lib/font';
 
@@ -82,11 +84,14 @@ export const viewport: Viewport = {
   themeColor: '#FF7043',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}): React.ReactElement {
+}): Promise<React.ReactElement> {
+  const headerList = await headers();
+  const isNativeApp = isNativeAppUserAgent(headerList.get('user-agent'));
+
   return (
     <html lang="ko">
       <body
@@ -97,7 +102,7 @@ export default function RootLayout({
       >
         <AppProviders>
           <ScrollToTop />
-          <AppLayoutShell>{children}</AppLayoutShell>
+          <AppLayoutShell isNativeApp={isNativeApp}>{children}</AppLayoutShell>
         </AppProviders>
       </body>
     </html>

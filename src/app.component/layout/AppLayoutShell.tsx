@@ -111,8 +111,13 @@ function needsBackButton(pathname: string): boolean {
 
 export default function AppLayoutShell({
   children,
+  isNativeApp = false,
 }: {
   children: React.ReactNode;
+  // Flutter 등 네이티브 앱 쉘이 자체 헤더/바텀바를 그리는 환경에서는
+  // 서버에서 user-agent 로 판정해 true 로 내려준다. 글로벌 TopNav,
+  // BottomNav, PWA/푸시 권한 프롬프트를 일괄 숨긴다.
+  isNativeApp?: boolean;
 }): React.ReactElement {
   const pathname = usePathname();
   const router = useRouter();
@@ -140,8 +145,9 @@ export default function AppLayoutShell({
   }, [isLoggedIn, sidebarData, pathname, router]);
 
   const isLoginPage = matchesRoute(pathname, TOP_NAV_HIDDEN_ROUTES);
-  // TopNav 가시성: 로그인/회원가입 페이지면 완전 제거. 그 외엔 CSS로 처리.
-  const showTopNav = !isLoginPage;
+  // TopNav 가시성: 로그인/회원가입 페이지거나 네이티브 앱 쉘이면 완전 제거.
+  // 그 외엔 CSS로 처리.
+  const showTopNav = !isLoginPage && !isNativeApp;
   // 모든 라우트에서 `lg`(1024px) 기준으로 데스크탑/태블릿 전환을 통일한다.
   // - 데스크탑(≥lg): 글로벌 TopNav 노출
   // - 태블릿/모바일(<lg): 글로벌 TopNav 숨김, BottomNav 노출
@@ -154,7 +160,7 @@ export default function AppLayoutShell({
     RIGHT_RAIL_HIDDEN_ROUTES
   );
   const showRightRail = isContentRouteForRail;
-  const showBottomNav = !isBottomNavHidden(pathname);
+  const showBottomNav = !isBottomNavHidden(pathname) && !isNativeApp;
   const bottomNavRespClass = 'lg:hidden';
   const activeNavId = resolveActiveNavId(pathname);
 
@@ -241,8 +247,8 @@ export default function AppLayoutShell({
           <AppBottomNav activeId={activeNavId} className={bottomNavRespClass} />
         ) : null}
 
-        {!isLoginPage ? <BrowserPermissionPrompt /> : null}
-        {!isLoginPage ? <AddToHomeScreenPrompt /> : null}
+        {!isLoginPage && !isNativeApp ? <BrowserPermissionPrompt /> : null}
+        {!isLoginPage && !isNativeApp ? <AddToHomeScreenPrompt /> : null}
       </div>
     </AppLayoutProvider>
   );
