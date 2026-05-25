@@ -64,21 +64,28 @@
 
   /* Flutter 등 네이티브 쉘이 자체 헤더를 그리는 환경에서, 페이지가 자체적으로
      그리는 모바일 sticky 헤더(HomeMobileHeader, 챌린지/일지 보드·상세·작성,
-     알림, 회원 프로필, 친구, 약관 등 약 19곳) 가 네이티브 헤더 아래로
-     중복돼 보이지 않도록 일괄 차단한다.
+     알림, 회원 프로필, 친구, 약관, 마이페이지 settings/profile, 알림 설정,
+     공지 상세/목록, 문의 등 약 26곳) 가 네이티브 헤더 아래로 중복돼
+     보이지 않도록 일괄 차단한다.
 
-     선택자 근거: 모바일 전용 sticky 상단 chrome 은 모두
-     `sticky top-0 ... lg:hidden` 패턴이고, 글로벌 AppTopNav 는 `hidden
-     lg:flex` 로 이 셀렉터에 해당되지 않아 안전하다. `data-native-app`
-     속성은 RootLayout 의 SSR + AppLayoutShell 의 useEffect 양쪽에서
-     관리되므로 SSR UA 누락도 자연스럽게 복구된다.
+     선택자 근거: 모바일 전용 상단 chrome 은 두 가지 포지셔닝 패턴을 쓴다.
+     - sticky top-0 ... lg:hidden (보드/상세/작성 등 다수)
+     - fixed top-0 ... lg:hidden (settings, 공지, 문의 등 스크롤 추적이
+       필요한 경우)
+     `:is()` 로 둘 다 매칭한다. 글로벌 AppTopNav 는 `hidden lg:flex` 이고
+     fixed top-0 + lg:hidden 조합은 모바일 상단 바 이외 용도로 거의 쓰이지
+     않아 오탐 위험이 낮다. `data-native-app` 속성은 RootLayout 의 SSR +
+     AppLayoutShell 의 useEffect 양쪽에서 관리되므로 SSR UA 누락도
+     자연스럽게 복구된다.
 
      예외: `data-native-keep` 이 붙은 헤더는 네이티브에서도 그대로 보인다.
      /challenge, /diary 보드 헤더처럼 타이틀/검색을 그대로 노출하고 싶을 때
      사용. 헤더는 유지하면서 안쪽 일부 요소(예: 인라인 추가 버튼) 만
-     숨기려면 그 요소에 `data-native-hide` 를 별도로 부착한다. */
+     숨기려면 그 요소에 `data-native-hide` 를 별도로 부착한다.
+     `absolute` 로 떠 있는 모바일 chrome(예: 챌린지 상세 floating 백버튼)
+     은 이 selector 가 잡지 못하므로 그쪽은 data-native-hide 를 직접 부착. */
   html[data-native-app='true']
-    .sticky.top-0.lg\:hidden:not([data-native-keep]) {
+    :is(.sticky.top-0, .fixed.top-0).lg\:hidden:not([data-native-keep]) {
     display: none !important;
   }
 
