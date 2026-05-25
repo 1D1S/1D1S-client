@@ -183,8 +183,12 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         description={loginDialogDescription}
       />
 
-      {/* 모바일 sticky 헤더 — 타이틀 + 새 챌린지 + 검색바 */}
+      {/* 모바일 sticky 헤더 — 타이틀 + 새 챌린지 + 검색바.
+          네이티브 쉘에서는 헤더(타이틀/검색) 는 유지(data-native-keep)
+          하되, 인라인 "새 챌린지" 버튼은 숨기고(data-native-hide) 같은
+          액션을 Flutter Extended FAB 가 대신 노출한다. */}
       <div
+        data-native-keep
         className={cn(
           'sticky top-0 z-20 border-b border-gray-100',
           'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
@@ -203,6 +207,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           <button
             type="button"
             onClick={handleCreateChallenge}
+            data-native-hide
             className={cn(
               'bg-main-800 inline-flex items-center gap-1 rounded-full',
               'px-3 py-1.5 text-[11px] font-extrabold text-white',

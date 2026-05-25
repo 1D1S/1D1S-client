@@ -69,9 +69,15 @@ export function onNativeNavigateRequest(
   }
   const listener = (event: Event): void => {
     const detail = (event as CustomEvent<{ to?: string }>).detail;
-    if (detail?.to) {
-      handler(detail.to);
+    if (!detail?.to) {
+      return;
     }
+    // preventDefault 는 "내가 처리한다" 시그널. Flutter 측 __NATIVE_NAV__
+    // 가 dispatchEvent 반환값을 보고 fallback (location.assign 풀 리로드)
+    // 을 건너뛴다. 이 호출이 빠지면 React Query 캐시가 매번 휘발되어
+    // 사용자가 탭 전환마다 로딩을 다시 보게 된다.
+    event.preventDefault();
+    handler(detail.to);
   };
   win.addEventListener(NAVIGATE_EVENT, listener);
   return () => win.removeEventListener(NAVIGATE_EVENT, listener);

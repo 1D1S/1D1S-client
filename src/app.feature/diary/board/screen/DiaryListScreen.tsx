@@ -251,8 +251,12 @@ export default function DiaryListScreen(): React.ReactElement {
         description={loginDialogDescription}
       />
 
-      {/* 모바일 sticky 헤더 — 일지 */}
+      {/* 모바일 sticky 헤더 — 일지.
+          네이티브에서는 헤더는 유지(data-native-keep) 하되, 인라인
+          "일지 쓰기" 버튼은 숨기고(data-native-hide) Flutter Extended FAB
+          가 같은 액션을 비로그인 분기까지 포함해 제공한다. */}
       <div
+        data-native-keep
         className={cn(
           'sticky top-0 z-20 flex items-center justify-between',
           'gap-3 border-b border-gray-100',
@@ -273,6 +277,7 @@ export default function DiaryListScreen(): React.ReactElement {
             type="button"
             onClick={() => router.push('/diary/create')}
             aria-label="일지 쓰기"
+            data-native-hide
             className={cn(
               'rounded-2 bg-brand shrink-0 px-3 py-1.5',
               'text-[12px] font-bold text-white transition',
