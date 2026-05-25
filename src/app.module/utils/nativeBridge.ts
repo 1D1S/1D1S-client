@@ -40,14 +40,6 @@ function getNativeWindow(): NativeWindow | null {
   return window as NativeWindow;
 }
 
-export function isNativeShellRuntime(): boolean {
-  const win = getNativeWindow();
-  if (!win) {
-    return false;
-  }
-  return Boolean(win.__IS_NATIVE_APP__ || win[CHANNEL_NAME]);
-}
-
 export function postNativeMessage(message: NativeMessage): void {
   const win = getNativeWindow();
   if (!win) {
