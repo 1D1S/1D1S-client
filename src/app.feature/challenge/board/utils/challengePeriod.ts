@@ -60,6 +60,17 @@ export function isChallengeEnded(
   return toStartOfDay(referenceDate) > end;
 }
 
+// 참여자가 0명이면 아카이브된 챌린지로 간주해 종료 처리한다.
+export function isChallengeEndedOrArchived(
+  endDate: string | null | undefined,
+  participantCnt: number | null | undefined,
+  referenceDate: Date = new Date()
+): boolean {
+  return (
+    isChallengeEnded(endDate, referenceDate) || (participantCnt ?? 0) === 0
+  );
+}
+
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 export function formatChallengeRemainingLabel(
@@ -67,11 +78,12 @@ export function formatChallengeRemainingLabel(
   isInfinite: boolean,
   isEnded: boolean
 ): string {
-  if (isInfinite) {
-    return '무제한';
-  }
+  // 종료(아카이브 포함) 상태가 무제한보다 우선한다.
   if (isEnded) {
     return '종료';
+  }
+  if (isInfinite) {
+    return '무제한';
   }
   const end = new Date(endDate).getTime();
   if (Number.isNaN(end)) {

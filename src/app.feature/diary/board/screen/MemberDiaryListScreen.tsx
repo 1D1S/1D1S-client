@@ -1,6 +1,7 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
+import DiaryCard from '@component/cards/DiaryCard';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
@@ -9,18 +10,18 @@ import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
-import { DiaryCard } from '@feature/diary/shared/components/DiaryCard';
-import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
+import {
+  resolveDiaryImageList,
+  resolveDiaryImageUrl,
+} from '@feature/diary/shared/utils/diaryImageUrl';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useMemberProfileDiariesInfinite } from '@feature/member/hooks/useMemberQueries';
 import { normalizeApiError } from '@module/api/error';
 import { useInViewObserver } from '@module/hooks/useInViewObserver';
 import { cn } from '@module/utils/cn';
-import { getRelativeTimeLabel } from '@module/utils/date';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 
@@ -86,37 +87,71 @@ export function MemberDiaryListScreen({
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white p-4">
+    <div className="min-h-screen w-full">
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}
       />
-      <section className="rounded-3 w-full bg-white p-2">
-        <div className="flex flex-col gap-3 border-b border-gray-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex flex-col gap-2">
-            <Link
-              href={`/member/${memberId}`}
-              className="inline-flex w-fit items-center gap-1 text-sm font-medium text-gray-500 transition hover:text-gray-700"
+
+      {/* 모바일 sticky 헤더 — ← + 일지 전체 보기 */}
+      <div
+        className={cn(
+          'sticky top-0 z-30 flex items-center gap-3',
+          'h-14-safe pt-safe-top',
+          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
+          'lg:hidden'
+        )}
+      >
+        <button
+          type="button"
+          aria-label="뒤로가기"
+          onClick={() => router.push(`/member/${memberId}`)}
+          className={cn(
+            'flex h-8 w-8 items-center justify-center rounded-lg',
+            'text-gray-700 transition-colors hover:bg-gray-100'
+          )}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <Text
+          size="body1"
+          weight="extrabold"
+          className="flex-1 tracking-[-0.3px] text-gray-900"
+        >
+          일지 전체 보기
+        </Text>
+      </div>
+
+      <div
+        className={cn(
+          'mx-auto w-full max-w-[1200px]',
+          'px-5 py-5 lg:px-8 lg:py-10'
+        )}
+      >
+        <header
+          className={cn(
+            'hidden flex-col gap-4 border-b border-gray-100 pb-5',
+            'lg:flex lg:flex-row lg:items-end lg:justify-between'
+          )}
+        >
+          <div className="flex flex-col gap-1.5">
+            <Text
+              size="pageTitle"
+              weight="extrabold"
+              className="tracking-tight text-gray-900"
             >
-              <ArrowLeft className="h-4 w-4" />
-              프로필로
-            </Link>
-            <Text size="display1" weight="bold" className="text-gray-900">
               일지 전체 보기
             </Text>
-            <Text size="body1" weight="regular" className="text-gray-600">
+            <Text size="body2" weight="regular" className="text-gray-500">
               작성한 일지 전체 목록입니다.
             </Text>
           </div>
-        </div>
+        </header>
 
         {showSkeleton ? (
           <DiaryCardSkeletonGrid
             count={MEMBER_DIARY_PAGE_SIZE}
-            className={cn(
-              'mt-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
-              'lg:grid-cols-4 xl:grid-cols-6'
-            )}
+            className="mt-6"
           />
         ) : null}
 
@@ -133,16 +168,17 @@ export function MemberDiaryListScreen({
         {!showSkeleton && hasDiaries ? (
           <div
             className={cn(
-              'data-fade-in mt-6 grid grid-cols-1 gap-4',
-              'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
+              'data-fade-in mt-6 grid gap-4',
+              'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
             )}
           >
             {diaryItems.map((diary) => (
               <DiaryCard
                 key={diary.id}
-                imageUrl={
-                  resolveDiaryImageUrl(diary.imgUrl?.[0]) ||
-                  '/images/default-card.png'
+                imageUrl={resolveDiaryImageList(diary.imgUrl)?.[0]}
+                profileImageUrl={
+                  resolveDiaryImageUrl(diary.authorInfoDto?.profileImage) ??
+                  undefined
                 }
                 percent={Math.min(
                   100,
@@ -157,34 +193,14 @@ export function MemberDiaryListScreen({
                 likes={diary.likeInfo.likeCnt}
                 title={diary.title}
                 user={diary.authorInfoDto?.nickname ?? '익명'}
-                userImage={
-                  resolveDiaryImageUrl(diary.authorInfoDto?.profileImage) ||
-                  '/images/default-profile.png'
-                }
                 challengeLabel={
                   diary.challenge?.title ||
                   getCategoryLabel(diary.challenge?.category) ||
                   '일지'
                 }
-                onUserClick={
-                  diary.authorInfoDto?.id
-                    ? () => router.push(`/member/${diary.authorInfoDto!.id}`)
-                    : undefined
-                }
-                onChallengeClick={() => {
-                  if (diary.challenge?.challengeId) {
-                    router.push(`/challenge/${diary.challenge.challengeId}`);
-                  }
-                }}
-                date={getRelativeTimeLabel(
-                  diary.diaryInfoDto?.createdAt ??
-                    diary.diaryInfoDto?.challengedDate ??
-                    ''
-                )}
                 emotion={mapFeelingToEmotion(
                   diary.diaryInfoDto?.feeling ?? 'NONE'
                 )}
-                commentCount={diary.commentCount}
                 onLikeToggle={() => handleLikeToggle(diary)}
                 onClick={() => router.push(`/diary/${diary.id}`)}
               />
@@ -201,13 +217,7 @@ export function MemberDiaryListScreen({
         ) : null}
 
         {isFetchingNextPage ? (
-          <DiaryCardSkeletonGrid
-            count={4}
-            className={cn(
-              'mt-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
-              'lg:grid-cols-4 xl:grid-cols-6'
-            )}
-          />
+          <DiaryCardSkeletonGrid count={4} className="mt-4" />
         ) : null}
 
         <div
@@ -228,7 +238,7 @@ export function MemberDiaryListScreen({
             </Text>
           ) : null}
         </div>
-      </section>
+      </div>
     </div>
   );
 }

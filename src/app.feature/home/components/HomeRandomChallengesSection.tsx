@@ -14,7 +14,7 @@ import React from 'react';
 
 import {
   formatChallengeRemainingLabel,
-  isChallengeEnded,
+  isChallengeEndedOrArchived,
 } from '../utils/homeFormatters';
 
 interface HomeRandomChallengesSectionProps {
@@ -77,7 +77,10 @@ export default function HomeRandomChallengesSection({
         >
           {challenges.map((challenge) => {
             const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
-            const ended = isChallengeEnded(challenge.endDate);
+            const ended = isChallengeEndedOrArchived(
+              challenge.endDate,
+              challenge.participantCnt
+            );
             const remainingLabel = formatChallengeRemainingLabel(
               challenge.endDate,
               isInfinite,

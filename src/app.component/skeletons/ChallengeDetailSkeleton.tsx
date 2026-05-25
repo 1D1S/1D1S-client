@@ -1,5 +1,6 @@
 'use client';
 
+import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { Skeleton } from '@component/Skeleton';
 import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { cn } from '@module/utils/cn';
@@ -15,14 +16,15 @@ export function ChallengeDetailSkeleton(): React.ReactElement {
       <div
         className={cn(
           'min-h-screen w-full bg-white',
-          'pb-[calc(100px+env(safe-area-inset-bottom))] lg:pb-12'
+          'pb-mobile-action-bar lg:pb-12'
         )}
       >
         {/* 히어로 + 모바일 floating 뒤로가기 */}
         <div className="relative">
           <div
             className={cn(
-              'relative aspect-[21/9] w-full overflow-hidden bg-gray-100'
+              'relative aspect-[21/9] w-full overflow-hidden bg-gray-100',
+              'lg:max-h-[360px]'
             )}
           >
             <Skeleton shape="rect" className="absolute inset-0 rounded-none" />
@@ -235,22 +237,12 @@ export function ChallengeDetailSkeleton(): React.ReactElement {
         </div>
       </div>
 
-      <div
-        className={cn(
-          'fixed right-0 bottom-0 left-0 z-20 border-t',
-          'border-gray-200 bg-white/95 backdrop-blur lg:hidden'
-        )}
-      >
-        <div
-          className={cn(
-            'mx-auto flex w-full max-w-[1200px] flex-col px-4 pt-3',
-            'pb-[calc(0.75rem+env(safe-area-inset-bottom))]'
-          )}
-        >
+      <MobileBottomActionBar>
+        <div className="mx-auto flex w-full max-w-[1200px] flex-col">
           <Skeleton shape="rounded" className="h-11 w-full rounded-xl" />
           <Skeleton shape="text" className="mt-2 h-3 w-3/5 self-center" />
         </div>
-      </div>
+      </MobileBottomActionBar>
     </>
   );
 }

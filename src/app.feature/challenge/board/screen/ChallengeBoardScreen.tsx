@@ -27,7 +27,7 @@ import { useChallengeList } from '../hooks/useChallengeQueries';
 import type { ChallengeCategory, ChallengeListItem } from '../type/challenge';
 import {
   formatChallengeRemainingLabel,
-  isChallengeEnded,
+  isChallengeEndedOrArchived,
   isInfiniteChallengeEndDate,
 } from '../utils/challengePeriod';
 
@@ -44,7 +44,10 @@ const ChallengeBoardCardItem = React.memo(
     onCardClick,
   }: ChallengeBoardCardItemProps): React.ReactElement => {
     const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
-    const ended = isChallengeEnded(challenge.endDate);
+    const ended = isChallengeEndedOrArchived(
+      challenge.endDate,
+      challenge.participantCnt
+    );
     const remainingLabel = formatChallengeRemainingLabel(
       challenge.endDate,
       isInfinite,

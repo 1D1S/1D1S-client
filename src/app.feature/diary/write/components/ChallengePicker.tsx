@@ -11,7 +11,7 @@ import {
 } from '@1d1s/design-system';
 import { getCategoryLabel, getCategoryStripeTone } from '@constants/categories';
 import {
-  isChallengeEnded,
+  isChallengeEndedOrArchived,
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
 } from '@feature/challenge/board/utils/challengePeriod';
@@ -97,7 +97,10 @@ export function ChallengePicker({
                     challenge.startDate,
                     challenge.endDate
                   )}
-                  isEnded={isChallengeEnded(challenge.endDate)}
+                  isEnded={isChallengeEndedOrArchived(
+                    challenge.endDate,
+                    challenge.participantCnt
+                  )}
                   stripeTone={getCategoryStripeTone(challenge.category)}
                   variant="picker"
                   onClick={() => {

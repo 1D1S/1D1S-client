@@ -261,7 +261,9 @@ function ChallengeCard({
           ) : null}
         </ul>
         <Card.Meta className="mt-2 border-t border-gray-100 pt-2">
-          <span className="inline-flex items-center gap-2">
+          {/* 참여자가 0명일 때도 행 높이가 줄지 않도록 아바타 슬롯 높이를
+              고정해 종료 라벨의 수직 위치를 다른 카드와 맞춘다. */}
+          <span className="inline-flex min-h-8 items-center gap-2">
             <span className="flex -space-x-2">
               {visibleParticipants.length > 0
                 ? visibleParticipants.map((participant, index) => (

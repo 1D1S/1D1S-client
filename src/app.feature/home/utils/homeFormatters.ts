@@ -1,6 +1,7 @@
 export {
   formatChallengeRemainingLabel,
   isChallengeEnded,
+  isChallengeEndedOrArchived,
   isChallengeOngoing,
 } from '@feature/challenge/board/utils/challengePeriod';
 export {

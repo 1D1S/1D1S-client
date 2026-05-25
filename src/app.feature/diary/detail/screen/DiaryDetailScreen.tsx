@@ -498,7 +498,7 @@ function DiaryCommentSection({
     <div
       className={cn(
         'lg:rounded-[14px] lg:border lg:border-gray-200 lg:bg-white',
-        'lg:sticky lg:top-5'
+        'lg:sticky lg:top-[78px]'
       )}
     >
       <div className="lg:p-5">
@@ -739,8 +739,7 @@ function DiaryDetailView({
     <div
       className={cn(
         'data-fade-in min-h-screen w-full bg-white',
-        'pb-[calc(112px+env(safe-area-inset-bottom))]',
-        'lg:pb-0'
+        'pb-mobile-action-bar-tall lg:pb-0'
       )}
     >
       {/* 모바일 sticky 헤더 — ← + 일지 */}

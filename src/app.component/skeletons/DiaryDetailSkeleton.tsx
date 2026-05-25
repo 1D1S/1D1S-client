@@ -15,8 +15,7 @@ export function DiaryDetailSkeleton(): React.ReactElement {
     <div
       className={cn(
         'min-h-screen w-full bg-white',
-        'pb-[calc(112px+env(safe-area-inset-bottom))]',
-        'lg:pb-0'
+        'pb-mobile-action-bar-tall lg:pb-0'
       )}
     >
       {/* 모바일 sticky 헤더 — ← + 일지 */}

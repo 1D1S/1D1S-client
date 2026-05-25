@@ -3,7 +3,7 @@
 import { Card, Icon, Stripe, Text } from '@1d1s/design-system';
 import { getCategoryLabel, getCategoryStripeTone } from '@constants/categories';
 import {
-  isChallengeEnded,
+  isChallengeEndedOrArchived,
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
 } from '@feature/challenge/board/utils/challengePeriod';
@@ -122,7 +122,10 @@ export function DiaryCreateChallengeSection({
             selectedChallenge.startDate,
             selectedChallenge.endDate
           )}
-          isEnded={isChallengeEnded(selectedChallenge.endDate)}
+          isEnded={isChallengeEndedOrArchived(
+            selectedChallenge.endDate,
+            selectedChallenge.participantCnt
+          )}
           stripeTone={getCategoryStripeTone(selectedChallenge.category)}
           onClick={openPicker}
         />

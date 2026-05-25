@@ -2,6 +2,7 @@
 
 import { Button, Text } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
+import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -79,7 +80,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
   const isHundredPercent = percent === 100 && totalGoalCount > 0;
 
   return (
-    <div className="flex min-h-screen w-full flex-col">
+    <div className="pb-mobile-action-bar min-h-screen w-full">
       {/* 모바일 sticky 헤더 — ← + 제목 + % 뱃지 */}
       <div
         className={cn(
@@ -212,16 +213,10 @@ export default function DiaryCreateScreen(): React.ReactElement {
         </div>
       </div>
 
-      <div
-        className={cn(
-          'sticky bottom-0 z-20 mt-auto border-t border-gray-200',
-          'bg-white/95 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] backdrop-blur'
-        )}
-      >
+      <MobileBottomActionBar hideOnDesktop={false} className="lg:px-8">
         <div
           className={cn(
-            'mx-auto flex w-full max-w-[1200px] items-center gap-3',
-            'px-4 py-3 lg:px-8'
+            'mx-auto flex w-full max-w-[1200px] items-center gap-3'
           )}
         >
           {totalGoalCount > 0 ? (
@@ -249,7 +244,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
             </Button>
           </div>
         </div>
-      </div>
+      </MobileBottomActionBar>
 
       <AlertDialog
         open={isMissingChallengeDialogOpen}

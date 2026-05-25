@@ -42,7 +42,7 @@ import {
   useChallengeDetail,
 } from '../../board/hooks/useChallengeQueries';
 import {
-  isChallengeEnded,
+  isChallengeEndedOrArchived,
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
 } from '../../board/utils/challengePeriod';
@@ -180,7 +180,10 @@ export function ChallengeDetailScreen({
     summaryStartDate,
     summaryEndDate
   );
-  const isChallengeAlreadyEnded = isChallengeEnded(summaryEndDate);
+  const isChallengeAlreadyEnded = isChallengeEndedOrArchived(
+    summaryEndDate,
+    summaryParticipantCnt
+  );
   const isEndless = isInfiniteChallengeEndDate(summaryEndDate);
   // 챌린지 시작 여부 (시작일이 오늘 이전이면 시작된 것으로 간주)
   const isChallengeStarted =
@@ -748,9 +751,7 @@ export function ChallengeDetailScreen({
       <div
         className={cn(
           'data-fade-in min-h-screen w-full bg-white',
-          ctaConfig.show
-            ? 'pb-[calc(100px+env(safe-area-inset-bottom))] lg:pb-12'
-            : 'pb-12'
+          ctaConfig.show ? 'pb-mobile-action-bar lg:pb-12' : 'pb-12'
         )}
       >
         {freeGoalModal}
@@ -1040,10 +1041,9 @@ export function ChallengeDetailScreen({
                   onLikeToggle={handleDiaryLikeToggle}
                   gridClassName={cn(
                     'scrollbar-hide flex gap-3 overflow-x-auto',
-                    'sm:grid sm:gap-2.5 sm:overflow-visible',
-                    'sm:grid-cols-[repeat(auto-fill,minmax(160px,200px))]'
+                    'py-2 sm:gap-2.5'
                   )}
-                  itemClassName="w-[170px] shrink-0 sm:w-auto"
+                  itemClassName="w-[170px] shrink-0 sm:w-[190px]"
                 />
               </section>
             </div>
@@ -1085,7 +1085,7 @@ export function ChallengeDetailScreen({
                 onMemberClick={(memberId) => router.push(`/member/${memberId}`)}
               />
 
-              {!isHost && isParticipating ? (
+              {isParticipating ? (
                 <button
                   type="button"
                   onClick={handleLeaveChallenge}

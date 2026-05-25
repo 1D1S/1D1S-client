@@ -11,7 +11,7 @@ import {
 } from '@constants/categories';
 import {
   formatChallengeRemainingLabel,
-  isChallengeEnded,
+  isChallengeEndedOrArchived,
   isInfiniteChallengeEndDate,
 } from '@feature/challenge/board/utils/challengePeriod';
 import type { MyPageChallenge } from '@feature/member/type/member';
@@ -56,7 +56,10 @@ export function MyPageActiveChallenges({
         >
           {challengeList.map((challenge) => {
             const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
-            const ended = isChallengeEnded(challenge.endDate);
+            const ended = isChallengeEndedOrArchived(
+              challenge.endDate,
+              challenge.participantCnt
+            );
             const remainingLabel = formatChallengeRemainingLabel(
               challenge.endDate,
               isInfinite,

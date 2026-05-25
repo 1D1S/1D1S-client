@@ -240,8 +240,15 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     updateDiary.isPending ||
     uploadDiaryImage.isPending;
   const trimmedTitle = title.trim();
+  // 참여자가 0명이면 아카이브된 챌린지로 간주해 종료 처리한다.
+  const isSelectedChallengeArchived = selectedChallenge
+    ? selectedChallenge.participantCnt === 0
+    : false;
   const isSelectedChallengeOngoing = selectedChallenge
-    ? isChallengeOngoing(selectedChallenge.startDate, selectedChallenge.endDate)
+    ? isChallengeOngoing(
+        selectedChallenge.startDate,
+        selectedChallenge.endDate
+      ) && !isSelectedChallengeArchived
     : false;
   const canSubmit =
     Boolean(selectedChallenge) &&

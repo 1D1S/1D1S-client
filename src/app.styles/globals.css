@@ -65,6 +65,19 @@
   .h-14-safe {
     height: calc(3.5rem + env(safe-area-inset-top));
   }
+
+  /* 모바일 액션바 spacer — MobileBottomActionBar 가 차지하는 영역만큼 본문
+     하단에 비워 둔다. 페이지마다 100px / 112px / 6rem 으로 흩어져 있던
+     값을 한 곳으로 모아, 액션바 패딩이 바뀌면 여기만 조정하면 된다.
+     Flutter 처럼 네이티브 바텀바를 쓰는 환경에서는 액션바가 숨겨지므로
+     이 패딩도 본문에서 빼는 게 자연스럽다. */
+  .pb-mobile-action-bar {
+    padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+  }
+  /* 댓글 입력창처럼 textarea + 버튼이 함께 들어가는 키 큰 액션바용 */
+  .pb-mobile-action-bar-tall {
+    padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+  }
 }
 
 /* Diary 페이지 컨테이너 너비 기반 6/4/3/2 컬럼 */

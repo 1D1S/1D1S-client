@@ -10,6 +10,7 @@ import {
   DialogTitle,
   Text,
 } from '@1d1s/design-system';
+import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { Form } from '@component/ui/Form';
 import { useChallengeDetail } from '@feature/challenge/board/hooks/useChallengeQueries';
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challengePeriod';
@@ -216,7 +217,7 @@ function ChallengeEditScreenContent({
   const canSubmit = form.formState.isValid && !updateChallenge.isPending;
 
   return (
-    <div className="min-h-screen w-full pb-24">
+    <div className="pb-mobile-action-bar min-h-screen w-full">
       <div
         className={cn(
           'sticky top-0 z-30 flex items-center gap-3',
@@ -321,16 +322,10 @@ function ChallengeEditScreenContent({
           </form>
         </div>
 
-        <div
-          className={cn(
-            'fixed inset-x-0 bottom-0 z-20 border-t border-gray-200',
-            'bg-white/95 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] backdrop-blur'
-          )}
-        >
+        <MobileBottomActionBar hideOnDesktop={false} className="lg:px-8">
           <div
             className={cn(
-              'mx-auto flex w-full max-w-[1200px] items-center gap-3',
-              'px-4 py-3 lg:px-8'
+              'mx-auto flex w-full max-w-[1200px] items-center gap-3'
             )}
           >
             <Text
@@ -363,7 +358,7 @@ function ChallengeEditScreenContent({
               />
             </div>
           </div>
-        </div>
+        </MobileBottomActionBar>
       </Form>
 
       <ChallengeEditSuccessDialog

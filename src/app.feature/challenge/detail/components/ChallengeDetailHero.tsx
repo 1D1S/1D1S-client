@@ -38,6 +38,7 @@ export function ChallengeDetailHero({
     <div
       className={cn(
         'relative aspect-[21/9] w-full overflow-hidden',
+        'lg:max-h-[360px]',
         !bleed && 'rounded-4'
       )}
       style={{ background: gradient }}

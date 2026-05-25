@@ -119,12 +119,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
   const canSubmit = form.formState.isValid && !createChallenge.isPending;
 
   return (
-    <div
-      className={cn(
-        'min-h-screen w-full',
-        'pb-[calc(6rem+env(safe-area-inset-bottom))]'
-      )}
-    >
+    <div className={cn('pb-mobile-action-bar min-h-screen w-full')}>
       {/* 모바일 sticky 헤더 — ← + 챌린지 만들기 */}
       <div
         className={cn(
