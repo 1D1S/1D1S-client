@@ -57,11 +57,15 @@ export default function NativeBridge({
   );
 
   useEffect(() => {
+    // kind:'full' 은 레이아웃뿐 아니라 dynamic 라우트의 데이터까지 prefetch
+    // 한다. 기본값 'auto' 는 페이지의 nearest loading.tsx 경계에서 멈춰서
+    // 첫 탭 진입마다 사용자에게 skeleton 이 노출되는 원인. 네이티브 쉘은
+    // 항상 모바일 단일 사용자라 prefetch 비용보다 즉시성 이득이 크다.
     NATIVE_TAB_ROUTES.forEach((href) => {
-      router.prefetch(href);
+      router.prefetch(href, { kind: 'full' as never });
     });
     if (!isLoggedIn) {
-      router.prefetch('/login');
+      router.prefetch('/login', { kind: 'full' as never });
     }
   }, [router, isLoggedIn]);
 
