@@ -252,11 +252,10 @@ export default function DiaryListScreen(): React.ReactElement {
       />
 
       {/* 모바일 sticky 헤더 — 일지.
-          네이티브에서는 헤더는 유지(data-native-keep) 하되, 인라인
-          "일지 쓰기" 버튼은 숨기고(data-native-hide) Flutter Extended FAB
-          가 같은 액션을 비로그인 분기까지 포함해 제공한다. */}
+          네이티브 쉘은 AppTopNav 가 같은 영역을 차지하고 FAB 가
+          "일지 추가" 를 제공하므로, 이 헤더는 글로벌 sticky 차단 룰로
+          함께 가린다 (data-native-keep 제거). */}
       <div
-        data-native-keep
         className={cn(
           'sticky top-0 z-20 flex items-center justify-between',
           'gap-3 border-b border-gray-100',
