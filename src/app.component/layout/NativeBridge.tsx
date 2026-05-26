@@ -100,5 +100,45 @@ export default function NativeBridge({
     });
   }, [isLoggedIn, hasUnread, streakDays, profileUrl]);
 
+  // 스크롤 방향 브릿지. 네이티브 쉘의 sliver-style AppBar collapse/expand
+  // 트리거. 매 프레임 보내는 대신 방향이 바뀐 순간에만 1회 송신해 JS 채널
+  // 트래픽을 최소화한다. rAF 스로틀 + 미세 떨림(<4px) 무시.
+  // 라우트 분기는 Flutter 측에서 처리(/challenge 만 collapse) — 웹은 항상
+  // 송신해 라우트별 정책을 네이티브 단일 소스로 둔다.
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    let lastY = window.scrollY;
+    let lastDir: 'up' | 'down' | null = null;
+    let ticking = false;
+    const onScroll = (): void => {
+      if (ticking) {
+        return;
+      }
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const delta = y - lastY;
+        if (Math.abs(delta) > 4) {
+          const dir: 'up' | 'down' = delta > 0 ? 'down' : 'up';
+          if (dir !== lastDir) {
+            lastDir = dir;
+            postNativeMessage({
+              type: 'scroll_dir',
+              payload: { dir, y },
+            });
+          }
+        }
+        lastY = y;
+        ticking = false;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
+
   return null;
 }
