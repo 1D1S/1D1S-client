@@ -19,9 +19,6 @@ import { X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-// TODO: 카테고리 토글 복구 시 사용. 현재 화면에서 임시 비활성화됨.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import ChallengeBoardFilters from '../components/ChallengeBoardFilters';
 import { toCategoryParam } from '../consts/categoryFilters';
 import { useChallengeList } from '../hooks/useChallengeQueries';
 import type { ChallengeCategory, ChallengeListItem } from '../type/challenge';
@@ -96,9 +93,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     useState('로그인 후 이용할 수 있습니다.');
   const [inputValue, setInputValue] = useState('');
   const [query, setQuery] = useState('');
-  // TODO: 카테고리 토글 복구 시 setCategory 사용. 현재 임시 비활성화.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [category, setCategory] = useState<ChallengeCategory>('ALL');
+  const [category] = useState<ChallengeCategory>('ALL');
 
   const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
   if (isLoginRequired !== prevIsLoginRequired) {
