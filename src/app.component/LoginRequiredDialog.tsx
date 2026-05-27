@@ -10,9 +10,11 @@ import {
   Icon,
   Text,
 } from '@1d1s/design-system';
+import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { cn } from '@module/utils/cn';
+import { openNativeModal } from '@module/utils/nativeBridge';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface LoginRequiredDialogProps {
   open: boolean;
@@ -35,8 +37,56 @@ export function LoginRequiredDialog({
   description = '로그인 후 이용할 수 있습니다.',
   required = false,
   onClose,
-}: LoginRequiredDialogProps): React.ReactElement {
+}: LoginRequiredDialogProps): React.ReactElement | null {
   const router = useRouter();
+  const isNativeApp = useIsNativeApp(false);
+
+  // 네이티브 쉘에서는 웹 다이얼로그 대신 OS 다이얼로그(showDialog 의
+  // AlertDialog) 가 뜨도록 모달 브릿지로 위임한다. required 모드도
+  // 같은 동작 — 사용자가 dismiss(밖 클릭/시스템 백) 하면 onClose 호출.
+  useEffect(() => {
+    if (!isNativeApp || !open) {
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const result = await openNativeModal({
+        title,
+        message: description,
+        buttons: [
+          { label: '닫기', value: 'cancel', style: 'cancel' },
+          { label: '로그인', value: 'login' },
+        ],
+      });
+      if (cancelled) {
+        return;
+      }
+      onOpenChange(false);
+      if (result === 'login') {
+        router.push('/login');
+      } else if (required) {
+        onClose?.();
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    open,
+    isNativeApp,
+    title,
+    description,
+    required,
+    onOpenChange,
+    onClose,
+    router,
+  ]);
+
+  // 네이티브에서는 본 컴포넌트가 그릴 게 없다 — Flutter 가 다이얼로그를
+  // 직접 렌더하기 때문. 웹 모드만 기존 Dialog 트리를 반환.
+  if (isNativeApp) {
+    return null;
+  }
 
   if (!required) {
     return (

@@ -184,11 +184,10 @@ export default function ChallengeBoardScreen(): React.ReactElement {
       />
 
       {/* 모바일 sticky 헤더 — 타이틀 + 새 챌린지 + 검색바.
-          네이티브 쉘에서는 헤더(타이틀/검색) 는 유지(data-native-keep)
-          하되, 인라인 "새 챌린지" 버튼은 숨기고(data-native-hide) 같은
-          액션을 Flutter Extended FAB 가 대신 노출한다. */}
+          네이티브 쉘에서는 AppTopNav + sliver AppBar 가 동일 영역을
+          책임지고, FAB 가 "챌린지 추가" 액션을 제공하므로 이 헤더는
+          글로벌 sticky 차단 룰로 함께 가린다 (data-native-keep 제거). */}
       <div
-        data-native-keep
         className={cn(
           'sticky top-0 z-20 border-b border-gray-100',
           'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
