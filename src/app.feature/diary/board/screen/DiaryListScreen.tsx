@@ -252,10 +252,12 @@ export default function DiaryListScreen(): React.ReactElement {
       />
 
       {/* 모바일 sticky 헤더 — 일지.
-          네이티브 쉘은 AppTopNav 가 같은 영역을 차지하고 FAB 가
-          "일지 추가" 를 제공하므로, 이 헤더는 글로벌 sticky 차단 룰로
-          함께 가린다 (data-native-keep 제거). */}
+          네이티브 쉘은 이 라우트에 한해 AppTopNav 를 노출하지 않고
+          (route_utils.resolveChrome 의 예외) 페이지 자체 헤더만 단독으로
+          보이게 한다. data-native-keep 으로 글로벌 차단 룰의 예외 명시.
+          인라인 "+ 일지 쓰기" 버튼은 FAB 와 중복돼 data-native-hide. */}
       <div
+        data-native-keep
         className={cn(
           'sticky top-0 z-20 flex items-center justify-between',
           'gap-3 border-b border-gray-100',

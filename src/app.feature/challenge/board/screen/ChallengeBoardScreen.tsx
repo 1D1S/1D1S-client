@@ -184,10 +184,13 @@ export default function ChallengeBoardScreen(): React.ReactElement {
       />
 
       {/* 모바일 sticky 헤더 — 타이틀 + 새 챌린지 + 검색바.
-          네이티브 쉘에서는 AppTopNav + sliver AppBar 가 동일 영역을
-          책임지고, FAB 가 "챌린지 추가" 액션을 제공하므로 이 헤더는
-          글로벌 sticky 차단 룰로 함께 가린다 (data-native-keep 제거). */}
+          네이티브 쉘에서는 이 라우트에 한해 AppTopNav 를 노출하지 않고
+          (route_utils.resolveChrome 의 예외) 페이지 자체 헤더만 단독으로
+          보이게 한다 — 검색바가 핵심 기능이라 챌린지 보드에서는 페이지
+          헤더가 더 적합. data-native-keep 으로 글로벌 차단 룰의 예외를
+          명시한다. 인라인 "새 챌린지" 버튼은 FAB 와 중복돼 data-native-hide. */}
       <div
+        data-native-keep
         className={cn(
           'sticky top-0 z-20 border-b border-gray-100',
           'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
