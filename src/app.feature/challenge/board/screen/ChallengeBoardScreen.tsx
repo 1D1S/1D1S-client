@@ -183,7 +183,10 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         description={loginDialogDescription}
       />
 
-      {/* 모바일 sticky 헤더 — 타이틀 + 새 챌린지 + 검색바 */}
+      {/* 모바일 sticky 헤더 — 타이틀 + 새 챌린지 + 검색바.
+          네이티브 쉘에서는 AppTopNav + sliver AppBar 가 동일 영역을
+          책임지고, FAB 가 "챌린지 추가" 액션을 제공하므로 이 헤더는
+          글로벌 sticky 차단 룰로 함께 가린다 (data-native-keep 제거). */}
       <div
         className={cn(
           'sticky top-0 z-20 border-b border-gray-100',
@@ -203,6 +206,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
           <button
             type="button"
             onClick={handleCreateChallenge}
+            data-native-hide
             className={cn(
               'bg-main-800 inline-flex items-center gap-1 rounded-full',
               'px-3 py-1.5 text-[11px] font-extrabold text-white',

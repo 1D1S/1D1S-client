@@ -7,6 +7,7 @@
 
 const CHANNEL_NAME = 'OneDayOneStreakNative';
 const NAVIGATE_EVENT = 'native:navigate';
+const MODAL_RESULT_EVENT = 'native:modal_result';
 
 export interface NativeAuthPayload {
   isLoggedIn: boolean;
@@ -19,9 +20,44 @@ export interface NativeNavPayload {
   pathname: string;
 }
 
+export interface NativeScrollDirPayload {
+  dir: 'up' | 'down';
+  y: number;
+}
+
+export interface NativeModalButton {
+  // 사용자에게 보여줄 라벨.
+  label: string;
+  // 사용자가 이 버튼을 선택하면 Promise 가 resolve 하는 값. 임의 식별자.
+  value: string;
+  // iOS/Material 다이얼로그의 강조 스타일. 'cancel' 은 회색조, 'destructive'
+  // 는 빨강, 'default' 는 브랜드 강조. Flutter 측 매핑은 별도 합의.
+  style?: 'default' | 'cancel' | 'destructive';
+}
+
+export interface NativeModalOpenPayload {
+  // 같은 모달 요청을 식별. 응답이 돌아오는 modal_result 의 id 와 매칭.
+  id: string;
+  title: string;
+  message?: string;
+  // 1~3개 권장. 빈 배열이면 네이티브가 기본 "확인" 1개로 채운다.
+  buttons: NativeModalButton[];
+}
+
 export type NativeMessage =
   | { type: 'auth_state'; payload: NativeAuthPayload }
-  | { type: 'nav_state'; payload: NativeNavPayload };
+  | { type: 'nav_state'; payload: NativeNavPayload }
+  // 앱 부팅 1회. 웹이 첫 페인트 + 4탭 prefetch 워밍업까지 끝낸 시점.
+  // 네이티브 쉘은 이 신호를 받기 전까진 스플래시를 유지해, 사용자에게
+  // 빈 컨테이너나 절반만 로드된 UI 가 노출되지 않게 한다.
+  | { type: 'app_ready' }
+  // 스크롤 방향이 바뀔 때만 1회. 네이티브 쉘이 sliver-style AppBar 를
+  // collapse/expand 하는 용도. 매 프레임 보내는 대신 방향 전환에만 발화해
+  // JS 채널 트래픽을 최소화한다.
+  | { type: 'scroll_dir'; payload: NativeScrollDirPayload }
+  // 네이티브 다이얼로그 노출 요청. 응답은 native:modal_result CustomEvent
+  // 로 비동기 도착. openNativeModal() 헬퍼가 id 매칭으로 Promise 화 한다.
+  | { type: 'modal_open'; payload: NativeModalOpenPayload };
 
 interface NativeChannel {
   postMessage(payload: string): void;
@@ -65,10 +101,79 @@ export function onNativeNavigateRequest(
   }
   const listener = (event: Event): void => {
     const detail = (event as CustomEvent<{ to?: string }>).detail;
-    if (detail?.to) {
-      handler(detail.to);
+    if (!detail?.to) {
+      return;
     }
+    // preventDefault 는 "내가 처리한다" 시그널. Flutter 측 __NATIVE_NAV__
+    // 가 dispatchEvent 반환값을 보고 fallback (location.assign 풀 리로드)
+    // 을 건너뛴다. 이 호출이 빠지면 React Query 캐시가 매번 휘발되어
+    // 사용자가 탭 전환마다 로딩을 다시 보게 된다.
+    event.preventDefault();
+    handler(detail.to);
   };
   win.addEventListener(NAVIGATE_EVENT, listener);
   return () => win.removeEventListener(NAVIGATE_EVENT, listener);
+}
+
+// 모달 응답 대기 큐. id → resolver. Flutter 가 사용자 선택 후 dispatchEvent
+// 로 결과를 보내면 그 id 에 대응되는 resolver 를 깨우고 큐에서 삭제한다.
+// Flutter 가 dialog 자체를 dismiss(밖 클릭, 백 버튼) 했을 때를 위해 value
+// 는 nullable — 그 경우 호출자는 cancel 로 해석한다.
+const pendingNativeModals = new Map<string, (value: string | null) => void>();
+let modalResultListenerAttached = false;
+
+function ensureModalResultListener(): void {
+  if (modalResultListenerAttached) {
+    return;
+  }
+  const win = getNativeWindow();
+  if (!win) {
+    return;
+  }
+  const listener = (event: Event): void => {
+    const detail = (
+      event as CustomEvent<{ id?: string; value?: string | null }>
+    ).detail;
+    if (!detail?.id) {
+      return;
+    }
+    const resolver = pendingNativeModals.get(detail.id);
+    if (resolver) {
+      pendingNativeModals.delete(detail.id);
+      resolver(detail.value ?? null);
+    }
+  };
+  win.addEventListener(MODAL_RESULT_EVENT, listener);
+  modalResultListenerAttached = true;
+}
+
+function generateModalId(): string {
+  return `m_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/**
+ * 네이티브 쉘에 다이얼로그 노출을 요청한다. 사용자가 버튼을 선택하면 그
+ * `value` 가, 다이얼로그를 dismiss(밖 클릭, 시스템 백) 하면 `null` 이
+ * resolve 된다. 네이티브 쉘이 아닌 일반 브라우저에서는 즉시 `null` 을
+ * resolve 해, 호출자는 자체 fallback 다이얼로그를 띄우면 된다.
+ */
+export function openNativeModal(
+  options: Omit<NativeModalOpenPayload, 'id'>
+): Promise<string | null> {
+  const win = getNativeWindow();
+  if (!win) {
+    return Promise.resolve(null);
+  }
+  if (!win[CHANNEL_NAME]) {
+    return Promise.resolve(null);
+  }
+  ensureModalResultListener();
+  const id = generateModalId();
+  return new Promise<string | null>((resolve) => {
+    pendingNativeModals.set(id, resolve);
+    postNativeMessage({
+      type: 'modal_open',
+      payload: { id, ...options },
+    });
+  });
 }

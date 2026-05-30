@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  CircleAvatar,
-  Icon,
-  ImagePlaceholder,
-  Text,
-} from '@1d1s/design-system';
+import { CircleAvatar, Icon, Stripe, Text } from '@1d1s/design-system';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { cn } from '@module/utils/cn';
 import Image from 'next/image';
@@ -14,7 +9,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useViewStory } from '../hooks/useStoryMutations';
 import { StoryGroup } from '../type/story';
-import { formatStoryDate } from '../utils/storyHelpers';
+import { formatStoryDate, pickStoryStripeTone } from '../utils/storyHelpers';
 
 interface StoryViewerProps {
   groups: StoryGroup[];
@@ -185,7 +180,7 @@ export default function StoryViewer({
               priority
             />
           ) : (
-            <ImagePlaceholder className="h-full w-full" logoSize="lg" />
+            <Stripe tone={pickStoryStripeTone(group.userId)} />
           )}
 
           {hasMultiple ? (

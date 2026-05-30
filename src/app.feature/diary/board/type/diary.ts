@@ -21,6 +21,7 @@ export interface ChallengeSummary {
   goalType: string;
   participationType: string;
   participantCnt: number;
+  thumbnailImage?: string | null;
   likeInfo: LikeInfo;
 }
 
