@@ -7,7 +7,11 @@ import Image from 'next/image';
 import React from 'react';
 
 import { StoryGroup } from '../type/story';
-import { formatStoryDate, isGroupAllSeen } from '../utils/storyHelpers';
+import {
+  formatStoryDate,
+  isGroupAllSeen,
+  pickStoryStripeTone,
+} from '../utils/storyHelpers';
 
 interface StoryRingProps {
   groups: StoryGroup[];
@@ -16,9 +20,6 @@ interface StoryRingProps {
   myProfileImage?: string | null;
   onAddStory?(): void;
 }
-
-const STRIPE_TONES = ['peach', 'mint', 'sky'] as const;
-type StripeTone = (typeof STRIPE_TONES)[number];
 
 // next/image 는 절대 URL 또는 / 시작 상대 경로만 허용한다.
 function isValidNextImageSrc(src: string | undefined): src is string {
@@ -29,11 +30,6 @@ function isValidNextImageSrc(src: string | undefined): src is string {
     return true;
   }
   return /^(https?:|data:|blob:)/i.test(src);
-}
-
-function pickToneByUserId(userId: number): StripeTone {
-  const index = Math.abs(userId) % STRIPE_TONES.length;
-  return STRIPE_TONES[index];
 }
 
 export default function StoryRing({
@@ -136,7 +132,7 @@ export default function StoryRing({
         const name = group.userName?.trim() || `친구 ${group.userId}`;
         const title = preview?.diaryTitle ?? '';
         const time = preview ? formatStoryDate(preview.createdAt) : '';
-        const tone = pickToneByUserId(group.userId);
+        const tone = pickStoryStripeTone(group.userId);
 
         return (
           <Card
