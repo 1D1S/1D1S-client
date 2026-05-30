@@ -13,6 +13,7 @@ export interface SidebarChallenge {
   goalType: string;
   participationType: string;
   participantCnt: number;
+  thumbnailImage?: string | null;
   likeInfo: {
     likedByMe: boolean;
     likeCnt: number;

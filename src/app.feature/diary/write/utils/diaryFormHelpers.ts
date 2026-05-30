@@ -164,6 +164,7 @@ export function mapDiaryChallengeToChallengeListItem(
     participantCnt: challenge.participantCnt,
     liked: challenge.likeInfo.likedByMe,
     likeCnt: challenge.likeInfo.likeCnt,
+    thumbnailImage: challenge.thumbnailImage ?? undefined,
   };
 }
 
@@ -182,6 +183,7 @@ export function mapSidebarChallengeToChallengeListItem(
     participantCnt: challenge.participantCnt,
     liked: challenge.likeInfo.likedByMe,
     likeCnt: challenge.likeInfo.likeCnt,
+    thumbnailImage: challenge.thumbnailImage ?? undefined,
   };
 }
 
