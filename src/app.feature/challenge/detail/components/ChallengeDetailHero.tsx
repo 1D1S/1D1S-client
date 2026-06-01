@@ -1,8 +1,8 @@
 'use client';
 
 import { Stripe, Text } from '@1d1s/design-system';
+import FadeInImage from '@component/FadeInImage';
 import { cn } from '@module/utils/cn';
-import Image from 'next/image';
 import React from 'react';
 
 const PILL_CLASS = cn(
@@ -44,7 +44,7 @@ export function ChallengeDetailHero({
       style={{ background: gradient }}
     >
       {imageUrl ? (
-        <Image
+        <FadeInImage
           src={imageUrl}
           alt={title}
           fill

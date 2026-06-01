@@ -7,9 +7,9 @@ import {
   type TagProps,
   Text,
 } from '@1d1s/design-system';
+import FadeInImage from '@component/FadeInImage';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { createActivationKeydownHandler } from '@module/utils/event';
-import Image from 'next/image';
 
 export interface ChallengeListItemProps {
   challengeTitle: string;
@@ -97,7 +97,7 @@ export function ChallengeListItem({
         )}
       >
         {hasImage ? (
-          <Image
+          <FadeInImage
             src={resolvedImageUrl as string}
             alt={challengeTitle}
             fill
