@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, Icon, Stripe, Text } from '@1d1s/design-system';
+import FadeInImage from '@component/FadeInImage';
 import { ChallengeChip } from '@feature/challenge/shared/components/ChallengeChip';
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
@@ -85,14 +86,14 @@ function DiaryCard({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={cn(
-        'transition-all duration-300 ease-out',
+        'transition-all duration-500 ease-out',
         'hover:shadow-warm',
         className
       )}
     >
       <Card.Thumb className="bg-main-100 aspect-[4/5]">
         {hasImage ? (
-          <Image
+          <FadeInImage
             src={imageUrl as string}
             alt={title}
             fill
@@ -152,7 +153,7 @@ function DiaryCard({
               aria-hidden
             >
               {hasProfileImage ? (
-                <Image
+                <FadeInImage
                   src={profileImageUrl as string}
                   alt=""
                   fill

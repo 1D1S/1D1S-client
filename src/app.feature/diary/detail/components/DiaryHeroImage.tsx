@@ -1,5 +1,5 @@
+import FadeInImage from '@component/FadeInImage';
 import { cn } from '@module/utils/cn';
-import Image from 'next/image';
 import React from 'react';
 
 interface DiaryHeroImageProps {
@@ -22,7 +22,7 @@ export function DiaryHeroImage({
         'overflow-hidden rounded-2xl border border-gray-200 bg-gray-100'
       )}
     >
-      <Image
+      <FadeInImage
         src={imageUrl}
         alt={title}
         fill
@@ -63,7 +63,7 @@ export function DiaryImageLightbox({
         >
           ✕
         </button>
-        <Image
+        <FadeInImage
           src={imageUrl}
           alt="일지 이미지 원본"
           width={0}
