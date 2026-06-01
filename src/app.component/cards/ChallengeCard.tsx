@@ -1,10 +1,10 @@
 'use client';
 
 import { Card, CircleAvatar, Stripe } from '@1d1s/design-system';
+import FadeInImage from '@component/FadeInImage';
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
 import { CalendarDays, Target, Users } from 'lucide-react';
-import Image from 'next/image';
 import React, { useMemo } from 'react';
 
 export type ChallengeCardGoalType = 'FIXED' | 'FLEXIBLE';
@@ -156,7 +156,7 @@ function ChallengeCard({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={cn(
-        'transition-all duration-300 ease-out',
+        'transition-all duration-500 ease-out',
         'hover:shadow-warm',
         isEnded && 'opacity-60',
         className
@@ -165,7 +165,7 @@ function ChallengeCard({
       <Card.Thumb className="px-3 pt-3">
         <div className="bg-main-100 relative aspect-[21/9] overflow-hidden rounded-lg">
           {imageUrl ? (
-            <Image
+            <FadeInImage
               src={imageUrl}
               alt={title}
               fill

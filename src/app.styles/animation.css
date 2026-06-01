@@ -50,7 +50,7 @@
 }
 
 .data-fade-in {
-  animation: contentFadeIn 360ms cubic-bezier(0.2, 0, 0, 1) both;
+  animation: contentFadeIn 500ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -59,16 +59,45 @@
   }
 }
 
-/* CTA 버튼 attention pulse — 부드러운 스케일 + 링이 퍼지는 듯한 그림자.
-   "오늘 기록 +" 같은 핵심 CTA에 적용해 사용자의 시선을 끈다. */
+/* 일지 상세 전용 등장 — 일반 data-fade-in 보다 더 길고 부드럽게,
+   투명도 0 에서 시작해 초기 "팝" 없이 완전히 페이드된다.
+   slide-up(translateY) 은 쓰지 않는다: 상세 래퍼 안에 모바일 sticky
+   헤더가 있어 ancestor 에 transform 이 걸리면 sticky 가 깨진다.
+   그래서 opacity 만으로 부드러움을 낸다. */
+@keyframes detailFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.detail-fade-in {
+  animation: detailFadeIn 650ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detail-fade-in {
+    animation: none;
+  }
+}
+
+/* CTA 버튼 attention pulse — 부드러운 스케일 + 사방으로 균일하게 퍼지는 링.
+   "오늘 기록 +" 같은 핵심 CTA에 적용해 사용자의 시선을 끈다.
+
+   링은 box-shadow spread 로 그린다. transform: scale 로 링을 만들면 버튼이
+   가로로 긴 pill 모양이라 긴 축으로 더 늘어나 모양이 어긋나 보인다.
+   box-shadow spread 는 사방에 같은 두께로 퍼져 자연스럽다. 단일 CTA 한
+   곳에만 쓰여 리페인트 비용은 무시할 수준이다. */
 @keyframes ctaPulse {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 107, 74, 0.55);
+    box-shadow: 0 0 0 0 rgba(255, 107, 74, 0.5);
   }
-  60% {
+  70% {
     transform: scale(1.04);
-    box-shadow: 0 0 0 10px rgba(255, 107, 74, 0);
+    box-shadow: 0 0 0 12px rgba(255, 107, 74, 0);
   }
   100% {
     transform: scale(1);
@@ -77,7 +106,7 @@
 }
 
 .animate-cta-pulse {
-  animation: ctaPulse 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: ctaPulse 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .animate-cta-pulse:hover,
@@ -87,6 +116,80 @@
 
 @media (prefers-reduced-motion: reduce) {
   .animate-cta-pulse {
+    animation: none;
+  }
+}
+
+/* 불꽃 아이콘 깜빡임 — DS 의 flame-flicker 키프레임은 매 프레임
+   filter: hue-rotate() 를 적용해 합성이 깨지고 리페인트가 발생한다.
+   홈/마이페이지/우측 레일에 여러 개가 동시에 돌기 때문에 비용이
+   누적돼 전반적인 렉의 주요 원인이었다. transform 만 쓰도록 키프레임을
+   재정의하고(색 변화 효과 제거) 레이어로 승격해 GPU 합성으로 처리한다.
+   (로컬 animation.css 는 DS globals 이후에 import 되므로 동일 이름의
+   @keyframes 가 DS 정의를 덮어쓴다.) */
+@keyframes flame-flicker {
+  0%,
+  100% {
+    transform: scale(1) rotate(-2deg);
+  }
+  25% {
+    transform: scale(1.05) rotate(2deg);
+  }
+  50% {
+    transform: scale(0.98) rotate(-1deg);
+  }
+  75% {
+    transform: scale(1.03) rotate(1deg);
+  }
+}
+
+.animate-flame-flicker {
+  will-change: transform;
+  /* DS 기본 1.8s 보다 느리게 돌려 더 부드럽게(animation 단축속성 뒤에
+     선언된 longhand 가 duration 만 덮어쓴다). */
+  animation-duration: 2.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-flame-flicker {
+    animation: none;
+  }
+}
+
+/* 스토리 뷰어 등장 — 배경은 페이드, 카드는 살짝 확대되며 부드럽게 올라온다.
+   모달이 "툭" 나타나는 대신 자연스럽게 등장한다. opacity/transform 만
+   쓰므로 GPU 합성으로 처리된다. */
+@keyframes storyOverlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes storyCardIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-story-overlay-in {
+  animation: storyOverlayIn 320ms ease-out both;
+}
+
+.animate-story-card-in {
+  animation: storyCardIn 420ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-story-overlay-in,
+  .animate-story-card-in {
     animation: none;
   }
 }

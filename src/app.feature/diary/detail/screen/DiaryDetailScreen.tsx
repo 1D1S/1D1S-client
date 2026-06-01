@@ -738,7 +738,7 @@ function DiaryDetailView({
   return (
     <div
       className={cn(
-        'data-fade-in min-h-screen w-full bg-white',
+        'detail-fade-in min-h-screen w-full bg-white',
         'pb-mobile-action-bar-tall lg:pb-0'
       )}
     >
