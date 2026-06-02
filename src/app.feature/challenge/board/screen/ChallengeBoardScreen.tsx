@@ -303,14 +303,6 @@ export default function ChallengeBoardScreen(): React.ReactElement {
             </Button>
           </div>
 
-          {/* TODO: 카테고리 토글 — 임시 비활성화. 카테고리 필터 UX
-              재정의되면 아래 블록의 주석을 해제해 복구할 것. */}
-          {/*
-          <ChallengeBoardFilters
-            selected={category}
-            onSelect={(next) => setCategory(next)}
-          />
-          */}
         </div>
 
         <div className="mt-4 lg:mt-6">
