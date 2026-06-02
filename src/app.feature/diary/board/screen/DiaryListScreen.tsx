@@ -251,7 +251,10 @@ export default function DiaryListScreen(): React.ReactElement {
         description={loginDialogDescription}
       />
 
-      {/* 모바일 sticky 헤더 — 일지 */}
+      {/* 모바일 sticky 헤더 — 일지.
+          네이티브 쉘은 AppTopNav 가 같은 영역을 차지하고 FAB 가
+          "일지 추가" 를 제공하므로, 이 헤더는 글로벌 sticky 차단 룰로
+          함께 가린다 (data-native-keep 제거). */}
       <div
         className={cn(
           'sticky top-0 z-20 flex items-center justify-between',
@@ -273,6 +276,7 @@ export default function DiaryListScreen(): React.ReactElement {
             type="button"
             onClick={() => router.push('/diary/create')}
             aria-label="일지 쓰기"
+            data-native-hide
             className={cn(
               'rounded-2 bg-brand shrink-0 px-3 py-1.5',
               'text-[12px] font-bold text-white transition',

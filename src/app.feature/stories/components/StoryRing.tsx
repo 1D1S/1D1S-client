@@ -1,13 +1,17 @@
 'use client';
 
 import { Card, Icon, Stripe, Text } from '@1d1s/design-system';
+import FadeInImage from '@component/FadeInImage';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { cn } from '@module/utils/cn';
-import Image from 'next/image';
 import React from 'react';
 
 import { StoryGroup } from '../type/story';
-import { formatStoryDate, isGroupAllSeen } from '../utils/storyHelpers';
+import {
+  formatStoryDate,
+  isGroupAllSeen,
+  pickStoryStripeTone,
+} from '../utils/storyHelpers';
 
 interface StoryRingProps {
   groups: StoryGroup[];
@@ -16,9 +20,6 @@ interface StoryRingProps {
   myProfileImage?: string | null;
   onAddStory?(): void;
 }
-
-const STRIPE_TONES = ['peach', 'mint', 'sky'] as const;
-type StripeTone = (typeof STRIPE_TONES)[number];
 
 // next/image 는 절대 URL 또는 / 시작 상대 경로만 허용한다.
 function isValidNextImageSrc(src: string | undefined): src is string {
@@ -29,11 +30,6 @@ function isValidNextImageSrc(src: string | undefined): src is string {
     return true;
   }
   return /^(https?:|data:|blob:)/i.test(src);
-}
-
-function pickToneByUserId(userId: number): StripeTone {
-  const index = Math.abs(userId) % STRIPE_TONES.length;
-  return STRIPE_TONES[index];
 }
 
 export default function StoryRing({
@@ -64,7 +60,7 @@ export default function StoryRing({
           onClick={onAddStory}
           aria-label="내 일지 추가"
           className={cn(
-            'flex-shrink-0 transition-all duration-300 ease-out',
+            'flex-shrink-0 transition-all duration-500 ease-out',
             'hover:shadow-warm',
             cardWidthClass
           )}
@@ -103,7 +99,7 @@ export default function StoryRing({
                   aria-hidden
                 >
                   {hasMyImage ? (
-                    <Image
+                    <FadeInImage
                       src={myImageUrl as string}
                       alt=""
                       fill
@@ -136,7 +132,7 @@ export default function StoryRing({
         const name = group.userName?.trim() || `친구 ${group.userId}`;
         const title = preview?.diaryTitle ?? '';
         const time = preview ? formatStoryDate(preview.createdAt) : '';
-        const tone = pickToneByUserId(group.userId);
+        const tone = pickStoryStripeTone(group.userId);
 
         return (
           <Card
@@ -148,14 +144,14 @@ export default function StoryRing({
             onClick={() => onSelect(index)}
             aria-label={`${name} 스토리 열기`}
             className={cn(
-              'flex-shrink-0 transition-all duration-300 ease-out',
+              'flex-shrink-0 transition-all duration-500 ease-out',
               'hover:shadow-warm',
               cardWidthClass
             )}
           >
             <Card.Thumb className="bg-main-100 aspect-[4/5]">
               {hasThumbnail ? (
-                <Image
+                <FadeInImage
                   src={thumbnailUrl as string}
                   alt={title}
                   fill
@@ -200,7 +196,7 @@ export default function StoryRing({
                     aria-hidden
                   >
                     {hasProfile ? (
-                      <Image
+                      <FadeInImage
                         src={profileUrl as string}
                         alt=""
                         fill

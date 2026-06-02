@@ -7,8 +7,9 @@ import {
   type TagProps,
   Text,
 } from '@1d1s/design-system';
+import FadeInImage from '@component/FadeInImage';
+import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { createActivationKeydownHandler } from '@module/utils/event';
-import Image from 'next/image';
 
 export interface ChallengeListItemProps {
   challengeTitle: string;
@@ -51,7 +52,10 @@ export function ChallengeListItem({
   className,
   onClick,
 }: ChallengeListItemProps): React.ReactElement {
-  const hasImage = Boolean(imageUrl && imageUrl.trim().length > 0);
+  // 백엔드가 raw 키(예: challenge/xxx.jpg)를 주면 next/image 가 그리지 못해
+  // 배경색만 보인다. DiaryCard/StoryRing 과 동일하게 풀 URL 로 변환한다.
+  const resolvedImageUrl = resolveDiaryImageUrl(imageUrl) ?? undefined;
+  const hasImage = Boolean(resolvedImageUrl);
   const isIndividual = maxUserCount <= 1;
 
   const hasEnded = isInfiniteChallenge ? isEarlyEnded : isEnded;
@@ -93,8 +97,8 @@ export function ChallengeListItem({
         )}
       >
         {hasImage ? (
-          <Image
-            src={imageUrl as string}
+          <FadeInImage
+            src={resolvedImageUrl as string}
             alt={challengeTitle}
             fill
             sizes={

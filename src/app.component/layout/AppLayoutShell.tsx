@@ -3,6 +3,7 @@
 import { Button } from '@1d1s/design-system';
 import { AddToHomeScreenPrompt } from '@feature/install/components/AddToHomeScreenPrompt';
 import { BrowserPermissionPrompt } from '@feature/notification/components/BrowserPermissionPrompt';
+import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
@@ -13,6 +14,7 @@ import AppBottomNav from './AppBottomNav';
 import { AppLayoutProvider } from './AppLayoutContext';
 import AppRightRail from './AppRightRail';
 import AppTopNav from './AppTopNav';
+import NativeBridge from './NativeBridge';
 import { useAuthLayoutState } from './useAuthLayoutState';
 
 const TOP_NAV_HIDDEN_ROUTES = [
@@ -111,7 +113,7 @@ function needsBackButton(pathname: string): boolean {
 
 export default function AppLayoutShell({
   children,
-  isNativeApp = false,
+  isNativeApp: isNativeAppFromServer = false,
 }: {
   children: React.ReactNode;
   // Flutter 등 네이티브 앱 쉘이 자체 헤더/바텀바를 그리는 환경에서는
@@ -122,12 +124,30 @@ export default function AppLayoutShell({
   const pathname = usePathname();
   const router = useRouter();
 
+  // SSR UA 매칭이 실패해 false 로 내려와도, 클라이언트에서 JS 채널/마커/
+  // UA 를 다시 점검해 chrome 중복을 방지한다.
+  const isNativeApp = useIsNativeApp(isNativeAppFromServer);
+
+  // SSR 가 false 로 내려왔어도 클라이언트 감지가 true 로 바뀌면 <html> 의
+  // data 속성을 동기화해, globals.css 의 sticky 헤더 차단 규칙이 즉시
+  // 적용되도록 한다. RootLayout 은 App Router 에서 재렌더되지 않으므로
+  // 이 effect 가 유일한 갱신 경로다.
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+    document.documentElement.dataset.nativeApp = isNativeApp
+      ? 'true'
+      : 'false';
+  }, [isNativeApp]);
+
   useTokenRefreshOnResume();
 
   // 인증/사이드바 상태는 별도 hook 으로 묶었다. shell 은 라우트 가시성 판단과
   // 핸들러 안정화에만 집중한다.
+  const authState = useAuthLayoutState();
   const { isLoggedIn, isAuthLoading, hasUnread, sidebarData, railChallenges } =
-    useAuthLayoutState();
+    authState;
 
   useEffect(() => {
     if (
@@ -249,6 +269,7 @@ export default function AppLayoutShell({
 
         {!isLoginPage && !isNativeApp ? <BrowserPermissionPrompt /> : null}
         {!isLoginPage && !isNativeApp ? <AddToHomeScreenPrompt /> : null}
+        {isNativeApp ? <NativeBridge authState={authState} /> : null}
       </div>
     </AppLayoutProvider>
   );

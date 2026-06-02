@@ -2,6 +2,7 @@ import { CHALLENGE_QUERY_KEYS } from '@feature/challenge/board/consts/queryKeys'
 import { DIARY_QUERY_KEYS } from '@feature/diary/board/consts/queryKeys';
 import HomeMobileHeader from '@feature/home/components/HomeMobileHeader';
 import HomeScreen from '@feature/home/screen/HomeScreen';
+import StoryRingSkeleton from '@feature/stories/components/StoryRingSkeleton';
 import {
   getServerRandomChallenges,
   getServerRandomDiaries,
@@ -19,20 +20,7 @@ function HomeLoadingSkeleton(): React.ReactElement {
     <div className="mx-auto w-full max-w-[1200px] px-5 py-7 lg:px-8 lg:py-10">
       <div className="flex flex-col gap-4">
         <div className="-mx-5 lg:-mx-8">
-          <div className="scrollbar-hide flex w-full gap-3 overflow-x-auto px-5 py-3.5 lg:px-8">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div
-                key={index}
-                className="flex w-[140px] shrink-0 flex-col gap-2"
-              >
-                <div className="aspect-4/5 w-full rounded-xl bg-gray-100" />
-                <div className="flex flex-col gap-1 px-0.5">
-                  <div className="h-3 w-3/4 rounded bg-gray-100" />
-                  <div className="h-2.5 w-1/2 rounded bg-gray-100" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <StoryRingSkeleton />
         </div>
         <div className="h-24 w-full animate-pulse rounded-2xl bg-gray-100" />
         <div className="h-32 w-full animate-pulse rounded-2xl bg-gray-100" />

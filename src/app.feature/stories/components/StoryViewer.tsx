@@ -1,20 +1,15 @@
 'use client';
 
-import {
-  CircleAvatar,
-  Icon,
-  ImagePlaceholder,
-  Text,
-} from '@1d1s/design-system';
+import { CircleAvatar, Icon, Stripe, Text } from '@1d1s/design-system';
+import FadeInImage from '@component/FadeInImage';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { cn } from '@module/utils/cn';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useViewStory } from '../hooks/useStoryMutations';
 import { StoryGroup } from '../type/story';
-import { formatStoryDate } from '../utils/storyHelpers';
+import { formatStoryDate, pickStoryStripeTone } from '../utils/storyHelpers';
 
 interface StoryViewerProps {
   groups: StoryGroup[];
@@ -139,8 +134,8 @@ export default function StoryViewer({
       aria-modal="true"
       onClick={handleBackdropClick}
       className={cn(
-        'fixed inset-0 z-1000 flex items-center justify-center',
-        'bg-black/60 px-4 py-6 backdrop-blur-sm'
+        'animate-story-overlay-in fixed inset-0 z-1000 flex',
+        'items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm'
       )}
     >
       <button
@@ -170,13 +165,14 @@ export default function StoryViewer({
 
       <div
         className={cn(
-          'rounded-4 relative w-full max-w-[420px] overflow-hidden bg-white',
-          'shadow-2xl'
+          'animate-story-card-in rounded-4 relative w-full max-w-[420px]',
+          'overflow-hidden bg-white shadow-2xl'
         )}
       >
         <div className="relative aspect-4/5 w-full overflow-hidden bg-gray-100">
           {thumbnailUrl ? (
-            <Image
+            <FadeInImage
+              key={`${groupIndex}-${diaryIndex}`}
               src={thumbnailUrl}
               alt={story.diaryTitle}
               fill
@@ -185,7 +181,7 @@ export default function StoryViewer({
               priority
             />
           ) : (
-            <ImagePlaceholder className="h-full w-full" logoSize="lg" />
+            <Stripe tone={pickStoryStripeTone(group.userId)} />
           )}
 
           {hasMultiple ? (
@@ -194,7 +190,7 @@ export default function StoryViewer({
                 <div
                   key={index}
                   className={cn(
-                    'h-1 flex-1 rounded-full',
+                    'h-1 flex-1 rounded-full transition-colors duration-300',
                     index === diaryIndex ? 'bg-white' : 'bg-white/40'
                   )}
                 />

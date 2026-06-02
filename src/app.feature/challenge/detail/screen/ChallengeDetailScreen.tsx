@@ -715,8 +715,11 @@ export function ChallengeDetailScreen({
     <>
       {/* 모바일 sliver-style sticky 헤더 — 스크롤 시 페이드인.
           data-fade-in 래퍼 밖에 둔다: 래퍼의 transform 이 containing block 을
-          만들어 position: fixed 가 뷰포트 대신 래퍼 기준이 되는 문제를 피한다. */}
+          만들어 position: fixed 가 뷰포트 대신 래퍼 기준이 되는 문제를 피한다.
+          네이티브 쉘에선 AppBackBar 가 같은 역할을 하므로 data-native-hide
+          로 가린다. globals.css 의 sticky 일괄 룰은 fixed 는 안 잡는다. */}
       <div
+        data-native-hide
         className={cn(
           'fixed top-0 right-0 left-0 z-30 flex h-14 items-center',
           'gap-3 border-b border-gray-100 bg-white/95 px-4',
@@ -777,10 +780,13 @@ export function ChallengeDetailScreen({
             bleed
             hideTextOnMobile
           />
+          {/* 히어로 위 모바일 floating 백버튼. 네이티브에선 AppBackBar 가
+              상단에 있으므로 data-native-hide 로 가려 중복을 막는다. */}
           <button
             type="button"
             aria-label="뒤로가기"
             onClick={() => router.back()}
+            data-native-hide
             className={cn(
               'absolute left-3.5 z-10 flex h-9 w-9',
               'top-[calc(0.875rem+env(safe-area-inset-top))]',
