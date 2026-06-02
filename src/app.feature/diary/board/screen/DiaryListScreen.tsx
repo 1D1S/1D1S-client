@@ -7,7 +7,7 @@ import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
-import { useInViewObserver } from '@module/hooks/useInViewObserver';
+import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { cn } from '@module/utils/cn';
 import { getDateTimestamp } from '@module/utils/date';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
@@ -24,10 +24,6 @@ import { useDiaryList } from '../hooks/useDiaryQueries';
 import { type DiaryItem } from '../type/diary';
 
 type SortMode = 'latest' | 'likes';
-type DiaryItemWithAliases = DiaryItem & {
-  author?: DiaryItem['authorInfoDto'] | null;
-  diaryInfo?: DiaryItem['diaryInfoDto'] | null;
-};
 
 function sortDiaries(items: DiaryItem[], sortMode: SortMode): DiaryItem[] {
   const sorted = [...items];
@@ -41,16 +37,9 @@ function sortDiaries(items: DiaryItem[], sortMode: SortMode): DiaryItem[] {
   }
 
   sorted.sort((leftDiary, rightDiary) => {
-    const leftDiaryWithAliases = leftDiary as DiaryItemWithAliases;
-    const rightDiaryWithAliases = rightDiary as DiaryItemWithAliases;
-    const leftDiaryInfo =
-      leftDiaryWithAliases.diaryInfoDto ??
-      leftDiaryWithAliases.diaryInfo ??
-      null;
+    const leftDiaryInfo = leftDiary.diaryInfoDto ?? leftDiary.diaryInfo ?? null;
     const rightDiaryInfo =
-      rightDiaryWithAliases.diaryInfoDto ??
-      rightDiaryWithAliases.diaryInfo ??
-      null;
+      rightDiary.diaryInfoDto ?? rightDiary.diaryInfo ?? null;
     const leftDiaryTime = getDateTimestamp(
       leftDiaryInfo?.createdAt || leftDiaryInfo?.challengedDate || ''
     );
@@ -65,13 +54,11 @@ function sortDiaries(items: DiaryItem[], sortMode: SortMode): DiaryItem[] {
 }
 
 function getDiaryAuthorInfo(diary: DiaryItem): DiaryItem['authorInfoDto'] {
-  const diaryWithAliases = diary as DiaryItemWithAliases;
-  return diaryWithAliases.authorInfoDto ?? diaryWithAliases.author ?? null;
+  return diary.authorInfoDto ?? diary.author ?? null;
 }
 
 function getDiaryInfo(diary: DiaryItem): DiaryItem['diaryInfoDto'] {
-  const diaryWithAliases = diary as DiaryItemWithAliases;
-  return diaryWithAliases.diaryInfoDto ?? diaryWithAliases.diaryInfo ?? null;
+  return diary.diaryInfoDto ?? diary.diaryInfo ?? null;
 }
 
 function getDiaryAchievementRate(diary: DiaryItem): number {
@@ -179,7 +166,11 @@ export default function DiaryListScreen(): React.ReactElement {
     isFetchingNextPage,
   } = useDiaryList({ size: 12 });
   const showSkeleton = useMinimumLoading(isLoading);
-  const { ref, inView } = useInViewObserver();
+  const { ref } = useInfiniteScroll({
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
   const diaries = useMemo(() => {
     const flattenedDiaries =
@@ -192,12 +183,6 @@ export default function DiaryListScreen(): React.ReactElement {
 
     return Array.from(diaryMap.values());
   }, [data]);
-
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const sortedDiaries = useMemo(
     () => sortDiaries(diaries, sortMode),

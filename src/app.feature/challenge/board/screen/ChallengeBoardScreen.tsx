@@ -13,7 +13,7 @@ import {
   getCategoryStripeTone,
 } from '@constants/categories';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
-import { useInViewObserver } from '@module/hooks/useInViewObserver';
+import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { cn } from '@module/utils/cn';
 import { X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -157,13 +157,11 @@ export default function ChallengeBoardScreen(): React.ReactElement {
       category: toCategoryParam(category),
     });
 
-  const { ref, inView } = useInViewObserver();
-
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const { ref } = useInfiniteScroll({
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   const challenges = useMemo(
     () => data?.pages?.flatMap((page) => page?.data?.items ?? []) ?? [],
