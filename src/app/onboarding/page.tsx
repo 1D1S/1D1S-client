@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Text } from '@1d1s/design-system';
+import { cn } from '@module/utils/cn';
 import { BookOpen, Flag, Search, UserRound, Users } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -75,7 +76,12 @@ export default function OnboardingPage(): React.ReactElement {
               key={title}
               className="rounded-3 flex items-start gap-4 border border-gray-200 bg-white p-4"
             >
-              <div className="bg-main-200 mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl">
+              <div
+                className={cn(
+                  'bg-main-200 mt-0.5 flex h-12 w-12 shrink-0',
+                  'items-center justify-center rounded-2xl'
+                )}
+              >
                 <Icon className="text-main-800 h-6 w-6" />
               </div>
               <div className="flex flex-col gap-1">
