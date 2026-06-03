@@ -98,11 +98,11 @@ export function feelingToMoodImage(
 ): { src: string; alt: string } | null {
   switch (feeling) {
     case 'HAPPY':
-      return { src: '/images/mood-happy.PNG', alt: '행복한 얼굴' };
+      return { src: '/images/mood-happy.svg', alt: '행복한 얼굴' };
     case 'SAD':
-      return { src: '/images/mood-sad.PNG', alt: '슬픈 얼굴' };
+      return { src: '/images/mood-sad.svg', alt: '슬픈 얼굴' };
     case 'NORMAL':
-      return { src: '/images/mood-soso.PNG', alt: '무표정 얼굴' };
+      return { src: '/images/mood-soso.svg', alt: '무표정 얼굴' };
     case 'NONE':
     default:
       return null;

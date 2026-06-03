@@ -2,12 +2,12 @@
 
 import { Text } from '@1d1s/design-system';
 import { NotificationListSkeleton } from '@component/skeletons/ListItemSkeleton';
-import { useInViewObserver } from '@module/hooks/useInViewObserver';
+import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
+import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft, Bell } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 import { NotificationListItem } from '../components/NotificationListItem';
 import {
@@ -18,13 +18,17 @@ import { useNotificationsInfinite } from '../hooks/useNotificationQueries';
 import { Notification } from '../type/notification';
 
 export function NotificationScreen(): React.JSX.Element {
-  const router = useRouter();
+  const handleBack = useSafeBack('/');
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useNotificationsInfinite();
   const showSkeleton = useMinimumLoading(isLoading);
   const { mutate: markAsRead } = useMarkAsRead();
   const { mutate: markAllAsRead } = useMarkAllAsRead();
-  const { ref, inView } = useInViewObserver();
+  const { ref } = useInfiniteScroll({
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   const notifications = useMemo<Notification[]>(() => {
     const flattened = data?.pages?.flatMap((page) => page?.items ?? []) ?? [];
@@ -39,11 +43,6 @@ export function NotificationScreen(): React.JSX.Element {
   const unreadCount = notifications.filter((notif) => !notif.isRead).length;
   const hasNotifications = notifications.length > 0;
 
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <div className="min-h-screen w-full">
@@ -59,7 +58,7 @@ export function NotificationScreen(): React.JSX.Element {
         <button
           type="button"
           aria-label="뒤로가기"
-          onClick={() => router.back()}
+          onClick={handleBack}
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-lg',
             'text-gray-700 transition-colors hover:bg-gray-100'

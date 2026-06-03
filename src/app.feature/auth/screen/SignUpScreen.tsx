@@ -52,13 +52,7 @@ export function SignUpScreen(): React.ReactElement {
   const [step, setStep] = React.useState<Step>(1);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showExitDialog, setShowExitDialog] = React.useState(false);
-  const [streakDay, setStreakDay] = React.useState<number>(() =>
-    getLaunchStreakDay()
-  );
-
-  React.useEffect(() => {
-    setStreakDay(getLaunchStreakDay());
-  }, []);
+  const [streakDay] = React.useState<number>(() => getLaunchStreakDay());
 
   const onSubmit = async (values: SignupFormValues): Promise<void> => {
     if (!authStorage.hasTokens()) {

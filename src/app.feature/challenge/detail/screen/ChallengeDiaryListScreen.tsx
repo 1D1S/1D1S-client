@@ -16,12 +16,13 @@ import {
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
-import { useInViewObserver } from '@module/hooks/useInViewObserver';
+import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
+import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { useChallengeDiaryListInfinite } from '../hooks/useChallengeDiaryQueries';
 import { ChallengeDiaryItem } from '../type/challengeDiary';
@@ -37,6 +38,7 @@ export function ChallengeDiaryListScreen({
 }: ChallengeDiaryListScreenProps): React.ReactElement {
   const challengeId = Number(id);
   const router = useRouter();
+  const handleBack = useSafeBack(`/challenge/${id}`);
   const isLoggedIn = useIsLoggedIn();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const likeDiary = useLikeDiary();
@@ -51,7 +53,11 @@ export function ChallengeDiaryListScreen({
     isFetchingNextPage,
   } = useChallengeDiaryListInfinite(challengeId, CHALLENGE_DIARY_PAGE_SIZE);
   const showSkeleton = useMinimumLoading(isLoading);
-  const { ref, inView } = useInViewObserver();
+  const { ref } = useInfiniteScroll({
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   const diaryItems = useMemo(() => {
     const flattened = data?.pages?.flatMap((page) => page?.items ?? []) ?? [];
@@ -64,12 +70,6 @@ export function ChallengeDiaryListScreen({
 
   const hasDiaries = diaryItems.length > 0;
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
-
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleLikeToggle = (diary: ChallengeDiaryItem): void => {
     if (!isLoggedIn) {
@@ -106,7 +106,7 @@ export function ChallengeDiaryListScreen({
         <button
           type="button"
           aria-label="뒤로가기"
-          onClick={() => router.push(`/challenge/${id}`)}
+          onClick={handleBack}
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-lg',
             'text-gray-700 transition-colors hover:bg-gray-100'

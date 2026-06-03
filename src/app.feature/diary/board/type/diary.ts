@@ -45,6 +45,8 @@ export interface DiaryItem {
   id: number;
   challenge: ChallengeSummary | null;
   authorInfoDto: AuthorInfo | null;
+  /** @deprecated Use authorInfoDto */
+  author?: AuthorInfo | null;
   title: string;
   content: string;
   imgUrl: string[] | null;
@@ -53,6 +55,8 @@ export interface DiaryItem {
   commentCount: number;
   achievementRate?: number;
   diaryInfoDto: DiaryInfo | null;
+  /** @deprecated Use diaryInfoDto */
+  diaryInfo?: DiaryInfo | null;
 }
 
 export type DiaryDetail = DiaryItem;

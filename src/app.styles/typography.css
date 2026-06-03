@@ -25,16 +25,20 @@
 }
 
 :root {
-  /* font size */
+  /* font size (모바일 기준).
+     기존엔 모바일이 데스크톱보다 더 큰 역전 스케일이라 제목/본문이 과도하게
+     크게 보였다. 대형 토큰을 줄여 모바일 일관성을 맞춘다.
+     (lg~5xl 은 아래 @media(min-width:1024px) 에서 데스크톱 값으로 덮어쓰므로
+     데스크톱 렌더는 그대로 유지된다.) */
   --text-xs: 0.75rem; /* 12px */
   --text-sm: 0.8125rem; /* 13px */
   --text-base: 0.875rem; /* 14px */
-  --text-lg: 1rem; /* 16px */
-  --text-xl: 1.125rem; /* 18px */
-  --text-2xl: 1.25rem; /* 20px */
-  --text-3xl: 1.5rem; /* 24px */
-  --text-4xl: 1.75rem; /* 28px */
-  --text-5xl: 2rem; /* 32px */
+  --text-lg: 0.9375rem; /* 16px → 15px */
+  --text-xl: 1.0625rem; /* 18px → 17px */
+  --text-2xl: 1.1875rem; /* 20px → 19px */
+  --text-3xl: 1.3125rem; /* 24px → 21px */
+  --text-4xl: 1.5rem; /* 28px → 24px */
+  --text-5xl: 1.625rem; /* 32px → 26px */
 
   /* line height */
   --text-xs--line-height: 1;
@@ -50,11 +54,21 @@
 
 @media (min-width: 1024px) {
   :root {
-    --text-5xl: 1.75rem; /* 32px → 28px */
-    --text-4xl: 1.5rem; /* 28px → 24px */
-    --text-3xl: 1.25rem; /* 24px → 20px */
-    --text-2xl: 1.125rem; /* 20px → 18px */
-    --text-xl: 1rem; /* 18px → 16px */
-    --text-lg: 0.875rem; /* 16px → 14px */
+    --text-5xl: 1.75rem; /* 28px */
+    --text-4xl: 1.5rem; /* 24px */
+    --text-3xl: 1.25rem; /* 20px */
+    --text-2xl: 1.125rem; /* 18px */
+    --text-xl: 1rem; /* 16px */
+    --text-lg: 0.875rem; /* 14px */
+  }
+}
+
+/* 모바일 댓글 가독성 — DS CommentThread/TextField 내부의 text-xs(12px)가
+   모바일에서 너무 작아 13px로 키운다. 데스크톱(lg+)은 공간이 충분해 그대로 둔다.
+   `.comment-readable .text-xs` 는 Tailwind `.text-xs`(0,1,0)보다 우선한다(0,2,0). */
+@media (max-width: 1023px) {
+  .comment-readable .text-xs {
+    font-size: 0.8125rem; /* 13px */
+    line-height: 1.5;
   }
 }

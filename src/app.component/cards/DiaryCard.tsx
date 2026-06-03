@@ -11,9 +11,9 @@ import React from 'react';
 export type DiaryEmotion = 'happy' | 'soso' | 'sad';
 
 const EMOTION_IMAGE: Record<DiaryEmotion, { src: string; alt: string }> = {
-  happy: { src: '/images/mood-happy.PNG', alt: '행복한 얼굴' },
-  soso: { src: '/images/mood-soso.PNG', alt: '무표정 얼굴' },
-  sad: { src: '/images/mood-sad.PNG', alt: '슬픈 얼굴' },
+  happy: { src: '/images/mood-happy.svg', alt: '행복한 얼굴' },
+  soso: { src: '/images/mood-soso.svg', alt: '무표정 얼굴' },
+  sad: { src: '/images/mood-sad.svg', alt: '슬픈 얼굴' },
 };
 
 const EMOTION_STRIPE_TONE: Record<DiaryEmotion, 'peach' | 'mint' | 'sky'> = {
@@ -121,12 +121,16 @@ function DiaryCard({
           )}
         </Card.Overlay>
         <Card.Overlay position="top-right">
+          {/* 무드 SVG는 정적 에셋이라 최적화가 불필요하고, next/image 최적화기는
+              prod 에서 SVG를 차단(dangerouslyAllowSVG=false)하므로 unoptimized 로
+              /public 에서 직접 서빙한다. */}
           <Image
             src={EMOTION_IMAGE[emotion].src}
             alt={EMOTION_IMAGE[emotion].alt}
             width={32}
             height={32}
             className="h-8 w-8"
+            unoptimized
           />
         </Card.Overlay>
       </Card.Thumb>

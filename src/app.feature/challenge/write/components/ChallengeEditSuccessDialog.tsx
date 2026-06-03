@@ -8,6 +8,7 @@ import {
   DialogTitle,
   Text,
 } from '@1d1s/design-system';
+import { cn } from '@module/utils/cn';
 import { useRouter } from 'next/navigation';
 
 interface ChallengeEditSuccessDialogProps
@@ -34,7 +35,10 @@ export function ChallengeEditSuccessDialog({
   return (
     <Dialog onOpenChange={onOpenChange} {...props}>
       <DialogContent
-        className="flex w-[calc(100%-2rem)] flex-col items-center gap-8 sm:min-w-120 [&>button:last-of-type]:hidden"
+        className={cn(
+          'flex w-[calc(100%-2rem)] flex-col items-center gap-8',
+          'sm:min-w-120 [&>button:last-of-type]:hidden'
+        )}
         onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => event.preventDefault()}
       >

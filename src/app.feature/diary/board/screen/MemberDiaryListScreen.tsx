@@ -18,12 +18,12 @@ import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useMemberProfileDiariesInfinite } from '@feature/member/hooks/useMemberQueries';
 import { normalizeApiError } from '@module/api/error';
-import { useInViewObserver } from '@module/hooks/useInViewObserver';
+import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 const MEMBER_DIARY_PAGE_SIZE = 12;
 
@@ -50,7 +50,11 @@ export function MemberDiaryListScreen({
     isFetchingNextPage,
   } = useMemberProfileDiariesInfinite(memberIdNum, MEMBER_DIARY_PAGE_SIZE);
   const showSkeleton = useMinimumLoading(isLoading);
-  const { ref, inView } = useInViewObserver();
+  const { ref } = useInfiniteScroll({
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   const diaryItems = useMemo(() => {
     const flattened =
@@ -64,12 +68,6 @@ export function MemberDiaryListScreen({
 
   const hasDiaries = diaryItems.length > 0;
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
-
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleLikeToggle = (diary: DiaryItem): void => {
     if (!isLoggedIn) {

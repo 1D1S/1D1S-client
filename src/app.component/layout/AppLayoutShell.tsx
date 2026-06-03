@@ -241,7 +241,10 @@ export default function AppLayoutShell({
         ) : null}
 
         <div className="flex min-h-0 flex-1">
-          <main className="min-h-0 min-w-0 flex-1 overflow-x-clip">
+          {/* overflow-x-clip 로 가로 넘침을 막되, overflow-clip-margin 으로
+              카드 hover 그림자/살짝 떠오르는 효과가 잘리지 않게 24px 여유를
+              둔다. clip 은 스크롤바를 만들지 않으므로 가로 스크롤은 그대로 차단된다. */}
+          <main className="min-h-0 min-w-0 flex-1 overflow-x-clip [overflow-clip-margin:1.5rem]">
             {children}
           </main>
           {showRightRail ? (

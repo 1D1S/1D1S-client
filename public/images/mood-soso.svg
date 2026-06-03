@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none" role="img" aria-label="무표정 얼굴">
+  <!-- DS tone mint: mint-500 face / gray-800 features -->
+  <circle cx="24" cy="24" r="21" fill="#96e6c2" />
+  <circle cx="17.5" cy="21" r="2.6" fill="#424242" />
+  <circle cx="30.5" cy="21" r="2.6" fill="#424242" />
+  <path d="M18.5 30q5.5 2.5 11 0" stroke="#424242" stroke-width="2.6" stroke-linecap="round" fill="none" />
+</svg>

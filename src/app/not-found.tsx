@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Text } from '@1d1s/design-system';
+import { cn } from '@module/utils/cn';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -8,7 +9,12 @@ export default function NotFound(): React.ReactElement {
   const router = useRouter();
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-white p-8 text-center">
+    <div
+      className={cn(
+        'flex min-h-screen flex-col items-center justify-center',
+        'gap-6 bg-white p-8 text-center'
+      )}
+    >
       <Text size="display1" weight="bold" className="text-main-800">
         404
       </Text>

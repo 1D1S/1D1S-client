@@ -1,3 +1,36 @@
+// 알림 payload(type/targetType/targetId)로 인앱 딥링크 경로를 만든다.
+// NotificationListItem.resolveTargetUrl 과 동일한 규칙을 따른다.
+// 백엔드가 명시적인 `url` 을 보내면 그것을 최우선으로 사용한다.
+function resolveNotificationUrl(data) {
+  if (data && typeof data.url === 'string' && data.url) {
+    return data.url;
+  }
+  if (!data) {
+    return '/notification';
+  }
+  if (data.type === 'FRIEND_REQUEST') {
+    return '/mypage/friend';
+  }
+  const targetType = data.targetType;
+  const targetId = data.targetId;
+  if (!targetType || !targetId) {
+    return '/notification';
+  }
+  if (
+    String(targetType).startsWith('MEMBER') ||
+    String(targetType).startsWith('FRIEND')
+  ) {
+    return `/member/${targetId}`;
+  }
+  if (String(targetType).startsWith('DIARY')) {
+    return `/diary/${targetId}`;
+  }
+  if (String(targetType).startsWith('CHALLENGE')) {
+    return `/challenge/${targetId}`;
+  }
+  return '/notification';
+}
+
 self.addEventListener('push', (event) => {
   console.log('[SW] push event received', event.data?.text());
 
@@ -19,7 +52,8 @@ self.addEventListener('push', (event) => {
     body: data.body ?? '',
     icon: '/images/logo.png',
     badge: '/images/logo.png',
-    data: { url: data.url ?? '/notification' },
+    // 클릭 시 이동할 딥링크를 미리 계산해 저장한다.
+    data: { url: resolveNotificationUrl(data) },
   };
 
   console.log('[SW] showNotification', title, options);
@@ -31,12 +65,26 @@ self.addEventListener('notificationclick', (event) => {
   const url = event.notification.data?.url ?? '/notification';
 
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((windowClients) => {
-      const existing = windowClients.find((client) => client.url === url);
-      if (existing) {
-        return existing.focus();
-      }
-      return clients.openWindow(url);
-    })
+    clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((windowClients) => {
+        // 이미 열린 탭이 있으면 해당 경로로 이동시킨 뒤 포커스한다.
+        for (const client of windowClients) {
+          if ('focus' in client) {
+            if ('navigate' in client) {
+              return client
+                .navigate(url)
+                .then((navigated) => (navigated || client).focus())
+                .catch(() => client.focus());
+            }
+            return client.focus();
+          }
+        }
+        // 열린 탭이 없으면(콜드 스타트) 딥링크로 새 창을 연다.
+        if (clients.openWindow) {
+          return clients.openWindow(url);
+        }
+        return undefined;
+      })
   );
 });

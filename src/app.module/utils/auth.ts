@@ -25,10 +25,12 @@ export const authStorage = {
       return;
     }
     localStorage.setItem(AUTH_SESSION_KEY, 'true');
-    // 서브도메인(local.dev.*)에서도 인증 상태를 감지할 수 있도록 도메인 공유 힌트 쿠키 설정
+    // 서브도메인(local.dev.*)에서도 인증 상태를 감지할 수 있도록 도메인 공유 힌트 쿠키 설정.
+    // 만료가 짧으면(7일) 장기 세션에서 힌트만 먼저 사라져 게스트 오인이 생길 수
+    // 있어 90일로 둔다. (실제 세션 만료는 백엔드 토큰/401 흐름이 판단)
     Cookies.set(AUTH_HINT_COOKIE, '1', {
       domain: AUTH_HINT_COOKIE_DOMAIN,
-      expires: 7,
+      expires: 90,
       sameSite: 'lax',
       secure: window.location.protocol === 'https:',
     });
