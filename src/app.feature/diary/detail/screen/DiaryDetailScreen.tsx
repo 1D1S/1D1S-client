@@ -501,7 +501,7 @@ function DiaryCommentSection({
         'lg:sticky lg:top-[78px]'
       )}
     >
-      <div className="lg:p-5">
+      <div className="comment-readable lg:p-5">
         <Text size="body1" weight="bold" className="mb-3 block text-gray-900">
           응원 댓글 {totalCommentCount}개
         </Text>
@@ -611,7 +611,7 @@ function DiaryMobileCommentBar({
 
   return (
     <MobileBottomActionBar
-      className={cn('flex items-end gap-2 bg-white px-4 pt-2.5')}
+      className={cn('comment-readable flex items-end gap-2 bg-white px-4 pt-2.5')}
     >
       <TextField
         id="diary-comment-content-mobile"
@@ -869,12 +869,14 @@ function DiaryDetailView({
               {/* 모바일: 인라인 이모지 + 기분 라벨 + 달성 뱃지 */}
               <div className="mt-3 flex items-center gap-2 lg:hidden">
                 {diaryData.feelingMoodImage ? (
+                  /* 무드 SVG: prod 최적화기 SVG 차단 회피 위해 unoptimized */
                   <Image
                     src={diaryData.feelingMoodImage.src}
                     alt={diaryData.feelingMoodImage.alt}
                     width={20}
                     height={20}
                     className="h-5 w-5"
+                    unoptimized
                   />
                 ) : (
                   <span className="text-lg leading-none" aria-hidden>
@@ -903,12 +905,14 @@ function DiaryDetailView({
                 )}
               >
                 {diaryData.feelingMoodImage ? (
+                  /* 무드 SVG: prod 최적화기 SVG 차단 회피 위해 unoptimized */
                   <Image
                     src={diaryData.feelingMoodImage.src}
                     alt={diaryData.feelingMoodImage.alt}
                     width={24}
                     height={24}
                     className="h-6 w-6"
+                    unoptimized
                   />
                 ) : (
                   <span className="text-xl leading-none" aria-hidden>

@@ -5,6 +5,15 @@
 @import './shadow.css';
 @import './animation.css';
 
+/* 전역 트랜지션 기본값 (#16) — 명시적 duration/easing 이 없는 모든
+   `transition*` 유틸리티를 살짝 더 길고(150ms→200ms) 부드러운 ease-out
+   커브로 통일해 마이크로 인터랙션을 전반적으로 매끄럽게 만든다.
+   개별적으로 duration/ease 를 지정한 전환·키프레임은 영향받지 않는다. */
+@theme {
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 /* highlight.js github 테마는 일지 뷰어에서만 필요하므로 글로벌이 아닌
    DiaryContentRenderer 측에서 lazy 로드한다 (highlight.js.css). */
 

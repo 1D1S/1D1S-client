@@ -6,6 +6,8 @@ import {
   UseQueryResult,
 } from '@tanstack/react-query';
 
+import { FRESH_ON_RETURN } from '@/app.lib/refetchPolicy';
+
 import { diaryDetailApi } from '../../detail/api/diaryDetailApi';
 import { diaryBoardApi } from '../api/diaryBoardApi';
 import { DIARY_QUERY_KEYS } from '../consts/queryKeys';
@@ -39,6 +41,7 @@ export function useRandomDiaries(
   return useQuery({
     queryKey: DIARY_QUERY_KEYS.random(params),
     queryFn: () => diaryBoardApi.getRandomDiaries(params),
+    ...FRESH_ON_RETURN,
   });
 }
 
@@ -56,6 +59,7 @@ export function useDiaryList(
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
       lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.nextCursor : undefined,
+    ...FRESH_ON_RETURN,
   });
 }
 

@@ -28,9 +28,14 @@ export function useInViewObserver(): {
       return;
     }
 
-    const observer = new IntersectionObserver(([entry]) => {
-      setObservedInView(entry.isIntersecting);
-    });
+    // 화면 하단에 정확히 닿기 전(300px 앞)에 미리 다음 페이지를 불러와
+    // 스크롤이 끊기거나 페이지네이션이 트리거되지 않는 느낌을 줄인다.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setObservedInView(entry.isIntersecting);
+      },
+      { rootMargin: '300px 0px' }
+    );
 
     observer.observe(target);
 

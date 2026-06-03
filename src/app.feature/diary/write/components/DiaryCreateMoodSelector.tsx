@@ -28,7 +28,14 @@ function MoodOptionButton({
           : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
       )}
     >
-      <Image src={option.imageSrc} alt={option.alt} width={36} height={36} />
+      {/* 무드 SVG: prod 최적화기 SVG 차단 회피 위해 unoptimized 로 직접 서빙 */}
+      <Image
+        src={option.imageSrc}
+        alt={option.alt}
+        width={36}
+        height={36}
+        unoptimized
+      />
       <Text size="caption2" weight="medium" className="mt-0.5">
         {option.label}
       </Text>

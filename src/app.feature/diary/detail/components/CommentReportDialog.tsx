@@ -200,7 +200,11 @@ export function CommentReportDialog({
             </div>
           </div>
 
-          <DialogFooter className="flex-row gap-2">
+          {/* DialogContent 의 px-6 py-6 패딩이 풀블리드 푸터(bg-gray-50)를
+              안쪽으로 밀어 "직각 네모"로 보이던 문제 → 음수 마진으로 패널
+              모서리까지 채운다. (DialogContent 의 overflow-hidden+rounded-4 가
+              하단 모서리를 둥글게 클립한다.) */}
+          <DialogFooter className="-mx-6 -mb-6 flex-row gap-2 px-6">
             <Button
               size="medium"
               variant="ghost"

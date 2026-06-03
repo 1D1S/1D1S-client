@@ -3,7 +3,7 @@
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
 import { authStorage } from '@module/utils/auth';
-import { useMemo, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useReducer, useSyncExternalStore } from 'react';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 const ENDLESS_MIN_YEAR = 2090;
@@ -107,6 +107,33 @@ export function useAuthLayoutState(): AuthLayoutState {
     () => false
   );
   const now = useSyncExternalStore(NOOP_SUBSCRIBE, getMountTimestamp, () => 0);
+
+  // 콜드 PWA(사파리 홈화면 앱) 런치에서 cookie/localStorage 복원이 한 박자
+  // 늦으면 첫 렌더의 authStorage.hasTokens() 가 false 로 굳어 useSidebar 쿼리가
+  // 비활성 상태로 멈춘다 → 로그인 사용자가 게스트로 보이고, 앱을 재실행하면
+  // 정상화된다. mount 직후 짧게(최대 ~0.9s) 재확인해 토큰이 보이면 re-render 를
+  // 유발, 아래 useSidebar 의 enabled(=hasTokens()) 를 다시 평가시킨다.
+  // (데이터 페칭은 그대로 TanStack Query 가 담당한다.)
+  const [, revalidateAuth] = useReducer((count: number) => count + 1, 0);
+  useEffect(() => {
+    if (authStorage.hasTokens()) {
+      return;
+    }
+    let attempts = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const recheck = (): void => {
+      attempts += 1;
+      if (authStorage.hasTokens()) {
+        revalidateAuth();
+        return;
+      }
+      if (attempts < 6) {
+        timer = setTimeout(recheck, 150);
+      }
+    };
+    timer = setTimeout(recheck, 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   const hasTokenHint = hasMounted && authStorage.hasTokens();
 
