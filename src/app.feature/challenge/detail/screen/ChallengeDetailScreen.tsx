@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   GoalAddList,
+  Stripe,
   Tag,
   Text,
   TextField,
@@ -865,7 +866,7 @@ export function ChallengeDetailScreen({
                   <div
                     key={participant.participantId}
                     className={cn(
-                      'h-7 w-7 overflow-hidden rounded-full',
+                      'relative h-7 w-7 overflow-hidden rounded-full',
                       'bg-main-200 border-2 border-white',
                       idx > 0 && '-ml-2.5'
                     )}
@@ -879,13 +880,7 @@ export function ChallengeDetailScreen({
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <Image
-                        src="/DefaultProfile.png"
-                        alt=""
-                        width={28}
-                        height={28}
-                        className="h-full w-full object-cover"
-                      />
+                      <Stripe tone="var(--main-300)" />
                     )}
                   </div>
                 ))}

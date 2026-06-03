@@ -17,6 +17,7 @@ import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
+import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
@@ -37,6 +38,7 @@ export function ChallengeDiaryListScreen({
 }: ChallengeDiaryListScreenProps): React.ReactElement {
   const challengeId = Number(id);
   const router = useRouter();
+  const handleBack = useSafeBack(`/challenge/${id}`);
   const isLoggedIn = useIsLoggedIn();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const likeDiary = useLikeDiary();
@@ -104,7 +106,7 @@ export function ChallengeDiaryListScreen({
         <button
           type="button"
           aria-label="뒤로가기"
-          onClick={() => router.push(`/challenge/${id}`)}
+          onClick={handleBack}
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-lg',
             'text-gray-700 transition-colors hover:bg-gray-100'

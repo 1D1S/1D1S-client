@@ -1,4 +1,5 @@
-import { CheckList, Text } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
+import { ResponsiveCheckList } from '@component/ResponsiveCheckList';
 import React from 'react';
 
 import type { ChallengeGoal } from '../../../challenge/board/type/challenge';
@@ -34,7 +35,7 @@ export function DiaryCreateGoalsSection({
 
       {totalGoalCount > 0 ? (
         <>
-          <CheckList
+          <ResponsiveCheckList
             options={options}
             value={selectedValues}
             onValueChange={handleValueChange}

@@ -1,4 +1,5 @@
-import { CheckList, Text } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
+import { ResponsiveCheckList } from '@component/ResponsiveCheckList';
 import { cn } from '@module/utils/cn';
 import React, { useMemo } from 'react';
 
@@ -32,7 +33,7 @@ export function DiaryGoalsCard({
       )}
     >
       <div className="mb-3 flex items-baseline justify-between">
-        <Text size="body2" weight="bold" className="text-gray-900">
+        <Text size="caption1" weight="bold" className="text-gray-900">
           오늘의 목표
         </Text>
         <Text size="caption2" weight="medium" className="text-gray-500">
@@ -40,7 +41,7 @@ export function DiaryGoalsCard({
         </Text>
       </div>
       {checklistItems.length > 0 ? (
-        <CheckList
+        <ResponsiveCheckList
           options={checklistOptions}
           value={checkedChecklistIds}
           onValueChange={NOOP_VALUE_CHANGE}

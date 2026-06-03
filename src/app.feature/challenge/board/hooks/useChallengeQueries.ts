@@ -6,6 +6,8 @@ import {
   UseQueryResult,
 } from '@tanstack/react-query';
 
+import { FRESH_ON_RETURN } from '@/app.lib/refetchPolicy';
+
 import { challengeDetailApi } from '../../detail/api/challengeDetailApi';
 import { challengeBoardApi } from '../api/challengeBoardApi';
 import { CHALLENGE_QUERY_KEYS } from '../consts/queryKeys';
@@ -35,6 +37,7 @@ export function useRandomChallenges(
   return useQuery({
     queryKey: CHALLENGE_QUERY_KEYS.random(params),
     queryFn: () => challengeBoardApi.getRandomChallenges(params),
+    ...FRESH_ON_RETURN,
   });
 }
 
@@ -57,6 +60,7 @@ export function useChallengeList(
       const pageInfo = lastPage?.data?.pageInfo;
       return pageInfo?.hasNextPage ? pageInfo.nextCursor : undefined;
     },
+    ...FRESH_ON_RETURN,
   });
 }
 

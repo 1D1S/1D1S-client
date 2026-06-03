@@ -86,6 +86,10 @@ export default function AppRightRail({
 }: AppRightRailProps): React.ReactElement {
   const router = useRouter();
   const pathname = usePathname();
+  // 일지 작성 화면(/diary/create)에서는 우측 레일의 "일지 쓰기" CTA 를 아예
+  // 렌더하지 않는다. 이미 작성 중이라 중복이고, 기존엔 작성 화면 하단 고정
+  // 바에 "가려지기만" 해서 스크롤하면 다시 보이는 구조였다.
+  const isDiaryWritePage = pathname?.startsWith('/diary/create') ?? false;
   const contentVisible = !isAuthLoading;
   const contentHidden = !contentVisible;
 
@@ -287,18 +291,20 @@ export default function AppRightRail({
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={handleWriteDiaryClick}
-            tabIndex={contentHidden ? -1 : 0}
-            className={cn(
-              'rounded-2 bg-brand mt-auto py-2.5',
-              'text-[12px] font-bold text-white transition',
-              'hover:brightness-105'
-            )}
-          >
-            + 일지 쓰기
-          </button>
+          {!isDiaryWritePage && (
+            <button
+              type="button"
+              onClick={handleWriteDiaryClick}
+              tabIndex={contentHidden ? -1 : 0}
+              className={cn(
+                'rounded-2 bg-brand mt-auto py-2.5',
+                'text-[12px] font-bold text-white transition',
+                'hover:brightness-105'
+              )}
+            >
+              + 일지 쓰기
+            </button>
+          )}
         </div>
       )}
     </aside>
