@@ -22,16 +22,22 @@ const IOS_STEPS: InstallStep[] = [
     title: 'Safari 하단의 공유 버튼을 누르세요',
     description:
       '화면 하단 중앙에 있는 공유 아이콘(위쪽 화살표가 있는 사각형)을 눌러 공유 메뉴를 엽니다.',
+    imageSrc: '/images/install-ios-1.jpg',
+    imageAlt: 'Safari 하단 공유 버튼 위치',
   },
   {
     title: '"홈 화면에 추가"를 선택하세요',
     description:
       '공유 메뉴를 위로 스크롤해 "홈 화면에 추가" 항목을 찾고 눌러주세요.',
+    imageSrc: '/images/install-ios-2.jpg',
+    imageAlt: '공유 메뉴의 "홈 화면에 추가" 항목',
   },
   {
     title: '우측 상단의 "추가"를 누르세요',
     description:
       '이름과 아이콘을 확인한 뒤 우측 상단의 "추가" 버튼을 누르면 홈 화면에 1D1S 아이콘이 생깁니다.',
+    imageSrc: '/images/install-ios-3.jpg',
+    imageAlt: '"홈 화면에 추가" 시트의 "추가" 버튼',
   },
 ];
 
@@ -39,16 +45,22 @@ const ANDROID_STEPS: InstallStep[] = [
   {
     title: 'Chrome 우측 상단 메뉴를 누르세요',
     description: '주소창 옆에 있는 점 세 개(⋮) 아이콘을 눌러 메뉴를 엽니다.',
+    imageSrc: '/images/install-android-1.jpg',
+    imageAlt: 'Chrome 우측 상단 점 세 개 메뉴 버튼 위치',
   },
   {
     title: '"홈 화면에 추가" 또는 "앱 설치"를 누르세요',
     description:
       '메뉴에서 "홈 화면에 추가" 또는 "앱 설치" 항목을 선택합니다. 기기 또는 Chrome 버전에 따라 명칭이 다를 수 있어요.',
+    imageSrc: '/images/install-android-2.jpg',
+    imageAlt: '메뉴에 펼쳐진 "홈 화면에 추가" 항목',
   },
   {
-    title: '"추가"를 눌러 마무리하세요',
+    title: '"설치" 또는 "추가"를 눌러 마무리하세요',
     description:
-      '아이콘 이름을 확인한 뒤 "추가"를 누르면 홈 화면에 1D1S 아이콘이 생성됩니다.',
+      '"1Day 1Streak" 이름을 확인한 뒤 "설치"(기기에 따라 "추가")를 누르면 홈 화면에 1D1S 아이콘이 생성됩니다.',
+    imageSrc: '/images/install-android-3.jpg',
+    imageAlt: '"앱 설치" 다이얼로그의 "설치" 버튼',
   },
 ];
 
