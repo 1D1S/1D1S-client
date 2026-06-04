@@ -226,3 +226,30 @@
     animation: none;
   }
 }
+
+/* 스토리 진행 바 — 현재 스토리 세그먼트를 좌→우로 채운다. 채우는 시간은
+   StoryViewer 의 STORY_DURATION_MS(자동 전환 간격)과 동일하게 inline
+   animation-duration 으로 맞춘다. transform(scaleX) 만 써서 GPU 합성으로
+   처리한다. */
+@keyframes storyProgress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.story-progress-fill {
+  transform-origin: left;
+  animation-name: storyProgress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-progress-fill {
+    animation: none;
+    transform: scaleX(1);
+  }
+}

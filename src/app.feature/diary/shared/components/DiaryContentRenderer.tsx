@@ -40,6 +40,9 @@ export function DiaryContentRenderer({
       ref={containerRef}
       className={cn(
         'prose prose-sm max-w-none text-gray-700',
+        // typography 플러그인이 없어 prose 가 무효 → <p> 마진이 0이 되어
+        // 문단 줄바꿈이 사라진다. 문단 간격과 빈 줄을 직접 복원한다.
+        '[&>p]:my-2 [&>p:empty]:min-h-[1.5em]',
         '[&_img]:max-h-80 [&_img]:rounded-lg',
         '[&_li]:mb-1 [&_ol]:list-decimal [&_ol]:pl-5',
         '[&_ul]:list-disc [&_ul]:pl-5',

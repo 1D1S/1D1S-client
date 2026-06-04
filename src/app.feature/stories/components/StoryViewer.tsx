@@ -11,6 +11,9 @@ import { useViewStory } from '../hooks/useStoryMutations';
 import { StoryGroup } from '../type/story';
 import { formatStoryDate, pickStoryStripeTone } from '../utils/storyHelpers';
 
+// 스토리 자동 전환 간격(ms). 진행 바 애니메이션 길이와 동일하게 맞춘다.
+const STORY_DURATION_MS = 5000;
+
 interface StoryViewerProps {
   groups: StoryGroup[];
   startIndex: number;
@@ -96,6 +99,17 @@ export default function StoryViewer({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [advanceToNext, advanceToPrev, onClose]);
+
+  // 스토리 자동 전환: 일정 시간이 지나면 다음 스토리로 넘어간다.
+  useEffect(() => {
+    if (!story) {
+      return;
+    }
+    const timer = window.setTimeout(advanceToNext, STORY_DURATION_MS);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [story, advanceToNext]);
 
   // body scroll lock
   useEffect(() => {
@@ -184,19 +198,35 @@ export default function StoryViewer({
             <Stripe tone={pickStoryStripeTone(group.userId)} />
           )}
 
-          {hasMultiple ? (
-            <div className={cn('absolute inset-x-3 top-3 z-10 flex gap-1')}>
-              {group.stories.map((_, index) => (
+          <div className="absolute inset-x-3 top-3 z-10 flex gap-1">
+            {group.stories.map((_, index) => {
+              const isPast = index < diaryIndex;
+              const isCurrent = index === diaryIndex;
+              return (
                 <div
                   key={index}
                   className={cn(
-                    'h-1 flex-1 rounded-full transition-colors duration-300',
-                    index === diaryIndex ? 'bg-white' : 'bg-white/40'
+                    'h-1 flex-1 overflow-hidden rounded-full',
+                    'bg-white/40'
                   )}
-                />
-              ))}
-            </div>
-          ) : null}
+                >
+                  {isPast ? (
+                    <div className="h-full w-full rounded-full bg-white" />
+                  ) : null}
+                  {isCurrent ? (
+                    <div
+                      key={`${groupIndex}-${diaryIndex}`}
+                      className={cn(
+                        'story-progress-fill h-full w-full rounded-full',
+                        'bg-white'
+                      )}
+                      style={{ animationDuration: `${STORY_DURATION_MS}ms` }}
+                    />
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
 
           <button
             type="button"
