@@ -48,9 +48,9 @@ export function InstallStepCard({
 
       <div
         className={cn(
-          'relative w-full overflow-hidden rounded-2xl border',
-          'border-dashed border-gray-300 bg-gray-50',
-          'aspect-[9/16]'
+          'relative aspect-[9/16] w-full overflow-hidden rounded-2xl',
+          'border bg-gray-50',
+          imageSrc ? 'border-gray-200' : 'border-dashed border-gray-300'
         )}
       >
         {imageSrc ? (

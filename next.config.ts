@@ -45,7 +45,21 @@ const nextConfig = {
   },
   images: {
     dangerouslyAllowSVG: isDev,
+    // 변환 결과를 길게 캐시해 같은 이미지의 재변환(=재과금)을 줄인다.
+    // 업로드 이미지는 보통 URL 이 새로 생기므로 stale 위험이 낮다.
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30일
+    // AVIF 까지 켜면 브라우저별로 변환이 2배가 되므로 webp 단일 유지.
+    formats: ['image/webp'],
+    // 전부 기본 품질(75)만 쓰므로 1종으로 고정해 변형 다중화를 막는다.
+    qualities: [75],
+    // 실제 사용하는 sizes 기준으로 너비 변형 가짓수를 줄인다.
+    // 기본값(최대 3840)은 거의 안 쓰는 초대형 변환을 만들어 낭비가 크다.
+    deviceSizes: [640, 828, 1080, 1920, 2048],
+    imageSizes: [32, 64, 128, 256, 384],
     remotePatterns: [
+      // ⚠️ hostname '**' 는 누구나 이 최적화기로 외부 이미지를 변환하게
+      // 허용해 쿼터가 도난될 수 있다. 실제 이미지 호스트(백엔드 +
+      // OAuth 프로필 CDN)로 좁히는 것을 권장(아래 설명 참고).
       {
         protocol: 'https',
         hostname: '**',

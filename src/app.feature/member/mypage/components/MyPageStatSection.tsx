@@ -49,7 +49,11 @@ export function MyPageStatSection({
         <MyPageStatTile
           label="목표 최장 스트릭"
           value={`${longestGoalStreak.streakCount}일`}
-          helper={longestGoalStreak.goalTitle}
+          helper={
+            longestGoalStreak.hasRecord
+              ? `목표: ${longestGoalStreak.goalTitle}`
+              : longestGoalStreak.goalTitle
+          }
           iconName="Target"
           tone="mint"
         />

@@ -59,16 +59,14 @@ function resolveDiaryImage(diary: DiaryItem): string | undefined {
 
 export function getLongestGoalStreakSummary(
   longestGoalStreak: Array<Record<string, number>> | undefined
-): { goalTitle: string; streakCount: number } {
+): { goalTitle: string; streakCount: number; hasRecord: boolean } {
   const firstEntry = longestGoalStreak?.[0];
-  if (!firstEntry) {
-    return { goalTitle: '아직 기록이 없어요', streakCount: 0 };
+  const entry = firstEntry ? Object.entries(firstEntry)[0] : undefined;
+  if (!entry) {
+    return { goalTitle: '아직 기록이 없어요', streakCount: 0, hasRecord: false };
   }
-  const [goalTitle, streakCount] = Object.entries(firstEntry)[0] ?? [
-    '아직 기록이 없어요',
-    0,
-  ];
-  return { goalTitle, streakCount };
+  const [goalTitle, streakCount] = entry;
+  return { goalTitle, streakCount, hasRecord: true };
 }
 
 function toHeatmapLevel(count: number): number {

@@ -248,6 +248,8 @@ export function DiaryContentEditor({
             editor={editor}
             className={cn(
               'prose prose-sm max-w-none text-gray-700 outline-none',
+              // prose 무효 → <p> 마진 0. 작성 화면도 본문과 같은 문단 간격.
+              '[&_.tiptap>p]:my-2 [&_.tiptap>p:empty]:min-h-[1.5em]',
               '[&_.tiptap]:min-h-[380px] [&_.tiptap]:outline-none',
               '[&_.tiptap_img]:max-h-80 [&_.tiptap_img]:rounded-lg',
               '[&_li]:mb-1 [&_ol]:list-decimal [&_ol]:pl-5',
