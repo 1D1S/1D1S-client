@@ -253,6 +253,7 @@ function DiaryCommentSection({
   const deleteComment = useDeleteComment(diaryId);
   const isCommentPending =
     createComment.isPending || createReply.isPending || deleteComment.isPending;
+  const isCommentSubmittingRef = useRef(false);
 
   const mapCommentNode = useCallback(
     (comment: DiaryComment): CommentNode => {
@@ -421,15 +422,19 @@ function DiaryCommentSection({
 
   const handleCreateComment = (): void => {
     const content = commentContent.trim();
-    if (!content || isCommentPending) {
+    if (!content || isCommentPending || isCommentSubmittingRef.current) {
       return;
     }
 
     requireAuthAction(() => {
+      isCommentSubmittingRef.current = true;
       createComment.mutate(
         { content },
         {
           onSuccess: () => setCommentContent(''),
+          onSettled: () => {
+            isCommentSubmittingRef.current = false;
+          },
         }
       );
     });
@@ -594,18 +599,25 @@ function DiaryMobileCommentBar({
   const [content, setContent] = useState('');
   const createComment = useCreateDiaryComment(diaryId);
   const disabled = createComment.isPending || !content.trim();
+  const isSubmittingRef = useRef(false);
 
   const handleSubmit = (): void => {
     if (!isLoggedIn) {
       onRequireLogin();
       return;
     }
-    if (disabled) {
+    if (disabled || isSubmittingRef.current) {
       return;
     }
+    isSubmittingRef.current = true;
     createComment.mutate(
       { content: content.trim() },
-      { onSuccess: () => setContent('') }
+      {
+        onSuccess: () => setContent(''),
+        onSettled: () => {
+          isSubmittingRef.current = false;
+        },
+      }
     );
   };
 

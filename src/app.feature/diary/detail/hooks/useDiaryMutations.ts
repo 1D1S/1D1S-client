@@ -95,9 +95,7 @@ export function useLikeDiary(): UseMutationResult<number, Error, number> {
         DIARY_QUERY_KEYS.detail(id),
         DIARY_QUERY_KEYS.lists(),
         DIARY_QUERY_KEYS.randoms(),
-        DIARY_QUERY_KEYS.allDiaries(),
         CHALLENGE_QUERY_KEYS.challengeDiaries(),
-        MEMBER_QUERY_KEYS.profiles(),
         DIARY_QUERY_KEYS.my(),
       ]);
     },
@@ -115,9 +113,7 @@ export function useUnlikeDiary(): UseMutationResult<number, Error, number> {
         DIARY_QUERY_KEYS.detail(id),
         DIARY_QUERY_KEYS.lists(),
         DIARY_QUERY_KEYS.randoms(),
-        DIARY_QUERY_KEYS.allDiaries(),
         CHALLENGE_QUERY_KEYS.challengeDiaries(),
-        MEMBER_QUERY_KEYS.profiles(),
         DIARY_QUERY_KEYS.my(),
       ]);
     },
