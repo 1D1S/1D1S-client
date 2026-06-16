@@ -93,6 +93,7 @@ export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
     enabled: !isServer && authStorage.hasTokens(),
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
+    refetchOnMount: true,
   });
 }
 
@@ -133,5 +134,6 @@ export function useMyPage(): UseQueryResult<MyPageData, Error> {
     enabled: isLoggedIn,
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
+    refetchOnMount: true,
   });
 }
