@@ -28,6 +28,7 @@ export function DiaryHeroImage({
         fill
         sizes="(max-width: 1024px) 100vw, 720px"
         className="object-cover"
+        fallbackSrc="/images/default-card.png"
       />
     </button>
   );

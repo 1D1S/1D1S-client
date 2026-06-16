@@ -5,6 +5,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
+import { compressImageFile } from '@/app.lib/compressImage';
+
 import { CHALLENGE_QUERY_KEYS } from '../../../challenge/board/consts/queryKeys';
 import { MEMBER_QUERY_KEYS } from '../../../member/consts/queryKeys';
 import { DIARY_QUERY_KEYS } from '../../board/consts/queryKeys';
@@ -142,8 +144,10 @@ export function useUploadDiaryImage(): UseMutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, file }: { id: number; file: File }) =>
-      diaryWriteApi.uploadDiaryImage(id, file),
+    mutationFn: async ({ id, file }: { id: number; file: File }) => {
+      const compressed = await compressImageFile(file);
+      return diaryWriteApi.uploadDiaryImage(id, compressed);
+    },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({
         queryKey: DIARY_QUERY_KEYS.detail(id),
