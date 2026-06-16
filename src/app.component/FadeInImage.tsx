@@ -16,16 +16,35 @@ import React, { useCallback, useState } from 'react';
  * 떨림 방지: 페이드가 끝나며 합성 레이어가 해제될 때 이미지가 서브픽셀
  * 단위로 살짝 튀는 떨림이 있어, translateZ(0)/backface-hidden 으로 레이어를
  * 고정해 등장 직후의 미세한 떨림을 없앤다.
+ *
+ * 로드 실패 대응: URL 만료·삭제·네트워크 오류로 로드가 실패하면 onLoad
+ * 가 오지 않아 opacity 0 에 영구히 갇혀 "로딩 중"과 구분되지 않는 빈
+ * 이미지로 남는다. fallbackSrc 가 있으면 1회 그 이미지로 교체하고,
+ * 없으면 페이드인만 끝내 부모 placeholder 배경이 드러나게 한다.
  */
-type FadeInImageProps = ImageProps;
+type FadeInImageProps = ImageProps & {
+  /** 로드 실패 시 1회 교체할 대체 이미지. 미지정 시 교체하지 않는다. */
+  fallbackSrc?: ImageProps['src'];
+};
 
 function FadeInImage({
   alt,
   className,
   onLoad,
+  onError,
+  src,
+  fallbackSrc,
   ...rest
 }: FadeInImageProps): React.ReactElement {
   const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
+  // src 가 바뀌면(다른 이미지로 교체) 로드/에러 상태를 초기화한다.
+  const [trackedSrc, setTrackedSrc] = useState(src);
+  if (trackedSrc !== src) {
+    setTrackedSrc(src);
+    setLoaded(false);
+    setErrored(false);
+  }
 
   const setRef = useCallback((node: HTMLImageElement | null) => {
     if (node?.complete) {
@@ -33,10 +52,13 @@ function FadeInImage({
     }
   }, []);
 
+  const resolvedSrc = errored && fallbackSrc ? fallbackSrc : src;
+
   return (
     <Image
       ref={setRef}
       alt={alt}
+      src={resolvedSrc}
       className={cn(
         'transition-opacity duration-700 ease-out',
         'motion-reduce:transition-none',
@@ -47,6 +69,15 @@ function FadeInImage({
       onLoad={(event) => {
         setLoaded(true);
         onLoad?.(event);
+      }}
+      onError={(event) => {
+        // fallbackSrc 로 1회만 교체(무한 루프 방지). fallback 까지
+        // 실패하면 더 바꾸지 않고 부모 배경이 보이도록 둔다.
+        if (fallbackSrc && !errored) {
+          setErrored(true);
+          setLoaded(false);
+        }
+        onError?.(event);
       }}
       {...rest}
     />

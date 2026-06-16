@@ -99,6 +99,7 @@ function DiaryCard({
             fill
             sizes="(min-width: 1024px) 280px, 50vw"
             className="object-cover"
+            fallbackSrc="/images/default-card.png"
           />
         ) : (
           <Stripe tone={tone} />
