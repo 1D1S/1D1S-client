@@ -129,18 +129,17 @@ export default function DiaryListScreen(): React.ReactElement {
   const isLoginRequired = searchParams.get('loginRequired') === 'true';
   const isLoggedIn = useIsLoggedIn();
   const [sortMode] = useState<SortMode>('latest');
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [loginDialogDescription, setLoginDialogDescription] =
-    useState('로그인 후 이용할 수 있습니다.');
-
-  const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
-  if (isLoginRequired !== prevIsLoginRequired) {
-    setPrevIsLoginRequired(isLoginRequired);
-    if (isLoginRequired && !isLoggedIn) {
-      setShowLoginDialog(true);
-      setLoginDialogDescription('일지 상세는 로그인 후 이용할 수 있습니다.');
-    }
-  }
+  // isLoginRequired는 URL 파라미터로 첫 렌더에만 true가 되고 즉시 삭제된다.
+  // initializer로 초기값만 반영하면 충분하다.
+  const [showLoginDialog, setShowLoginDialog] = useState(
+    () => isLoginRequired && !isLoggedIn
+  );
+  const [loginDialogDescription, setLoginDialogDescription] = useState(
+    () =>
+      isLoginRequired && !isLoggedIn
+        ? '일지 상세는 로그인 후 이용할 수 있습니다.'
+        : '로그인 후 이용할 수 있습니다.'
+  );
 
   useEffect(() => {
     if (!isLoginRequired) {

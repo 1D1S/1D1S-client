@@ -1,6 +1,7 @@
 'use client';
 
 import { authApi } from '@feature/auth/api/authApi';
+import { isInvalidRefreshTokenError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
@@ -46,9 +47,13 @@ export function useTokenRefreshOnResume(): void {
         // 마운트된 쿼리만 즉시 refetch 되고, 백그라운드 쿼리는 다음 사용 때
         // 갱신된다.
         await queryClient.invalidateQueries();
-      } catch {
-        // 재발급 실패는 다음 API 호출에서 401 → silentAuthClient/interceptor
-        // 흐름으로 자연스럽게 정리되도록 두고, 여기선 추가 처리를 하지 않는다.
+      } catch (error) {
+        // refresh token 이 무효(AUTH-006)면 로컬 토큰을 정리해 같은 요청이
+        // 새로고침/재개마다 무한 반복되는 것을 막는다. 그 외 일시적 오류는
+        // 그대로 두어 다음 API 호출의 401 → interceptor 흐름에서 정리되게 한다.
+        if (isInvalidRefreshTokenError(error)) {
+          authStorage.clearTokens();
+        }
       } finally {
         isRefreshingRef.current = false;
       }

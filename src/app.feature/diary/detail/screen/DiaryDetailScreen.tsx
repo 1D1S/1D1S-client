@@ -12,6 +12,7 @@ import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleton';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { normalizeApiError } from '@module/api/error';
+import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import {
@@ -253,6 +254,7 @@ function DiaryCommentSection({
   const deleteComment = useDeleteComment(diaryId);
   const isCommentPending =
     createComment.isPending || createReply.isPending || deleteComment.isPending;
+  const isCommentSubmittingRef = useRef(false);
 
   const mapCommentNode = useCallback(
     (comment: DiaryComment): CommentNode => {
@@ -421,15 +423,19 @@ function DiaryCommentSection({
 
   const handleCreateComment = (): void => {
     const content = commentContent.trim();
-    if (!content || isCommentPending) {
+    if (!content || isCommentPending || isCommentSubmittingRef.current) {
       return;
     }
 
     requireAuthAction(() => {
+      isCommentSubmittingRef.current = true;
       createComment.mutate(
         { content },
         {
           onSuccess: () => setCommentContent(''),
+          onSettled: () => {
+            isCommentSubmittingRef.current = false;
+          },
         }
       );
     });
@@ -594,18 +600,25 @@ function DiaryMobileCommentBar({
   const [content, setContent] = useState('');
   const createComment = useCreateDiaryComment(diaryId);
   const disabled = createComment.isPending || !content.trim();
+  const isSubmittingRef = useRef(false);
 
   const handleSubmit = (): void => {
     if (!isLoggedIn) {
       onRequireLogin();
       return;
     }
-    if (disabled) {
+    if (disabled || isSubmittingRef.current) {
       return;
     }
+    isSubmittingRef.current = true;
     createComment.mutate(
       { content: content.trim() },
-      { onSuccess: () => setContent('') }
+      {
+        onSuccess: () => setContent(''),
+        onSettled: () => {
+          isSubmittingRef.current = false;
+        },
+      }
     );
   };
 
@@ -657,6 +670,8 @@ function DiaryDetailView({
   onRequireLogin(): void;
 }): React.ReactElement {
   const router = useRouter();
+  // 알림 딥링크/콜드 스타트로 진입해 history 가 없을 때 일지 목록으로 보낸다.
+  const handleBack = useSafeBack('/diary');
   const { data: sidebarData } = useSidebar();
   const isLoggedIn = useIsLoggedIn();
   const currentMemberId = useMemo(
@@ -754,7 +769,7 @@ function DiaryDetailView({
         <button
           type="button"
           aria-label="뒤로가기"
-          onClick={() => router.back()}
+          onClick={handleBack}
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-lg',
             'text-gray-700 transition-colors hover:bg-gray-100'

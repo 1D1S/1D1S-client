@@ -23,9 +23,64 @@ import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 const MEMBER_DIARY_PAGE_SIZE = 12;
+
+interface MemberDiaryListItemProps {
+  item: DiaryItem;
+  onCardClick(id: number): void;
+  onLikeToggle(diary: DiaryItem): void;
+}
+
+// React.memo로 감싸 부모 재렌더 시 동일 item 카드는 재렌더를 건너뛴다.
+// 부모는 onCardClick / onLikeToggle을 useCallback으로 안정화해야 한다.
+const MemberDiaryListItem = React.memo(
+  ({
+    item,
+    onCardClick,
+    onLikeToggle,
+  }: MemberDiaryListItemProps): React.ReactElement => {
+    const handleClick = useCallback(() => {
+      onCardClick(item.id);
+    }, [onCardClick, item.id]);
+
+    const handleLike = useCallback(() => {
+      onLikeToggle(item);
+    }, [onLikeToggle, item]);
+
+    const achievementRate = Math.min(
+      100,
+      Math.max(
+        0,
+        item.achievementRate ?? item.diaryInfoDto?.achievementRate ?? 0
+      )
+    );
+
+    return (
+      <DiaryCard
+        imageUrl={resolveDiaryImageList(item.imgUrl)?.[0]}
+        profileImageUrl={
+          resolveDiaryImageUrl(item.authorInfoDto?.profileImage) ?? undefined
+        }
+        percent={achievementRate}
+        isLiked={item.likeInfo.likedByMe}
+        likes={item.likeInfo.likeCnt}
+        title={item.title}
+        user={item.authorInfoDto?.nickname ?? '익명'}
+        challengeLabel={
+          item.challenge?.title ||
+          getCategoryLabel(item.challenge?.category) ||
+          '일지'
+        }
+        emotion={mapFeelingToEmotion(item.diaryInfoDto?.feeling ?? 'NONE')}
+        onLikeToggle={handleLike}
+        onClick={handleClick}
+      />
+    );
+  }
+);
+MemberDiaryListItem.displayName = 'MemberDiaryListItem';
 
 interface MemberDiaryListScreenProps {
   memberId: string;
@@ -69,20 +124,30 @@ export function MemberDiaryListScreen({
   const hasDiaries = diaryItems.length > 0;
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
 
-  const handleLikeToggle = (diary: DiaryItem): void => {
-    if (!isLoggedIn) {
-      setShowLoginDialog(true);
-      return;
-    }
-    if (isLikePending) {
-      return;
-    }
-    if (diary.likeInfo.likedByMe) {
-      unlikeDiary.mutate(diary.id);
-    } else {
-      likeDiary.mutate(diary.id);
-    }
-  };
+  const handleCardClick = useCallback(
+    (id: number): void => {
+      router.push(`/diary/${id}`);
+    },
+    [router]
+  );
+
+  const handleLikeToggle = useCallback(
+    (diary: DiaryItem): void => {
+      if (!isLoggedIn) {
+        setShowLoginDialog(true);
+        return;
+      }
+      if (isLikePending) {
+        return;
+      }
+      if (diary.likeInfo.likedByMe) {
+        unlikeDiary.mutate(diary.id);
+      } else {
+        likeDiary.mutate(diary.id);
+      }
+    },
+    [isLoggedIn, isLikePending, likeDiary, unlikeDiary]
+  );
 
   return (
     <div className="min-h-screen w-full">
@@ -171,36 +236,11 @@ export function MemberDiaryListScreen({
             )}
           >
             {diaryItems.map((diary) => (
-              <DiaryCard
+              <MemberDiaryListItem
                 key={diary.id}
-                imageUrl={resolveDiaryImageList(diary.imgUrl)?.[0]}
-                profileImageUrl={
-                  resolveDiaryImageUrl(diary.authorInfoDto?.profileImage) ??
-                  undefined
-                }
-                percent={Math.min(
-                  100,
-                  Math.max(
-                    0,
-                    diary.achievementRate ??
-                      diary.diaryInfoDto?.achievementRate ??
-                      0
-                  )
-                )}
-                isLiked={diary.likeInfo.likedByMe}
-                likes={diary.likeInfo.likeCnt}
-                title={diary.title}
-                user={diary.authorInfoDto?.nickname ?? '익명'}
-                challengeLabel={
-                  diary.challenge?.title ||
-                  getCategoryLabel(diary.challenge?.category) ||
-                  '일지'
-                }
-                emotion={mapFeelingToEmotion(
-                  diary.diaryInfoDto?.feeling ?? 'NONE'
-                )}
-                onLikeToggle={() => handleLikeToggle(diary)}
-                onClick={() => router.push(`/diary/${diary.id}`)}
+                item={diary}
+                onCardClick={handleCardClick}
+                onLikeToggle={handleLikeToggle}
               />
             ))}
           </div>

@@ -29,10 +29,24 @@ export default function StoryViewer({
   const viewStoryMutation = useViewStory();
   const reportedRef = useRef<Set<number>>(new Set());
 
-  const [groupIndex, setGroupIndex] = useState(startIndex);
+  // 뷰어가 열려 있는 동안 부모의 재정렬(시청 처리 → 캐시 갱신)이 그룹 배열을
+  // 흔들어 인덱스가 어긋나는 것을 막기 위해, 열린 시점의 스냅샷을 고정한다.
+  const [frozenGroups] = useState(groups);
+  const lastGroupIndex = Math.max(0, frozenGroups.length - 1);
+  const [groupIndex, setGroupIndex] = useState(() =>
+    Math.min(Math.max(startIndex, 0), lastGroupIndex)
+  );
   const [diaryIndex, setDiaryIndex] = useState(0);
 
-  const group = groups[groupIndex];
+  // 자동 전환 타이머와 수동 넘김이 경합할 때, stale 클로저가 인덱스를 두 번
+  // 증가시켜 경계를 벗어나면 뷰어가 빈 화면으로 멈춘다(다시 열어도 안 열림).
+  // 최신 위치를 ref 로 동기 추적해 항상 한 칸씩, 경계 안에서만 이동한다.
+  const positionRef = useRef({ groupIndex, diaryIndex });
+  useEffect(() => {
+    positionRef.current = { groupIndex, diaryIndex };
+  }, [groupIndex, diaryIndex]);
+
+  const group = frozenGroups[groupIndex];
   const story = group?.stories[diaryIndex];
 
   const diaryId = story?.diaryId;
@@ -53,34 +67,41 @@ export default function StoryViewer({
   }, [diaryId, hasUnreadJournal, viewStoryMutate]);
 
   const advanceToNext = useCallback(() => {
-    const currentGroup = groups[groupIndex];
+    const { groupIndex: gi, diaryIndex: di } = positionRef.current;
+    const currentGroup = frozenGroups[gi];
     if (!currentGroup) {
       onClose();
       return;
     }
-    if (diaryIndex < currentGroup.stories.length - 1) {
-      setDiaryIndex((prev) => prev + 1);
+    if (di < currentGroup.stories.length - 1) {
+      positionRef.current = { groupIndex: gi, diaryIndex: di + 1 };
+      setDiaryIndex(di + 1);
       return;
     }
-    if (groupIndex < groups.length - 1) {
-      setGroupIndex((prev) => prev + 1);
+    if (gi < frozenGroups.length - 1) {
+      positionRef.current = { groupIndex: gi + 1, diaryIndex: 0 };
+      setGroupIndex(gi + 1);
       setDiaryIndex(0);
       return;
     }
     onClose();
-  }, [diaryIndex, groupIndex, groups, onClose]);
+  }, [frozenGroups, onClose]);
 
   const advanceToPrev = useCallback(() => {
-    if (diaryIndex > 0) {
-      setDiaryIndex((prev) => prev - 1);
+    const { groupIndex: gi, diaryIndex: di } = positionRef.current;
+    if (di > 0) {
+      positionRef.current = { groupIndex: gi, diaryIndex: di - 1 };
+      setDiaryIndex(di - 1);
       return;
     }
-    if (groupIndex > 0) {
-      const prevGroup = groups[groupIndex - 1];
-      setGroupIndex((prev) => prev - 1);
-      setDiaryIndex(Math.max(0, prevGroup.stories.length - 1));
+    if (gi > 0) {
+      const prevGroup = frozenGroups[gi - 1];
+      const prevDiary = Math.max(0, prevGroup.stories.length - 1);
+      positionRef.current = { groupIndex: gi - 1, diaryIndex: prevDiary };
+      setGroupIndex(gi - 1);
+      setDiaryIndex(prevDiary);
     }
-  }, [diaryIndex, groupIndex, groups]);
+  }, [frozenGroups]);
 
   // 키보드: ←/→ 이동, Esc 닫기
   useEffect(() => {
@@ -119,6 +140,14 @@ export default function StoryViewer({
       document.body.style.overflow = prevOverflow;
     };
   }, []);
+
+  // 위치가 비면 빈 화면으로 마운트된 채 남지 않도록 부모에 닫힘을 알린다.
+  // 이게 없으면 openIndex 가 리셋되지 않아 다른 스토리를 눌러도 안 열린다.
+  useEffect(() => {
+    if (!group || !story) {
+      onClose();
+    }
+  }, [group, story, onClose]);
 
   if (!group || !story) {
     return null;

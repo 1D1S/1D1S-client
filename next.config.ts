@@ -44,33 +44,17 @@ const nextConfig = {
     ],
   },
   images: {
-    dangerouslyAllowSVG: isDev,
-    // 변환 결과를 길게 캐시해 같은 이미지의 재변환(=재과금)을 줄인다.
-    // 업로드 이미지는 보통 URL 이 새로 생기므로 stale 위험이 낮다.
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30일
-    // AVIF 까지 켜면 브라우저별로 변환이 2배가 되므로 webp 단일 유지.
-    formats: ['image/webp'],
-    // 전부 기본 품질(75)만 쓰므로 1종으로 고정해 변형 다중화를 막는다.
-    qualities: [75],
-    // 실제 사용하는 sizes 기준으로 너비 변형 가짓수를 줄인다.
-    // 기본값(최대 3840)은 거의 안 쓰는 초대형 변환을 만들어 낭비가 크다.
+    // Vercel 기본 최적화기(/_next/image)를 우회하는 커스텀 로더.
+    // 한도(Image Transformations) 소진 시 이 엔드포인트가 402 를 반환해
+    // 업로드 이미지가 통째로 빈 이미지로 내려오던 문제를 회피한다.
+    // 로더는 변환기를 거치지 않고 원본 URL 을 그대로 쓰므로 한도와
+    // 무관하다. 동작/확장은 src/app.lib/imageLoader.ts 참고.
+    loader: 'custom',
+    loaderFile: './src/app.lib/imageLoader.ts',
+    // srcset 의 width 후보. 지금은 로더가 width 를 무시하지만, 백엔드
+    // 리사이징 도입 시 그대로 변환 폭으로 재사용된다.
     deviceSizes: [640, 828, 1080, 1920, 2048],
     imageSizes: [32, 64, 128, 256, 384],
-    remotePatterns: [
-      // ⚠️ hostname '**' 는 누구나 이 최적화기로 외부 이미지를 변환하게
-      // 허용해 쿼터가 도난될 수 있다. 실제 이미지 호스트(백엔드 +
-      // OAuth 프로필 CDN)로 좁히는 것을 권장(아래 설명 참고).
-      {
-        protocol: 'https',
-        hostname: '**',
-        pathname: '/**',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        pathname: '/**',
-      },
-    ],
   },
 };
 

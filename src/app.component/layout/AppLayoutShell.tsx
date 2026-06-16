@@ -4,6 +4,7 @@ import { Button } from '@1d1s/design-system';
 import { AddToHomeScreenPrompt } from '@feature/install/components/AddToHomeScreenPrompt';
 import { BrowserPermissionPrompt } from '@feature/notification/components/BrowserPermissionPrompt';
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
+import { useServiceWorkerNavigation } from '@module/hooks/useServiceWorkerNavigation';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
@@ -142,6 +143,8 @@ export default function AppLayoutShell({
   }, [isNativeApp]);
 
   useTokenRefreshOnResume();
+  // 알림 클릭 시 서비스워커가 보낸 딥링크를 라우터 push 로 처리(뒤로가기 보존).
+  useServiceWorkerNavigation();
 
   // 인증/사이드바 상태는 별도 hook 으로 묶었다. shell 은 라우트 가시성 판단과
   // 핸들러 안정화에만 집중한다.

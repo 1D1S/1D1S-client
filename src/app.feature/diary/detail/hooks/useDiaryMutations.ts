@@ -5,6 +5,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
+import { compressImageFile } from '@/app.lib/compressImage';
+
 import { CHALLENGE_QUERY_KEYS } from '../../../challenge/board/consts/queryKeys';
 import { MEMBER_QUERY_KEYS } from '../../../member/consts/queryKeys';
 import { DIARY_QUERY_KEYS } from '../../board/consts/queryKeys';
@@ -72,10 +74,11 @@ export function useDeleteDiary(): UseMutationResult<boolean, Error, number> {
   return useMutation({
     mutationFn: (id: number) => diaryDetailApi.deleteDiary(id),
     onSuccess: () => {
+      // 목록 캐시는 즉시 제거해 삭제된 일지가 잠깐 보이는 현상을 방지한다.
+      queryClient.removeQueries({ queryKey: DIARY_QUERY_KEYS.lists() });
+      queryClient.removeQueries({ queryKey: DIARY_QUERY_KEYS.allDiaries() });
       invalidateAll(queryClient, [
-        DIARY_QUERY_KEYS.lists(),
         DIARY_QUERY_KEYS.randoms(),
-        DIARY_QUERY_KEYS.allDiaries(),
         CHALLENGE_QUERY_KEYS.challengeDiaries(),
         MEMBER_QUERY_KEYS.myPage(),
         MEMBER_QUERY_KEYS.sidebar(),
@@ -95,9 +98,7 @@ export function useLikeDiary(): UseMutationResult<number, Error, number> {
         DIARY_QUERY_KEYS.detail(id),
         DIARY_QUERY_KEYS.lists(),
         DIARY_QUERY_KEYS.randoms(),
-        DIARY_QUERY_KEYS.allDiaries(),
         CHALLENGE_QUERY_KEYS.challengeDiaries(),
-        MEMBER_QUERY_KEYS.profiles(),
         DIARY_QUERY_KEYS.my(),
       ]);
     },
@@ -115,9 +116,7 @@ export function useUnlikeDiary(): UseMutationResult<number, Error, number> {
         DIARY_QUERY_KEYS.detail(id),
         DIARY_QUERY_KEYS.lists(),
         DIARY_QUERY_KEYS.randoms(),
-        DIARY_QUERY_KEYS.allDiaries(),
         CHALLENGE_QUERY_KEYS.challengeDiaries(),
-        MEMBER_QUERY_KEYS.profiles(),
         DIARY_QUERY_KEYS.my(),
       ]);
     },
@@ -145,8 +144,10 @@ export function useUploadDiaryImage(): UseMutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, file }: { id: number; file: File }) =>
-      diaryWriteApi.uploadDiaryImage(id, file),
+    mutationFn: async ({ id, file }: { id: number; file: File }) => {
+      const compressed = await compressImageFile(file);
+      return diaryWriteApi.uploadDiaryImage(id, compressed);
+    },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({
         queryKey: DIARY_QUERY_KEYS.detail(id),

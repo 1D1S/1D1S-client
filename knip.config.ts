@@ -20,6 +20,9 @@ const config: KnipConfig = {
     'src/app.module/middleware/middleware.ts',
     'next.config.{js,ts,mjs}',
     'postcss.config.{js,cjs,mjs}',
+    // next.config images.loaderFile 로 지정되는 커스텀 이미지 로더.
+    // 문자열 경로라 정적 분석으로 추적되지 않아 entry 로 명시한다.
+    'src/app.lib/imageLoader.ts',
   ],
   project: ['src/**/*.{ts,tsx}'],
 

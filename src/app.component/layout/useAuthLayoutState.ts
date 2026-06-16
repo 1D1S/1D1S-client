@@ -116,11 +116,8 @@ export function useAuthLayoutState(): AuthLayoutState {
   // (데이터 페칭은 그대로 TanStack Query 가 담당한다.)
   const [, revalidateAuth] = useReducer((count: number) => count + 1, 0);
   useEffect(() => {
-    if (authStorage.hasTokens()) {
-      return;
-    }
     let attempts = 0;
-    let timer: ReturnType<typeof setTimeout>;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const recheck = (): void => {
       attempts += 1;
       if (authStorage.hasTokens()) {
@@ -131,8 +128,38 @@ export function useAuthLayoutState(): AuthLayoutState {
         timer = setTimeout(recheck, 150);
       }
     };
-    timer = setTimeout(recheck, 150);
-    return () => clearTimeout(timer);
+    if (!authStorage.hasTokens()) {
+      timer = setTimeout(recheck, 150);
+    }
+
+    // 재접속(PWA 백그라운드 복귀 / BFCache 복원 / 탭 재포커스) 시 토큰 힌트를
+    // 다시 평가한다. 레이아웃은 soft navigation 으로 재마운트되지 않으므로 이
+    // 이벤트가 없으면, 최초 폴링이 끝난 뒤 게스트 오인이 새로고침 전까지
+    // 고착된다(= "다시 접속하면 로그아웃처럼 보이는" 문제). hasTokens() 가
+    // 다시 true 로 보이면 re-render 를 유발해 useSidebar 의 enabled(=hasTokens)
+    // 를 재평가시켜 비활성 상태의 쿼리를 되살린다.
+    const revalidateIfAuthed = (): void => {
+      if (authStorage.hasTokens()) {
+        revalidateAuth();
+      }
+    };
+    const onVisibilityChange = (): void => {
+      if (document.visibilityState === 'visible') {
+        revalidateIfAuthed();
+      }
+    };
+    window.addEventListener('focus', revalidateIfAuthed);
+    window.addEventListener('pageshow', revalidateIfAuthed);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+      window.removeEventListener('focus', revalidateIfAuthed);
+      window.removeEventListener('pageshow', revalidateIfAuthed);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, []);
 
   const hasTokenHint = hasMounted && authStorage.hasTokens();

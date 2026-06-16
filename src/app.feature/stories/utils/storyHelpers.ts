@@ -38,9 +38,10 @@ function sortStoriesByRecent(stories: StoryItem[]): StoryItem[] {
   );
 }
 
-// 정렬 규칙(랜덤하게 보이지 않도록 시간 기준으로 고정):
-//  1) 미시청 그룹이 위 — 읽지 않은 스토리를 먼저 보여준다.
-//  2) 최근 스토리가 있는 그룹이 위 — 시간 내림차순.
+// 정렬 규칙: 가장 최근 스토리가 있는 그룹을 항상 맨 앞에 둔다(시간 내림차순).
+// 시청 여부로 순서를 바꾸면, 방금 본 최신 스토리가 더 오래된 미시청 그룹
+// 뒤로 밀려 "최신이 먼저 보이지 않는" 문제가 생기므로 시간만으로 정렬한다.
+// (미시청 표시는 StoryRing 의 NEW 배지가 isGroupAllSeen 으로 별도 처리한다.)
 // 각 그룹 내부 스토리도 최신순으로 정렬한다.
 export function sortStoryGroups(groups: StoryGroup[]): StoryGroup[] {
   return groups
@@ -48,14 +49,7 @@ export function sortStoryGroups(groups: StoryGroup[]): StoryGroup[] {
       ...group,
       stories: sortStoriesByRecent(group.stories),
     }))
-    .sort((left, right) => {
-      const leftSeen = isGroupAllSeen(left) ? 1 : 0;
-      const rightSeen = isGroupAllSeen(right) ? 1 : 0;
-      if (leftSeen !== rightSeen) {
-        return leftSeen - rightSeen;
-      }
-      return latestStoryTime(right) - latestStoryTime(left);
-    });
+    .sort((left, right) => latestStoryTime(right) - latestStoryTime(left));
 }
 
 export function formatStoryDate(iso: string): string {

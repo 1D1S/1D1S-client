@@ -28,6 +28,7 @@ import {
 } from '@feature/diary/detail/hooks/useDiaryMutations';
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
+import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft, CircleAlert, Heart, Trash2 } from 'lucide-react';
@@ -86,6 +87,8 @@ export function ChallengeDetailScreen({
 }: ChallengeDetailScreenProps): React.ReactElement {
   const challengeId = Number(id);
   const router = useRouter();
+  // 알림 딥링크/콜드 스타트로 진입해 history 가 없을 때 챌린지 목록으로 보낸다.
+  const handleBack = useSafeBack('/challenge');
 
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
   const showSkeleton = useMinimumLoading(isLoading);
@@ -733,7 +736,7 @@ export function ChallengeDetailScreen({
         <button
           type="button"
           aria-label="뒤로가기"
-          onClick={() => router.back()}
+          onClick={handleBack}
           className={cn(
             'flex h-8 w-8 shrink-0 items-center justify-center',
             'rounded-lg text-gray-700 transition-colors hover:bg-gray-100'
@@ -786,7 +789,7 @@ export function ChallengeDetailScreen({
           <button
             type="button"
             aria-label="뒤로가기"
-            onClick={() => router.back()}
+            onClick={handleBack}
             data-native-hide
             className={cn(
               'absolute left-3.5 z-10 flex h-9 w-9',
