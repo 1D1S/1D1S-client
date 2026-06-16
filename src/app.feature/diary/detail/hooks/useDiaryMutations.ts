@@ -72,10 +72,11 @@ export function useDeleteDiary(): UseMutationResult<boolean, Error, number> {
   return useMutation({
     mutationFn: (id: number) => diaryDetailApi.deleteDiary(id),
     onSuccess: () => {
+      // 목록 캐시는 즉시 제거해 삭제된 일지가 잠깐 보이는 현상을 방지한다.
+      queryClient.removeQueries({ queryKey: DIARY_QUERY_KEYS.lists() });
+      queryClient.removeQueries({ queryKey: DIARY_QUERY_KEYS.allDiaries() });
       invalidateAll(queryClient, [
-        DIARY_QUERY_KEYS.lists(),
         DIARY_QUERY_KEYS.randoms(),
-        DIARY_QUERY_KEYS.allDiaries(),
         CHALLENGE_QUERY_KEYS.challengeDiaries(),
         MEMBER_QUERY_KEYS.myPage(),
         MEMBER_QUERY_KEYS.sidebar(),
