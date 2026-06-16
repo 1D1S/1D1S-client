@@ -57,11 +57,34 @@ const getResponseMessage = (payload: unknown): string | null => {
     : null;
 };
 
+const getResponseCode = (payload: unknown): string | null => {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  const apiError = payload as ApiErrorResponse;
+  return typeof apiError.code === 'string' && apiError.code.trim()
+    ? apiError.code
+    : null;
+};
+
+// 백엔드가 내려주는 refresh token 무효/형식 오류 코드. 상태 코드와 무관하게
+// 세션을 복구할 수 없으므로 로컬 토큰을 정리해야 한다(예: AUTH-006).
+const INVALID_REFRESH_TOKEN_CODES = new Set(['AUTH-006']);
+
 export const isUnauthorizedError = (error: unknown): boolean =>
   isAxiosErrorLike(error) && error.response?.status === 401;
 
 export const isRedirectError = (error: unknown): boolean =>
   isAxiosErrorLike(error) && error.response?.status === 302;
+
+export const isInvalidRefreshTokenError = (error: unknown): boolean => {
+  if (!isAxiosErrorLike(error)) {
+    return false;
+  }
+  const code = getResponseCode(error.response?.data);
+  return code !== null && INVALID_REFRESH_TOKEN_CODES.has(code);
+};
 
 export const normalizeApiError = (error: unknown): NormalizedApiError => {
   if (isAxiosErrorLike(error)) {
