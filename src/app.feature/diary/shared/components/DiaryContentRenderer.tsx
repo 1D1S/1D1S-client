@@ -48,7 +48,11 @@ export function DiaryContentRenderer({
         '[&_ul]:list-disc [&_ul]:pl-5',
         '[&_pre]:rounded-lg [&_pre]:border [&_pre]:border-gray-200',
         '[&_pre]:bg-gray-50 [&_pre]:p-4 [&_pre]:text-gray-800',
+        // 긴 코드 줄이 가로로 넘치지 않고 줄바꿈되도록 강제한다.
+        // (hljs github 테마의 overflow-x:auto 보다 우선해 줄바꿈으로 처리)
+        '[&_pre]:break-words [&_pre]:whitespace-pre-wrap',
         '[&_pre_code]:bg-transparent [&_pre_code]:p-0',
+        '[&_pre_code]:break-words [&_pre_code]:whitespace-pre-wrap',
         '[&_pre_code]:text-[0.875rem]',
         '[&_:not(pre)>code]:rounded [&_:not(pre)>code]:bg-gray-100',
         '[&_:not(pre)>code]:px-1 [&_:not(pre)>code]:py-0.5',

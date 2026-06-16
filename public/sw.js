@@ -68,15 +68,12 @@ self.addEventListener('notificationclick', (event) => {
     clients
       .matchAll({ type: 'window', includeUncontrolled: true })
       .then((windowClients) => {
-        // 이미 열린 탭이 있으면 해당 경로로 이동시킨 뒤 포커스한다.
+        // 이미 열린 탭이 있으면, 클라이언트가 Next 라우터로 push 하도록
+        // 메시지를 보낸 뒤 포커스한다. client.navigate() 는 현재 history
+        // 항목을 "교체"해 뒤로가기가 동작하지 않으므로 사용하지 않는다.
         for (const client of windowClients) {
           if ('focus' in client) {
-            if ('navigate' in client) {
-              return client
-                .navigate(url)
-                .then((navigated) => (navigated || client).focus())
-                .catch(() => client.focus());
-            }
+            client.postMessage({ type: 'NOTIFICATION_NAVIGATE', url });
             return client.focus();
           }
         }

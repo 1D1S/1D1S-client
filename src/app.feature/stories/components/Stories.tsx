@@ -6,7 +6,7 @@ import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { useStories } from '../hooks/useStoryQueries';
 import { sortStoryGroups } from '../utils/storyHelpers';
@@ -139,6 +139,15 @@ export default function Stories({
   const { data: sidebar } = useSidebar();
   const showSkeleton = useMinimumLoading(isPending);
 
+  // 정렬 결과를 매 렌더마다 새로 만들면 배열 ID 가 바뀌어 뷰어의 자동 전환
+  // 타이머가 끊기고 인덱스가 흔들린다. data 가 바뀔 때만 재정렬한다.
+  const groups = useMemo(
+    () => (data ? sortStoryGroups(data.storyGroups) : []),
+    [data]
+  );
+  // 인라인 핸들러는 매 렌더마다 새로 생성돼 뷰어의 콜백 안정성을 깬다.
+  const handleCloseViewer = useCallback(() => setOpenIndex(-1), []);
+
   if (!isLoggedIn) {
     return <StoryLoginPrompt onRequireLogin={onRequireLogin} />;
   }
@@ -149,8 +158,6 @@ export default function Stories({
   if (showSkeleton) {
     return <StoryRingSkeleton />;
   }
-
-  const groups = data ? sortStoryGroups(data.storyGroups) : [];
 
   const handleAddStory = (): void => {
     router.push('/diary/create');
@@ -168,9 +175,10 @@ export default function Stories({
       </div>
       {openIndex >= 0 ? (
         <StoryViewer
+          key={openIndex}
           groups={groups}
           startIndex={openIndex}
-          onClose={() => setOpenIndex(-1)}
+          onClose={handleCloseViewer}
         />
       ) : null}
     </>

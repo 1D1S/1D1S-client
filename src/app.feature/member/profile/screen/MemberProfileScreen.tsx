@@ -12,9 +12,9 @@ import { MyPageProfileCard } from '@feature/member/mypage/components/MyPageProfi
 import { MyPageStatSection } from '@feature/member/mypage/components/MyPageStatSection';
 import { MyPageStreakHeroCard } from '@feature/member/mypage/components/MyPageStreakHeroCard';
 import { normalizeApiError } from '@module/api/error';
+import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 interface MemberProfileScreenProps {
@@ -22,7 +22,8 @@ interface MemberProfileScreenProps {
 }
 
 function MobileBackHeader({ title }: { title: string }): React.ReactElement {
-  const router = useRouter();
+  // 알림 딥링크/콜드 스타트로 진입해 history 가 없을 때 홈으로 보낸다.
+  const handleBack = useSafeBack('/');
   return (
     <div
       className={cn(
@@ -35,7 +36,7 @@ function MobileBackHeader({ title }: { title: string }): React.ReactElement {
       <button
         type="button"
         aria-label="뒤로가기"
-        onClick={() => router.back()}
+        onClick={handleBack}
         className={cn(
           'flex h-8 w-8 items-center justify-center rounded-lg',
           'text-gray-700 transition-colors hover:bg-gray-100'
