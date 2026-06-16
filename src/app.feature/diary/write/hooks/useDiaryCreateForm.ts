@@ -297,20 +297,19 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         ? parsedDate
         : new Date();
     const nextThumbnailPreviewUrl = getDiaryThumbnailPreviewUrl(existingDiary);
-
     const timerId = window.setTimeout(() => {
       setTitle(existingDiary.title ?? '');
       setContent(existingDiary.content ?? '');
       setSelectedMood(diaryInfo?.feeling ?? 'NORMAL');
       setAchievedDate(nextAchievedDate);
       setSelectedChallengeId(existingDiary.challenge?.challengeId ?? null);
-      const achievedGoalIds =
+      const nextAchievedGoalIds =
         diaryInfo?.diaryGoal
           ?.filter((goal) => goal.isAchieved)
           ?.map((goal) => goal.challengeGoalId) ??
         diaryInfo?.achievement ??
         [];
-      setAchievedGoalIds(achievedGoalIds);
+      setAchievedGoalIds(nextAchievedGoalIds);
       setThumbnailPreviewUrl(nextThumbnailPreviewUrl);
       setIsEditFormInitialized(true);
     }, 0);

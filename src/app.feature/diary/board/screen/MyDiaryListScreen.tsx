@@ -17,12 +17,56 @@ import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
-import { buildDiaryCardViewModels } from '../../../member/mypage/utils/mypageUtils';
+import {
+  buildDiaryCardViewModels,
+  DiaryCardViewModel,
+} from '../../../member/mypage/utils/mypageUtils';
 import { useMyDiariesInfinite } from '../hooks/useDiaryQueries';
 
 const MY_DIARY_PAGE_SIZE = 12;
+
+interface MyDiaryListItemProps {
+  item: DiaryCardViewModel;
+  onCardClick(id: number): void;
+  onLikeToggle(id: number, isLiked: boolean): void;
+}
+
+// React.memo로 감싸 부모 재렌더 시 동일 item 카드는 재렌더를 건너뛴다.
+// 부모는 onCardClick / onLikeToggle을 useCallback으로 안정화해야 한다.
+const MyDiaryListItem = React.memo(
+  ({
+    item,
+    onCardClick,
+    onLikeToggle,
+  }: MyDiaryListItemProps): React.ReactElement => {
+    const handleClick = useCallback(() => {
+      onCardClick(item.id);
+    }, [onCardClick, item.id]);
+
+    const handleLike = useCallback(() => {
+      onLikeToggle(item.id, item.isLiked);
+    }, [onLikeToggle, item.id, item.isLiked]);
+
+    return (
+      <DiaryCard
+        imageUrl={item.imageUrl}
+        profileImageUrl={item.profileImageUrl}
+        percent={item.percent}
+        isLiked={item.isLiked}
+        likes={item.likes}
+        title={item.title}
+        user={item.user}
+        challengeLabel={item.challengeLabel}
+        emotion={item.emotion}
+        onClick={handleClick}
+        onLikeToggle={handleLike}
+      />
+    );
+  }
+);
+MyDiaryListItem.displayName = 'MyDiaryListItem';
 
 export function MyDiaryListScreen(): React.ReactElement {
   const router = useRouter();
@@ -65,20 +109,30 @@ export function MyDiaryListScreen(): React.ReactElement {
   const hasDiaries = diaryCards.length > 0;
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
 
-  const handleLikeToggle = (id: number, isLiked: boolean): void => {
-    if (!isLoggedIn) {
-      setShowLoginDialog(true);
-      return;
-    }
-    if (isLikePending) {
-      return;
-    }
-    if (isLiked) {
-      unlikeDiary.mutate(id);
-    } else {
-      likeDiary.mutate(id);
-    }
-  };
+  const handleCardClick = useCallback(
+    (id: number): void => {
+      router.push(`/diary/${id}`);
+    },
+    [router]
+  );
+
+  const handleLikeToggle = useCallback(
+    (id: number, isLiked: boolean): void => {
+      if (!isLoggedIn) {
+        setShowLoginDialog(true);
+        return;
+      }
+      if (isLikePending) {
+        return;
+      }
+      if (isLiked) {
+        unlikeDiary.mutate(id);
+      } else {
+        likeDiary.mutate(id);
+      }
+    },
+    [isLoggedIn, isLikePending, likeDiary, unlikeDiary]
+  );
 
   return (
     <div className="min-h-screen w-full">
@@ -164,19 +218,11 @@ export function MyDiaryListScreen(): React.ReactElement {
             )}
           >
             {diaryCards.map((diary) => (
-              <DiaryCard
+              <MyDiaryListItem
                 key={diary.id}
-                imageUrl={diary.imageUrl}
-                profileImageUrl={diary.profileImageUrl}
-                percent={diary.percent}
-                isLiked={diary.isLiked}
-                likes={diary.likes}
-                title={diary.title}
-                user={diary.user}
-                challengeLabel={diary.challengeLabel}
-                emotion={diary.emotion}
-                onClick={() => router.push(`/diary/${diary.id}`)}
-                onLikeToggle={() => handleLikeToggle(diary.id, diary.isLiked)}
+                item={diary}
+                onCardClick={handleCardClick}
+                onLikeToggle={handleLikeToggle}
               />
             ))}
           </div>
