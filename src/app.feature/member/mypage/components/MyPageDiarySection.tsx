@@ -11,7 +11,7 @@ import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { cn } from '@module/utils/cn';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { buildDiaryCardViewModels } from '../utils/mypageUtils';
 
@@ -37,7 +37,10 @@ export function MyPageDiarySection({
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
 
-  const diaryCards = buildDiaryCardViewModels(diaries, nickname);
+  const diaryCards = useMemo(
+    () => buildDiaryCardViewModels(diaries, nickname),
+    [diaries, nickname]
+  );
 
   const handleLikeToggle = (id: number, isLiked: boolean): void => {
     if (!isLoggedIn || likeDiary.isPending || unlikeDiary.isPending) {

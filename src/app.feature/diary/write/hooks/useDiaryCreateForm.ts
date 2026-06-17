@@ -37,6 +37,8 @@ import {
   revokeObjectUrlIfNeeded,
 } from '../utils/diaryFormHelpers';
 
+const EMPTY_GOALS: ChallengeGoal[] = [];
+
 interface UseDiaryCreateFormResult {
   isEditMode: boolean;
   title: string;
@@ -185,7 +187,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     data: challengeCheckWriteDateKeys = [],
     isLoading: isChallengeCheckWriteDatesLoading,
   } = useChallengeCheckWriteDates(selectedChallenge?.challengeId ?? 0);
-  const goals = challengeDetail?.challengeGoals ?? [];
+  const goals = challengeDetail?.challengeGoals ?? EMPTY_GOALS;
 
   const editModeDateKey = useMemo(() => {
     if (!isEditMode || !existingDiary) {

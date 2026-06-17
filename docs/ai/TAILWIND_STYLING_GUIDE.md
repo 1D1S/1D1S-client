@@ -17,20 +17,19 @@
 
 ## 반응형
 
-### 컨테이너 쿼리 기반 그리드
+### 반응형 그리드
 
-```css
-/* globals.css에 정의된 반응형 그리드 (예: 일지 카드) */
-/* .diary-card-grid: 2 -> 3 -> 4 -> 6 columns */
-@container (min-width: 640px) {
-  /* 3 cols */
-}
-@container (min-width: 900px) {
-  /* 4 cols */
-}
-@container (min-width: 1200px) {
-  /* 6 cols */
-}
+카드 목록(일지/챌린지 보드 등)은 `globals.css`의 커스텀 클래스가 아니라
+Tailwind의 `grid-cols-*` 유틸리티를 브레이크포인트와 함께 쓴다.
+
+```tsx
+// 일지 카드 그리드: 2 -> 3 -> 4 -> 6 columns
+<div
+  className={cn(
+    'grid grid-cols-2 gap-4',
+    'sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6',
+  )}
+/>
 ```
 
 루트 폰트 사이즈도 미디어 쿼리로 단계 조정: `14px → 15px(≥640) → 16px(≥1024)`.

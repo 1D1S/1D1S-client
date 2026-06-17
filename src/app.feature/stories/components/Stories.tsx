@@ -5,6 +5,7 @@ import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { Lock } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useMemo, useState } from 'react';
 
@@ -12,7 +13,10 @@ import { useStories } from '../hooks/useStoryQueries';
 import { sortStoryGroups } from '../utils/storyHelpers';
 import StoryRing from './StoryRing';
 import StoryRingSkeleton from './StoryRingSkeleton';
-import StoryViewer from './StoryViewer';
+
+const StoryViewer = dynamic(() => import('./StoryViewer'), {
+  ssr: false,
+});
 
 interface StoriesProps {
   /** 스토리 조회 가능 여부 */

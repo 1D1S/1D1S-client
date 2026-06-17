@@ -82,7 +82,7 @@ function EmptyChallengeCard({
   );
 }
 
-export function DiaryCreateChallengeSection({
+function DiaryCreateChallengeSectionComponent({
   selectedChallenge,
   isInitialChallengeLoading,
   isCheckingAvailability,
@@ -149,3 +149,7 @@ export function DiaryCreateChallengeSection({
     </section>
   );
 }
+
+export const DiaryCreateChallengeSection = React.memo(
+  DiaryCreateChallengeSectionComponent
+);

@@ -10,7 +10,7 @@ interface DiaryCreateGoalsSectionProps {
   onGoalIdsChange(goalIds: number[]): void;
 }
 
-export function DiaryCreateGoalsSection({
+function DiaryCreateGoalsSectionComponent({
   goals,
   achievedGoalIds,
   onGoalIdsChange,
@@ -58,3 +58,7 @@ export function DiaryCreateGoalsSection({
     </section>
   );
 }
+
+export const DiaryCreateGoalsSection = React.memo(
+  DiaryCreateGoalsSectionComponent
+);

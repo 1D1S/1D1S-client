@@ -62,6 +62,7 @@ export function useUpdateDiary(): UseMutationResult<
         DIARY_QUERY_KEYS.randoms(),
         DIARY_QUERY_KEYS.allDiaries(),
         CHALLENGE_QUERY_KEYS.challengeDiaries(),
+        MEMBER_QUERY_KEYS.profiles(),
       ]);
     },
   });
@@ -82,6 +83,7 @@ export function useDeleteDiary(): UseMutationResult<boolean, Error, number> {
         CHALLENGE_QUERY_KEYS.challengeDiaries(),
         MEMBER_QUERY_KEYS.myPage(),
         MEMBER_QUERY_KEYS.sidebar(),
+        MEMBER_QUERY_KEYS.profiles(),
       ]);
     },
   });
@@ -100,6 +102,7 @@ export function useLikeDiary(): UseMutationResult<number, Error, number> {
         DIARY_QUERY_KEYS.randoms(),
         CHALLENGE_QUERY_KEYS.challengeDiaries(),
         DIARY_QUERY_KEYS.my(),
+        MEMBER_QUERY_KEYS.profiles(),
       ]);
     },
   });
@@ -118,6 +121,7 @@ export function useUnlikeDiary(): UseMutationResult<number, Error, number> {
         DIARY_QUERY_KEYS.randoms(),
         CHALLENGE_QUERY_KEYS.challengeDiaries(),
         DIARY_QUERY_KEYS.my(),
+        MEMBER_QUERY_KEYS.profiles(),
       ]);
     },
   });

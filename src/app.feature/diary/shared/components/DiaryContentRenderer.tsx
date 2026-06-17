@@ -3,7 +3,6 @@
 import './highlight.css';
 
 import { cn } from '@module/utils/cn';
-import hljs from 'highlight.js/lib/common';
 import React, { useEffect, useRef } from 'react';
 
 // highlight.js github 테마는 일지 본문이 렌더될 때만 필요하므로 글로벌이 아닌
@@ -26,13 +25,29 @@ export function DiaryContentRenderer({
       return;
     }
 
-    const blocks = container.querySelectorAll<HTMLElement>('pre code');
-    blocks.forEach((block) => {
-      // hljs marks an element with `data-highlighted="yes"` after running.
-      // Reset the flag so re-renders re-highlight the new content.
-      delete block.dataset.highlighted;
-      hljs.highlightElement(block);
+    const blocks =
+      container.querySelectorAll<HTMLElement>('pre code');
+    if (blocks.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+    void import('highlight.js/lib/common').then((mod) => {
+      if (cancelled) {
+        return;
+      }
+      const hljs = mod.default;
+      blocks.forEach((block) => {
+        // hljs marks an element with `data-highlighted="yes"` after
+        // running. Reset the flag so re-renders re-highlight content.
+        delete block.dataset.highlighted;
+        hljs.highlightElement(block);
+      });
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [html]);
 
   return (

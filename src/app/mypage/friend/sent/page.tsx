@@ -1,5 +1,3 @@
-'use client';
-
 import SentFriendRequestsScreen from '@feature/friend/screen/SentFriendRequestsScreen';
 import React from 'react';
 

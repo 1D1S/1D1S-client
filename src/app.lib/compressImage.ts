@@ -1,5 +1,3 @@
-import imageCompression from 'browser-image-compression';
-
 // 표시에 쓰는 최대 폭(next.config deviceSizes 최대=2048)에 맞춰 그 이상
 // 해상도는 불필요하므로 리사이즈한다. 목표 용량을 함께 두어 초과 시
 // 라이브러리가 품질을 자동으로 낮춰 맞춘다.
@@ -30,6 +28,9 @@ export async function compressImageFile(file: File): Promise<File> {
   }
 
   try {
+    const { default: imageCompression } = await import(
+      'browser-image-compression'
+    );
     return await imageCompression(file, COMPRESSION_OPTIONS);
   } catch {
     return file;

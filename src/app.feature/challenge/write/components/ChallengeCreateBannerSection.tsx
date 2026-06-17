@@ -3,7 +3,7 @@ import { CATEGORY_OPTIONS } from '@constants/categories';
 import { apiClient } from '@module/api/client';
 import { requestData } from '@module/api/request';
 import { useState } from 'react';
-import { useFormContext } from 'react-hook-form';
+import { Control, useFormContext, useWatch } from 'react-hook-form';
 
 import {
   FormControl,
@@ -16,11 +16,35 @@ import { ChallengeCreateFormValues } from '../hooks/useChallengeCreateForm';
 import { ChallengeCreateChip } from './ChallengeCreateChip';
 import { ChallengeCreateSectionCard } from './ChallengeCreateSectionCard';
 
+function TitleCounter({
+  control,
+}: {
+  control: Control<ChallengeCreateFormValues>;
+}): React.ReactElement {
+  const value = useWatch({ control, name: 'title' }) ?? '';
+  return (
+    <div className="text-right text-[10px] text-gray-500">
+      {value.length}/50
+    </div>
+  );
+}
+
+function DescriptionCounter({
+  control,
+}: {
+  control: Control<ChallengeCreateFormValues>;
+}): React.ReactElement {
+  const value = useWatch({ control, name: 'description' }) ?? '';
+  return (
+    <div className="text-right text-[10px] text-gray-500">
+      {value.length}/200
+    </div>
+  );
+}
+
 export function ChallengeCreateBannerSection(): React.ReactElement {
-  const { control, getValues, setValue, watch } =
+  const { control, getValues, setValue } =
     useFormContext<ChallengeCreateFormValues>();
-  const title = watch('title') ?? '';
-  const description = watch('description') ?? '';
 
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(
     getValues('thumbnailPreviewUrl')
@@ -112,9 +136,7 @@ export function ChallengeCreateBannerSection(): React.ReactElement {
                     {...field}
                   />
                 </FormControl>
-                <div className="text-right text-[10px] text-gray-500">
-                  {title.length}/50
-                </div>
+                <TitleCounter control={control} />
                 <FormMessage />
               </FormItem>
             )}
@@ -172,9 +194,7 @@ export function ChallengeCreateBannerSection(): React.ReactElement {
                     value={field.value ?? ''}
                   />
                 </FormControl>
-                <div className="text-right text-[10px] text-gray-500">
-                  {description.length}/200
-                </div>
+                <DescriptionCounter control={control} />
                 <FormMessage />
               </FormItem>
             )}

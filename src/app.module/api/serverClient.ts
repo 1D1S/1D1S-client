@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 
 import { API_BASE_URL } from './config';
 import type { ApiResponse } from './types';
@@ -23,13 +24,13 @@ function createServerClient(cookieHeader: string): AxiosInstance {
   });
 }
 
-async function buildCookieHeader(): Promise<string> {
+const buildCookieHeader = cache(async (): Promise<string> => {
   const cookieStore = await cookies();
   return cookieStore
     .getAll()
     .map(({ name, value }) => `${name}=${value}`)
     .join('; ');
-}
+});
 
 interface ServerRequestOptions extends AxiosRequestConfig {
   url: string;

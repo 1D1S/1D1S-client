@@ -7,13 +7,17 @@ import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useMemo } from 'react';
 
+import type { ChallengeGoal } from '../../../challenge/board/type/challenge';
 import { DiaryCreateChallengeSection } from '../components/DiaryCreateChallengeSection';
 import { DiaryCreateFinishSection } from '../components/DiaryCreateFinishSection';
 import { DiaryCreateGoalsSection } from '../components/DiaryCreateGoalsSection';
 import { DiaryCreateThumbnailSection } from '../components/DiaryCreateThumbnailSection';
 import { useDiaryCreateForm } from '../hooks/useDiaryCreateForm';
+
+const EMPTY_GOALS: ChallengeGoal[] = [];
+const EMPTY_DATE_KEYS: string[] = [];
 
 // tiptap(~200KB+)은 일지 작성/편집 진입 시에만 필요하므로 동적 import 로
 // 페이지 청크에서 분리한다. SSR 도 끔 — 에디터는 client-only.
@@ -78,6 +82,23 @@ export default function DiaryCreateScreen(): React.ReactElement {
       ? Math.round((achievedGoalCount / totalGoalCount) * 100)
       : 0;
   const isHundredPercent = percent === 100 && totalGoalCount > 0;
+
+  const thumbnailSlot = useMemo(
+    () => (
+      <DiaryCreateThumbnailSection
+        thumbnailPreviewUrl={thumbnailPreviewUrl}
+        hasThumbnail={Boolean(thumbnailFile)}
+        onSelectThumbnailFile={handleThumbnailFileSelect}
+        onClearThumbnail={clearThumbnail}
+      />
+    ),
+    [
+      thumbnailPreviewUrl,
+      thumbnailFile,
+      handleThumbnailFileSelect,
+      clearThumbnail,
+    ]
+  );
 
   return (
     <div className="pb-mobile-action-bar min-h-screen w-full">
@@ -171,7 +192,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
             </section>
 
             <DiaryCreateGoalsSection
-              goals={isSelectedChallengeConfirmed ? goals : []}
+              goals={isSelectedChallengeConfirmed ? goals : EMPTY_GOALS}
               achievedGoalIds={achievedGoalIds}
               onGoalIdsChange={handleGoalIdsChange}
             />
@@ -180,7 +201,9 @@ export default function DiaryCreateScreen(): React.ReactElement {
               achievedDate={achievedDate}
               onAchievedDateChange={handleAchievedDateChange}
               disabledAchievedDateKeys={
-                isSelectedChallengeConfirmed ? disabledAchievedDateKeys : []
+                isSelectedChallengeConfirmed
+                  ? disabledAchievedDateKeys
+                  : EMPTY_DATE_KEYS
               }
               challengeStartDate={
                 isSelectedChallengeConfirmed
@@ -189,14 +212,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
               }
               selectedMood={selectedMood}
               onMoodChange={setSelectedMood}
-              thumbnailSlot={
-                <DiaryCreateThumbnailSection
-                  thumbnailPreviewUrl={thumbnailPreviewUrl}
-                  hasThumbnail={Boolean(thumbnailFile)}
-                  onSelectThumbnailFile={handleThumbnailFileSelect}
-                  onClearThumbnail={clearThumbnail}
-                />
-              }
+              thumbnailSlot={thumbnailSlot}
             />
 
             <section>

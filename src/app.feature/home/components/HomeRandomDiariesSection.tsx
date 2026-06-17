@@ -9,19 +9,70 @@ import {
 } from '@feature/diary/shared/utils/diaryImageUrl';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import {
   getDiaryAchievementRate,
   mapFeelingToEmotion,
 } from '../utils/homeFormatters';
 
+interface HomeDiaryItemProps {
+  item: DiaryItem;
+  onDiaryClick(diaryId: number): void;
+  onLikeToggle(diary: DiaryItem): void;
+}
+
+// 매 렌더마다 인라인 람다를 새로 만들지 않도록 안정적인 핸들러와 item 만
+// props 로 받는다. React.memo 로 감싸 부모 섹션이 재렌더돼도 동일 item
+// 카드는 재렌더를 건너뛴다 (좋아요 1건이 8장 전체를 재렌더하지 않음).
+const HomeDiaryItem = React.memo(
+  ({
+    item,
+    onDiaryClick,
+    onLikeToggle,
+  }: HomeDiaryItemProps): React.ReactElement => {
+    const handleClick = useCallback(() => {
+      onDiaryClick(item.id);
+    }, [onDiaryClick, item.id]);
+
+    const handleLike = useCallback(() => {
+      onLikeToggle(item);
+    }, [onLikeToggle, item]);
+
+    return (
+      <DiaryCard
+        imageUrl={resolveDiaryImageList(item.imgUrl)?.[0]}
+        profileImageUrl={
+          resolveDiaryImageUrl(item.authorInfoDto?.profileImage) ??
+          undefined
+        }
+        percent={getDiaryAchievementRate(
+          item.achievementRate,
+          item.diaryInfoDto?.achievementRate
+        )}
+        isLiked={item.likeInfo.likedByMe}
+        likes={item.likeInfo.likeCnt}
+        title={item.title}
+        user={item.authorInfoDto?.nickname ?? '익명'}
+        challengeLabel={
+          item.challenge?.title ||
+          getCategoryLabel(item.challenge?.category) ||
+          '챌린지'
+        }
+        emotion={mapFeelingToEmotion(item.diaryInfoDto?.feeling ?? 'NONE')}
+        onClick={handleClick}
+        onLikeToggle={handleLike}
+      />
+    );
+  }
+);
+HomeDiaryItem.displayName = 'HomeDiaryItem';
+
 interface HomeRandomDiariesSectionProps {
   diaries: DiaryItem[];
   isLoading: boolean;
   isError: boolean;
   errorMessage: string | null;
-  isLikePending: boolean;
   onMoreClick(): void;
   onDiaryClick(diaryId: number): void;
   onLikeToggle(diary: DiaryItem): void;
@@ -32,7 +83,6 @@ export default function HomeRandomDiariesSection({
   isLoading,
   isError,
   errorMessage,
-  isLikePending,
   onMoreClick,
   onDiaryClick,
   onLikeToggle,
@@ -72,36 +122,11 @@ export default function HomeRandomDiariesSection({
           )}
         >
           {diaries.slice(0, 8).map((item) => (
-            <DiaryCard
+            <HomeDiaryItem
               key={item.id}
-              imageUrl={resolveDiaryImageList(item.imgUrl)?.[0]}
-              profileImageUrl={
-                resolveDiaryImageUrl(item.authorInfoDto?.profileImage) ??
-                undefined
-              }
-              percent={getDiaryAchievementRate(
-                item.achievementRate,
-                item.diaryInfoDto?.achievementRate
-              )}
-              isLiked={item.likeInfo.likedByMe}
-              likes={item.likeInfo.likeCnt}
-              title={item.title}
-              user={item.authorInfoDto?.nickname ?? '익명'}
-              challengeLabel={
-                item.challenge?.title ||
-                getCategoryLabel(item.challenge?.category) ||
-                '챌린지'
-              }
-              emotion={mapFeelingToEmotion(
-                item.diaryInfoDto?.feeling ?? 'NONE'
-              )}
-              onClick={() => onDiaryClick(item.id)}
-              onLikeToggle={() => {
-                if (isLikePending) {
-                  return;
-                }
-                onLikeToggle(item);
-              }}
+              item={item}
+              onDiaryClick={onDiaryClick}
+              onLikeToggle={onLikeToggle}
             />
           ))}
         </div>

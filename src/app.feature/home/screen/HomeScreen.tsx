@@ -43,7 +43,7 @@ export default function HomeScreen({
     isLoading: isSidebarLoading,
     isFetching: isSidebarFetching,
   } = useSidebar();
-  const { isLikePending, showLoginDialog, setShowLoginDialog, onLikeToggle } =
+  const { showLoginDialog, setShowLoginDialog, onLikeToggle } =
     useHomeRandomDiaryLike();
   const loginDialogDescription = isLoginRequired
     ? '로그인 후 이용할 수 있습니다.'
@@ -191,7 +191,6 @@ export default function HomeScreen({
           isLoading={isDiariesLoading}
           isError={isDiariesError}
           errorMessage={diariesErrorMessage}
-          isLikePending={isLikePending}
           onMoreClick={handleMoreDiaries}
           onDiaryClick={handleDiaryClick}
           onLikeToggle={onLikeToggle}

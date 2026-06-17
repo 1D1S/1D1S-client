@@ -1,5 +1,3 @@
-'use client';
-
 import FriendListScreen from '@feature/friend/screen/FriendListScreen';
 import React from 'react';
 
