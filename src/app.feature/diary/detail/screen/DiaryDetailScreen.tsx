@@ -280,15 +280,24 @@ function DiaryCommentSection({
     [currentUserNickname, currentMemberId]
   );
 
+  const sortedRepliesMap = useMemo<Map<number, DiaryComment[]>>(() => {
+    const map = new Map<number, DiaryComment[]>();
+    for (const comment of commentItems) {
+      map.set(
+        comment.id,
+        sortCommentsByOldest(commentRepliesMap[comment.id] ?? [])
+      );
+    }
+    return map;
+  }, [commentItems, commentRepliesMap]);
+
   const threadComments = useMemo<CommentNode[]>(
     () =>
       commentItems.map((comment) => ({
         ...mapCommentNode(comment),
-        replies: sortCommentsByOldest(commentRepliesMap[comment.id] ?? []).map(
-          mapCommentNode
-        ),
+        replies: (sortedRepliesMap.get(comment.id) ?? []).map(mapCommentNode),
       })),
-    [commentItems, commentRepliesMap, mapCommentNode]
+    [commentItems, sortedRepliesMap, mapCommentNode]
   );
 
   // DS CommentThread는 onAvatarClick 같은 prop을 노출하지 않아 이벤트 위임으로
@@ -319,13 +328,13 @@ function DiaryCommentSection({
     const out: Array<{ id: number; isDeleted: boolean }> = [];
     for (const comment of commentItems) {
       out.push({ id: comment.id, isDeleted: comment.isDeleted });
-      const replies = sortCommentsByOldest(commentRepliesMap[comment.id] ?? []);
+      const replies = sortedRepliesMap.get(comment.id) ?? [];
       for (const reply of replies) {
         out.push({ id: reply.id, isDeleted: reply.isDeleted });
       }
     }
     return out;
-  }, [commentItems, commentRepliesMap]);
+  }, [commentItems, sortedRepliesMap]);
 
   const deletedCommentIds = useMemo<Set<number>>(() => {
     const ids = new Set<number>();

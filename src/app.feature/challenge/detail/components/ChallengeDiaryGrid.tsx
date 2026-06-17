@@ -9,6 +9,7 @@ import {
   resolveDiaryImageUrl,
 } from '@feature/diary/shared/utils/diaryImageUrl';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
+import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React from 'react';
 
@@ -55,7 +56,7 @@ export function ChallengeDiaryGrid({
   }
 
   return (
-    <div className={`${gridClassName} data-fade-in`}>
+    <div className={cn(gridClassName, 'data-fade-in')}>
       {diaries.map((diary) => (
         <div key={diary.id} className={itemClassName}>
           <DiaryCard

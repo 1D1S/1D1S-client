@@ -1,10 +1,8 @@
-'use client';
-
 import { Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
-import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import React from 'react';
+
+import { LegalBackButton } from './LegalBackButton';
 
 interface LegalSection {
   heading: string;
@@ -31,8 +29,6 @@ export function LegalPageShell({
   sections,
   footer,
 }: LegalPageShellProps): React.ReactElement {
-  const router = useRouter();
-
   return (
     <div className="min-h-screen w-full bg-white">
       <div
@@ -43,17 +39,7 @@ export function LegalPageShell({
           'lg:hidden'
         )}
       >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={() => router.back()}
-          className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
-          )}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
+        <LegalBackButton />
         <Text
           size="body1"
           weight="extrabold"

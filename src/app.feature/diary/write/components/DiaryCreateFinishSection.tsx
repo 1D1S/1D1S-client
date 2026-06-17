@@ -16,7 +16,7 @@ interface DiaryCreateFinishSectionProps {
   thumbnailSlot?: React.ReactNode;
 }
 
-export function DiaryCreateFinishSection({
+function DiaryCreateFinishSectionComponent({
   achievedDate,
   onAchievedDateChange,
   disabledAchievedDateKeys,
@@ -81,3 +81,7 @@ export function DiaryCreateFinishSection({
     </section>
   );
 }
+
+export const DiaryCreateFinishSection = React.memo(
+  DiaryCreateFinishSectionComponent
+);

@@ -260,33 +260,40 @@ export default function AppRightRail({
               </p>
             ) : (
               <div className="flex flex-col gap-2">
-                {challenges.slice(0, 5).map((challenge) => (
-                  <button
-                    key={challenge.id}
-                    type="button"
-                    onClick={() => onChallengeClick(challenge.id)}
-                    tabIndex={contentHidden ? -1 : 0}
-                    className={cn(
-                      'rounded-2 flex flex-col gap-1.5 p-2 text-left',
-                      'transition hover:bg-gray-50'
-                    )}
-                  >
-                    <span className="truncate text-[12px] font-bold text-gray-900">
-                      {challenge.title}
-                    </span>
-                    <span className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
-                      <span
-                        className="bg-brand block h-full"
-                        style={{ width: `${challenge.progress}%` }}
-                      />
-                    </span>
-                    <span className="text-[10px] text-gray-500">
-                      {challenge.hasDeadline
-                        ? `${challenge.progress}% 진행`
-                        : '무기한'}
-                    </span>
-                  </button>
-                ))}
+                {challenges.slice(0, 5).map((challenge) => {
+                  // 무기한 챌린지는 진행률이 없으므로 주황 막대를 가득
+                  // 채우고, 기한이 있으면 진행률 만큼만 채운다.
+                  const fillWidth = challenge.hasDeadline
+                    ? challenge.progress
+                    : 100;
+                  return (
+                    <button
+                      key={challenge.id}
+                      type="button"
+                      onClick={() => onChallengeClick(challenge.id)}
+                      tabIndex={contentHidden ? -1 : 0}
+                      className={cn(
+                        'rounded-2 flex flex-col gap-1.5 p-2 text-left',
+                        'transition hover:bg-gray-50'
+                      )}
+                    >
+                      <span className="truncate text-[12px] font-bold text-gray-900">
+                        {challenge.title}
+                      </span>
+                      <span className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                        <span
+                          className="bg-brand block h-full"
+                          style={{ width: `${fillWidth}%` }}
+                        />
+                      </span>
+                      <span className="text-[10px] text-gray-500">
+                        {challenge.hasDeadline
+                          ? `${challenge.progress}% 진행`
+                          : '무기한'}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

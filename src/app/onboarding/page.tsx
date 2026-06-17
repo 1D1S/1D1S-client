@@ -1,10 +1,8 @@
-'use client';
-
 import { Button, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { BookOpen, Flag, Search, UserRound, Users } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import React from 'react';
 
 const STEPS = [
@@ -29,8 +27,6 @@ const STEPS = [
 ];
 
 export default function OnboardingPage(): React.ReactElement {
-  const router = useRouter();
-
   return (
     <div className="flex min-h-screen w-full flex-col bg-white">
       {/* 히어로 섹션 */}
@@ -156,11 +152,11 @@ export default function OnboardingPage(): React.ReactElement {
       <section className="px-6 py-8">
         <div className="mx-auto max-w-lg">
           <Button
+            asChild
             variant="default"
             className="h-14 w-full text-base"
-            onClick={() => router.push('/challenge')}
           >
-            지금 시작하기
+            <Link href="/challenge">지금 시작하기</Link>
           </Button>
         </div>
       </section>

@@ -25,6 +25,7 @@ export function useWebPushSubscription(): {
   const { mutateAsync: registerEndpoint } = useRegisterEndpoint();
 
   useEffect(() => {
+    let cancelled = false;
     if (!('serviceWorker' in navigator)) {
       return;
     }
@@ -33,11 +34,14 @@ export function useWebPushSubscription(): {
         return;
       }
       reg.pushManager.getSubscription().then((sub) => {
-        if (sub) {
+        if (!cancelled && sub) {
           setStatus('subscribed');
         }
       });
     });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const subscribe = useCallback(async (): Promise<void> => {

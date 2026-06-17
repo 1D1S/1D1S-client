@@ -135,6 +135,16 @@ export interface JoinChallengeResponse {
   status: ParticipantStatus;
 }
 
+// 챌린지원 찌르기 — 오늘 일지를 쓰지 않은 챌린지원에게 알림 전송
+export interface PokeChallengeRequest {
+  receiverMemberIds: number[];
+}
+
+export interface PokeChallengeResponse {
+  // 실제로 찌르기 알림이 전송된 챌린지원 ID 목록
+  pokedMemberIds: number[];
+}
+
 export interface ChallengeListResponse {
   items: ChallengeListItem[];
   pageInfo: {

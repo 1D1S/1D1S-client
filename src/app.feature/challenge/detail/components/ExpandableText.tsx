@@ -22,8 +22,14 @@ export function ExpandableText({
     if (!element) {
       return;
     }
-    setIsOverflowing(element.scrollHeight > element.clientHeight);
-  }, [children]);
+    const measure = (): void => {
+      setIsOverflowing(element.scrollHeight > element.clientHeight);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div>
