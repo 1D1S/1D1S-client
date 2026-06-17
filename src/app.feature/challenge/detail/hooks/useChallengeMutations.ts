@@ -12,6 +12,7 @@ import {
   CreateChallengeResponse,
   JoinChallengeRequest,
   JoinChallengeResponse,
+  PokeChallengeResponse,
   UpdateChallengeRequest,
 } from '../../board/type/challenge';
 import { challengeWriteApi } from '../../write/api/challengeWriteApi';
@@ -61,6 +62,20 @@ export function useJoinChallenge(): UseMutationResult<
         CHALLENGE_QUERY_KEYS.lists(),
       ]);
     },
+  });
+}
+
+// 챌린지원 찌르기 — 조회 데이터를 바꾸지 않으므로 캐시 무효화는 하지 않는다.
+export function usePokeChallengeMembers(): UseMutationResult<
+  PokeChallengeResponse,
+  Error,
+  { challengeId: number; receiverMemberIds: number[] }
+> {
+  return useMutation({
+    mutationFn: ({ challengeId, receiverMemberIds }) =>
+      challengeDetailApi.pokeChallengeMembers(challengeId, {
+        receiverMemberIds,
+      }),
   });
 }
 

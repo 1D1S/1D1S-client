@@ -5,6 +5,8 @@ import {
   ChallengeDetailResponse,
   JoinChallengeRequest,
   JoinChallengeResponse,
+  PokeChallengeRequest,
+  PokeChallengeResponse,
 } from '../../board/type/challenge';
 import { ChallengeDiaryListResponse } from '../type/challengeDiary';
 
@@ -52,6 +54,17 @@ export const challengeDetailApi = {
       method: 'DELETE',
     });
   },
+
+  // 챌린지원 찌르기 (오늘 일지 미작성 챌린지원에게 알림 전송)
+  pokeChallengeMembers: async (
+    challengeId: number,
+    data: PokeChallengeRequest
+  ): Promise<PokeChallengeResponse> =>
+    requestData<PokeChallengeResponse, PokeChallengeRequest>(apiClient, {
+      url: `/challenges/${challengeId}/pokes`,
+      method: 'POST',
+      data,
+    }),
 
   // 챌린지 좋아요 누르기
   likeChallenge: async (challengeId: number): Promise<void> => {

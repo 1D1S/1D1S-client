@@ -26,10 +26,12 @@ import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
+import { resolveSidebarMemberId } from '@feature/diary/detail/utils/diaryViewData';
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
+import { formatDateISO } from '@module/utils/date';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft, CircleAlert, Heart, Trash2 } from 'lucide-react';
 import Image from 'next/image';
@@ -39,6 +41,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
+import { useSidebar } from '../../../member/hooks/useMemberQueries';
 import {
   useChallengeCheckWriteDates,
   useChallengeDetail,
@@ -61,6 +64,7 @@ import {
   useJoinChallenge,
   useLeaveChallenge,
   useLikeChallenge,
+  usePokeChallengeMembers,
   useRejectParticipant,
   useUnlikeChallenge,
   useUpdateChallenge,
@@ -101,10 +105,21 @@ export function ChallengeDetailScreen({
   const rejectParticipant = useRejectParticipant();
   const updateChallenge = useUpdateChallenge();
   const updateParticipantGoal = useUpdateParticipantGoal();
+  const pokeChallengeMembers = usePokeChallengeMembers();
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
 
   const isLoggedIn = useIsLoggedIn();
+  const { data: sidebarData } = useSidebar();
+  const currentMemberId = useMemo(
+    () => resolveSidebarMemberId(sidebarData),
+    [sidebarData]
+  );
+  // memberId 해석 실패 시 닉네임(유일값)으로 내 행을 판별하기 위한 폴백
+  const currentNickname = sidebarData?.nickname ?? null;
+  // 이번 세션에서 이미 찌른 챌린지원과 현재 요청 중인 대상 추적
+  const [pokedMemberIds, setPokedMemberIds] = useState<number[]>([]);
+  const [pokingMemberId, setPokingMemberId] = useState<number | null>(null);
   // 히어로 위 floating 뒤로가기(top-3.5)가 스크롤로 가려지기 시작하는
   // 시점에 맞춰 sticky 헤더가 즉시 등장하도록 임계값을 8px로 둔다.
   const [isCompactHeaderVisible, setIsCompactHeaderVisible] = useState(false);
@@ -204,6 +219,14 @@ export function ChallengeDetailScreen({
     () => hasSelectableDiaryDate(challengeCheckWriteDateKeys),
     [challengeCheckWriteDateKeys]
   );
+  // 내가 오늘 이 챌린지에 일지를 작성했는지 (작성 날짜 목록에 오늘이 포함)
+  const hasWrittenDiaryToday = useMemo(
+    () => challengeCheckWriteDateKeys.includes(formatDateISO(new Date())),
+    [challengeCheckWriteDateKeys]
+  );
+  // 찌르기 노출 조건: 내가 참여 중 + 진행 중 + 오늘 일지 작성 완료
+  const canPokeMembers =
+    isParticipating && isChallengeCurrentlyOngoing && hasWrittenDiaryToday;
   // 중도 참여 차단: allowMidJoin=false 인 챌린지는 시작일 당일부터(=진행 중)
   // 신규 참여 신청을 받지 않는다.
   const allowMidJoin = detail?.allowMidJoin ?? false;
@@ -345,6 +368,36 @@ export function ChallengeDetailScreen({
         notifyApiError(mutationError);
       },
     });
+  };
+
+  const handlePokeMember = (memberId: number): void => {
+    if (pokeChallengeMembers.isPending) {
+      return;
+    }
+    setPokingMemberId(memberId);
+    pokeChallengeMembers.mutate(
+      { challengeId, receiverMemberIds: [memberId] },
+      {
+        onSuccess: (result) => {
+          const pokedIds = result?.pokedMemberIds ?? [];
+          if (pokedIds.includes(memberId)) {
+            setPokedMemberIds((prev) =>
+              Array.from(new Set([...prev, ...pokedIds]))
+            );
+            toast.success('콕 찔렀어요!');
+          } else {
+            // 오늘 이미 일지를 썼거나 오늘 이미 찔러 대상에서 제외된 경우
+            toast('오늘은 찌를 수 없는 챌린지원이에요.');
+          }
+        },
+        onError: (mutationError) => {
+          notifyApiError(mutationError);
+        },
+        onSettled: () => {
+          setPokingMemberId(null);
+        },
+      }
+    );
   };
 
   const handleOpenEditGoalModal = (): void => {
@@ -1087,6 +1140,12 @@ export function ChallengeDetailScreen({
                   isHost: participant.status === 'HOST',
                 }))}
                 onMemberClick={(memberId) => router.push(`/member/${memberId}`)}
+                canPoke={canPokeMembers}
+                currentMemberId={currentMemberId}
+                currentNickname={currentNickname}
+                onPoke={handlePokeMember}
+                pokingMemberId={pokingMemberId}
+                pokedMemberIds={pokedMemberIds}
               />
 
               {isParticipating ? (
