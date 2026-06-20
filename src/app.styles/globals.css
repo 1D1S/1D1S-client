@@ -1,4 +1,9 @@
-@source "../../node_modules/@1d1s/design-system";
+/* 디자인 시스템 클래스 스캔 — node_modules 가 .gitignore 에 있어 디렉터리
+   형태 @source 는 Tailwind v4 의 gitignore 필터링으로 스킵된다. 컴파일된
+   번들(dist)을 명시적 글로브로 지정하면 gitignore 우회 + 번들 내 모든
+   유틸 클래스(top-1, z-0, size-5, [&>svg]:size-5 등)를 앱 테마 변수로
+   생성한다. (DS 자체 @source 는 미배포된 src/components 를 가리켜 무효) */
+@source "../../node_modules/@1d1s/design-system/dist/**/*.{js,mjs}";
 @import '@1d1s/design-system/styles/globals.css';
 @import './colors.css';
 @import './typography.css';
@@ -114,10 +119,10 @@
      Flutter 처럼 네이티브 바텀바를 쓰는 환경에서는 액션바가 숨겨지므로
      이 패딩도 본문에서 빼는 게 자연스럽다. */
   .pb-mobile-action-bar {
-    padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(9rem + env(safe-area-inset-bottom));
   }
   /* 댓글 입력창처럼 textarea + 버튼이 함께 들어가는 키 큰 액션바용 */
   .pb-mobile-action-bar-tall {
-    padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(10rem + env(safe-area-inset-bottom));
   }
 }

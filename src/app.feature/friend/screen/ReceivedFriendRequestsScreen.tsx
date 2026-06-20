@@ -1,6 +1,8 @@
 'use client';
 
 import { Button, Text } from '@1d1s/design-system';
+import EmptyState from '@component/EmptyState';
+import { SubPageShell } from '@component/layout/SubPageShell';
 import { FriendRequestListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
@@ -9,7 +11,6 @@ import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { FriendPageShell } from '../components/FriendPageShell';
 import { FriendRequestListItem } from '../components/FriendRequestListItem';
 import {
   useAcceptFriendRequest,
@@ -44,18 +45,14 @@ export default function ReceivedFriendRequestsScreen(): React.ReactElement {
   };
 
   return (
-    <FriendPageShell title="받은 친구 신청">
+    <SubPageShell title="받은 친구 신청">
       {showSkeleton ? (
-        <FriendRequestListSkeleton
-          count={4}
-          className="mt-3 lg:mt-6"
-          actionCount={2}
-        />
+        <FriendRequestListSkeleton count={4} actionCount={2} />
       ) : (
         <section
           className={cn(
-            'mt-3 overflow-hidden border-y border-gray-100 bg-white',
-            'data-fade-in lg:mt-6 lg:rounded-[14px] lg:border'
+            'overflow-hidden rounded-[14px] border border-gray-200 bg-white',
+            'data-fade-in'
           )}
         >
           {isError ? (
@@ -67,11 +64,11 @@ export default function ReceivedFriendRequestsScreen(): React.ReactElement {
               </Text>
             </div>
           ) : requests.length === 0 ? (
-            <div className="flex w-full justify-center py-10">
-              <Text size="body2" className="text-gray-500">
-                받은 친구 신청이 없습니다.
-              </Text>
-            </div>
+            <EmptyState
+              variant="friends"
+              title="받은 친구 신청이 없어요"
+              className="py-10"
+            />
           ) : (
             requests.map((request, idx) => (
               <React.Fragment key={request.requestId}>
@@ -106,6 +103,6 @@ export default function ReceivedFriendRequestsScreen(): React.ReactElement {
           )}
         </section>
       )}
-    </FriendPageShell>
+    </SubPageShell>
   );
 }

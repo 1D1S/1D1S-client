@@ -20,11 +20,11 @@ export function ChallengeCreateSectionCard({
   return (
     <section
       className={cn(
-        'rounded-3 border border-gray-200 bg-white px-5 py-5 md:px-6 md:py-6',
+        'rounded-3 border border-gray-200 bg-white px-5 py-6 md:px-6 md:py-7',
         className
       )}
     >
-      <div className="mb-4 flex items-baseline gap-2.5">
+      <div className="mb-5 flex items-baseline gap-2.5">
         <span
           className={cn(
             'bg-main-200 text-main-800 inline-flex h-[22px] w-[22px]',

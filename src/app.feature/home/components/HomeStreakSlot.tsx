@@ -1,5 +1,6 @@
 'use client';
 
+import { CountUp } from '@component/CountUp';
 import { cn } from '@module/utils/cn';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -145,7 +146,7 @@ export default function HomeStreakSlot({
                   'tracking-[-0.6px] tabular-nums'
                 )}
               >
-                {streakDays}
+                <CountUp value={streakDays} />
               </span>
               <span className="text-[14px] font-bold text-gray-800">
                 일째 도전 중

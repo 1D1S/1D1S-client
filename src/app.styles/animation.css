@@ -253,3 +253,216 @@
     transform: scaleX(1);
   }
 }
+
+/* 진행률 바 채우기 — 마운트 시 막대가 0에서 현재 값까지 좌→우로 차오른다.
+   fill 요소의 width 는 그대로 두고 transform: scaleX 로만 그려 GPU 합성으로
+   처리한다(레이아웃 리플로우 없음). DS ProgressBar 는 fillClassName 으로,
+   커스텀 바는 직접 클래스로 적용한다. 스트릭/진행률은 앱의 핵심 모티프라
+   진입 시 차오르는 모션으로 성취감을 강조한다. */
+@keyframes barFill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-bar-fill {
+  transform-origin: left;
+  animation: barFill 700ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-bar-fill {
+    animation: none;
+  }
+}
+
+/* 등장 pop — 살짝 아래/축소 상태에서 떠오르며 나타난다. 리스트에 inline
+   animation-delay 를 주면 stagger(순차 등장)가 된다. 마이페이지 배지처럼
+   개수가 적은 그리드에 쓴다. transform/opacity 만 써 GPU 합성으로 처리된다. */
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-pop-in {
+  animation: popIn 420ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop-in {
+    animation: none;
+  }
+}
+
+/* 마이페이지 활동 잔디(DS Heatmap) 등장 — 왼쪽→오른쪽 컬럼 스윕.
+   DS Heatmap 은 gridAutoFlow:column 그리드라 DOM 순서가 컬럼 우선
+   (셀 0~6 = 1열, 7~13 = 2열 …)이다. 직속 자식 셀 7개를 한 열로 묶어
+   열 단위로 순차 등장시킨다. 페이지 루트의 data-fade-in(opacity)과 겹치지
+   않게 transform(translateY+scale)으로 차별화한다. transform/opacity 만
+   써 GPU 합성으로 처리하고, fill-mode:both 로 종료 후 identity 로 남아
+   셀 hover transform 과 충돌하지 않는다. */
+@keyframes heatmapColumnSweep {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.heatmap-stagger > * {
+  animation: heatmapColumnSweep 360ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+/* 20개 열(각 7셀)에 좌→우 지연 부여. 열 k = nth-child 범위
+   [7*(k-1)+1 .. 7*k]. STEP=35ms → 마지막 열은 ~665ms 에 시작. */
+.heatmap-stagger > :nth-child(n + 1):nth-child(-n + 7) {
+  animation-delay: 0ms;
+}
+.heatmap-stagger > :nth-child(n + 8):nth-child(-n + 14) {
+  animation-delay: 35ms;
+}
+.heatmap-stagger > :nth-child(n + 15):nth-child(-n + 21) {
+  animation-delay: 70ms;
+}
+.heatmap-stagger > :nth-child(n + 22):nth-child(-n + 28) {
+  animation-delay: 105ms;
+}
+.heatmap-stagger > :nth-child(n + 29):nth-child(-n + 35) {
+  animation-delay: 140ms;
+}
+.heatmap-stagger > :nth-child(n + 36):nth-child(-n + 42) {
+  animation-delay: 175ms;
+}
+.heatmap-stagger > :nth-child(n + 43):nth-child(-n + 49) {
+  animation-delay: 210ms;
+}
+.heatmap-stagger > :nth-child(n + 50):nth-child(-n + 56) {
+  animation-delay: 245ms;
+}
+.heatmap-stagger > :nth-child(n + 57):nth-child(-n + 63) {
+  animation-delay: 280ms;
+}
+.heatmap-stagger > :nth-child(n + 64):nth-child(-n + 70) {
+  animation-delay: 315ms;
+}
+.heatmap-stagger > :nth-child(n + 71):nth-child(-n + 77) {
+  animation-delay: 350ms;
+}
+.heatmap-stagger > :nth-child(n + 78):nth-child(-n + 84) {
+  animation-delay: 385ms;
+}
+.heatmap-stagger > :nth-child(n + 85):nth-child(-n + 91) {
+  animation-delay: 420ms;
+}
+.heatmap-stagger > :nth-child(n + 92):nth-child(-n + 98) {
+  animation-delay: 455ms;
+}
+.heatmap-stagger > :nth-child(n + 99):nth-child(-n + 105) {
+  animation-delay: 490ms;
+}
+.heatmap-stagger > :nth-child(n + 106):nth-child(-n + 112) {
+  animation-delay: 525ms;
+}
+.heatmap-stagger > :nth-child(n + 113):nth-child(-n + 119) {
+  animation-delay: 560ms;
+}
+.heatmap-stagger > :nth-child(n + 120):nth-child(-n + 126) {
+  animation-delay: 595ms;
+}
+.heatmap-stagger > :nth-child(n + 127):nth-child(-n + 133) {
+  animation-delay: 630ms;
+}
+.heatmap-stagger > :nth-child(n + 134):nth-child(-n + 140) {
+  animation-delay: 665ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heatmap-stagger > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 좋아요 버스트 — 하트를 탭해 false→true 로 바뀔 때 작은 하트들이 중심에서
+   바깥으로 방사된다. 각 파티클은 자기 --lb-angle 방향으로 --lb-dist 만큼
+   날아가며 축소·페이드된다. translate/rotate/scale/opacity 만 써서 GPU
+   합성으로 처리(레이아웃/필터 없음). LikeBurst 가 좋아요 전환 때만
+   마운트하므로 idle 카드에는 비용이 없다. */
+@keyframes likeBurst {
+  0% {
+    transform: rotate(var(--lb-angle)) translateY(0) scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  60% {
+    transform: rotate(var(--lb-angle)) translateY(calc(var(--lb-dist) * -1))
+      scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--lb-angle))
+      translateY(calc(var(--lb-dist) * -1.4)) scale(0.5);
+    opacity: 0;
+  }
+}
+
+.like-burst-particle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* 글리프(~8px)를 앵커 포인트 중심에 맞춘다. */
+  margin-top: -4px;
+  margin-left: -4px;
+  font-size: 9px;
+  line-height: 1;
+  color: var(--color-red-500, #ef4444);
+  transform-origin: center;
+  will-change: transform, opacity;
+  animation: likeBurst 520ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .like-burst-particle {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* 빈 상태 일러스트 — 천천히 위아래로 떠다닌다. 데이터가 없는 화면이
+   비어 보이지 않도록 미세한 생동감을 준다. transform(translateY) 만 써서
+   GPU 합성으로 처리하고 레이아웃 리플로우가 없다. */
+@keyframes emptyFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.empty-float {
+  will-change: transform;
+  animation: emptyFloat 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty-float {
+    animation: none;
+  }
+}

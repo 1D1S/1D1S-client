@@ -32,14 +32,19 @@ export function MyPageBadgesSection({
           'sm:grid-cols-3 md:grid-cols-5 md:gap-3'
         )}
       >
-        {badges.map((badge) => (
-          <MyPageBadgeTile
+        {badges.map((badge, index) => (
+          <div
             key={badge.id}
-            badgeId={badge.id}
-            label={badge.label}
-            tone={badge.tone}
-            achieved={badge.achieved}
-          />
+            className="animate-pop-in w-full"
+            style={{ animationDelay: `${index * 70}ms` }}
+          >
+            <MyPageBadgeTile
+              badgeId={badge.id}
+              label={badge.label}
+              tone={badge.tone}
+              achieved={badge.achieved}
+            />
+          </div>
         ))}
       </div>
     </section>

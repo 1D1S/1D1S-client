@@ -1,5 +1,6 @@
 import { SectionHeader, Text } from '@1d1s/design-system';
 import ChallengeCard from '@component/cards/ChallengeCard';
+import EmptyState from '@component/EmptyState';
 import { ChallengeCardSkeleton } from '@component/skeletons/ChallengeCardSkeleton';
 import {
   CategoryIcon,
@@ -121,11 +122,11 @@ export default function HomeRandomChallengesSection({
         </div>
       ) : null}
       {!showSkeleton && !isError && challenges.length === 0 ? (
-        <div className="flex w-full justify-center py-8">
-          <Text size="body2" weight="medium" className="text-gray-500">
-            표시할 챌린지가 없습니다.
-          </Text>
-        </div>
+        <EmptyState
+          variant="challenge"
+          title="표시할 챌린지가 없어요"
+          className="py-8"
+        />
       ) : null}
     </section>
   );

@@ -1,7 +1,11 @@
 'use client';
 
 import { Card, Icon, Stripe, Text } from '@1d1s/design-system';
-import { getCategoryLabel, getCategoryStripeTone } from '@constants/categories';
+import {
+  CategoryIcon,
+  getCategoryLabel,
+  getCategoryStripeTone,
+} from '@constants/categories';
 import {
   isChallengeEndedOrArchived,
   isChallengeOngoing,
@@ -110,6 +114,9 @@ function DiaryCreateChallengeSectionComponent({
           challengeTitle={selectedChallenge.title}
           challengeType={formatChallengeTypeLabel(selectedChallenge.goalType)}
           challengeCategory={getCategoryLabel(selectedChallenge.category)}
+          categoryIcon={
+            <CategoryIcon category={selectedChallenge.category} />
+          }
           imageUrl={selectedChallenge.thumbnailImage}
           currentUserCount={selectedChallenge.participantCnt}
           maxUserCount={selectedChallenge.maxParticipantCnt}

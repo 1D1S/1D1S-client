@@ -1,3 +1,4 @@
+import { CountUp } from '@component/CountUp';
 import type { MyPageStreak } from '@feature/member/type/member';
 import { cn } from '@module/utils/cn';
 import React from 'react';
@@ -29,26 +30,26 @@ export function MyPageStatSection({
       <div className={cn('mt-4 grid grid-cols-2 gap-2.5', 'sm:grid-cols-4')}>
         <MyPageStatTile
           label="현재 스트릭"
-          value={streak.currentStreak}
+          value={<CountUp value={streak.currentStreak} />}
           iconName="Flame"
           tone="brand"
         />
         <MyPageStatTile
           label="최장 스트릭"
-          value={`${streak.maxStreak}일`}
+          value={<CountUp value={streak.maxStreak} suffix="일" />}
           iconName="Endless"
           tone="white"
         />
         <MyPageStatTile
           label="작성한 일지"
-          value={streak.totalDiaryCount}
+          value={<CountUp value={streak.totalDiaryCount} />}
           helper={`이번 달 ${streak.currentMonthDiaryCount}개`}
           iconName="BookOpen"
           tone="white"
         />
         <MyPageStatTile
           label="목표 최장 스트릭"
-          value={`${longestGoalStreak.streakCount}일`}
+          value={<CountUp value={longestGoalStreak.streakCount} suffix="일" />}
           helper={
             longestGoalStreak.hasRecord
               ? `목표: ${longestGoalStreak.goalTitle}`

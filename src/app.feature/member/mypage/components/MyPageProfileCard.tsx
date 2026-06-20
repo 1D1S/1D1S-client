@@ -126,7 +126,7 @@ export function MyPageProfileCard({
           <div
             className={cn(
               'h-18 w-18 shrink-0 overflow-hidden rounded-full',
-              'border-[3px] border-white'
+              'border-[3px] border-gray-100'
             )}
           >
             <CircleAvatar imageUrl={profileUrl} size={66} />
@@ -185,7 +185,7 @@ export function MyPageProfileCard({
       <section
         className={cn(
           'rounded-4 relative -mt-25 hidden border border-gray-200 bg-white',
-          'p-5 shadow-sm',
+          'p-5',
           'lg:flex lg:flex-row lg:items-center lg:gap-5 lg:p-6'
         )}
       >
@@ -193,7 +193,7 @@ export function MyPageProfileCard({
           <div
             className={cn(
               'h-24 w-24 overflow-hidden rounded-full border-4',
-              'border-white shadow-md'
+              'border-gray-100'
             )}
           >
             <CircleAvatar imageUrl={profileUrl} size={88} />

@@ -1,5 +1,11 @@
 import { ImagePicker, Text } from '@1d1s/design-system';
+import { ImageCropDialog } from '@component/ImageCropDialog';
 import React from 'react';
+
+const DIARY_THUMBNAIL_SIZE = {
+  width: 1200,
+  height: 1500,
+} as const;
 
 interface DiaryCreateThumbnailSectionProps {
   thumbnailPreviewUrl: string;
@@ -10,9 +16,31 @@ interface DiaryCreateThumbnailSectionProps {
 
 function DiaryCreateThumbnailSectionComponent({
   thumbnailPreviewUrl,
+  hasThumbnail,
   onSelectThumbnailFile,
   onClearThumbnail,
 }: DiaryCreateThumbnailSectionProps): React.ReactElement {
+  const [pendingFile, setPendingFile] = React.useState<File | null>(null);
+  const [isCropDialogOpen, setIsCropDialogOpen] = React.useState(false);
+
+  const handleSelectFile = (file: File): void => {
+    setPendingFile(file);
+    setIsCropDialogOpen(true);
+  };
+
+  const handleCropDialogOpenChange = (open: boolean): void => {
+    setIsCropDialogOpen(open);
+
+    if (!open) {
+      setPendingFile(null);
+    }
+  };
+
+  const handleCropApply = (file: File): void => {
+    setPendingFile(null);
+    onSelectThumbnailFile(file);
+  };
+
   return (
     <div>
       <Text size="caption1" weight="bold" className="mb-2 block text-gray-600">
@@ -20,9 +48,18 @@ function DiaryCreateThumbnailSectionComponent({
       </Text>
       <ImagePicker
         previewUrl={thumbnailPreviewUrl}
-        onSelectFile={onSelectThumbnailFile}
+        onSelectFile={handleSelectFile}
         onClear={onClearThumbnail}
+        clearLabel={hasThumbnail ? '사진 제거' : undefined}
         dropZoneClassName="aspect-4/5"
+      />
+      <ImageCropDialog
+        open={isCropDialogOpen}
+        file={pendingFile}
+        title="일지 사진 맞추기"
+        outputSize={DIARY_THUMBNAIL_SIZE}
+        onOpenChange={handleCropDialogOpenChange}
+        onApply={handleCropApply}
       />
     </div>
   );

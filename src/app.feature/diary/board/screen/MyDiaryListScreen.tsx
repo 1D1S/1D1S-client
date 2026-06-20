@@ -2,6 +2,7 @@
 
 import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
+import EmptyState from '@component/EmptyState';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { DiaryItem } from '@feature/diary/board/type/diary';
@@ -229,11 +230,12 @@ export function MyDiaryListScreen(): React.ReactElement {
         ) : null}
 
         {!showSkeleton && !isError && !hasDiaries ? (
-          <div className="mt-10 flex w-full justify-center py-10">
-            <Text size="body1" weight="medium" className="text-gray-500">
-              아직 작성한 일지가 없습니다.
-            </Text>
-          </div>
+          <EmptyState
+            variant="diary"
+            title="아직 작성한 일지가 없어요"
+            description="첫 일지를 남기고 기록을 시작해 보세요"
+            className="mt-10"
+          />
         ) : null}
 
         {isFetchingNextPage ? (

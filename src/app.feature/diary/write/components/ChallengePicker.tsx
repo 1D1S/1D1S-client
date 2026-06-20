@@ -9,7 +9,11 @@ import {
   Icon,
   Text,
 } from '@1d1s/design-system';
-import { getCategoryLabel, getCategoryStripeTone } from '@constants/categories';
+import {
+  CategoryIcon,
+  getCategoryLabel,
+  getCategoryStripeTone,
+} from '@constants/categories';
 import {
   isChallengeEndedOrArchived,
   isChallengeOngoing,
@@ -85,6 +89,9 @@ export function ChallengePicker({
                   challengeTitle={challenge.title}
                   challengeType={formatChallengeTypeLabel(challenge.goalType)}
                   challengeCategory={getCategoryLabel(challenge.category)}
+                  categoryIcon={
+                    <CategoryIcon category={challenge.category} />
+                  }
                   imageUrl={challenge.thumbnailImage}
                   currentUserCount={challenge.participantCnt}
                   maxUserCount={challenge.maxParticipantCnt}

@@ -1,4 +1,9 @@
-import { GoalAddList, Icon, Text } from '@1d1s/design-system';
+import {
+  GoalAddList,
+  Icon,
+  SegmentedControl,
+  Text,
+} from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { useFormContext } from 'react-hook-form';
 
@@ -11,7 +16,6 @@ import {
 
 import { ChallengeEditFormValues } from '../hooks/useChallengeEditForm';
 import { ChallengeCreateSectionCard } from './ChallengeCreateSectionCard';
-import { ChallengeCreateSegmentToggle } from './ChallengeCreateSegmentToggle';
 
 export function ChallengeEditGoalSection(): React.ReactElement {
   const { control, watch } = useFormContext<ChallengeEditFormValues>();
@@ -27,21 +31,21 @@ export function ChallengeEditGoalSection(): React.ReactElement {
       title="목표 설정"
       hint="목표 유형은 변경할 수 없어요"
     >
-      <ChallengeCreateSegmentToggle
+      <SegmentedControl
         value={goalValue}
-        onChange={() => undefined}
-        ariaLabel="목표 유형"
+        onValueChange={() => undefined}
+        aria-label="목표 유형"
         options={[
           {
             value: 'FIXED',
             label: '고정 목표',
-            icon: <Icon name="Target" className="h-3.5 w-3.5" />,
+            icon: <Icon name="Target" className="h-5 w-5" />,
             disabled: true,
           },
           {
             value: 'FLEXIBLE',
             label: '자유 목표',
-            icon: <Icon name="PencilLine" className="h-3.5 w-3.5" />,
+            icon: <Icon name="PencilLine" className="h-5 w-5" />,
             disabled: true,
           },
         ]}
@@ -50,7 +54,7 @@ export function ChallengeEditGoalSection(): React.ReactElement {
       <Text
         size="caption1"
         weight="regular"
-        className="mt-2 block text-gray-500"
+        className="mt-3 block text-gray-500"
       >
         {isFixedGoal
           ? '모두 같은 목표를 향해 달려요. 참여자는 동일한 인증 기준을 따라요.'
@@ -60,7 +64,7 @@ export function ChallengeEditGoalSection(): React.ReactElement {
       {isStarted ? (
         <div
           className={cn(
-            'rounded-2 mt-3 border border-amber-200 bg-amber-50 px-4 py-3'
+            'rounded-2 mt-4 border border-amber-200 bg-amber-50 px-4 py-3'
           )}
         >
           <Text size="caption1" weight="bold" className="block text-amber-800">
@@ -70,7 +74,7 @@ export function ChallengeEditGoalSection(): React.ReactElement {
       ) : null}
 
       {canEditGoals ? (
-        <div className="mt-4 space-y-2">
+        <div className="mt-5 space-y-2">
           <Text size="caption1" weight="bold" className="block text-gray-600">
             공통 목표
           </Text>
@@ -98,7 +102,7 @@ export function ChallengeEditGoalSection(): React.ReactElement {
           />
         </div>
       ) : isFixedGoal ? (
-        <div className="mt-4 space-y-2">
+        <div className="mt-5 space-y-2">
           <Text size="caption1" weight="bold" className="block text-gray-600">
             공통 목표
           </Text>
@@ -125,7 +129,7 @@ export function ChallengeEditGoalSection(): React.ReactElement {
       ) : (
         <div
           className={cn(
-            'border-main-200 bg-main-100 rounded-2 mt-3 border px-4 py-3'
+            'border-main-200 bg-main-100 rounded-2 mt-4 border px-4 py-3'
           )}
         >
           <Text size="caption1" weight="bold" className="text-main-900 block">

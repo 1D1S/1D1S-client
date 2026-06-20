@@ -67,7 +67,7 @@ export function MyPageBadgeTile({
       tone={tone}
       layout="vertical"
       size="lg"
-      className={cn(!achieved && 'opacity-60')}
+      className={cn('w-full', !achieved && 'opacity-60')}
     />
   );
 }

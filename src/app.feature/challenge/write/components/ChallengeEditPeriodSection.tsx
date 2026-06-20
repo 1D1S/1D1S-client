@@ -1,4 +1,4 @@
-import { Icon, Text } from '@1d1s/design-system';
+import { Icon, SegmentedControl, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { formatDateKR } from '@module/utils/date';
 
@@ -7,7 +7,6 @@ import {
   isInfiniteChallengeEndDate,
 } from '../../board/utils/challengePeriod';
 import { ChallengeCreateSectionCard } from './ChallengeCreateSectionCard';
-import { ChallengeCreateSegmentToggle } from './ChallengeCreateSegmentToggle';
 
 interface ChallengeEditPeriodSectionProps {
   startDate: string;
@@ -52,21 +51,21 @@ export function ChallengeEditPeriodSection({
       title="진행 기간"
       hint="진행 기간은 변경할 수 없어요"
     >
-      <ChallengeCreateSegmentToggle
+      <SegmentedControl
         value={periodValue}
-        onChange={() => undefined}
-        ariaLabel="진행 기간 유형"
+        onValueChange={() => undefined}
+        aria-label="진행 기간 유형"
         options={[
           {
             value: 'ENDLESS',
             label: '무제한',
-            icon: <Icon name="Endless" className="h-3.5 w-3.5" />,
+            icon: <Icon name="Endless" className="h-5 w-5" />,
             disabled: true,
           },
           {
             value: 'LIMITED',
             label: '기간 챌린지',
-            icon: <Icon name="Calendar" className="h-3.5 w-3.5" />,
+            icon: <Icon name="Calendar" className="h-5 w-5" />,
             disabled: true,
           },
         ]}
@@ -74,7 +73,7 @@ export function ChallengeEditPeriodSection({
 
       <div
         className={cn(
-          'rounded-2 mt-4 grid grid-cols-1 gap-3 border border-gray-200',
+          'rounded-2 mt-5 grid grid-cols-1 gap-3 border border-gray-200',
           'bg-gray-50 px-4 py-3 md:grid-cols-3'
         )}
       >

@@ -1,4 +1,12 @@
-import { Icon, ImagePicker, Text, TextField } from '@1d1s/design-system';
+import {
+  Icon,
+  ImagePicker,
+  Text,
+  TextField,
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@1d1s/design-system';
+import { ImageCropDialog } from '@component/ImageCropDialog';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { apiClient } from '@module/api/client';
 import { requestData } from '@module/api/request';
@@ -13,8 +21,12 @@ import {
 } from '@/app.component/ui/Form';
 
 import { ChallengeEditFormValues } from '../hooks/useChallengeEditForm';
-import { ChallengeCreateChip } from './ChallengeCreateChip';
 import { ChallengeCreateSectionCard } from './ChallengeCreateSectionCard';
+
+const CHALLENGE_THUMBNAIL_SIZE = {
+  width: 2100,
+  height: 900,
+} as const;
 
 export function ChallengeEditBannerSection(): React.ReactElement {
   const { control, getValues, setValue, watch } =
@@ -25,10 +37,12 @@ export function ChallengeEditBannerSection(): React.ReactElement {
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(
     getValues('thumbnailPreviewUrl')
   );
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [isCropDialogOpen, setIsCropDialogOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const handleSelectFile = async (file: File): Promise<void> => {
+  const uploadFile = async (file: File): Promise<void> => {
     setUploadError(null);
     const blobUrl = URL.createObjectURL(file);
     setPreviewUrl(blobUrl);
@@ -62,6 +76,24 @@ export function ChallengeEditBannerSection(): React.ReactElement {
     }
   };
 
+  const handleSelectFile = (file: File): void => {
+    setPendingFile(file);
+    setIsCropDialogOpen(true);
+  };
+
+  const handleCropDialogOpenChange = (open: boolean): void => {
+    setIsCropDialogOpen(open);
+
+    if (!open) {
+      setPendingFile(null);
+    }
+  };
+
+  const handleCropApply = (file: File): void => {
+    setPendingFile(null);
+    void uploadFile(file);
+  };
+
   const handleClear = (): void => {
     setPreviewUrl(undefined);
     setValue('thumbnailImageKey', undefined, { shouldDirty: true });
@@ -71,8 +103,8 @@ export function ChallengeEditBannerSection(): React.ReactElement {
 
   return (
     <ChallengeCreateSectionCard step={1} title="간판 & 기본 정보">
-      <div className="space-y-4">
-        <div className="space-y-1.5">
+      <div className="space-y-5">
+        <div className="space-y-2">
           <ImagePicker
             previewUrl={previewUrl}
             onSelectFile={handleSelectFile}
@@ -94,7 +126,7 @@ export function ChallengeEditBannerSection(): React.ReactElement {
           ) : null}
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Text size="caption1" weight="bold" className="block text-gray-600">
             챌린지 제목
           </Text>
@@ -130,28 +162,37 @@ export function ChallengeEditBannerSection(): React.ReactElement {
             name="category"
             render={({ field }) => (
               <FormItem>
-                <div className="flex flex-wrap gap-1.5">
+                <ToggleGroup
+                  type="single"
+                  value={field.value}
+                  onValueChange={(value) => {
+                    if (value) {
+                      field.onChange(value);
+                    }
+                  }}
+                  className="gap-1.5"
+                >
                   {CATEGORY_OPTIONS.map((option) => (
-                    <ChallengeCreateChip
+                    <ToggleGroupItem
                       key={option.value}
-                      active={field.value === option.value}
-                      onClick={() => field.onChange(option.value)}
+                      value={option.value}
+                      size="sm"
                       icon={
                         <Icon name={option.iconName} className="h-3.5 w-3.5" />
                       }
-                      ariaLabel={`${option.label} 카테고리`}
+                      aria-label={`${option.label} 카테고리`}
                     >
                       {option.label}
-                    </ChallengeCreateChip>
+                    </ToggleGroupItem>
                   ))}
-                </div>
+                </ToggleGroup>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Text size="caption1" weight="bold" className="block text-gray-600">
             설명 <span className="text-gray-400">(선택)</span>
           </Text>
@@ -181,6 +222,15 @@ export function ChallengeEditBannerSection(): React.ReactElement {
           />
         </div>
       </div>
+
+      <ImageCropDialog
+        open={isCropDialogOpen}
+        file={pendingFile}
+        title="챌린지 사진 맞추기"
+        outputSize={CHALLENGE_THUMBNAIL_SIZE}
+        onOpenChange={handleCropDialogOpenChange}
+        onApply={handleCropApply}
+      />
     </ChallengeCreateSectionCard>
   );
 }

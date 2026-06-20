@@ -13,6 +13,8 @@ export type ChallengeCategory =
   | 'ECONOMY';
 export type GoalType = 'FIXED' | 'FLEXIBLE';
 export type ParticipationType = 'INDIVIDUAL' | 'GROUP';
+// 챌린지 공개 범위 — PUBLIC: 공개, PRIVATE: 비공개(비밀번호), OFFICIAL: 공식
+export type ChallengeType = 'PUBLIC' | 'PRIVATE' | 'OFFICIAL';
 export type ParticipantStatus =
   | 'NONE'
   | 'PENDING'
@@ -99,6 +101,10 @@ export interface CreateChallengeRequest {
   goals: string[];
   allowMidJoin: boolean;
   thumbnailImage?: string;
+  // 공개 범위. 생성 시 PUBLIC 또는 PRIVATE 를 보낸다.
+  challengeType: ChallengeType;
+  // PRIVATE 일 때만 동봉하는 참여 비밀번호.
+  password?: string;
 }
 
 // 변경할 필드만 포함 (생략 시 기존 값 유지, null 명시 시 삭제)
@@ -134,6 +140,16 @@ export interface JoinChallengeResponse {
   profileImg: string;
   status: ParticipantStatus;
 }
+
+// 비공개 챌린지 비밀번호 검증 후 즉시 참여
+// FLEXIBLE 챌린지는 goals 로 본인 목표를 전달, FIXED 는 무시된다.
+export interface VerifyChallengePasswordRequest {
+  password: string;
+  goals?: string[];
+}
+
+// 검증 성공 시 참여 정보를 그대로 돌려준다.
+export type VerifyChallengePasswordResponse = JoinChallengeResponse;
 
 // 챌린지원 찌르기 — 오늘 일지를 쓰지 않은 챌린지원에게 알림 전송
 export interface PokeChallengeRequest {

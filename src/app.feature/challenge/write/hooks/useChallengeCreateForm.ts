@@ -33,6 +33,9 @@ export const challengeCreateFormSchema = z
     memberCountNumber: z.string().optional(),
     goalType: z.enum(['FIXED', 'FLEXIBLE']),
     allowMidJoin: z.boolean(),
+    // 공개 범위 — 생성 시에는 공개/비공개만 선택할 수 있다.
+    challengeType: z.enum(['PUBLIC', 'PRIVATE']),
+    password: z.string().optional(),
     thumbnailImageKey: z.string().optional(),
     thumbnailPreviewUrl: z.string().optional(),
     goals: z.array(
@@ -112,6 +115,16 @@ export const challengeCreateFormSchema = z
         message: '목표를 하나 이상 입력해주세요.',
       });
     }
+    if (data.challengeType === 'PRIVATE') {
+      const password = data.password?.trim() ?? '';
+      if (password.length < 4 || password.length > 20) {
+        ctx.addIssue({
+          path: ['password'],
+          code: z.ZodIssueCode.custom,
+          message: '비밀번호는 4자 이상 20자 이하로 입력해주세요.',
+        });
+      }
+    }
   });
 
 export type ChallengeCreateFormValues = z.infer<
@@ -137,6 +150,8 @@ export function useChallengeCreateForm(): ReturnType<
       // 챌린지 시작 후에도 다른 사용자들이 자유롭게 합류할 수 있도록 기본값을
       // 허용으로 둔다. 작성자는 필요 시 토글로 비허용으로 바꿀 수 있다.
       allowMidJoin: true,
+      challengeType: 'PUBLIC',
+      password: '',
       goals: [],
     },
   });

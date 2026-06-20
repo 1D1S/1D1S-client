@@ -22,7 +22,7 @@ function MoodOptionButton({
       onClick={onClick}
       className={cn(
         'rounded-3 relative flex flex-1 cursor-pointer flex-col items-center',
-        'justify-center gap-1 border-2 px-3 py-3 transition',
+        'justify-center gap-1 border px-3 py-3 transition',
         active
           ? 'border-main-800 bg-main-100 text-main-800'
           : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'

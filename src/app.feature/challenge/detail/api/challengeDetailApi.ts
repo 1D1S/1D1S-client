@@ -7,6 +7,8 @@ import {
   JoinChallengeResponse,
   PokeChallengeRequest,
   PokeChallengeResponse,
+  VerifyChallengePasswordRequest,
+  VerifyChallengePasswordResponse,
 } from '../../board/type/challenge';
 import { ChallengeDiaryListResponse } from '../type/challengeDiary';
 
@@ -27,6 +29,20 @@ export const challengeDetailApi = {
   ): Promise<JoinChallengeResponse> =>
     requestData<JoinChallengeResponse, JoinChallengeRequest>(apiClient, {
       url: `/challenges/${challengeId}/participants`,
+      method: 'POST',
+      data,
+    }),
+
+  // 비공개 챌린지 비밀번호 검증 후 즉시 참여
+  verifyChallengePassword: async (
+    challengeId: number,
+    data: VerifyChallengePasswordRequest
+  ): Promise<VerifyChallengePasswordResponse> =>
+    requestData<
+      VerifyChallengePasswordResponse,
+      VerifyChallengePasswordRequest
+    >(apiClient, {
+      url: `/challenges/${challengeId}/verify-password`,
       method: 'POST',
       data,
     }),

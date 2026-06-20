@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@1d1s/design-system';
 import { MyPageSkeleton } from '@component/skeletons/MyPageSkeleton';
 import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
 import { MyPageFriendsEntry } from '@feature/friend/components/MyPageFriendsEntry';
@@ -82,17 +83,20 @@ export default function MyPageScreen(): React.ReactElement | null {
           <MyPageFriendsEntry />
         </div>
 
-        {/* Streak hero + Heatmap — 모바일에서는 숨김 */}
+        {/* Streak hero + Heatmap — 모바일은 활동 캘린더(잔디)만 노출.
+            현재 연속 hero 는 프로필 카드가 대체하므로 데스크탑 전용 */}
         <div
           className={cn(
-            'mt-6 hidden grid-cols-1 gap-4',
-            'lg:grid lg:grid-cols-2 lg:gap-5'
+            'mt-6 grid grid-cols-1 gap-4',
+            'lg:grid-cols-2 lg:gap-5'
           )}
         >
-          <MyPageStreakHeroCard
-            currentStreak={streak.currentStreak}
-            maxStreak={streak.maxStreak}
-          />
+          <div className="hidden lg:block">
+            <MyPageStreakHeroCard
+              currentStreak={streak.currentStreak}
+              maxStreak={streak.maxStreak}
+            />
+          </div>
           <MyPageActivityHeatmap calendar={streak.calendar} />
         </div>
 
@@ -116,6 +120,14 @@ export default function MyPageScreen(): React.ReactElement | null {
             nickname={nickname}
             hasMore={hasMoreDiaries}
             viewAllHref="/mypage/diary"
+            action={
+              <Button
+                size="small"
+                onClick={() => router.push('/diary/create')}
+              >
+                새 일지 작성하기
+              </Button>
+            }
           />
         </div>
       </div>

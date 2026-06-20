@@ -20,8 +20,7 @@ export function ChallengeRulesCard({
   return (
     <section
       className={cn(
-        'rounded-[14px] border border-gray-100 bg-gray-50',
-        'lg:border-gray-200 lg:bg-white',
+        'rounded-[14px] border border-gray-200 bg-white',
         'p-4 sm:p-5 lg:p-6'
       )}
     >

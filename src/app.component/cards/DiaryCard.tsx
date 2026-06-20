@@ -2,6 +2,7 @@
 
 import { Card, Icon, Stripe, Text } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
+import LikeBurst from '@component/LikeBurst';
 import { ChallengeChip } from '@feature/challenge/shared/components/ChallengeChip';
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
@@ -177,18 +178,27 @@ function DiaryCard({
             aria-pressed={isLiked}
             aria-label={isLiked ? '좋아요 취소' : '좋아요'}
             className={cn(
-              'inline-flex shrink-0 cursor-pointer items-center gap-1',
-              'font-bold text-gray-600'
+              'group/like inline-flex shrink-0 cursor-pointer items-center',
+              'gap-1 rounded-full px-2 py-1 font-bold transition-colors',
+              'hover:bg-red-50 motion-safe:active:scale-95',
+              isLiked
+                ? 'bg-red-50 text-red-500'
+                : 'bg-gray-100 text-gray-600 hover:text-red-400'
             )}
           >
-            <Icon
-              name={isLiked ? 'HeartFilled' : 'Heart'}
-              size={13}
-              className={cn(
-                'transition',
-                isLiked ? 'animate-heart-pop text-red-500' : 'text-gray-400'
-              )}
-            />
+            <span className="relative inline-flex">
+              <LikeBurst liked={isLiked} />
+              <Icon
+                name={isLiked ? 'HeartFilled' : 'Heart'}
+                size={13}
+                className={cn(
+                  'transition',
+                  isLiked
+                    ? 'animate-heart-pop text-red-500'
+                    : 'text-gray-400 group-hover/like:text-red-400'
+                )}
+              />
+            </span>
             {likes}
           </button>
         </Card.Meta>

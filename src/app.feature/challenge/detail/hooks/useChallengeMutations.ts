@@ -14,6 +14,8 @@ import {
   JoinChallengeResponse,
   PokeChallengeResponse,
   UpdateChallengeRequest,
+  VerifyChallengePasswordRequest,
+  VerifyChallengePasswordResponse,
 } from '../../board/type/challenge';
 import { challengeWriteApi } from '../../write/api/challengeWriteApi';
 import { challengeDetailApi } from '../api/challengeDetailApi';
@@ -57,6 +59,27 @@ export function useJoinChallenge(): UseMutationResult<
       data: JoinChallengeRequest;
     }) => challengeDetailApi.joinChallenge(challengeId, data),
     onSuccess: (_, { challengeId }) => {
+      invalidateAll(queryClient, [
+        CHALLENGE_QUERY_KEYS.detail(challengeId),
+        CHALLENGE_QUERY_KEYS.lists(),
+      ]);
+    },
+  });
+}
+
+// 비공개 챌린지 비밀번호 검증 + 즉시 참여
+export function useVerifyChallengePassword(): UseMutationResult<
+  VerifyChallengePasswordResponse,
+  Error,
+  { challengeId: number; data: VerifyChallengePasswordRequest }
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ challengeId, data }) =>
+      challengeDetailApi.verifyChallengePassword(challengeId, data),
+    onSuccess: (_, { challengeId }) => {
+      // 검증 성공 시 막혀 있던 상세 조회를 다시 불러오도록 무효화한다.
       invalidateAll(queryClient, [
         CHALLENGE_QUERY_KEYS.detail(challengeId),
         CHALLENGE_QUERY_KEYS.lists(),
