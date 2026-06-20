@@ -18,6 +18,7 @@ import {
 } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
+import LikeBurst from '@component/LikeBurst';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSkeleton';
 import { getCategoryLabel } from '@constants/categories';
@@ -54,6 +55,7 @@ import {
 import { ChallengeDetailHero } from '../components/ChallengeDetailHero';
 import { ChallengeDiaryGrid } from '../components/ChallengeDiaryGrid';
 import { ChallengeLeaderboardCard } from '../components/ChallengeLeaderboardCard';
+import { ChallengePasswordDialog } from '../components/ChallengePasswordDialog';
 import { ChallengeProgressCard } from '../components/ChallengeProgressCard';
 import { ChallengeRulesCard } from '../components/ChallengeRulesCard';
 import { ExpandableText } from '../components/ExpandableText';
@@ -69,6 +71,7 @@ import {
   useUnlikeChallenge,
   useUpdateChallenge,
   useUpdateParticipantGoal,
+  useVerifyChallengePassword,
 } from '../hooks/useChallengeMutations';
 import { ChallengeDiaryItem } from '../type/challengeDiary';
 import { buildHeroGradient, getCategoryAccent } from '../utils/challengeAccent';
@@ -106,6 +109,7 @@ export function ChallengeDetailScreen({
   const updateChallenge = useUpdateChallenge();
   const updateParticipantGoal = useUpdateParticipantGoal();
   const pokeChallengeMembers = usePokeChallengeMembers();
+  const verifyChallengePassword = useVerifyChallengePassword();
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
 
@@ -468,6 +472,25 @@ export function ChallengeDetailScreen({
     }
   };
 
+  const handleVerifyPassword = (password: string): void => {
+    verifyChallengePassword.mutate(
+      { challengeId, data: { password } },
+      {
+        onSuccess: () => {
+          // 검증 성공 시 상세 쿼리가 무효화되어 자동으로 다시 불러온다.
+          toast.success('비공개 챌린지에 참여했어요.');
+        },
+        onError: (mutationError) => {
+          notifyApiError(mutationError);
+        },
+      }
+    );
+  };
+
+  // 비공개 챌린지(403)는 비밀번호 검증 모달로 유도한다.
+  const isPrivateChallengeLocked =
+    isError && normalizeApiError(error).status === 403;
+
   if (!isLoggedIn) {
     return (
       <LoginRequiredDialog
@@ -483,6 +506,17 @@ export function ChallengeDetailScreen({
 
   if (showSkeleton) {
     return <ChallengeDetailSkeleton />;
+  }
+
+  if (isPrivateChallengeLocked) {
+    return (
+      <ChallengePasswordDialog
+        open
+        isPending={verifyChallengePassword.isPending}
+        onClose={() => router.push('/challenge')}
+        onSubmit={handleVerifyPassword}
+      />
+    );
   }
 
   if (isError || !summary || !detail) {
@@ -524,13 +558,33 @@ export function ChallengeDetailScreen({
     variant: 'default' | 'outlined';
     show: boolean;
     hint?: string;
+    secondary?: {
+      label: string;
+      onClick(): void;
+      variant: 'default' | 'outlined';
+    };
   } => {
     if (isHost) {
-      return {
+      const editChallenge = {
         label: '챌린지 수정',
         onClick: () => router.push(`/challenge/${id}/edit`),
+        variant: 'outlined' as const,
+      };
+      // 호스트도 참여자이므로 진행 중에는 일지 작성을 우선 CTA 로 노출하고
+      // 챌린지 수정은 보조 버튼으로 함께 제공한다.
+      if (isChallengeCurrentlyOngoing) {
+        return {
+          label: '일지 작성하기',
+          onClick: handleDiaryCreateClick,
+          disabled: isCheckWriteDatesLoading,
+          variant: 'default',
+          show: true,
+          secondary: editChallenge,
+        };
+      }
+      return {
+        ...editChallenge,
         disabled: false,
-        variant: 'outlined',
         show: true,
       };
     }
@@ -829,6 +883,7 @@ export function ChallengeDetailScreen({
           <ChallengeDetailHero
             title={summary.title}
             categoryLabel={getCategoryLabel(summary.category)}
+            category={summary.category}
             typeLabel={`${formatChallengeTypeLabel(summary.goalType)} 챌린지`}
             metaLabel={heroMetaLabel}
             imageUrl={summary.thumbnailImage ?? undefined}
@@ -893,13 +948,15 @@ export function ChallengeDetailScreen({
               disabled={isActionLoading}
               aria-label={summary.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'}
               className={cn(
-                'flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1',
-                'text-[12px] font-bold transition-colors disabled:opacity-50',
+                'relative flex shrink-0 cursor-pointer items-center gap-1',
+                'rounded-full border px-2.5 py-1 text-[12px] font-bold',
+                'transition-colors disabled:cursor-default disabled:opacity-50',
                 summary.likeInfo.likedByMe
-                  ? 'text-main-800 bg-main-100 hover:bg-main-200/70'
-                  : 'text-gray-500 hover:bg-gray-100'
+                  ? 'border-main-800 bg-main-100 text-main-800'
+                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
               )}
             >
+              <LikeBurst liked={summary.likeInfo.likedByMe} />
               <Heart
                 className={cn(
                   'h-3.5 w-3.5',
@@ -1006,8 +1063,7 @@ export function ChallengeDetailScreen({
               {detail.description?.trim() ? (
                 <section
                   className={cn(
-                    'rounded-[14px] border border-gray-100 bg-gray-50',
-                    'lg:border-gray-200 lg:bg-white',
+                    'rounded-[14px] border border-gray-200 bg-white',
                     'p-4 sm:p-5 lg:p-6'
                   )}
                 >
@@ -1058,8 +1114,7 @@ export function ChallengeDetailScreen({
 
               <section
                 className={cn(
-                  'rounded-[14px] border border-gray-100 bg-gray-50',
-                  'lg:border-gray-200 lg:bg-white',
+                  'rounded-[14px] border border-gray-200 bg-white',
                   'p-4 sm:p-5 lg:p-6'
                 )}
               >
@@ -1123,6 +1178,9 @@ export function ChallengeDetailScreen({
                   ctaVariant={ctaConfig.variant}
                   showCta={ctaConfig.show}
                   ctaHint={ctaConfig.hint}
+                  secondaryCtaLabel={ctaConfig.secondary?.label}
+                  onSecondaryCtaClick={ctaConfig.secondary?.onClick}
+                  secondaryCtaVariant={ctaConfig.secondary?.variant}
                   isInfinite={isEndless}
                   likeCount={summary.likeInfo.likeCnt}
                   likedByMe={summary.likeInfo.likedByMe}
@@ -1181,6 +1239,17 @@ export function ChallengeDetailScreen({
           >
             {ctaConfig.label}
           </Button>
+          {ctaConfig.secondary ? (
+            <Button
+              size="medium"
+              variant={ctaConfig.secondary.variant}
+              fullWidth
+              onClick={ctaConfig.secondary.onClick}
+              className="mt-2"
+            >
+              {ctaConfig.secondary.label}
+            </Button>
+          ) : null}
           {ctaConfig.hint ? (
             <Text
               size="caption1"

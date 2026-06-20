@@ -1,5 +1,9 @@
 import { Text } from '@1d1s/design-system';
-import { getCategoryLabel, getCategoryStripeTone } from '@constants/categories';
+import {
+  CategoryIcon,
+  getCategoryLabel,
+  getCategoryStripeTone,
+} from '@constants/categories';
 import {
   isChallengeEndedOrArchived,
   isChallengeOngoing,
@@ -25,6 +29,7 @@ export function DiaryConnectedChallengeCard({
       challengeTitle={summary.title}
       challengeType={formatChallengeTypeLabel(summary.goalType)}
       challengeCategory={getCategoryLabel(summary.category)}
+      categoryIcon={<CategoryIcon category={summary.category} />}
       imageUrl={summary.thumbnailImage ?? undefined}
       currentUserCount={summary.participantCnt}
       maxUserCount={summary.maxParticipantCnt}

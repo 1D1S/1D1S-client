@@ -1,4 +1,9 @@
-import { GoalAddList, Icon, Text } from '@1d1s/design-system';
+import {
+  GoalAddList,
+  Icon,
+  SegmentedControl,
+  Text,
+} from '@1d1s/design-system';
 import { useFormContext } from 'react-hook-form';
 
 import {
@@ -10,7 +15,6 @@ import {
 
 import { ChallengeCreateFormValues } from '../hooks/useChallengeCreateForm';
 import { ChallengeCreateSectionCard } from './ChallengeCreateSectionCard';
-import { ChallengeCreateSegmentToggle } from './ChallengeCreateSegmentToggle';
 
 export function ChallengeCreateGoalSection(): React.ReactElement {
   const { control, watch } = useFormContext<ChallengeCreateFormValues>();
@@ -25,25 +29,25 @@ export function ChallengeCreateGoalSection(): React.ReactElement {
         name="goalType"
         render={({ field }) => (
           <FormItem>
-            <ChallengeCreateSegmentToggle
+            <SegmentedControl
               value={field.value}
-              onChange={(value) => {
+              onValueChange={(value) => {
                 if (value === 'FLEXIBLE' && isIndividual) {
                   return;
                 }
                 field.onChange(value);
               }}
-              ariaLabel="목표 유형"
+              aria-label="목표 유형"
               options={[
                 {
                   value: 'FIXED',
                   label: '고정 목표',
-                  icon: <Icon name="Target" className="h-3.5 w-3.5" />,
+                  icon: <Icon name="Target" className="h-5 w-5" />,
                 },
                 {
                   value: 'FLEXIBLE',
                   label: '자유 목표',
-                  icon: <Icon name="PencilLine" className="h-3.5 w-3.5" />,
+                  icon: <Icon name="PencilLine" className="h-5 w-5" />,
                   disabled: isIndividual,
                 },
               ]}
@@ -56,7 +60,7 @@ export function ChallengeCreateGoalSection(): React.ReactElement {
       <Text
         size="caption1"
         weight="regular"
-        className="mt-2 block text-gray-500"
+        className="mt-3 block text-gray-500"
       >
         {goalType === 'FIXED'
           ? '모두 같은 목표를 향해 달려요. 참여자는 동일한 인증 기준을 따라요.'
@@ -64,7 +68,7 @@ export function ChallengeCreateGoalSection(): React.ReactElement {
       </Text>
 
       {isIndividual ? (
-        <div className="border-main-200 bg-main-100 rounded-2 mt-3 border px-4 py-3">
+        <div className="border-main-200 bg-main-100 rounded-2 mt-4 border px-4 py-3">
           <Text size="caption1" weight="bold" className="text-main-900 block">
             개인 챌린지는 자동으로 고정 목표로 진행돼요.
           </Text>
@@ -72,7 +76,7 @@ export function ChallengeCreateGoalSection(): React.ReactElement {
       ) : null}
 
       {goalType === 'FIXED' ? (
-        <div className="mt-4 space-y-2">
+        <div className="mt-5 space-y-2">
           <Text size="caption1" weight="bold" className="block text-gray-600">
             공통 목표
           </Text>
@@ -100,7 +104,7 @@ export function ChallengeCreateGoalSection(): React.ReactElement {
           />
         </div>
       ) : (
-        <div className="mt-4 space-y-2">
+        <div className="mt-5 space-y-2">
           <Text size="caption1" weight="bold" className="block text-gray-600">
             나의 시작 목표
           </Text>

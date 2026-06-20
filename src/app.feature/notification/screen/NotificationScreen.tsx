@@ -1,12 +1,13 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
+import { SubPageShell } from '@component/layout/SubPageShell';
 import { NotificationListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import { ArrowLeft, Bell } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import React, { useMemo } from 'react';
 
 import { NotificationListItem } from '../components/NotificationListItem';
@@ -43,148 +44,85 @@ export function NotificationScreen(): React.JSX.Element {
   const unreadCount = notifications.filter((notif) => !notif.isRead).length;
   const hasNotifications = notifications.length > 0;
 
+  const markAllAction = hasUnread ? (
+    <button
+      type="button"
+      onClick={() => markAllAsRead()}
+      className="text-main-800 hover:text-main-900 transition-colors"
+    >
+      <Text size="body2" weight="medium" className="text-inherit">
+        모두 읽음
+      </Text>
+    </button>
+  ) : null;
+
+  const description = hasUnread
+    ? `읽지 않은 알림이 ${unreadCount}개 있어요.`
+    : '받은 알림을 모두 확인했어요.';
 
   return (
-    <div className="min-h-screen w-full">
-      {/* 모바일 sticky 헤더 — ← + 알림 + 모두 읽음 */}
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={handleBack}
+    <SubPageShell
+      title="알림"
+      description={description}
+      headerAction={markAllAction}
+      onBack={handleBack}
+    >
+      {showSkeleton ? (
+        <NotificationListSkeleton count={6} />
+      ) : !hasNotifications ? (
+        <div
           className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
+            'flex flex-col items-center justify-center gap-4',
+            'rounded-3 border border-gray-200 bg-white py-16'
           )}
         >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <Text
-          size="body1"
-          weight="extrabold"
-          className="flex-1 tracking-[-0.3px] text-gray-900"
-        >
-          알림
-        </Text>
-        {hasUnread && (
-          <button
-            type="button"
-            onClick={() => markAllAsRead()}
-            className="text-main-800 hover:text-main-900 transition-colors"
-          >
-            <Text size="caption1" weight="medium" className="text-inherit">
-              모두 읽음
-            </Text>
-          </button>
-        )}
-      </div>
-
-      <div
-        className={cn(
-          'mx-auto w-full max-w-[1200px]',
-          'px-5 py-5 lg:px-8 lg:py-10'
-        )}
-      >
-        <header
-          className={cn(
-            'hidden flex-col gap-4 border-b border-gray-100 pb-5',
-            'lg:flex lg:flex-row lg:items-end lg:justify-between'
-          )}
-        >
-          <div className="flex flex-col gap-1.5">
-            <Text
-              size="pageTitle"
-              weight="extrabold"
-              className="tracking-tight text-gray-900"
-            >
-              알림
-            </Text>
-            <Text size="body2" weight="regular" className="text-gray-500">
-              {hasUnread
-                ? `읽지 않은 알림이 ${unreadCount}개 있어요.`
-                : '받은 알림을 모두 확인했어요.'}
-            </Text>
-          </div>
-          {hasUnread && (
-            <button
-              type="button"
-              onClick={() => markAllAsRead()}
-              className={cn(
-                'text-main-800 hover:text-main-900 transition-colors',
-                'self-end'
-              )}
-            >
-              <Text size="body2" weight="medium" className="text-inherit">
-                모두 읽음
-              </Text>
-            </button>
-          )}
-        </header>
-
-        {showSkeleton ? (
-          <NotificationListSkeleton count={6} className="mt-6" />
-        ) : !hasNotifications ? (
           <div
             className={cn(
-              'mt-6 flex flex-col items-center justify-center gap-4',
-              'rounded-3 border border-gray-200 bg-white py-16'
+              'flex h-16 w-16 items-center justify-center',
+              'bg-main-200/60 text-main-800 rounded-full'
             )}
           >
-            <div
-              className={cn(
-                'flex h-16 w-16 items-center justify-center',
-                'bg-main-200/60 text-main-800 rounded-full'
-              )}
-            >
-              <Bell className="h-8 w-8" />
-            </div>
-            <Text size="body1" weight="medium" className="text-gray-500">
-              아직 받은 알림이 없습니다.
-            </Text>
+            <Bell className="h-8 w-8" />
           </div>
-        ) : (
-          <>
-            <ul
-              className={cn(
-                'rounded-3 data-fade-in mt-6 overflow-hidden',
-                'border border-gray-200 bg-white',
-                'divide-y divide-gray-100'
-              )}
-            >
-              {notifications.map((notification) => (
-                <li key={notification.id}>
-                  <NotificationListItem
-                    notification={notification}
-                    onRead={markAsRead}
-                  />
-                </li>
-              ))}
-            </ul>
+          <Text size="body1" weight="medium" className="text-gray-500">
+            아직 받은 알림이 없습니다.
+          </Text>
+        </div>
+      ) : (
+        <>
+          <ul
+            className={cn(
+              'rounded-3 data-fade-in overflow-hidden',
+              'border border-gray-200 bg-white',
+              'divide-y divide-gray-100'
+            )}
+          >
+            {notifications.map((notification) => (
+              <li key={notification.id}>
+                <NotificationListItem
+                  notification={notification}
+                  onRead={markAsRead}
+                />
+              </li>
+            ))}
+          </ul>
 
-            {isFetchingNextPage ? (
-              <NotificationListSkeleton count={3} className="mt-3" />
+          {isFetchingNextPage ? (
+            <NotificationListSkeleton count={3} className="mt-3" />
+          ) : null}
+
+          <div
+            ref={ref}
+            className="mt-6 flex h-10 w-full items-center justify-center"
+          >
+            {!isFetchingNextPage && !hasNextPage ? (
+              <Text size="body2" className="text-gray-400">
+                마지막 알림입니다.
+              </Text>
             ) : null}
-
-            <div
-              ref={ref}
-              className="mt-6 flex h-10 w-full items-center justify-center"
-            >
-              {!isFetchingNextPage && !hasNextPage ? (
-                <Text size="body2" className="text-gray-400">
-                  마지막 알림입니다.
-                </Text>
-              ) : null}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+          </div>
+        </>
+      )}
+    </SubPageShell>
   );
 }

@@ -2,6 +2,7 @@
 
 import { Stripe, Text } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
+import { CategoryIcon } from '@constants/categories';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 
@@ -13,6 +14,8 @@ const PILL_CLASS = cn(
 interface ChallengeDetailHeroProps {
   title: string;
   categoryLabel: string;
+  // 커버 이미지가 없을 때 워터마크 아이콘을 그리기 위한 원본 카테고리 코드.
+  category?: string | null;
   typeLabel: string;
   metaLabel: string;
   imageUrl?: string | null;
@@ -26,6 +29,7 @@ interface ChallengeDetailHeroProps {
 export function ChallengeDetailHero({
   title,
   categoryLabel,
+  category,
   typeLabel,
   metaLabel,
   imageUrl,
@@ -59,6 +63,15 @@ export function ChallengeDetailHero({
         // 양 밴드가 모두 반투명이 되어 카드의 또렷한 줄무늬와 달라 보였다.
         <div className="absolute inset-0" aria-hidden>
           <Stripe tone={accent} radius={0} />
+          {category ? (
+            <CategoryIcon
+              category={category}
+              className={cn(
+                'absolute -right-5 -bottom-8 h-44 w-44 text-white',
+                'opacity-[0.15] lg:-right-3 lg:-bottom-5 lg:h-52 lg:w-52'
+              )}
+            />
+          ) : null}
         </div>
       )}
       {imageUrl ? (

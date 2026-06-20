@@ -118,8 +118,14 @@ export default function HomeScreen({
   const streakDays = sidebar?.streakCount ?? 0;
   // 토큰 힌트는 있는데 sidebar 가 아직 도착하지 않은 구간에서 0 → 실제 값으로
   // 깜빡이는 것을 막기 위해 스켈레톤을 노출.
+  //
+  // `!hasMounted` 를 포함하는 이유: SSR/하이드레이션 첫 페인트에서 sidebar 쿼리
+  // 결과가 서버(미도착 → skeleton)와 클라이언트(dehydrate 캐시 → 데이터)로
+  // 갈려 hydration mismatch 가 발생했다. mount 전에는 항상 skeleton 으로 고정해
+  // 서버/클라 첫 출력을 일치시키고, 실제 값(streakDays)은 mount 이후에만 렌더한다.
   const isStreakLoading =
-    isLoggedIn && (isSidebarLoading || isSidebarFetching || !sidebar);
+    isLoggedIn &&
+    (!hasMounted || isSidebarLoading || isSidebarFetching || !sidebar);
   // 스토리 스켈레톤이 늦게 뜨지 않도록, "로그인 확정" 외에도
   // sidebar 인증 판정이 진행 중이면 stories 쿼리를 선제 활성화한다.
   const isStoriesEnabled =
@@ -168,7 +174,11 @@ export default function HomeScreen({
         <div className="grid gap-3 lg:grid-cols-2 lg:gap-5">
           <HomeWarmBanner />
           <div className="hidden lg:block">
-            <HomeStreakSlot isLoggedIn={isLoggedIn} streakDays={streakDays} />
+            <HomeStreakSlot
+              isLoggedIn={isLoggedIn}
+              streakDays={streakDays}
+              isStreakLoading={isStreakLoading}
+            />
           </div>
         </div>
 

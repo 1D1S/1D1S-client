@@ -20,6 +20,7 @@ import { ChallengeCreateParticipationSection } from '@feature/challenge/write/co
 import { ChallengeCreatePeriodSection } from '@feature/challenge/write/components/ChallengeCreatePeriodSection';
 import { ChallengeCreatePreviewCard } from '@feature/challenge/write/components/ChallengeCreatePreviewCard';
 import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/components/ChallengeCreateSuccessDialog';
+import { ChallengeCreateVisibilitySection } from '@feature/challenge/write/components/ChallengeCreateVisibilitySection';
 import {
   ChallengeCreateFormValues,
   useChallengeCreateForm,
@@ -93,6 +94,12 @@ function formatFormValues(
     allowMidJoin:
       values.participationType === 'INDIVIDUAL' ? false : values.allowMidJoin,
     thumbnailImage: values.thumbnailImageKey,
+    challengeType: values.challengeType,
+    // 비공개일 때만 비밀번호를 동봉한다.
+    password:
+      values.challengeType === 'PRIVATE'
+        ? values.password?.trim()
+        : undefined,
   };
 }
 
@@ -102,12 +109,18 @@ export default function ChallengeCreateScreen(): React.ReactElement {
   const createChallenge = useCreateChallenge();
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [createdChallengeId, setCreatedChallengeId] = useState<number>();
+  // 생성 직후 공유 모달에서 비공개 여부/비밀번호를 안내하기 위해 보관한다.
+  const [createdIsPrivate, setCreatedIsPrivate] = useState(false);
+  const [createdPassword, setCreatedPassword] = useState<string>();
   const [isErrorOpen, setIsErrorOpen] = useState(false);
 
   const onSubmit = (values: ChallengeCreateFormValues): void => {
-    createChallenge.mutate(formatFormValues(values), {
+    const payload = formatFormValues(values);
+    createChallenge.mutate(payload, {
       onSuccess: (data) => {
         setCreatedChallengeId(data.challengeId);
+        setCreatedIsPrivate(payload.challengeType === 'PRIVATE');
+        setCreatedPassword(payload.password);
         setIsSuccessOpen(true);
       },
       onError: () => {
@@ -181,6 +194,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
               <ChallengeCreateParticipationSection />
               <ChallengeCreateGoalSection />
               <ChallengeCreatePeriodSection />
+              <ChallengeCreateVisibilitySection />
             </div>
 
             <aside className="hidden lg:block">
@@ -267,6 +281,8 @@ export default function ChallengeCreateScreen(): React.ReactElement {
         open={isSuccessOpen}
         onOpenChange={setIsSuccessOpen}
         challengeId={createdChallengeId}
+        isPrivate={createdIsPrivate}
+        password={createdPassword}
       />
 
       <Dialog open={isErrorOpen} onOpenChange={setIsErrorOpen}>

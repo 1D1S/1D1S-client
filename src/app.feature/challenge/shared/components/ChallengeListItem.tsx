@@ -15,6 +15,10 @@ export interface ChallengeListItemProps {
   challengeTitle: string;
   challengeType: string;
   challengeCategory?: string;
+  // 이미지가 없을 때 Stripe 위에 보여줄 카테고리 아이콘. 호출부에서
+  // <CategoryIcon category={category} /> 를 넘기면 ChallengeCard 와 동일하게
+  // 기본 커버에 카테고리가 노출된다.
+  categoryIcon?: React.ReactNode;
   imageUrl?: string;
   currentUserCount: number;
   maxUserCount: number;
@@ -38,6 +42,7 @@ export function ChallengeListItem({
   challengeTitle,
   challengeType,
   challengeCategory,
+  categoryIcon,
   imageUrl,
   currentUserCount,
   maxUserCount,
@@ -109,7 +114,39 @@ export function ChallengeListItem({
             className="object-cover"
           />
         ) : (
-          <Stripe tone={stripeTone} />
+          <>
+            <Stripe tone={stripeTone} />
+            {/* 커버 이미지가 없는 챌린지: ChallengeCard 와 동일하게 카테고리
+                아이콘 배지 + 라벨로 "의도된 기본 커버"를 그린다. */}
+            <div
+              className={cn(
+                'pointer-events-none absolute inset-0 z-[1] flex',
+                'flex-col items-center justify-center gap-1 text-white'
+              )}
+            >
+              {categoryIcon ? (
+                <span
+                  className={cn(
+                    'flex h-8 w-8 items-center justify-center rounded-full',
+                    'bg-white/20 ring-1 ring-white/30',
+                    '[&_svg]:!h-4 [&_svg]:!w-4'
+                  )}
+                >
+                  {categoryIcon}
+                </span>
+              ) : null}
+              {challengeCategory ? (
+                <span
+                  className={cn(
+                    'text-[10px] font-bold tracking-tight',
+                    'text-white/95 drop-shadow-sm'
+                  )}
+                >
+                  {challengeCategory}
+                </span>
+              ) : null}
+            </div>
+          </>
         )}
       </div>
 

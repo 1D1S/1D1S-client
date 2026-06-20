@@ -1,16 +1,13 @@
-import { Text } from '@1d1s/design-system';
+import { DatePicker, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 
 import type { Feeling } from '../../board/type/diary';
-import { DiaryCreateDatePicker } from './DiaryCreateDatePicker';
 import { DiaryCreateMoodSelector } from './DiaryCreateMoodSelector';
 
 interface DiaryCreateFinishSectionProps {
   achievedDate: Date | undefined;
   onAchievedDateChange(date: Date | undefined): void;
-  disabledAchievedDateKeys: string[];
-  challengeStartDate?: string;
   selectedMood: Feeling;
   onMoodChange(mood: Feeling): void;
   thumbnailSlot?: React.ReactNode;
@@ -19,8 +16,6 @@ interface DiaryCreateFinishSectionProps {
 function DiaryCreateFinishSectionComponent({
   achievedDate,
   onAchievedDateChange,
-  disabledAchievedDateKeys,
-  challengeStartDate,
   selectedMood,
   onMoodChange,
   thumbnailSlot,
@@ -35,15 +30,13 @@ function DiaryCreateFinishSectionComponent({
         >
           언제의 기록인가요?
         </Text>
-        <DiaryCreateDatePicker
+        <DatePicker
           value={achievedDate}
           onChange={onAchievedDateChange}
-          disabledDateKeys={disabledAchievedDateKeys}
-          challengeStartDate={challengeStartDate}
           placeholder="날짜를 선택해주세요"
         />
         <Text size="caption2" weight="regular" className="mt-1.5 text-gray-400">
-          오늘 포함 최근 3일 중 이미 작성한 날짜는 비활성화됩니다.
+          오늘 포함 최근 3일 중 작성 가능한 날짜만 반영됩니다.
         </Text>
       </div>
 

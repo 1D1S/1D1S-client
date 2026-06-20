@@ -1,5 +1,11 @@
-import { Icon, Text } from '@1d1s/design-system';
-import { cn } from '@module/utils/cn';
+import {
+  Icon,
+  SegmentedControl,
+  Text,
+  TextField,
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@1d1s/design-system';
 import { type ChangeEvent } from 'react';
 import { useFormContext } from 'react-hook-form';
 
@@ -11,9 +17,7 @@ import {
 } from '@/app.component/ui/Form';
 
 import { ChallengeCreateFormValues } from '../hooks/useChallengeCreateForm';
-import { ChallengeCreateChip } from './ChallengeCreateChip';
 import { ChallengeCreateSectionCard } from './ChallengeCreateSectionCard';
-import { ChallengeCreateSegmentToggle } from './ChallengeCreateSegmentToggle';
 
 const MEMBER_COUNT_OPTIONS: Array<{
   value: '2' | '5' | '10' | 'etc' | 'unlimited';
@@ -40,26 +44,26 @@ export function ChallengeCreateParticipationSection(): React.ReactElement {
         name="participationType"
         render={({ field }) => (
           <FormItem>
-            <ChallengeCreateSegmentToggle
+            <SegmentedControl
               value={field.value}
-              onChange={(value) => {
+              onValueChange={(value) => {
                 field.onChange(value);
                 if (value === 'INDIVIDUAL') {
                   // 개인 챌린지는 자유 목표 선택이 불가능하므로 FIXED 로 동기화한다.
                   setValue('goalType', 'FIXED', { shouldValidate: true });
                 }
               }}
-              ariaLabel="참여 형태"
+              aria-label="참여 형태"
               options={[
                 {
                   value: 'INDIVIDUAL',
                   label: '개인 챌린지',
-                  icon: <Icon name="Person" className="h-3.5 w-3.5" />,
+                  icon: <Icon name="Person" className="h-5 w-5" />,
                 },
                 {
                   value: 'GROUP',
                   label: '단체 챌린지',
-                  icon: <Icon name="People" className="h-3.5 w-3.5" />,
+                  icon: <Icon name="People" className="h-5 w-5" />,
                 },
               ]}
             />
@@ -71,7 +75,7 @@ export function ChallengeCreateParticipationSection(): React.ReactElement {
       <Text
         size="caption1"
         weight="regular"
-        className="mt-2 block text-gray-500"
+        className="mt-3 block text-gray-500"
       >
         {isGroup
           ? '여러 명이 함께 같은 챌린지에 참여해요. 서로 응원하며 스트릭을 이어갈 수 있어요.'
@@ -79,7 +83,7 @@ export function ChallengeCreateParticipationSection(): React.ReactElement {
       </Text>
 
       {isGroup ? (
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Text size="caption1" weight="bold" className="block text-gray-600">
               최대 인원
@@ -89,17 +93,26 @@ export function ChallengeCreateParticipationSection(): React.ReactElement {
               name="memberCount"
               render={({ field }) => (
                 <FormItem>
-                  <div className="flex flex-wrap gap-1.5">
+                  <ToggleGroup
+                    type="single"
+                    value={field.value}
+                    onValueChange={(value) => {
+                      if (value) {
+                        field.onChange(value);
+                      }
+                    }}
+                    className="gap-1.5"
+                  >
                     {MEMBER_COUNT_OPTIONS.map((option) => (
-                      <ChallengeCreateChip
+                      <ToggleGroupItem
                         key={option.value}
-                        active={field.value === option.value}
-                        onClick={() => field.onChange(option.value)}
+                        value={option.value}
+                        size="sm"
                       >
                         {option.label}
-                      </ChallengeCreateChip>
+                      </ToggleGroupItem>
                     ))}
-                  </div>
+                  </ToggleGroup>
                   <FormMessage />
                 </FormItem>
               )}
@@ -111,21 +124,17 @@ export function ChallengeCreateParticipationSection(): React.ReactElement {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <input
+                      <TextField
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"
                         maxLength={3}
                         placeholder="2 ~ 100"
+                        className="w-full"
                         value={field.value ?? ''}
                         onChange={(event: ChangeEvent<HTMLInputElement>) => {
                           field.onChange(event.target.value.replace(/\D/g, ''));
                         }}
-                        className={cn(
-                          'rounded-2 w-full border border-gray-200',
-                          'bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900',
-                          'focus:border-main-800 outline-none'
-                        )}
                       />
                     </FormControl>
                     <FormMessage />
@@ -145,10 +154,12 @@ export function ChallengeCreateParticipationSection(): React.ReactElement {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <ChallengeCreateSegmentToggle
+                    <SegmentedControl
                       value={field.value ? 'ALLOW' : 'BEFORE_START'}
-                      onChange={(value) => field.onChange(value === 'ALLOW')}
-                      ariaLabel="중도 참여 허용"
+                      onValueChange={(value) =>
+                        field.onChange(value === 'ALLOW')
+                      }
+                      aria-label="중도 참여 허용"
                       options={[
                         { value: 'BEFORE_START', label: '시작 전까지만' },
                         { value: 'ALLOW', label: '허용' },

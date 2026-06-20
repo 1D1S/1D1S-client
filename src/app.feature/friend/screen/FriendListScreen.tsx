@@ -1,6 +1,8 @@
 'use client';
 
 import { Button, Text } from '@1d1s/design-system';
+import EmptyState from '@component/EmptyState';
+import { SubPageShell } from '@component/layout/SubPageShell';
 import { FriendListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
@@ -12,7 +14,6 @@ import React from 'react';
 import { toast } from 'sonner';
 
 import { FriendListItem } from '../components/FriendListItem';
-import { FriendPageShell } from '../components/FriendPageShell';
 import { useRemoveFriend } from '../hooks/useFriendMutations';
 import {
   useFriendList,
@@ -95,12 +96,11 @@ export default function FriendListScreen(): React.ReactElement {
   };
 
   return (
-    <FriendPageShell title="친구">
+    <SubPageShell title="친구">
       {/* 친구 신청 진입 카드 */}
       <section
         className={cn(
-          'mt-3 overflow-hidden border-y border-gray-100 bg-white',
-          'lg:mt-6 lg:rounded-[14px] lg:border'
+          'overflow-hidden rounded-[14px] border border-gray-200 bg-white'
         )}
       >
         <RequestEntryRow
@@ -120,7 +120,7 @@ export default function FriendListScreen(): React.ReactElement {
 
       {/* 친구 목록 */}
       <section className="mt-6">
-        <div className="px-4 pb-2 lg:px-0">
+        <div className="pb-2">
           <Text
             size="body2"
             weight="bold"
@@ -135,8 +135,8 @@ export default function FriendListScreen(): React.ReactElement {
         ) : (
           <div
             className={cn(
-              'data-fade-in overflow-hidden border-y border-gray-100 bg-white',
-              'lg:rounded-[14px] lg:border'
+              'data-fade-in overflow-hidden bg-white',
+              'rounded-[14px] border border-gray-200'
             )}
           >
             {isError ? (
@@ -148,11 +148,12 @@ export default function FriendListScreen(): React.ReactElement {
                 </Text>
               </div>
             ) : friendList.length === 0 ? (
-              <div className="flex w-full justify-center py-10">
-                <Text size="body2" className="text-gray-500">
-                  아직 친구가 없습니다.
-                </Text>
-              </div>
+              <EmptyState
+                variant="friends"
+                title="아직 친구가 없어요"
+                description="친구를 추가하고 함께 스트릭을 이어가 보세요"
+                className="py-10"
+              />
             ) : (
               friendList.map((friend, idx) => (
                 <React.Fragment key={friend.memberId}>
@@ -179,6 +180,6 @@ export default function FriendListScreen(): React.ReactElement {
           </div>
         )}
       </section>
-    </FriendPageShell>
+    </SubPageShell>
   );
 }

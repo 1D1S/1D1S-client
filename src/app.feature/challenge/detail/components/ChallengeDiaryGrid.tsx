@@ -1,7 +1,7 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
+import EmptyState from '@component/EmptyState';
 import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import {
@@ -47,11 +47,11 @@ export function ChallengeDiaryGrid({
 
   if (diaries.length === 0) {
     return (
-      <div className="flex w-full justify-center py-8">
-        <Text size="body2" weight="medium" className="text-gray-500">
-          아직 등록된 일지가 없습니다.
-        </Text>
-      </div>
+      <EmptyState
+        variant="diary"
+        title="아직 등록된 일지가 없어요"
+        description="이 챌린지의 첫 일지를 남겨 보세요"
+      />
     );
   }
 

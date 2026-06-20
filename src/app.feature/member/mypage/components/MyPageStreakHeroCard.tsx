@@ -1,4 +1,5 @@
 import { Icon, ProgressBar, Text } from '@1d1s/design-system';
+import { CountUp } from '@component/CountUp';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 
@@ -27,7 +28,7 @@ export function MyPageStreakHeroCard({
   return (
     <div
       className={cn(
-        'rounded-4 border-main-200 border p-6',
+        'rounded-4 border-main-200 h-full border p-6',
         'bg-[linear-gradient(135deg,#fff8f5,#ffe9e0)]',
         'flex flex-col gap-4'
       )}
@@ -53,7 +54,7 @@ export function MyPageStreakHeroCard({
             'text-main-800 tracking-[-2px] tabular-nums'
           )}
         >
-          {currentStreak}
+          <CountUp value={currentStreak} />
         </span>
         <Text size="heading2" weight="bold" className="text-gray-700">
           일
@@ -62,7 +63,12 @@ export function MyPageStreakHeroCard({
       <Text size="caption1" weight="regular" className="text-gray-700">
         {meta}
       </Text>
-      <ProgressBar value={progress} thickness={8} showValueText={false} />
+      <ProgressBar
+        value={progress}
+        thickness={8}
+        showValueText={false}
+        fillClassName="animate-bar-fill"
+      />
     </div>
   );
 }

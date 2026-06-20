@@ -8,6 +8,7 @@ import {
   TextField,
 } from '@1d1s/design-system';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
+import LikeBurst from '@component/LikeBurst';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleton';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
@@ -99,13 +100,15 @@ function DiaryActionToolbar({
         onClick={onLikeToggle}
         disabled={isLikePending}
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-full border px-4 py-2',
-          'text-[13px] font-bold transition-colors disabled:opacity-60',
+          'relative inline-flex items-center gap-1.5 rounded-full border',
+          'px-4 py-2 text-[13px] font-bold transition-colors',
+          'disabled:opacity-60',
           diaryData.likedByMe
             ? 'border-main-800 bg-main-100 text-main-800'
             : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
         )}
       >
+        <LikeBurst liked={diaryData.likedByMe} />
         <Heart
           className={cn('h-3.5 w-3.5', diaryData.likedByMe && 'fill-current')}
         />

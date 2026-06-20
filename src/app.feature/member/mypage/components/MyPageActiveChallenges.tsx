@@ -1,9 +1,10 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { Button } from '@1d1s/design-system';
 import ChallengeCard, {
   type ChallengeCardGoalType,
 } from '@component/cards/ChallengeCard';
+import EmptyState from '@component/EmptyState';
 import {
   CategoryIcon,
   getCategoryLabel,
@@ -38,15 +39,17 @@ export function MyPageActiveChallenges({
       />
 
       {challengeList.length === 0 ? (
-        <div
-          className={cn(
-            'rounded-3 mt-4 border border-gray-200 p-6 text-center'
-          )}
-        >
-          <Text size="body1" weight="medium" className="text-gray-500">
-            진행 중인 챌린지가 없습니다.
-          </Text>
-        </div>
+        <EmptyState
+          variant="challenge"
+          bordered
+          title="진행 중인 챌린지가 없어요"
+          className="mt-4"
+          action={
+            <Button size="small" onClick={() => router.push('/challenge')}>
+              챌린지 찾아보기
+            </Button>
+          }
+        />
       ) : (
         <div
           className={cn(

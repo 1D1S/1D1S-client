@@ -1,4 +1,12 @@
-import { DatePicker, Icon, Text } from '@1d1s/design-system';
+import {
+  DatePicker,
+  Icon,
+  SegmentedControl,
+  Text,
+  TextField,
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { formatDateKR } from '@module/utils/date';
 import { add } from 'date-fns';
@@ -13,9 +21,7 @@ import {
 } from '@/app.component/ui/Form';
 
 import { ChallengeCreateFormValues } from '../hooks/useChallengeCreateForm';
-import { ChallengeCreateChip } from './ChallengeCreateChip';
 import { ChallengeCreateSectionCard } from './ChallengeCreateSectionCard';
-import { ChallengeCreateSegmentToggle } from './ChallengeCreateSegmentToggle';
 
 const PERIOD_OPTIONS: Array<{
   value: '7' | '14' | '30' | '60' | '365' | 'etc';
@@ -50,20 +56,20 @@ export function ChallengeCreatePeriodSection(): React.ReactElement {
         name="periodType"
         render={({ field }) => (
           <FormItem>
-            <ChallengeCreateSegmentToggle
+            <SegmentedControl
               value={field.value}
-              onChange={field.onChange}
-              ariaLabel="진행 기간 유형"
+              onValueChange={field.onChange}
+              aria-label="진행 기간 유형"
               options={[
                 {
                   value: 'ENDLESS',
                   label: '무제한',
-                  icon: <Icon name="Endless" className="h-3.5 w-3.5" />,
+                  icon: <Icon name="Endless" className="h-5 w-5" />,
                 },
                 {
                   value: 'LIMITED',
                   label: '기간 챌린지',
-                  icon: <Icon name="Calendar" className="h-3.5 w-3.5" />,
+                  icon: <Icon name="Calendar" className="h-5 w-5" />,
                 },
               ]}
             />
@@ -75,14 +81,14 @@ export function ChallengeCreatePeriodSection(): React.ReactElement {
       <Text
         size="caption1"
         weight="regular"
-        className="mt-2 block text-gray-500"
+        className="mt-3 block text-gray-500"
       >
         {periodType === 'ENDLESS'
           ? '종료일 없이 꾸준히 이어가는 챌린지예요. 언제든 중단할 수 있어요.'
           : '시작일과 진행 일수를 정해서 마감일을 만들어요.'}
       </Text>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Text size="caption1" weight="bold" className="block text-gray-600">
             시작일
@@ -120,17 +126,26 @@ export function ChallengeCreatePeriodSection(): React.ReactElement {
                 name="period"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex flex-wrap gap-1.5">
+                    <ToggleGroup
+                      type="single"
+                      value={field.value}
+                      onValueChange={(value) => {
+                        if (value) {
+                          field.onChange(value);
+                        }
+                      }}
+                      className="gap-1.5"
+                    >
                       {PERIOD_OPTIONS.map((option) => (
-                        <ChallengeCreateChip
+                        <ToggleGroupItem
                           key={option.value}
-                          active={field.value === option.value}
-                          onClick={() => field.onChange(option.value)}
+                          value={option.value}
+                          size="sm"
                         >
                           {option.label}
-                        </ChallengeCreateChip>
+                        </ToggleGroupItem>
                       ))}
-                    </div>
+                    </ToggleGroup>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -142,23 +157,19 @@ export function ChallengeCreatePeriodSection(): React.ReactElement {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <input
+                        <TextField
                           type="text"
                           inputMode="numeric"
                           pattern="[0-9]*"
                           maxLength={3}
                           placeholder="1 ~ 730"
+                          className="w-full"
                           value={field.value ?? ''}
                           onChange={(event: ChangeEvent<HTMLInputElement>) => {
                             field.onChange(
                               event.target.value.replace(/\D/g, '')
                             );
                           }}
-                          className={cn(
-                            'rounded-2 w-full border border-gray-200',
-                            'bg-gray-50 px-3.5 py-2.5 text-sm text-gray-900',
-                            'focus:border-main-800 outline-none'
-                          )}
                         />
                       </FormControl>
                       <FormMessage />

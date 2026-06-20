@@ -126,7 +126,6 @@ function ChallengeCard({
 }: ChallengeCardProps): React.ReactElement {
   const handleKeyDown = createActivationKeydownHandler<HTMLDivElement>(onClick);
 
-  const stripeLabel = categoryIcon ?? category;
   const participationLabel = isGroup ? '단체' : '개인';
   const goalLabel = goalType ? GOAL_TYPE_LABELS[goalType] : null;
   const visibleParticipants = (participants ?? []).slice(0, 3);
@@ -175,23 +174,37 @@ function ChallengeCard({
           ) : (
             <>
               <Stripe tone={stripeTone} />
-              {stripeLabel ? (
-                <span
-                  className={cn(
-                    'absolute inset-0 flex items-center justify-center',
-                    'pointer-events-none'
-                  )}
-                >
+              {/* 커버 이미지가 없는 챌린지: 깨진 플레이스홀더처럼 보이던 작은
+                  글리프 대신, 카테고리 아이콘 배지 + 라벨로 "의도된 기본 커버"를
+                  그린다. 색은 stripeTone(카테고리 색)을 그대로 쓴다. */}
+              <div
+                className={cn(
+                  'pointer-events-none absolute inset-0 z-[1] flex',
+                  'flex-col items-center justify-center gap-1.5 text-white'
+                )}
+              >
+                {categoryIcon ? (
                   <span
                     className={cn(
-                      'rounded-[3px] bg-white px-1.5 py-0.5',
-                      'font-mono text-[10px] tracking-[0.3px] text-black/45'
+                      'flex h-10 w-10 items-center justify-center',
+                      'rounded-full bg-white/20 ring-1 ring-white/30',
+                      '[&_svg]:!h-5 [&_svg]:!w-5'
                     )}
                   >
-                    {stripeLabel}
+                    {categoryIcon}
                   </span>
-                </span>
-              ) : null}
+                ) : null}
+                {category ? (
+                  <span
+                    className={cn(
+                      'text-[11px] font-bold tracking-tight',
+                      'text-white/95 drop-shadow-sm'
+                    )}
+                  >
+                    {category}
+                  </span>
+                ) : null}
+              </div>
             </>
           )}
           <div

@@ -17,7 +17,6 @@ import { DiaryCreateThumbnailSection } from '../components/DiaryCreateThumbnailS
 import { useDiaryCreateForm } from '../hooks/useDiaryCreateForm';
 
 const EMPTY_GOALS: ChallengeGoal[] = [];
-const EMPTY_DATE_KEYS: string[] = [];
 
 // tiptap(~200KB+)은 일지 작성/편집 진입 시에만 필요하므로 동적 import 로
 // 페이지 청크에서 분리한다. SSR 도 끔 — 에디터는 client-only.
@@ -57,8 +56,6 @@ export default function DiaryCreateScreen(): React.ReactElement {
     isSelectedChallengeConfirmed,
     goals,
     achievedGoalIds,
-    disabledAchievedDateKeys,
-    thumbnailFile,
     thumbnailPreviewUrl,
     submitButtonLabel,
     canSubmit,
@@ -87,14 +84,13 @@ export default function DiaryCreateScreen(): React.ReactElement {
     () => (
       <DiaryCreateThumbnailSection
         thumbnailPreviewUrl={thumbnailPreviewUrl}
-        hasThumbnail={Boolean(thumbnailFile)}
+        hasThumbnail={Boolean(thumbnailPreviewUrl)}
         onSelectThumbnailFile={handleThumbnailFileSelect}
         onClearThumbnail={clearThumbnail}
       />
     ),
     [
       thumbnailPreviewUrl,
-      thumbnailFile,
       handleThumbnailFileSelect,
       clearThumbnail,
     ]
@@ -200,16 +196,6 @@ export default function DiaryCreateScreen(): React.ReactElement {
             <DiaryCreateFinishSection
               achievedDate={achievedDate}
               onAchievedDateChange={handleAchievedDateChange}
-              disabledAchievedDateKeys={
-                isSelectedChallengeConfirmed
-                  ? disabledAchievedDateKeys
-                  : EMPTY_DATE_KEYS
-              }
-              challengeStartDate={
-                isSelectedChallengeConfirmed
-                  ? selectedChallenge?.startDate
-                  : undefined
-              }
               selectedMood={selectedMood}
               onMoodChange={setSelectedMood}
               thumbnailSlot={thumbnailSlot}

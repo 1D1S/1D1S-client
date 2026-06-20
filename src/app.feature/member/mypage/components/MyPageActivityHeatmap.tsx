@@ -41,6 +41,7 @@ export function MyPageActivityHeatmap({
       </Text>
       <div className="mt-4 flex flex-1 items-center">
         <Heatmap
+          className="heatmap-stagger"
           cells={cells}
           cols={20}
           tone="main"

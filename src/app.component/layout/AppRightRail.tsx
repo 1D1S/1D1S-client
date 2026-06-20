@@ -282,7 +282,7 @@ export default function AppRightRail({
                       </span>
                       <span className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
                         <span
-                          className="bg-brand block h-full"
+                          className="bg-brand animate-bar-fill block h-full"
                           style={{ width: `${fillWidth}%` }}
                         />
                       </span>

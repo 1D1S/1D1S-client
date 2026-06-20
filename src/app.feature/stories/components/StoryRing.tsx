@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, Icon, Stripe, Text } from '@1d1s/design-system';
+import EmptyState from '@component/EmptyState';
 import FadeInImage from '@component/FadeInImage';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { cn } from '@module/utils/cn';
@@ -119,6 +120,15 @@ export default function StoryRing({
             </Card.Meta>
           </Card.Body>
         </Card>
+      ) : null}
+      {showMySlot && groups.length === 0 ? (
+        <EmptyState
+          variant="friends"
+          animate={false}
+          title="친구 스토리가 아직 없어요"
+          description="친구를 추가하면 친구들의 일지가 여기에 나타나요"
+          className="min-w-[220px] flex-1 py-6"
+        />
       ) : null}
       {groups.map((group, index) => {
         const seen = isGroupAllSeen(group);

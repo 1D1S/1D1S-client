@@ -2,6 +2,7 @@
 
 import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
+import EmptyState from '@component/EmptyState';
 import type { DiaryItem } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
@@ -22,6 +23,7 @@ interface MyPageDiarySectionProps {
   hasMore: boolean;
   viewAllHref: string;
   emptyMessage?: string;
+  action?: React.ReactNode;
 }
 
 export function MyPageDiarySection({
@@ -31,6 +33,7 @@ export function MyPageDiarySection({
   hasMore,
   viewAllHref,
   emptyMessage = '작성한 일지가 없습니다.',
+  action,
 }: MyPageDiarySectionProps): React.ReactElement {
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
@@ -70,36 +73,37 @@ export function MyPageDiarySection({
       </div>
 
       {diaryCards.length === 0 ? (
+        <EmptyState
+          variant="diary"
+          bordered
+          title={emptyMessage}
+          className="mt-4"
+          action={action}
+        />
+      ) : (
         <div
           className={cn(
-            'rounded-3 mt-4 border border-gray-200 p-6 text-center'
+            '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-2',
+            'scrollbar-hide'
           )}
         >
-          <Text size="body1" weight="medium" className="text-gray-500">
-            {emptyMessage}
-          </Text>
-        </div>
-      ) : (
-        <div className="mt-4 overflow-x-auto">
-          <div className="flex w-max gap-3 py-2">
-            {diaryCards.map((diary) => (
-              <div key={diary.id} className="w-[240px] shrink-0">
-                <DiaryCard
-                  imageUrl={diary.imageUrl}
-                  profileImageUrl={diary.profileImageUrl}
-                  percent={diary.percent}
-                  isLiked={diary.isLiked}
-                  likes={diary.likes}
-                  title={diary.title}
-                  user={diary.user}
-                  challengeLabel={diary.challengeLabel}
-                  emotion={diary.emotion}
-                  onLikeToggle={() => handleLikeToggle(diary.id, diary.isLiked)}
-                  onClick={() => router.push(`/diary/${diary.id}`)}
-                />
-              </div>
-            ))}
-          </div>
+          {diaryCards.map((diary) => (
+            <div key={diary.id} className="w-[240px] shrink-0">
+              <DiaryCard
+                imageUrl={diary.imageUrl}
+                profileImageUrl={diary.profileImageUrl}
+                percent={diary.percent}
+                isLiked={diary.isLiked}
+                likes={diary.likes}
+                title={diary.title}
+                user={diary.user}
+                challengeLabel={diary.challengeLabel}
+                emotion={diary.emotion}
+                onLikeToggle={() => handleLikeToggle(diary.id, diary.isLiked)}
+                onClick={() => router.push(`/diary/${diary.id}`)}
+              />
+            </div>
+          ))}
         </div>
       )}
     </section>

@@ -1,5 +1,6 @@
 import { SectionHeader, Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
+import EmptyState from '@component/EmptyState';
 import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
@@ -132,11 +133,7 @@ export default function HomeRandomDiariesSection({
         </div>
       ) : null}
       {!showSkeleton && !isError && diaries.length === 0 ? (
-        <div className="flex w-full justify-center py-8">
-          <Text size="body2" weight="medium" className="text-gray-500">
-            표시할 일지가 없습니다.
-          </Text>
-        </div>
+        <EmptyState variant="diary" title="표시할 일지가 없어요" className="py-8" />
       ) : null}
     </section>
   );

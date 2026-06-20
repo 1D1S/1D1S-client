@@ -2,6 +2,7 @@
 
 import { Button, Icon, Text, TextField } from '@1d1s/design-system';
 import ChallengeCard from '@component/cards/ChallengeCard';
+import EmptyState from '@component/EmptyState';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import {
   ChallengeCardSkeleton,
@@ -324,11 +325,12 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               ))}
             </div>
           ) : (
-            <div className="flex w-full justify-center py-16">
-              <Text size="body2" weight="medium" className="text-gray-500">
-                조건에 맞는 챌린지가 없습니다.
-              </Text>
-            </div>
+            <EmptyState
+              variant="challenge"
+              title="조건에 맞는 챌린지가 없어요"
+              description="필터를 바꾸거나 검색어를 다시 입력해 보세요"
+              className="py-16"
+            />
           )}
 
           {isFetchingNextPage ? (
