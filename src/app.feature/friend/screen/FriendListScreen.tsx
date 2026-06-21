@@ -6,12 +6,12 @@ import { SubPageShell } from '@component/layout/SubPageShell';
 import { FriendListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
+import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ChevronRight, Inbox, Send, UserMinus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { FriendListItem } from '../components/FriendListItem';
 import { useRemoveFriend } from '../hooks/useFriendMutations';

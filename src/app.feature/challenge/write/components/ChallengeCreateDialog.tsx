@@ -4,7 +4,6 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogTitle,
   DialogTrigger,
   Text,
@@ -59,7 +58,7 @@ export function ChallengeCreateDialog({
             </Text>
           </DialogDescription>
 
-          <DialogFooter className="grid grid-cols-2 gap-3 sm:gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <DialogClose asChild>
               <Button variant="outlined" type="button">
                 취소
@@ -70,7 +69,7 @@ export function ChallengeCreateDialog({
                 챌린지 만들기
               </Button>
             </DialogClose>
-          </DialogFooter>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

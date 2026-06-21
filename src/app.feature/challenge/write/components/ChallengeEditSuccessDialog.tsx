@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   Text,
@@ -37,12 +36,12 @@ export function ChallengeEditSuccessDialog({
       <DialogContent
         className={cn(
           'flex w-[calc(100%-2rem)] flex-col items-center gap-8',
-          'sm:min-w-120 [&>button:last-of-type]:hidden'
+          'px-6 pt-10 pb-6 sm:min-w-120 [&>button:last-of-type]:hidden'
         )}
         onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => event.preventDefault()}
       >
-        <DialogHeader className="mt-8 items-center">
+        <DialogHeader className="items-center">
           <DialogTitle>
             <DialogDescription>
               <Text
@@ -85,7 +84,7 @@ export function ChallengeEditSuccessDialog({
             </svg>
           </div>
         </div>
-        <DialogFooter className="grid w-full grid-cols-2 gap-3">
+        <div className="grid w-full grid-cols-2 gap-3">
           <Button
             variant="outlined"
             type="button"
@@ -106,7 +105,7 @@ export function ChallengeEditSuccessDialog({
           >
             챌린지 확인하기
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

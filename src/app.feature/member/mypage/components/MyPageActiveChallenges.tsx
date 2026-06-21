@@ -70,7 +70,7 @@ export function MyPageActiveChallenges({
             );
 
             return (
-              <div key={challenge.challengeId} className="w-[220px] shrink-0">
+              <div key={challenge.challengeId} className="w-[240px] shrink-0">
                 <ChallengeCard
                   title={challenge.title}
                   category={getCategoryLabel(challenge.category)}

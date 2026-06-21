@@ -8,8 +8,7 @@ export function AppProviders({
 }): React.ReactElement {
   return (
     <TanStackQueryProvider>
-      {children}
-      <ToastProvider />
+      <ToastProvider>{children}</ToastProvider>
     </TanStackQueryProvider>
   );
 }

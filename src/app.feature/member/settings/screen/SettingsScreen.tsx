@@ -6,11 +6,11 @@ import { useLogout } from '@feature/auth/hooks/useAuthMutations';
 import { useDeleteMember } from '@feature/member/hooks/useMemberMutations';
 import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
 import { notifyApiError } from '@module/api/errorNotify';
+import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { Bell, ChevronRight, LogOut, User, UserMinus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 
 type SettingsRowTone = 'default' | 'danger';
 

@@ -199,7 +199,7 @@ export default function ProfileSettingsScreen(): React.ReactElement {
                     }}
                   />
                   <Button
-                    size="small"
+                    size="sm"
                     onClick={handleNicknameSave}
                     disabled={
                       updateNickname.isPending ||

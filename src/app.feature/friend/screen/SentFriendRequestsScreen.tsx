@@ -6,10 +6,10 @@ import { SubPageShell } from '@component/layout/SubPageShell';
 import { FriendRequestListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
+import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { FriendRequestListItem } from '../components/FriendRequestListItem';
 import { useCancelFriendRequest } from '../hooks/useFriendMutations';

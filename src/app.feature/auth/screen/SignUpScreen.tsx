@@ -4,13 +4,13 @@ import { ConfirmDialog, Icon, StepIndicator, Text } from '@1d1s/design-system';
 import { Form } from '@component/ui/Form';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import { notifyApiError } from '@module/api/errorNotify';
+import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { authApi } from '../api/authApi';
 import { BrandPanel } from '../components/BrandPanel';

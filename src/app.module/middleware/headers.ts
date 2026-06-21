@@ -31,13 +31,15 @@ export function headersMiddleware(res: NextResponse): void {
         .filter((origin): origin is string => Boolean(origin))
     )
   );
+  // 카카오 공유(JS SDK) 도메인 — SDK 스크립트 + API 호출 허용에 사용한다.
+  const kakaoOrigins = 'https://t1.kakaocdn.net https://*.kakao.com';
   const connectSrcValue =
     allowedOrigins.length > 0
-      ? `connect-src 'self' ${allowedOrigins.join(' ')} https://vercel.live https://*.vercel.live;`
-      : "connect-src 'self' https://vercel.live https://*.vercel.live;";
+      ? `connect-src 'self' ${allowedOrigins.join(' ')} ${kakaoOrigins} https://vercel.live https://*.vercel.live;`
+      : `connect-src 'self' ${kakaoOrigins} https://vercel.live https://*.vercel.live;`;
   const imgSrcValue = "img-src 'self' blob: data: https: http:;";
   const scriptSrcValue =
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://*.vercel.live;";
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://t1.kakaocdn.net https://vercel.live https://*.vercel.live;";
 
   // const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const cspHeader = `
@@ -49,7 +51,7 @@ export function headersMiddleware(res: NextResponse): void {
     font-src 'self';
     object-src 'none';
     base-uri 'self';
-    form-action 'self';
+    form-action 'self' https://sharer.kakao.com;
     frame-ancestors 'none';
     upgrade-insecure-requests;
 `;

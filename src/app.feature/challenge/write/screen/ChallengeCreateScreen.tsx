@@ -27,7 +27,7 @@ import {
 } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { cn } from '@module/utils/cn';
 import { add, format } from 'date-fns';
-import { ArrowLeft, Check, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Check, Lightbulb, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -276,6 +276,29 @@ export default function ChallengeCreateScreen(): React.ReactElement {
           </div>
         </MobileBottomActionBar>
       </Form>
+
+      {createChallenge.isPending && (
+        <div
+          className={cn(
+            'fixed inset-0 z-[60] flex items-center justify-center',
+            'bg-black/30 backdrop-blur-sm'
+          )}
+          role="alert"
+          aria-busy="true"
+        >
+          <div
+            className={cn(
+              'rounded-3 flex flex-col items-center gap-3 bg-white',
+              'px-8 py-7 shadow-xl'
+            )}
+          >
+            <Loader2 className="text-main-700 h-8 w-8 animate-spin" />
+            <Text size="body2" weight="medium" className="text-gray-600">
+              챌린지를 만들고 있어요...
+            </Text>
+          </div>
+        </div>
+      )}
 
       <ChallengeCreateSuccessDialog
         open={isSuccessOpen}

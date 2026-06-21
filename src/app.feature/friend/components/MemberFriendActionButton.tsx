@@ -4,10 +4,10 @@ import { Button, Text } from '@1d1s/design-system';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
 import { notifyApiError } from '@module/api/errorNotify';
+import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { Check, Clock, UserMinus, UserPlus } from 'lucide-react';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 
 import {
   useAcceptFriendRequest,

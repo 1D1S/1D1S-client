@@ -72,6 +72,15 @@ const getResponseCode = (payload: unknown): string | null => {
 // 세션을 복구할 수 없으므로 로컬 토큰을 정리해야 한다(예: AUTH-006).
 const INVALID_REFRESH_TOKEN_CODES = new Set(['AUTH-006']);
 
+// 백엔드 도메인 에러 코드(예: CHALLENGE_022)를 응답 본문에서 추출한다.
+// 상태 코드만으로 구분할 수 없는 분기 처리에 사용한다.
+export const getApiErrorCode = (error: unknown): string | null => {
+  if (!isAxiosErrorLike(error)) {
+    return null;
+  }
+  return getResponseCode(error.response?.data);
+};
+
 export const isUnauthorizedError = (error: unknown): boolean =>
   isAxiosErrorLike(error) && error.response?.status === 401;
 
