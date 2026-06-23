@@ -3,7 +3,8 @@
 import './highlight.css';
 
 import { cn } from '@module/utils/cn';
-import React, { useEffect, useRef } from 'react';
+import DOMPurify from 'dompurify';
+import React, { useEffect, useMemo, useRef } from 'react';
 
 // highlight.js github 테마는 일지 본문이 렌더될 때만 필요하므로 글로벌이 아닌
 // 컴포넌트 레벨에서 import 한다.
@@ -18,6 +19,17 @@ export function DiaryContentRenderer({
   className,
 }: DiaryContentRendererProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // 백엔드 응답 HTML을 그대로 innerHTML 로 주입하므로, 저장형 XSS 를
+  // 막기 위해 클라이언트에서 한 번 더 sanitize 한다. DOMPurify 는
+  // window(DOM)가 필요하므로 SSR 단계에서는 빈 문자열을 렌더하고,
+  // 본문은 클라이언트 쿼리로 도착하므로 하이드레이션 후 채워진다.
+  const safeHtml = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return '';
+    }
+    return DOMPurify.sanitize(html);
+  }, [html]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -74,7 +86,7 @@ export function DiaryContentRenderer({
         '[&_:not(pre)>code]:text-[0.875rem]',
         className
       )}
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: safeHtml }}
     />
   );
 }
