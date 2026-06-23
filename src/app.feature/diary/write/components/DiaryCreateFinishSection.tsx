@@ -8,6 +8,7 @@ import { DiaryCreateMoodSelector } from './DiaryCreateMoodSelector';
 interface DiaryCreateFinishSectionProps {
   achievedDate: Date | undefined;
   onAchievedDateChange(date: Date | undefined): void;
+  isDateDisabled(date: Date): boolean;
   selectedMood: Feeling;
   onMoodChange(mood: Feeling): void;
   thumbnailSlot?: React.ReactNode;
@@ -16,6 +17,7 @@ interface DiaryCreateFinishSectionProps {
 function DiaryCreateFinishSectionComponent({
   achievedDate,
   onAchievedDateChange,
+  isDateDisabled,
   selectedMood,
   onMoodChange,
   thumbnailSlot,
@@ -34,6 +36,7 @@ function DiaryCreateFinishSectionComponent({
           value={achievedDate}
           onChange={onAchievedDateChange}
           placeholder="날짜를 선택해주세요"
+          calendarProps={{ disabled: isDateDisabled }}
         />
         <Text size="caption2" weight="regular" className="mt-1.5 text-gray-400">
           오늘 포함 최근 3일 중 작성 가능한 날짜만 반영됩니다.

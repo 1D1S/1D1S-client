@@ -1,10 +1,10 @@
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challengePeriod';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
+import { toast } from '@module/providers/toast';
 import { formatDateISO } from '@module/utils/date';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
 
 import {
   useChallengeCheckWriteDates,
@@ -69,6 +69,7 @@ interface UseDiaryCreateFormResult {
   handleClearChallenge(): void;
   handleGoalIdsChange(goalIds: number[]): void;
   handleAchievedDateChange(date: Date | undefined): void;
+  isAchievedDateDisabled(date: Date): boolean;
   handleThumbnailFileSelect(file: File): void;
   closeMissingChallengeDialog(): void;
   closeCreateUnavailableDialog(): void;
@@ -436,6 +437,13 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     [disabledAchievedDateKeySet, selectedChallenge?.startDate]
   );
 
+  const isAchievedDateDisabled = useCallback(
+    (date: Date) =>
+      !isSelectableAchievedDate(date, selectedChallenge?.startDate) ||
+      disabledAchievedDateKeySet.has(formatDateISO(date)),
+    [disabledAchievedDateKeySet, selectedChallenge?.startDate]
+  );
+
   const setThumbnail = useCallback((file: File | null) => {
     setThumbnailFile(file);
     setThumbnailPreviewUrl((prevPreviewUrl) => {
@@ -589,6 +597,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     handleClearChallenge,
     handleGoalIdsChange,
     handleAchievedDateChange,
+    isAchievedDateDisabled,
     handleThumbnailFileSelect,
     closeMissingChallengeDialog,
     closeCreateUnavailableDialog,

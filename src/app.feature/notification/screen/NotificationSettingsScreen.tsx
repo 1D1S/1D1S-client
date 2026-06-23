@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Text } from '@1d1s/design-system';
+import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import {
   ArrowLeft,
@@ -12,7 +13,6 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { useUpdateNotificationPreferences } from '../hooks/useNotificationMutations';
 import { useNotificationPreferences } from '../hooks/useNotificationQueries';

@@ -28,9 +28,10 @@ import {
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
 import { resolveSidebarMemberId } from '@feature/diary/detail/utils/diaryViewData';
-import { normalizeApiError } from '@module/api/error';
+import { getApiErrorCode, normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { useSafeBack } from '@module/hooks/useSafeBack';
+import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { formatDateISO } from '@module/utils/date';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
@@ -39,7 +40,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
 import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
 import { useSidebar } from '../../../member/hooks/useMemberQueries';
@@ -88,6 +88,10 @@ import {
 interface ChallengeDetailScreenProps {
   id: string;
 }
+
+// 자유 목표 비공개 챌린지에 목표 없이 참여 시도할 때 백엔드가 내려주는 코드.
+// 이 신호를 받으면 비밀번호 다이얼로그를 목표 입력 단계로 전환한다.
+const FREE_GOAL_REQUIRED_CODE = 'CHALLENGE_022';
 
 export function ChallengeDetailScreen({
   id,
@@ -141,6 +145,8 @@ export function ChallengeDetailScreen({
     useState(false);
   const [showFreeGoalModal, setShowFreeGoalModal] = useState(false);
   const [freeGoalInputs, setFreeGoalInputs] = useState<string[]>(['']);
+  // 비공개 챌린지가 자유 목표로 확인돼 목표 입력이 필요한지.
+  const [passwordNeedsGoals, setPasswordNeedsGoals] = useState(false);
   const [showEditGoalModal, setShowEditGoalModal] = useState(false);
   const [editGoalInputs, setEditGoalInputs] = useState<string[]>(['']);
   const [showEditChallengeGoalsModal, setShowEditChallengeGoalsModal] =
@@ -472,15 +478,22 @@ export function ChallengeDetailScreen({
     }
   };
 
-  const handleVerifyPassword = (password: string): void => {
+  const handleVerifyPassword = (password: string, goals: string[]): void => {
+    const data = goals.length > 0 ? { password, goals } : { password };
     verifyChallengePassword.mutate(
-      { challengeId, data: { password } },
+      { challengeId, data },
       {
         onSuccess: () => {
           // 검증 성공 시 상세 쿼리가 무효화되어 자동으로 다시 불러온다.
           toast.success('비공개 챌린지에 참여했어요.');
         },
         onError: (mutationError) => {
+          // 자유 목표 챌린지는 비밀번호만으로 참여할 수 없다. 백엔드가 목표
+          // 필요 신호를 주면 목표 입력 단계로 전환한 뒤 재시도하도록 한다.
+          if (getApiErrorCode(mutationError) === FREE_GOAL_REQUIRED_CODE) {
+            setPasswordNeedsGoals(true);
+            return;
+          }
           notifyApiError(mutationError);
         },
       }
@@ -513,6 +526,7 @@ export function ChallengeDetailScreen({
       <ChallengePasswordDialog
         open
         isPending={verifyChallengePassword.isPending}
+        requireGoals={passwordNeedsGoals}
         onClose={() => router.push('/challenge')}
         onSubmit={handleVerifyPassword}
       />

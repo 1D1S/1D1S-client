@@ -48,6 +48,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
     setSelectedMood,
     achievedDate,
     handleAchievedDateChange,
+    isAchievedDateDisabled,
     selectedChallenge,
     memberChallenges,
     isMemberChallengesLoading,
@@ -196,6 +197,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
             <DiaryCreateFinishSection
               achievedDate={achievedDate}
               onAchievedDateChange={handleAchievedDateChange}
+              isDateDisabled={isAchievedDateDisabled}
               selectedMood={selectedMood}
               onMoodChange={setSelectedMood}
               thumbnailSlot={thumbnailSlot}

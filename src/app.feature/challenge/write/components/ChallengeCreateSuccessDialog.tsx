@@ -3,15 +3,16 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   Text,
 } from '@1d1s/design-system';
+import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
-import { Link2, Lock, Share2 } from 'lucide-react';
+import { getKakao } from '@module/utils/kakao';
+import { Link2, Lock } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 
 interface ChallengeCreateSuccessDialogProps
   extends React.ComponentProps<typeof Dialog> {
@@ -38,6 +39,12 @@ const COPY_BUTTON_CLASS = cn(
 const SHARE_ROW_CLASS = cn(
   'rounded-2 flex items-center gap-2 border border-gray-200',
   'bg-gray-50 px-3.5 py-2.5'
+);
+
+// 카카오 브랜드 컬러(#FEE500) — outlined 기본 스타일 위에 덮어쓴다.
+const KAKAO_BUTTON_CLASS = cn(
+  'border-transparent bg-[#FEE500] text-[#191600]',
+  'hover:bg-[#F2DC00]'
 );
 
 export function ChallengeCreateSuccessDialog({
@@ -69,23 +76,32 @@ export function ChallengeCreateSuccessDialog({
     }
   };
 
-  const handleShare = async (): Promise<void> => {
+  const handleKakaoShare = async (): Promise<void> => {
     if (!shareLink) {
       return;
     }
-    const text =
+    const description =
       isPrivate && password
         ? `비공개 챌린지에 초대합니다! 비밀번호: ${password}`
         : '챌린지에 함께 도전해요!';
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share({ title: '챌린지 초대', text, url: shareLink });
-      } catch {
-        // 사용자가 공유를 취소한 경우 — 별도 처리 없음
-      }
-      return;
+    const link = { mobileWebUrl: shareLink, webUrl: shareLink };
+    try {
+      const kakao = await getKakao();
+      kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: '챌린지 초대',
+          description,
+          imageUrl: `${window.location.origin}/images/open-graph.png`,
+          link,
+        },
+        buttons: [{ title: '챌린지 보러가기', link }],
+      });
+    } catch (error) {
+      // 실패 원인(키 누락/도메인 미등록/SDK 로드 실패 등)을 콘솔에 남긴다.
+      console.error('[KakaoShare] 공유 실패:', error);
+      toast.error('카카오 공유를 사용할 수 없어요. 링크를 복사해 주세요.');
     }
-    await copyText(shareLink, '참여 링크가 복사되었습니다.');
   };
 
   return (
@@ -93,12 +109,12 @@ export function ChallengeCreateSuccessDialog({
       <DialogContent
         className={cn(
           'flex w-[calc(100%-2rem)] flex-col items-center gap-6',
-          'sm:min-w-120 [&>button:last-of-type]:hidden'
+          'px-6 pt-10 pb-6 sm:min-w-120 [&>button:last-of-type]:hidden'
         )}
         onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => event.preventDefault()}
       >
-        <DialogHeader className="mt-6 items-center">
+        <DialogHeader className="items-center">
           <DialogTitle>
             <DialogDescription>
               <Text
@@ -159,15 +175,6 @@ export function ChallengeCreateSuccessDialog({
               <span className="min-w-0 flex-1 truncate text-sm text-gray-700">
                 {shareLink}
               </span>
-              <button
-                type="button"
-                className={COPY_BUTTON_CLASS}
-                onClick={() =>
-                  copyText(shareLink, '참여 링크가 복사되었습니다.')
-                }
-              >
-                복사
-              </button>
             </div>
 
             {isPrivate && password ? (
@@ -193,19 +200,37 @@ export function ChallengeCreateSuccessDialog({
               </div>
             ) : null}
 
-            <Button
-              variant="outlined"
-              type="button"
-              fullWidth
-              onClick={handleShare}
-            >
-              <Share2 className="mr-1.5 h-4 w-4" />
-              공유하기
-            </Button>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outlined"
+                type="button"
+                fullWidth
+                className={KAKAO_BUTTON_CLASS}
+                onClick={handleKakaoShare}
+              >
+                <Image
+                  src="/images/kakao-logo.png"
+                  alt=""
+                  width={18}
+                  height={18}
+                  className="mr-1.5"
+                />
+                카카오톡
+              </Button>
+              <Button
+                variant="outlined"
+                type="button"
+                fullWidth
+                onClick={() => copyText(shareLink, '참여 링크가 복사되었습니다.')}
+              >
+                <Link2 className="mr-1.5 h-4 w-4" />
+                링크 복사
+              </Button>
+            </div>
           </div>
         ) : null}
 
-        <DialogFooter className="grid w-full grid-cols-2 gap-3">
+        <div className="grid w-full grid-cols-2 gap-3">
           <Button
             variant="outlined"
             type="button"
@@ -226,7 +251,7 @@ export function ChallengeCreateSuccessDialog({
           >
             챌린지 확인하기
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

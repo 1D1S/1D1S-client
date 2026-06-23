@@ -31,6 +31,7 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
   const isFlexible = values.goalType === 'FLEXIBLE';
   const isEndless = values.periodType === 'ENDLESS';
   const isGroup = values.participationType === 'GROUP';
+  const isPrivate = values.challengeType === 'PRIVATE';
 
   return (
     <div className="flex flex-col gap-4">
@@ -100,6 +101,41 @@ export function ChallengeCreateDialogContent(): React.ReactElement {
             </Text>
             <div>
               <Tag>{isGroup ? '단체 챌린지' : '개인 챌린지'}</Tag>
+            </div>
+          </div>
+        </div>
+
+        {/* 공개 범위 + 중도 참여 */}
+        <div className="grid grid-cols-2 divide-x divide-gray-200 border-t border-gray-200">
+          {/* 공개 범위 */}
+          <div className="flex flex-col gap-1 p-4">
+            <Text size="caption1" weight="regular" className="text-gray-400">
+              공개 범위
+            </Text>
+            <Text size="heading2" weight="bold" className="text-black">
+              {isPrivate ? '비공개' : '공개'}
+            </Text>
+            <div>
+              <Tag>{isPrivate ? '비밀번호 필요' : '누구나 참여'}</Tag>
+            </div>
+          </div>
+
+          {/* 중도 참여 */}
+          <div className="flex flex-col gap-1 p-4">
+            <Text size="caption1" weight="regular" className="text-gray-400">
+              중도 참여
+            </Text>
+            <Text size="heading2" weight="bold" className="text-black">
+              {isGroup ? (values.allowMidJoin ? '허용' : '비허용') : '개인'}
+            </Text>
+            <div>
+              <Tag>
+                {!isGroup
+                  ? '개인 챌린지'
+                  : values.allowMidJoin
+                    ? '시작 후 참여 가능'
+                    : '시작 후 참여 불가'}
+              </Tag>
             </div>
           </div>
         </div>

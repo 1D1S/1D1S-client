@@ -1,7 +1,7 @@
 'use client';
 
+import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
-import { toast } from 'sonner';
 
 import { API_BASE_URL } from './config';
 import {
