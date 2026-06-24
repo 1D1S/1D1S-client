@@ -93,6 +93,76 @@ interface ChallengeDetailScreenProps {
 // 이 신호를 받으면 비밀번호 다이얼로그를 목표 입력 단계로 전환한다.
 const FREE_GOAL_REQUIRED_CODE = 'CHALLENGE_022';
 
+interface GoalAddListModalProps {
+  open: boolean;
+  onOpenChange(open: boolean): void;
+  title: string;
+  description: string;
+  goals: string[];
+  onGoalsChange(goals: string[]): void;
+  submitLabel: string;
+  submitDisabled: boolean;
+  submitMinWidthClass: string;
+  onSubmit(): void;
+}
+
+// 목표 입력/수정 모달의 공통 chrome. 본문은 GoalAddList 로 동일하고
+// 제목·설명·제출 버튼(라벨/너비/핸들러)만 다르다.
+function GoalAddListModal({
+  open,
+  onOpenChange,
+  title,
+  description,
+  goals,
+  onGoalsChange,
+  submitLabel,
+  submitDisabled,
+  submitMinWidthClass,
+  onSubmit,
+}: GoalAddListModalProps): React.ReactElement {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[460px]">
+        <DialogHeader className="flex-col items-start gap-1.5 pb-2">
+          <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
+            {title}
+          </DialogTitle>
+          <DialogDescription className="text-[13px] leading-relaxed text-gray-500">
+            {description}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogBody>
+          <GoalAddList
+            goals={goals}
+            onGoalsChange={onGoalsChange}
+            placeholder="목표를 입력하고 Enter를 눌러 추가하세요"
+            inputAriaLabel="목표 입력"
+            maxGoals={5}
+          />
+        </DialogBody>
+        <DialogFooter>
+          <Button
+            size="medium"
+            variant="outlined"
+            className="min-w-[80px]"
+            onClick={() => onOpenChange(false)}
+          >
+            취소
+          </Button>
+          <Button
+            size="medium"
+            className={submitMinWidthClass}
+            disabled={submitDisabled}
+            onClick={onSubmit}
+          >
+            {submitLabel}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function ChallengeDetailScreen({
   id,
 }: ChallengeDetailScreenProps): React.ReactElement {
@@ -565,7 +635,7 @@ export function ChallengeDetailScreen({
   const heroMetaLabel = `${participantsLabel} · ${remainingLabel}`;
 
   // CTA 결정 로직: 호스트 / 참여 중 / 대기 / 신청 가능 / 신청 불가
-  const ctaConfig = ((): {
+  interface ChallengeCtaConfig {
     label: string;
     onClick(): void;
     disabled: boolean;
@@ -577,7 +647,18 @@ export function ChallengeDetailScreen({
       onClick(): void;
       variant: 'default' | 'outlined';
     };
-  } => {
+  }
+  // 클릭 불가 안내 버튼(대기/종료/중도참여불가)의 공통 형태.
+  const disabledCta = (label: string, hint?: string): ChallengeCtaConfig => ({
+    label,
+    onClick: () => undefined,
+    disabled: true,
+    variant: 'outlined',
+    show: true,
+    hint,
+  });
+
+  const ctaConfig = ((): ChallengeCtaConfig => {
     if (isHost) {
       const editChallenge = {
         label: '챌린지 수정',
@@ -614,32 +695,16 @@ export function ChallengeDetailScreen({
       };
     }
     if (isPending) {
-      return {
-        label: '참여 승인 대기중',
-        onClick: () => undefined,
-        disabled: true,
-        variant: 'outlined',
-        show: true,
-      };
+      return disabledCta('참여 승인 대기중');
     }
     if (canJoinByStatus && isChallengeAlreadyEnded) {
-      return {
-        label: '종료된 챌린지',
-        onClick: () => undefined,
-        disabled: true,
-        variant: 'outlined',
-        show: true,
-      };
+      return disabledCta('종료된 챌린지');
     }
     if (canJoinByStatus && isMidJoinBlocked) {
-      return {
-        label: '중도 참여 불가',
-        onClick: () => undefined,
-        disabled: true,
-        variant: 'outlined',
-        show: true,
-        hint: '이미 시작된 챌린지는 중도 참여가 불가능합니다',
-      };
+      return disabledCta(
+        '중도 참여 불가',
+        '이미 시작된 챌린지는 중도 참여가 불가능합니다'
+      );
     }
     if (canJoin) {
       return {
@@ -660,94 +725,33 @@ export function ChallengeDetailScreen({
   })();
 
   const freeGoalModal = (
-    <Dialog open={showFreeGoalModal} onOpenChange={setShowFreeGoalModal}>
-      {/*
-        디자인 시스템의 Dialog 는 Header/Body/Footer 가 각자 자체 padding 을
-        가지므로 DialogContent 엔 `p-0 gap-0` 을 줘 이중 padding 을 막는다.
-        Footer 는 기본 회색 bg + 상단 border 가 있어, 취소 버튼은 outlined 로
-        둬야 회색 배경 위에서도 또렷하게 보인다.
-      */}
-      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[460px]">
-        <DialogHeader className="flex-col items-start gap-1.5 pb-2">
-          <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
-            내 목표 입력
-          </DialogTitle>
-          <DialogDescription className="text-[13px] leading-relaxed text-gray-500">
-            챌린지에서 달성할 목표를 입력하고 Enter 를 눌러 추가해 주세요. (최대
-            5개)
-          </DialogDescription>
-        </DialogHeader>
-        <DialogBody>
-          <GoalAddList
-            goals={freeGoalInputs}
-            onGoalsChange={setFreeGoalInputs}
-            placeholder="목표를 입력하고 Enter를 눌러 추가하세요"
-            inputAriaLabel="목표 입력"
-            maxGoals={5}
-          />
-        </DialogBody>
-        <DialogFooter>
-          <Button
-            size="medium"
-            variant="outlined"
-            className="min-w-[80px]"
-            onClick={() => setShowFreeGoalModal(false)}
-          >
-            취소
-          </Button>
-          <Button
-            size="medium"
-            className="min-w-[112px]"
-            disabled={joinChallenge.isPending}
-            onClick={handleFreeGoalSubmit}
-          >
-            {joinChallenge.isPending ? '처리 중...' : '참여 신청'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <GoalAddListModal
+      open={showFreeGoalModal}
+      onOpenChange={setShowFreeGoalModal}
+      title="내 목표 입력"
+      description="챌린지에서 달성할 목표를 입력하고 Enter 를 눌러 추가해 주세요. (최대 5개)"
+      goals={freeGoalInputs}
+      onGoalsChange={setFreeGoalInputs}
+      submitLabel={joinChallenge.isPending ? '처리 중...' : '참여 신청'}
+      submitDisabled={joinChallenge.isPending}
+      submitMinWidthClass="min-w-[112px]"
+      onSubmit={handleFreeGoalSubmit}
+    />
   );
 
   const editGoalModal = (
-    <Dialog open={showEditGoalModal} onOpenChange={setShowEditGoalModal}>
-      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[460px]">
-        <DialogHeader className="flex-col items-start gap-1.5 pb-2">
-          <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
-            내 목표 수정
-          </DialogTitle>
-          <DialogDescription className="text-[13px] leading-relaxed text-gray-500">
-            새 목표를 입력하고 Enter 를 눌러 추가해 주세요. (최대 5개)
-          </DialogDescription>
-        </DialogHeader>
-        <DialogBody>
-          <GoalAddList
-            goals={editGoalInputs}
-            onGoalsChange={setEditGoalInputs}
-            placeholder="목표를 입력하고 Enter를 눌러 추가하세요"
-            inputAriaLabel="목표 입력"
-            maxGoals={5}
-          />
-        </DialogBody>
-        <DialogFooter>
-          <Button
-            size="medium"
-            variant="outlined"
-            className="min-w-[80px]"
-            onClick={() => setShowEditGoalModal(false)}
-          >
-            취소
-          </Button>
-          <Button
-            size="medium"
-            className="min-w-[96px]"
-            disabled={updateParticipantGoal.isPending}
-            onClick={handleEditGoalSubmit}
-          >
-            {updateParticipantGoal.isPending ? '저장 중...' : '저장'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <GoalAddListModal
+      open={showEditGoalModal}
+      onOpenChange={setShowEditGoalModal}
+      title="내 목표 수정"
+      description="새 목표를 입력하고 Enter 를 눌러 추가해 주세요. (최대 5개)"
+      goals={editGoalInputs}
+      onGoalsChange={setEditGoalInputs}
+      submitLabel={updateParticipantGoal.isPending ? '저장 중...' : '저장'}
+      submitDisabled={updateParticipantGoal.isPending}
+      submitMinWidthClass="min-w-[96px]"
+      onSubmit={handleEditGoalSubmit}
+    />
   );
 
   const editChallengeGoalsModal = (

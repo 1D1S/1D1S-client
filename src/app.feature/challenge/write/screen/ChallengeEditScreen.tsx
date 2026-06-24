@@ -29,6 +29,7 @@ import {
   useChallengeEditForm,
 } from '@feature/challenge/write/hooks/useChallengeEditForm';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft, Check, Lightbulb } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -44,8 +45,6 @@ import type {
   UpdateChallengeRequest,
 } from '../../board/type/challenge';
 
-const NOOP_SUBSCRIBE = (): (() => void) => () => {};
-
 function resolveMemberCountDefaults(
   maxParticipantCnt: number | null | undefined,
   isGroup: boolean
@@ -56,24 +55,16 @@ function resolveMemberCountDefaults(
   if (!isGroup) {
     return {};
   }
-  // GROUP 챌린지에서 maxParticipantCnt 가 null/undefined 면 "제한없음" 으로
-  // 생성된 챌린지. 0/음수 같은 비정상 값도 같은 취급.
-  if (maxParticipantCnt == null || maxParticipantCnt <= 0) {
-    return { memberCount: 'unlimited' };
+  // null/undefined("제한없음"으로 생성), 0/음수, 프리셋 외 소수(1,3,4,6~9)는
+  // 모두 마지막 fallback("제한없음")으로 떨어진다.
+  const count = maxParticipantCnt ?? 0;
+  if (count === 2 || count === 5 || count === 10) {
+    return { memberCount: String(count) as '2' | '5' | '10' };
   }
-  const presetSizes: Array<2 | 5 | 10> = [2, 5, 10];
-  if (presetSizes.includes(maxParticipantCnt as 2 | 5 | 10)) {
-    return { memberCount: String(maxParticipantCnt) as '2' | '5' | '10' };
+  if (count > 10) {
+    return { memberCount: 'etc', memberCountNumber: String(count) };
   }
-  if (maxParticipantCnt > 10) {
-    return {
-      memberCount: 'etc',
-      memberCountNumber: String(maxParticipantCnt),
-    };
-  }
-  return {
-    memberCount: 'unlimited',
-  };
+  return { memberCount: 'unlimited' };
 }
 
 function buildEditDefaults(

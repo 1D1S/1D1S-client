@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from 'react';
 
-export type AddToHomeBrowser = 'ios-safari' | 'android-chrome';
+import { NOOP_SUBSCRIBE } from './useHasMounted';
 
-const NOOP_SUBSCRIBE = (): (() => void) => () => {};
+export type AddToHomeBrowser = 'ios-safari' | 'android-chrome';
 
 const IN_APP_UA_TOKENS = [
   'KAKAOTALK',

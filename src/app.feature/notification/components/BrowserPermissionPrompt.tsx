@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@1d1s/design-system';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useCallback, useState, useSyncExternalStore } from 'react';
 
@@ -18,7 +19,6 @@ import { useWebPushSubscription } from '../hooks/useWebPushSubscription';
 
 const DISMISS_STORAGE_KEY = '1d1s:browserPushPromptDismissed';
 const SETTINGS_PATH = '/mypage/settings/notifications';
-const NOOP_SUBSCRIBE = (): (() => void) => () => {};
 
 type BrowserPermission = 'default' | 'granted' | 'denied' | 'unsupported';
 

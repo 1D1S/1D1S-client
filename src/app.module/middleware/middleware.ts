@@ -35,7 +35,7 @@ export async function proxy(req: NextRequest): Promise<NextResponse> {
   }
 
   // 4. 리디렉션/리라이트 처리
-  const redirectRes = redirectMiddleware(req);
+  const redirectRes = redirectMiddleware();
   if (redirectRes) {
     applyRefreshedCookies(redirectRes, auth.setCookies);
     return redirectRes;

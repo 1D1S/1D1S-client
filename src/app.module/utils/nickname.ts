@@ -14,20 +14,11 @@ export const nicknameSchema = z
   .max(NICKNAME_MAX_LENGTH, NICKNAME_MAX_LENGTH_MESSAGE)
   .regex(NICKNAME_REGEX, NICKNAME_PATTERN_MESSAGE);
 
+/**
+ * nicknameSchema 를 단일 출처로 사용해 첫 번째 오류 메시지를 반환한다.
+ * 유효하면 빈 문자열. 검사 우선순위는 스키마 정의 순서(required > max > pattern).
+ */
 export function validateNickname(value: string): string {
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    return NICKNAME_REQUIRED_MESSAGE;
-  }
-
-  if (trimmed.length > NICKNAME_MAX_LENGTH) {
-    return NICKNAME_MAX_LENGTH_MESSAGE;
-  }
-
-  if (!NICKNAME_REGEX.test(trimmed)) {
-    return NICKNAME_PATTERN_MESSAGE;
-  }
-
-  return '';
+  const result = nicknameSchema.safeParse(value);
+  return result.success ? '' : result.error.issues[0].message;
 }

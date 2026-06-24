@@ -2,12 +2,12 @@
 
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
+import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
 import { authStorage } from '@module/utils/auth';
 import { useEffect, useMemo, useReducer, useSyncExternalStore } from 'react';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 const ENDLESS_MIN_YEAR = 2090;
-const NOOP_SUBSCRIBE = (): (() => void) => () => {};
 
 interface RailChallengeInput {
   challengeId: number;

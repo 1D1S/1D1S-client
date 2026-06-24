@@ -6,6 +6,7 @@ import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
 import { MyPageFriendsEntry } from '@feature/friend/components/MyPageFriendsEntry';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
+import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { useRouter } from 'next/navigation';
@@ -19,8 +20,6 @@ import { MyPageHeroBanner } from '../components/MyPageHeroBanner';
 import { MyPageProfileCard } from '../components/MyPageProfileCard';
 import { MyPageStatSection } from '../components/MyPageStatSection';
 import { MyPageStreakHeroCard } from '../components/MyPageStreakHeroCard';
-
-const NOOP_SUBSCRIBE = (): (() => void) => () => {};
 
 export default function MyPageScreen(): React.ReactElement | null {
   const router = useRouter();
