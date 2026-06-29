@@ -1,10 +1,10 @@
 'use client';
 
-import { Card, CircleAvatar, Stripe } from '@1d1s/design-system';
+import { Card, CircleAvatar, Icon, Stripe } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
-import { BadgeCheck, CalendarDays, Target, Users } from 'lucide-react';
+import { CalendarDays, Target, Users } from 'lucide-react';
 import React, { useMemo } from 'react';
 
 export type ChallengeCardGoalType = 'FIXED' | 'FLEXIBLE';
@@ -188,7 +188,16 @@ function ChallengeCard({
                   'flex-col items-center justify-center gap-1.5 text-white'
                 )}
               >
-                {categoryIcon ? (
+                {isOfficial ? (
+                  <span
+                    className={cn(
+                      'flex h-10 w-10 items-center justify-center',
+                      'rounded-full bg-white shadow-md'
+                    )}
+                  >
+                    <Icon name="Logo" size={22} className="text-main-800" />
+                  </span>
+                ) : categoryIcon ? (
                   <span
                     className={cn(
                       'flex h-10 w-10 items-center justify-center',
@@ -199,7 +208,17 @@ function ChallengeCard({
                     {categoryIcon}
                   </span>
                 ) : null}
-                {category ? (
+                {isOfficial ? (
+                  <span
+                    className={cn(
+                      'rounded-full bg-white px-2 py-0.5',
+                      'text-[11px] font-extrabold tracking-tight',
+                      'text-main-800 shadow-md'
+                    )}
+                  >
+                    공식 챌린지
+                  </span>
+                ) : category ? (
                   <span
                     className={cn(
                       'text-[11px] font-bold tracking-tight',
@@ -212,19 +231,6 @@ function ChallengeCard({
               </div>
             </>
           )}
-          {isOfficial ? (
-            <span
-              className={cn(
-                'absolute top-2 left-2 z-10 inline-flex items-center gap-1',
-                'from-main-700 to-main-900 rounded-full bg-gradient-to-r',
-                'px-2 py-1 text-[10px] font-extrabold text-white shadow-md',
-                'ring-1 ring-white/40'
-              )}
-            >
-              <BadgeCheck className="h-3 w-3" />
-              공식
-            </span>
-          ) : null}
           <div
             className={cn(
               'absolute top-2 right-2 z-10 flex items-center gap-1'
