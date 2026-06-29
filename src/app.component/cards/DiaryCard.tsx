@@ -117,7 +117,13 @@ function DiaryCard({
               완료
             </span>
           ) : (
-            <span className="text-xs font-extrabold text-gray-800">
+            <span
+              className={cn(
+                'inline-flex items-center rounded-full bg-gray-900/55',
+                'px-2 py-0.5 text-[11px] font-extrabold text-white shadow-sm',
+                'backdrop-blur-sm'
+              )}
+            >
               {percent}%
             </span>
           )}

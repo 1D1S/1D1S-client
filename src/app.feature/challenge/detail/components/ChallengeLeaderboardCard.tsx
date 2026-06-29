@@ -1,9 +1,23 @@
 'use client';
 
-import { Card, CircleAvatar, Text } from '@1d1s/design-system';
+import {
+  Card,
+  CircleAvatar,
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Text,
+} from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
-import { Pointer } from 'lucide-react';
-import React from 'react';
+import { ListChecks, Pointer } from 'lucide-react';
+import React, { useState } from 'react';
+
+interface LeaderboardEntryGoal {
+  challengeGoalId: number;
+  content: string;
+}
 
 interface LeaderboardEntry {
   participantId: number;
@@ -11,6 +25,7 @@ interface LeaderboardEntry {
   nickname: string;
   profileImg?: string | null;
   isHost: boolean;
+  goals?: LeaderboardEntryGoal[];
 }
 
 interface ChallengeLeaderboardCardProps {
@@ -42,6 +57,8 @@ export function ChallengeLeaderboardCard({
   pokedMemberIds = [],
 }: ChallengeLeaderboardCardProps): React.ReactElement {
   const rows = entries.slice(0, maxRows);
+  // 목표 보기 다이얼로그 — 선택된 참여자만 보관해 화면 상태와 분리한다.
+  const [goalsOf, setGoalsOf] = useState<LeaderboardEntry | null>(null);
 
   return (
     <Card radius="lg" className="p-5">
@@ -79,6 +96,7 @@ export function ChallengeLeaderboardCard({
             const showPoke = canPoke && !isMe;
             const isPoking = pokingMemberId === entry.memberId;
             const isPoked = pokedMemberIds.includes(entry.memberId);
+            const hasGoals = (entry.goals?.length ?? 0) > 0;
 
             return (
               <li
@@ -88,47 +106,64 @@ export function ChallengeLeaderboardCard({
                   !isLast && 'border-b border-gray-100'
                 )}
               >
-                <button
-                  type="button"
-                  onClick={() => onMemberClick?.(entry.memberId)}
-                  className={cn(
-                    'flex w-full cursor-pointer items-center gap-2.5',
-                    'rounded-md px-2 py-2.5 text-left transition-colors',
-                    'hover:bg-gray-50'
-                  )}
-                >
-                  <CircleAvatar
-                    size="sm"
-                    imageUrl={entry.profileImg ?? undefined}
-                    tone="cream"
-                  />
-                  <Text
-                    size="caption1"
-                    weight="bold"
-                    className="flex-1 truncate text-gray-800"
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onMemberClick?.(entry.memberId)}
+                    className={cn(
+                      'flex min-w-0 flex-1 cursor-pointer items-center gap-2.5',
+                      'rounded-md px-2 py-2.5 text-left transition-colors',
+                      'hover:bg-gray-50'
+                    )}
                   >
-                    {entry.nickname}
-                  </Text>
-                  {entry.isHost ? (
-                    <span
+                    <CircleAvatar
+                      size="sm"
+                      imageUrl={entry.profileImg ?? undefined}
+                      tone="cream"
+                    />
+                    <Text
+                      size="caption1"
+                      weight="bold"
+                      className="flex-1 truncate text-gray-800"
+                    >
+                      {entry.nickname}
+                    </Text>
+                    {entry.isHost ? (
+                      <span
+                        className={cn(
+                          'bg-main-200 text-main-800 rounded-full',
+                          'px-2 py-0.5 text-[10px] font-extrabold'
+                        )}
+                      >
+                        HOST
+                      </span>
+                    ) : (
+                      <span
+                        className={cn(
+                          'rounded-full bg-gray-100 px-2 py-0.5',
+                          'text-[10px] font-extrabold text-gray-600'
+                        )}
+                      >
+                        참여 중
+                      </span>
+                    )}
+                  </button>
+                  {hasGoals ? (
+                    <button
+                      type="button"
+                      onClick={() => setGoalsOf(entry)}
+                      aria-label={`${entry.nickname}님의 목표 보기`}
                       className={cn(
-                        'bg-main-200 text-main-800 rounded-full',
-                        'px-2 py-0.5 text-[10px] font-extrabold'
+                        'inline-flex shrink-0 items-center gap-1 rounded-full',
+                        'px-2.5 py-1 text-[11px] font-bold transition-colors',
+                        'bg-gray-100 text-gray-600 hover:bg-gray-200/70'
                       )}
                     >
-                      HOST
-                    </span>
-                  ) : (
-                    <span
-                      className={cn(
-                        'rounded-full bg-gray-100 px-2 py-0.5',
-                        'text-[10px] font-extrabold text-gray-600'
-                      )}
-                    >
-                      참여 중
-                    </span>
-                  )}
-                </button>
+                      <ListChecks className="h-3 w-3" />
+                      목표
+                    </button>
+                  ) : null}
+                </div>
 
                 {showPoke ? (
                   <div className="pt-1 pb-2.5 pl-[2.875rem]">
@@ -161,6 +196,52 @@ export function ChallengeLeaderboardCard({
           })}
         </ul>
       )}
+
+      <Dialog
+        open={goalsOf !== null}
+        onOpenChange={(next) => {
+          if (!next) {
+            setGoalsOf(null);
+          }
+        }}
+      >
+        <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[420px]">
+          <DialogHeader className="flex-col items-start gap-1.5 pb-2">
+            <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
+              {goalsOf ? `${goalsOf.nickname}님의 목표` : '목표'}
+            </DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <ul className="flex flex-col gap-1.5">
+              {(goalsOf?.goals ?? []).map((goal, index) => (
+                <li
+                  key={goal.challengeGoalId}
+                  className={cn(
+                    'flex items-start gap-2.5 rounded-[10px]',
+                    'border border-gray-100 bg-white px-3.5 py-2.5',
+                    'lg:bg-gray-50'
+                  )}
+                >
+                  <Text
+                    size="body2"
+                    weight="extrabold"
+                    className="text-main-800"
+                  >
+                    {index + 1}.
+                  </Text>
+                  <Text
+                    size="body2"
+                    weight="medium"
+                    className="flex-1 break-keep text-gray-700"
+                  >
+                    {goal.content}
+                  </Text>
+                </li>
+              ))}
+            </ul>
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

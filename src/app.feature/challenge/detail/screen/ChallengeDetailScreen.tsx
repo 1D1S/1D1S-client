@@ -1214,6 +1214,8 @@ export function ChallengeDetailScreen({
                   nickname: participant.nickname,
                   profileImg: participant.profileImg,
                   isHost: participant.status === 'HOST',
+                  // 고정 목표는 전원 공통이라 참여자별로 볼 의미가 없다.
+                  goals: isFreeChallenge ? participant.goals : undefined,
                 }))}
                 onMemberClick={(memberId) => router.push(`/member/${memberId}`)}
                 canPoke={canPokeMembers}
