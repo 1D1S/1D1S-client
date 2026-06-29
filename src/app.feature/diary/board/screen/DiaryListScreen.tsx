@@ -300,7 +300,7 @@ export default function DiaryListScreen(): React.ReactElement {
         </header>
 
         {showSkeleton ? (
-          <DiaryCardSkeletonGrid count={12} className="mt-6" />
+          <DiaryCardSkeletonGrid count={12} className="data-fade-in mt-6" />
         ) : null}
 
         {isError && !hasLoadedDiaries ? (
