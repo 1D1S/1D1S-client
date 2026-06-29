@@ -127,6 +127,8 @@ export default function MemberProfileScreen({
           completedFiniteChallengeCount={
             streak.completedFiniteChallengeCount ?? 0
           }
+          challengeHref={`/member/${memberId}/challenge`}
+          diaryHref={`/member/${memberId}/diary`}
           actions={
             <MemberFriendActionButton
               memberId={memberId}

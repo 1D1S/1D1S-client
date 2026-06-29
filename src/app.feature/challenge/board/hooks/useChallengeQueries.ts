@@ -19,6 +19,17 @@ import {
   RandomChallengesParams,
 } from '../type/challenge';
 
+// 특정 멤버가 참여 중인 챌린지 전체 목록
+export function useMemberChallenges(
+  memberId: number
+): UseQueryResult<ChallengeListItem[], Error> {
+  return useQuery({
+    queryKey: CHALLENGE_QUERY_KEYS.memberChallenges({ memberId }),
+    queryFn: () => challengeBoardApi.getMemberChallenges({ memberId }),
+    enabled: memberId > 0,
+  });
+}
+
 // 챌린지 상세 조회
 export function useChallengeDetail(
   challengeId: number

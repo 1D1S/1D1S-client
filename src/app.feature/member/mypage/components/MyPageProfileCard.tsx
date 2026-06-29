@@ -11,19 +11,83 @@ import React from 'react';
 interface ProfileStatProps {
   label: string;
   value: number;
+  onClick?(): void;
 }
 
-function ProfileStat({ label, value }: ProfileStatProps): React.ReactElement {
-  return (
-    <div className="flex items-baseline gap-1.5">
+function ProfileStat({
+  label,
+  value,
+  onClick,
+}: ProfileStatProps): React.ReactElement {
+  const content = (
+    <>
       <Text size="body1" weight="bold" className="text-gray-900">
         {value}
       </Text>
       <Text size="caption1" weight="regular" className="text-gray-500">
         {label}
       </Text>
-    </div>
+    </>
   );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          'flex items-baseline gap-1.5 transition-colors',
+          'hover:[&_*]:text-main-800'
+        )}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return <div className="flex items-baseline gap-1.5">{content}</div>;
+}
+
+interface MobileStatTileProps {
+  label: string;
+  value: number;
+  onClick?(): void;
+}
+
+// 모바일 3-col grid 의 숫자 스탯 타일. onClick 이 있으면 버튼으로 렌더해
+// 리스트 페이지로 이동할 수 있게 한다(없으면 정적 타일).
+function MobileStatTile({
+  label,
+  value,
+  onClick,
+}: MobileStatTileProps): React.ReactElement {
+  const baseClassName = cn(
+    'rounded-[12px] border border-gray-200 bg-white px-3 py-3 text-center'
+  );
+  const content = (
+    <>
+      <div className="text-[20px] font-extrabold text-gray-900">{value}</div>
+      <div className="mt-0.5 text-[10px] text-gray-500">{label}</div>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          baseClassName,
+          'w-full cursor-pointer transition-colors',
+          'hover:border-gray-300 hover:bg-gray-50'
+        )}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return <div className={baseClassName}>{content}</div>;
 }
 
 interface MyPageProfileCardProps {
@@ -36,6 +100,10 @@ interface MyPageProfileCardProps {
   currentStreak?: number;
   /** 우측 액션 영역 — 미지정 시 기본 (프로필 편집 + 설정) 사용 */
   actions?: React.ReactNode;
+  /** 지정 시 챌린지 스탯을 누르면 해당 경로로 이동 */
+  challengeHref?: string;
+  /** 지정 시 일지 스탯을 누르면 해당 경로로 이동 */
+  diaryHref?: string;
 }
 
 /**
@@ -50,9 +118,15 @@ export function MyPageProfileCard({
   completedFiniteChallengeCount,
   currentStreak,
   actions,
+  challengeHref,
+  diaryHref,
 }: MyPageProfileCardProps): React.ReactElement {
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
+  const goChallenges = challengeHref
+    ? () => router.push(challengeHref)
+    : undefined;
+  const goDiaries = diaryHref ? () => router.push(diaryHref) : undefined;
   const { data: unreadData } = useUnreadCount({ enabled: isLoggedIn });
   const hasUnread = isLoggedIn && (unreadData?.unreadCount ?? 0) > 0;
   const defaultActions = (
@@ -155,28 +229,16 @@ export function MyPageProfileCard({
             </div>
             <div className="mt-0.5 text-[10px] text-gray-500">스트릭</div>
           </div>
-          <div
-            className={cn(
-              'rounded-[12px] border border-gray-200 bg-white',
-              'px-3 py-3 text-center'
-            )}
-          >
-            <div className="text-[20px] font-extrabold text-gray-900">
-              {totalChallengeCount}
-            </div>
-            <div className="mt-0.5 text-[10px] text-gray-500">챌린지</div>
-          </div>
-          <div
-            className={cn(
-              'rounded-[12px] border border-gray-200 bg-white',
-              'px-3 py-3 text-center'
-            )}
-          >
-            <div className="text-[20px] font-extrabold text-gray-900">
-              {totalDiaryCount}
-            </div>
-            <div className="mt-0.5 text-[10px] text-gray-500">일지</div>
-          </div>
+          <MobileStatTile
+            label="챌린지"
+            value={totalChallengeCount}
+            onClick={goChallenges}
+          />
+          <MobileStatTile
+            label="일지"
+            value={totalDiaryCount}
+            onClick={goDiaries}
+          />
         </div>
       </section>
 
@@ -210,8 +272,16 @@ export function MyPageProfileCard({
               'sm:justify-start'
             )}
           >
-            <ProfileStat label="작성한 일지" value={totalDiaryCount} />
-            <ProfileStat label="참여 챌린지" value={totalChallengeCount} />
+            <ProfileStat
+              label="작성한 일지"
+              value={totalDiaryCount}
+              onClick={goDiaries}
+            />
+            <ProfileStat
+              label="참여 챌린지"
+              value={totalChallengeCount}
+              onClick={goChallenges}
+            />
             <ProfileStat
               label="완료 챌린지"
               value={completedFiniteChallengeCount}
