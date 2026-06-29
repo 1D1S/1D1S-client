@@ -74,6 +74,7 @@ const ChallengeBoardCardItem = React.memo(
         goalType={challenge.goalType}
         isGroup={challenge.participationType === 'GROUP'}
         isEnded={ended}
+        isOfficial={challenge.challengeType === 'OFFICIAL'}
         participants={challenge.randomParticipants}
         onClick={handleClick}
       />

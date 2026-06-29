@@ -4,7 +4,7 @@ import { Card, CircleAvatar, Stripe } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
-import { CalendarDays, Target, Users } from 'lucide-react';
+import { BadgeCheck, CalendarDays, Target, Users } from 'lucide-react';
 import React, { useMemo } from 'react';
 
 export type ChallengeCardGoalType = 'FIXED' | 'FLEXIBLE';
@@ -30,6 +30,8 @@ export interface ChallengeCardProps {
   goalType?: ChallengeCardGoalType;
   isGroup?: boolean;
   isEnded?: boolean;
+  // 공식 챌린지 — 브랜드 링/글로우 + "공식" 배지로 강조한다.
+  isOfficial?: boolean;
   participants?: ChallengeCardParticipant[];
   onClick?(): void;
   className?: string;
@@ -120,6 +122,7 @@ function ChallengeCard({
   goalType,
   isGroup = true,
   isEnded = false,
+  isOfficial = false,
   participants,
   onClick,
   className,
@@ -157,6 +160,8 @@ function ChallengeCard({
       className={cn(
         'transition-all duration-500 ease-out',
         'hover:shadow-warm',
+        isOfficial &&
+          'ring-main-800 shadow-[0_10px_30px_-8px_rgba(255,89,0,0.45)] ring-2',
         isEnded && 'opacity-60',
         className
       )}
@@ -207,6 +212,19 @@ function ChallengeCard({
               </div>
             </>
           )}
+          {isOfficial ? (
+            <span
+              className={cn(
+                'absolute top-2 left-2 z-10 inline-flex items-center gap-1',
+                'from-main-700 to-main-900 rounded-full bg-gradient-to-r',
+                'px-2 py-1 text-[10px] font-extrabold text-white shadow-md',
+                'ring-1 ring-white/40'
+              )}
+            >
+              <BadgeCheck className="h-3 w-3" />
+              공식
+            </span>
+          ) : null}
           <div
             className={cn(
               'absolute top-2 right-2 z-10 flex items-center gap-1'

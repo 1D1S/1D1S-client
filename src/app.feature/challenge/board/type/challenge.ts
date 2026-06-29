@@ -57,6 +57,8 @@ export interface ChallengeListItem {
   participantCnt: number;
   liked: boolean;
   likeCnt: number;
+  // 공개 범위 — OFFICIAL 일 때 카드를 공식 챌린지로 강조한다.
+  challengeType?: ChallengeType;
   thumbnailImage?: string;
   randomParticipants?: RandomParticipant[];
 }
@@ -80,6 +82,8 @@ export interface Participant {
   nickname: string;
   profileImg: string;
   status: ParticipantStatus;
+  // 참여자별 목표 — FIXED 는 공통 목표, FLEXIBLE 는 본인이 설정한 목표.
+  goals?: ChallengeGoal[];
 }
 
 export interface ChallengeDetailResponse {
