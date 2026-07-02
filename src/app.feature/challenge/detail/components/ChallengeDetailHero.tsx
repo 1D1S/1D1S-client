@@ -67,7 +67,9 @@ export function ChallengeDetailHero({
             <CategoryIcon
               category={category}
               className={cn(
-                'absolute -right-5 -bottom-8 h-44 w-44 text-white',
+                // bottom-6: 모바일 컨텐츠 시트(-mt-5 rounded-t)의 둥근
+                // 모서리 틈으로 아이콘이 비치지 않도록 시트 위쪽으로 띄운다.
+                'absolute -right-5 bottom-6 h-44 w-44 text-white',
                 'opacity-[0.15] lg:-right-3 lg:-bottom-5 lg:h-52 lg:w-52'
               )}
             />

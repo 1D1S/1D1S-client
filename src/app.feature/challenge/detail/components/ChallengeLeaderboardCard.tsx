@@ -45,6 +45,83 @@ interface ChallengeLeaderboardCardProps {
   pokedMemberIds?: number[];
 }
 
+interface MemberRowProps {
+  entry: LeaderboardEntry;
+  onSelect(): void;
+  onGoals(): void;
+}
+
+// 인라인 리스트와 "전체 보기" 모달이 공유하는 참여자 행.
+// 아바타 + 닉네임 + HOST/참여중 배지 + 목표 버튼.
+function MemberRow({
+  entry,
+  onSelect,
+  onGoals,
+}: MemberRowProps): React.ReactElement {
+  const hasGoals = (entry.goals?.length ?? 0) > 0;
+
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        type="button"
+        onClick={onSelect}
+        className={cn(
+          'flex min-w-0 flex-1 cursor-pointer items-center gap-2.5',
+          'rounded-md px-2 py-2.5 text-left transition-colors',
+          'hover:bg-gray-50'
+        )}
+      >
+        <CircleAvatar
+          size="sm"
+          imageUrl={entry.profileImg ?? undefined}
+          tone="cream"
+        />
+        <Text
+          size="caption1"
+          weight="bold"
+          className="flex-1 truncate text-gray-800"
+        >
+          {entry.nickname}
+        </Text>
+        {entry.isHost ? (
+          <span
+            className={cn(
+              'bg-main-200 text-main-800 rounded-full',
+              'px-2 py-0.5 text-[10px] font-extrabold'
+            )}
+          >
+            HOST
+          </span>
+        ) : (
+          <span
+            className={cn(
+              'rounded-full bg-gray-100 px-2 py-0.5',
+              'text-[10px] font-extrabold text-gray-600'
+            )}
+          >
+            참여 중
+          </span>
+        )}
+      </button>
+      {hasGoals ? (
+        <button
+          type="button"
+          onClick={onGoals}
+          aria-label={`${entry.nickname}님의 목표 보기`}
+          className={cn(
+            'inline-flex shrink-0 items-center gap-1 rounded-full',
+            'px-2.5 py-1 text-[11px] font-bold transition-colors',
+            'bg-gray-100 text-gray-600 hover:bg-gray-200/70'
+          )}
+        >
+          <ListChecks className="h-3 w-3" />
+          목표
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 export function ChallengeLeaderboardCard({
   entries,
   onMemberClick,
@@ -59,6 +136,9 @@ export function ChallengeLeaderboardCard({
   const rows = entries.slice(0, maxRows);
   // 목표 보기 다이얼로그 — 선택된 참여자만 보관해 화면 상태와 분리한다.
   const [goalsOf, setGoalsOf] = useState<LeaderboardEntry | null>(null);
+  // 참여자 5명 이상이면 전체 목록을 모달로 펼친다.
+  const [showAll, setShowAll] = useState(false);
+  const canShowAll = entries.length >= 5;
 
   return (
     <Card radius="lg" className="p-5">
@@ -66,11 +146,26 @@ export function ChallengeLeaderboardCard({
         <Text size="heading2" weight="extrabold" className="text-gray-900">
           참여자
         </Text>
-        {rows.length > 0 ? (
-          <Text size="caption2" weight="medium" className="text-gray-500">
-            {rows.length}명
-          </Text>
-        ) : null}
+        <div className="flex items-center gap-2">
+          {entries.length > 0 ? (
+            <Text size="caption2" weight="medium" className="text-gray-500">
+              {entries.length}명
+            </Text>
+          ) : null}
+          {canShowAll ? (
+            <button
+              type="button"
+              onClick={() => setShowAll(true)}
+              className={cn(
+                'shrink-0 rounded-full bg-gray-100 px-2.5 py-1',
+                'text-[11px] font-bold text-gray-600',
+                'transition-colors hover:bg-gray-200/70'
+              )}
+            >
+              전체 보기
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {rows.length === 0 ? (
@@ -96,7 +191,6 @@ export function ChallengeLeaderboardCard({
             const showPoke = canPoke && !isMe;
             const isPoking = pokingMemberId === entry.memberId;
             const isPoked = pokedMemberIds.includes(entry.memberId);
-            const hasGoals = (entry.goals?.length ?? 0) > 0;
 
             return (
               <li
@@ -106,64 +200,11 @@ export function ChallengeLeaderboardCard({
                   !isLast && 'border-b border-gray-100'
                 )}
               >
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => onMemberClick?.(entry.memberId)}
-                    className={cn(
-                      'flex min-w-0 flex-1 cursor-pointer items-center gap-2.5',
-                      'rounded-md px-2 py-2.5 text-left transition-colors',
-                      'hover:bg-gray-50'
-                    )}
-                  >
-                    <CircleAvatar
-                      size="sm"
-                      imageUrl={entry.profileImg ?? undefined}
-                      tone="cream"
-                    />
-                    <Text
-                      size="caption1"
-                      weight="bold"
-                      className="flex-1 truncate text-gray-800"
-                    >
-                      {entry.nickname}
-                    </Text>
-                    {entry.isHost ? (
-                      <span
-                        className={cn(
-                          'bg-main-200 text-main-800 rounded-full',
-                          'px-2 py-0.5 text-[10px] font-extrabold'
-                        )}
-                      >
-                        HOST
-                      </span>
-                    ) : (
-                      <span
-                        className={cn(
-                          'rounded-full bg-gray-100 px-2 py-0.5',
-                          'text-[10px] font-extrabold text-gray-600'
-                        )}
-                      >
-                        참여 중
-                      </span>
-                    )}
-                  </button>
-                  {hasGoals ? (
-                    <button
-                      type="button"
-                      onClick={() => setGoalsOf(entry)}
-                      aria-label={`${entry.nickname}님의 목표 보기`}
-                      className={cn(
-                        'inline-flex shrink-0 items-center gap-1 rounded-full',
-                        'px-2.5 py-1 text-[11px] font-bold transition-colors',
-                        'bg-gray-100 text-gray-600 hover:bg-gray-200/70'
-                      )}
-                    >
-                      <ListChecks className="h-3 w-3" />
-                      목표
-                    </button>
-                  ) : null}
-                </div>
+                <MemberRow
+                  entry={entry}
+                  onSelect={() => onMemberClick?.(entry.memberId)}
+                  onGoals={() => setGoalsOf(entry)}
+                />
 
                 {showPoke ? (
                   <div className="pt-1 pb-2.5 pl-[2.875rem]">
@@ -196,6 +237,45 @@ export function ChallengeLeaderboardCard({
           })}
         </ul>
       )}
+
+      <Dialog
+        open={showAll}
+        onOpenChange={setShowAll}
+      >
+        <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[420px]">
+          <DialogHeader className="flex-col items-start gap-1.5 pb-2">
+            <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
+              참여자 {entries.length}명
+            </DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <ul className="flex max-h-[60vh] flex-col overflow-y-auto">
+              {entries.map((entry, index) => {
+                const isLast = index === entries.length - 1;
+
+                return (
+                  <li
+                    key={entry.participantId}
+                    className={cn(!isLast && 'border-b border-gray-100')}
+                  >
+                    <MemberRow
+                      entry={entry}
+                      onSelect={() => {
+                        setShowAll(false);
+                        onMemberClick?.(entry.memberId);
+                      }}
+                      onGoals={() => {
+                        setShowAll(false);
+                        setGoalsOf(entry);
+                      }}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={goalsOf !== null}
