@@ -215,7 +215,7 @@ export function MemberDiaryListScreen({
         {showSkeleton ? (
           <DiaryCardSkeletonGrid
             count={MEMBER_DIARY_PAGE_SIZE}
-            className="mt-6"
+            className="data-fade-in mt-6"
           />
         ) : null}
 

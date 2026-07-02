@@ -96,10 +96,11 @@ export function DiaryDetailSkeleton(): React.ReactElement {
               </div>
             </div>
 
-            {/* 연동된 챌린지 카드 */}
+            {/* 연동된 챌린지 카드 — 실제 카드 높이(썸네일 aspect-video
+                + 패딩)와 맞춰 로드 후 레이아웃 시프트를 막는다 */}
             <Skeleton
               shape="rounded"
-              className="h-[88px] w-full rounded-[14px]"
+              className="h-[95px] w-full rounded-[14px] sm:h-[119px]"
             />
 
             {/* 제목 + 감정 메터 섹션 */}
@@ -150,7 +151,7 @@ export function DiaryDetailSkeleton(): React.ReactElement {
               <Skeleton shape="text" className="h-3 w-20" />
               <Skeleton
                 shape="rounded"
-                className="mt-3.5 aspect-[4/3] w-full rounded-2xl"
+                className="mt-3.5 aspect-[4/5] w-full rounded-2xl"
               />
               <div className="mt-4 flex flex-col gap-2.5">
                 <Skeleton shape="text" className="h-3.5 w-full" />

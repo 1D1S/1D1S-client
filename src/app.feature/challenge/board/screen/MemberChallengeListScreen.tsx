@@ -87,8 +87,7 @@ export function MemberChallengeListScreen({
 }: MemberChallengeListScreenProps): React.ReactElement {
   const memberIdNum = Number(memberId);
   const router = useRouter();
-  const { data, isLoading, isError, error } =
-    useMemberChallenges(memberIdNum);
+  const { data, isLoading, isError, error } = useMemberChallenges(memberIdNum);
   const showSkeleton = useMinimumLoading(isLoading);
 
   const challenges = data ?? [];
@@ -159,7 +158,10 @@ export function MemberChallengeListScreen({
         </header>
 
         {showSkeleton ? (
-          <ChallengeCardSkeletonGrid count={8} className="mt-6 gap-4" />
+          <ChallengeCardSkeletonGrid
+            count={8}
+            className="data-fade-in mt-6 gap-4"
+          />
         ) : null}
 
         {isError && !hasChallenges ? (
