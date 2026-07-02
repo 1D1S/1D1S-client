@@ -76,6 +76,8 @@ export default function MyPageScreen(): React.ReactElement | null {
             streak.completedFiniteChallengeCount ?? 0
           }
           currentStreak={streak.currentStreak}
+          diaryHref="/mypage/diary"
+          challengeHref="/mypage/challenge"
         />
 
         <div className="mt-6">
