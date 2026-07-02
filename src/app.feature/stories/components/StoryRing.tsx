@@ -33,7 +33,7 @@ function isValidNextImageSrc(src: string | undefined): src is string {
   return /^(https?:|data:|blob:)/i.test(src);
 }
 
-export default function StoryRing({
+function StoryRing({
   groups,
   onSelect,
   compact = false,
@@ -238,3 +238,8 @@ export default function StoryRing({
     </div>
   );
 }
+
+// 스토리 뷰어 open/close(부모 state 변경) 때 링 카드 전체가 재렌더되지
+// 않도록 React.memo 로 감싼다. 부모는 onSelect/onAddStory 를 안정된
+// 참조로 넘겨야 한다.
+export default React.memo(StoryRing);
