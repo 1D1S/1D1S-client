@@ -3,6 +3,7 @@
 import { Icon, StreakHero } from '@1d1s/design-system';
 import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
+import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useCallback, useMemo } from 'react';
@@ -131,7 +132,7 @@ export default function AppRightRail({
         >
           <button
             type="button"
-            onClick={() => router.push('/login')}
+            onClick={() => router.push(loginUrlFromCurrentLocation())}
             aria-label="로그인 페이지로 이동"
             tabIndex={contentHidden ? -1 : 0}
             className={cn(

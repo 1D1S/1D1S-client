@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { API_BASE_URL } from '../api/config';
+import { buildLoginUrl } from '../utils/returnTo';
 import { ACCESS_TOKEN_COOKIE_CANDIDATES } from '../utils/tokenCookie';
 
 type ProtectedRoute =
@@ -42,7 +43,9 @@ function buildUnauthorizedResponse(
   matched: ProtectedRoute
 ): NextResponse {
   if (matched.type === 'login-redirect') {
-    return NextResponse.redirect(new URL('/login', req.url));
+    // 로그인 후 원래 가려던 경로로 복귀할 수 있게 returnTo 를 싣는다.
+    const loginUrl = buildLoginUrl(req.nextUrl.pathname + req.nextUrl.search);
+    return NextResponse.redirect(new URL(loginUrl, req.url));
   }
   const redirectUrl = new URL(matched.fallback, req.url);
   redirectUrl.searchParams.set('loginRequired', 'true');

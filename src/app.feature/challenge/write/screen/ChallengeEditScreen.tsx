@@ -31,6 +31,7 @@ import {
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
+import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { ArrowLeft, Check, Lightbulb } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, {
@@ -410,7 +411,7 @@ export default function ChallengeEditScreen({
 
   useEffect(() => {
     if (hasMounted && !isLoggedIn) {
-      router.replace('/login');
+      router.replace(loginUrlFromCurrentLocation());
     }
   }, [hasMounted, isLoggedIn, router]);
 

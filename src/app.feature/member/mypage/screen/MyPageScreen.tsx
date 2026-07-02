@@ -8,6 +8,7 @@ import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
+import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useSyncExternalStore } from 'react';
@@ -37,7 +38,7 @@ export default function MyPageScreen(): React.ReactElement | null {
   // 미들웨어가 잔존 쿠키 등으로 통과시킨 비로그인 사용자를 /login 으로 보낸다.
   useEffect(() => {
     if (hasMounted && !isLoggedIn) {
-      router.replace('/login');
+      router.replace(loginUrlFromCurrentLocation());
     }
   }, [hasMounted, isLoggedIn, router]);
 

@@ -3,6 +3,7 @@
 import { Button } from '@1d1s/design-system';
 import { API_BASE_URL } from '@module/api/config';
 import { cn } from '@module/utils/cn';
+import { RETURN_TO_PARAM, returnToStorage } from '@module/utils/returnTo';
 import Image from 'next/image';
 
 import { OAuthProvider } from '../type/auth';
@@ -23,6 +24,10 @@ export function getLastOAuthProvider(): OAuthProvider | null {
 const handleSocialLogin = (provider: OAuthProvider): void => {
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(LAST_PROVIDER_KEY, provider);
+    // 소셜 인증 서버 왕복 동안 쿼리가 유실되므로 이동 직전에 보존한다.
+    returnToStorage.save(
+      new URLSearchParams(window.location.search).get(RETURN_TO_PARAM)
+    );
   }
   window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
 };

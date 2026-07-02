@@ -13,6 +13,7 @@ import {
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { cn } from '@module/utils/cn';
 import { openNativeModal } from '@module/utils/nativeBridge';
+import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 
@@ -63,7 +64,7 @@ export function LoginRequiredDialog({
       }
       onOpenChange(false);
       if (result === 'login') {
-        router.push('/login');
+        router.push(loginUrlFromCurrentLocation());
       } else if (required) {
         onClose?.();
       }
@@ -99,7 +100,7 @@ export function LoginRequiredDialog({
         description={description}
         confirmLabel="로그인"
         cancelLabel="닫기"
-        onConfirm={() => router.push('/login')}
+        onConfirm={() => router.push(loginUrlFromCurrentLocation())}
       />
     );
   }
@@ -159,7 +160,7 @@ export function LoginRequiredDialog({
             <Button
               variant="primary"
               className="h-11 flex-1 rounded-[10px]"
-              onClick={() => router.push('/login')}
+              onClick={() => router.push(loginUrlFromCurrentLocation())}
             >
               로그인
             </Button>
