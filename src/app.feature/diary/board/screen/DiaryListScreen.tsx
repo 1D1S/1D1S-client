@@ -11,6 +11,7 @@ import { normalizeApiError } from '@module/api/error';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { cn } from '@module/utils/cn';
 import { getDateTimestamp } from '@module/utils/date';
+import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -135,11 +136,16 @@ export default function DiaryListScreen(): React.ReactElement {
   const [showLoginDialog, setShowLoginDialog] = useState(
     () => isLoginRequired && !isLoggedIn
   );
-  const [loginDialogDescription, setLoginDialogDescription] = useState(
-    () =>
-      isLoginRequired && !isLoggedIn
-        ? '일지 상세는 로그인 후 이용할 수 있습니다.'
-        : '로그인 후 이용할 수 있습니다.'
+  // 상세 → 목록 바운스 시 원래 가려던 상세 경로. 로그인 후 그리로 복귀한다.
+  const [loginReturnTo, setLoginReturnTo] = useState<string | null>(() =>
+    isLoginRequired && !isLoggedIn
+      ? sanitizeReturnTo(searchParams.get(RETURN_TO_PARAM))
+      : null
+  );
+  const [loginDialogDescription, setLoginDialogDescription] = useState(() =>
+    isLoginRequired && !isLoggedIn
+      ? '일지 상세는 로그인 후 이용할 수 있습니다.'
+      : '로그인 후 이용할 수 있습니다.'
   );
 
   useEffect(() => {
@@ -148,6 +154,7 @@ export default function DiaryListScreen(): React.ReactElement {
     }
     const params = new URLSearchParams(searchParams.toString());
     params.delete('loginRequired');
+    params.delete(RETURN_TO_PARAM);
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, {
       scroll: false,
@@ -232,8 +239,14 @@ export default function DiaryListScreen(): React.ReactElement {
     <div className="min-h-screen w-full">
       <LoginRequiredDialog
         open={showLoginDialog}
-        onOpenChange={setShowLoginDialog}
+        onOpenChange={(open) => {
+          setShowLoginDialog(open);
+          if (!open) {
+            setLoginReturnTo(null);
+          }
+        }}
         description={loginDialogDescription}
+        returnTo={loginReturnTo}
       />
 
       {/* 모바일 sticky 헤더 — 일지.

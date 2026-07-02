@@ -2,6 +2,7 @@
 
 import { CountUp } from '@component/CountUp';
 import { cn } from '@module/utils/cn';
+import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -185,7 +186,7 @@ export default function HomeStreakSlot({
   return (
     <button
       type="button"
-      onClick={() => router.push('/login')}
+      onClick={() => router.push(loginUrlFromCurrentLocation())}
       aria-label="로그인하고 스트릭 시작하기"
       className={cn(
         SLOT_BASE,

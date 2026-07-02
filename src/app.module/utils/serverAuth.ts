@@ -1,5 +1,6 @@
 import { cookies, headers } from 'next/headers';
 
+import { RETURN_TO_PARAM } from './returnTo';
 import { ACCESS_TOKEN_COOKIE_CANDIDATES } from './tokenCookie';
 
 /**
@@ -15,10 +16,15 @@ export async function hasServerAccessToken(): Promise<boolean> {
   });
 }
 
-function appendLoginRequired(pathWithMaybeQuery: string): string {
+function appendLoginRequired(
+  pathWithMaybeQuery: string,
+  returnTo: string
+): string {
   const [path, query = ''] = pathWithMaybeQuery.split('?');
   const params = new URLSearchParams(query);
   params.set('loginRequired', 'true');
+  // 로그인 다이얼로그에서 로그인하면 원래 가려던 상세로 복귀하도록 전달
+  params.set(RETURN_TO_PARAM, returnTo);
   return `${path}?${params.toString()}`;
 }
 
@@ -37,25 +43,26 @@ export async function resolveLoginRequiredRedirect(
   const referer = headerStore.get('referer');
 
   if (!referer || !host) {
-    return appendLoginRequired(fallbackPath);
+    return appendLoginRequired(fallbackPath, currentPathname);
   }
 
   let refererUrl: URL;
   try {
     refererUrl = new URL(referer);
   } catch {
-    return appendLoginRequired(fallbackPath);
+    return appendLoginRequired(fallbackPath, currentPathname);
   }
 
   if (refererUrl.host !== host) {
-    return appendLoginRequired(fallbackPath);
+    return appendLoginRequired(fallbackPath, currentPathname);
   }
 
   // Referer가 현재 보호 경로와 같으면 루프 방지
   if (refererUrl.pathname === currentPathname) {
-    return appendLoginRequired(fallbackPath);
+    return appendLoginRequired(fallbackPath, currentPathname);
   }
 
   refererUrl.searchParams.set('loginRequired', 'true');
+  refererUrl.searchParams.set(RETURN_TO_PARAM, currentPathname);
   return `${refererUrl.pathname}${refererUrl.search}${refererUrl.hash}`;
 }

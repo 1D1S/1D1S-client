@@ -7,6 +7,7 @@ import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { useServiceWorkerNavigation } from '@module/hooks/useServiceWorkerNavigation';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
 import { cn } from '@module/utils/cn';
+import { buildLoginUrl } from '@module/utils/returnTo';
 import { ArrowLeft } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo } from 'react';
@@ -191,7 +192,8 @@ export default function AppLayoutShell({
   // 핸들러 참조가 안정적이어야 자식 컴포넌트의 재렌더를 피한다.
   const handleProfileClick = useCallback((): void => {
     if (!isLoggedIn) {
-      router.push('/login');
+      // 로그인 후 원래 목적지(마이페이지)로 복귀
+      router.push(buildLoginUrl('/mypage'));
       return;
     }
     router.push('/mypage');

@@ -7,6 +7,7 @@ import { notifyApiError } from '@module/api/errorNotify';
 import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
+import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -95,7 +96,11 @@ export function SignUpScreen(): React.ReactElement {
       await queryClient.invalidateQueries({
         queryKey: MEMBER_QUERY_KEYS.sidebar(),
       });
-      router.replace('/');
+      // 로그인 → 프로필 설정으로 우회한 경우 원래 보던 경로로 복귀
+      const returnTo = sanitizeReturnTo(
+        new URLSearchParams(window.location.search).get(RETURN_TO_PARAM)
+      );
+      router.replace(returnTo ?? '/');
     } catch (error) {
       notifyApiError(error);
     } finally {

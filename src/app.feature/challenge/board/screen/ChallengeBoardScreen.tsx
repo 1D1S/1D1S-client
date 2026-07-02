@@ -16,6 +16,7 @@ import {
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { cn } from '@module/utils/cn';
+import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import { X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -97,12 +98,15 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   const [query, setQuery] = useState('');
   const [category] = useState<ChallengeCategory>('ALL');
 
+  // 상세 → 목록 바운스 시 원래 가려던 상세 경로. 로그인 후 그리로 복귀한다.
+  const [loginReturnTo, setLoginReturnTo] = useState<string | null>(null);
   const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
   if (isLoginRequired !== prevIsLoginRequired) {
     setPrevIsLoginRequired(isLoginRequired);
     if (isLoginRequired && !isLoggedIn) {
       setShowLoginDialog(true);
       setLoginDialogDescription('챌린지 상세는 로그인 후 이용할 수 있습니다.');
+      setLoginReturnTo(sanitizeReturnTo(searchParams.get(RETURN_TO_PARAM)));
     }
   }
 
@@ -112,6 +116,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     }
     const params = new URLSearchParams(searchParams.toString());
     params.delete('loginRequired');
+    params.delete(RETURN_TO_PARAM);
     const next = params.toString();
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
   }, [isLoginRequired, pathname, router, searchParams]);
@@ -174,8 +179,14 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     <div className="w-full">
       <LoginRequiredDialog
         open={showLoginDialog}
-        onOpenChange={setShowLoginDialog}
+        onOpenChange={(open) => {
+          setShowLoginDialog(open);
+          if (!open) {
+            setLoginReturnTo(null);
+          }
+        }}
         description={loginDialogDescription}
+        returnTo={loginReturnTo}
       />
 
       {/* 모바일 sticky 헤더 — 타이틀 + 새 챌린지 + 검색바.
@@ -304,7 +315,6 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               검색
             </Button>
           </div>
-
         </div>
 
         <div className="mt-4 lg:mt-6">

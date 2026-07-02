@@ -5,6 +5,7 @@ import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl'
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
+import { buildLoginUrl } from '@module/utils/returnTo';
 import { BookOpen, Home, LayoutGrid, User } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -54,9 +55,10 @@ export default function AppBottomNav({
 
   const handleChange = useCallback(
     (id: string): void => {
+      // 비로그인 마이 탭: 로그인 후 원래 목적지(마이페이지)로 복귀
       const target =
         id === 'mypage' && !isLoggedIn
-          ? '/login'
+          ? buildLoginUrl('/mypage')
           : ITEMS.find((it) => it.id === id)?.href;
       if (!target) {
         return;

@@ -3,8 +3,10 @@
 import { Icon, StreakChip } from '@1d1s/design-system';
 import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
+import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 const NAV_ITEMS = [
@@ -35,6 +37,8 @@ export default function AppTopNav({
   onProfileClick,
   className,
 }: AppTopNavProps): React.ReactElement {
+  const router = useRouter();
+
   return (
     <header
       className={cn(
@@ -146,6 +150,20 @@ export default function AppTopNav({
           ) : (
             <Link
               href="/login"
+              onClick={(event) => {
+                // 새 탭 열기(수정자 키 클릭)는 기본 동작 유지
+                if (
+                  event.metaKey ||
+                  event.ctrlKey ||
+                  event.shiftKey ||
+                  event.altKey
+                ) {
+                  return;
+                }
+                event.preventDefault();
+                // 로그인 후 보던 페이지로 복귀할 수 있게 returnTo 를 싣는다
+                router.push(loginUrlFromCurrentLocation());
+              }}
               className={cn(
                 'rounded-2 bg-brand px-3.5 py-2',
                 'text-[12px] font-bold text-white transition',

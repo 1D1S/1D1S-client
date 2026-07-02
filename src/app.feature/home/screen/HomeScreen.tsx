@@ -7,6 +7,7 @@ import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import Stories from '@feature/stories/components/Stories';
 import { useHasMounted } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
+import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useState } from 'react';
 
@@ -52,20 +53,27 @@ export default function HomeScreen({
   // `?loginRequired=true` 진입 시 비로그인 사용자에게만 다이얼로그를 1회 띄운다.
   // mount-only useEffect 는 hydration 직후 isLoggedIn 이 일시적으로 false 인 구간을
   // 잡아 잘못된 다이얼로그를 띄울 수 있어, prevState 패턴으로 변경 시점에만 반응한다.
+  // 바운스 시 원래 가려던 경로. 로그인 후 그리로 복귀한다.
+  const [loginReturnTo, setLoginReturnTo] = useState<string | null>(null);
   const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
   if (isLoginRequired !== prevIsLoginRequired) {
     setPrevIsLoginRequired(isLoginRequired);
     if (isLoginRequired && !isLoggedIn) {
       setShowLoginDialog(true);
+      setLoginReturnTo(sanitizeReturnTo(searchParams.get(RETURN_TO_PARAM)));
     }
   }
 
   const handleDialogOpenChange = useCallback(
     (open: boolean): void => {
       setShowLoginDialog(open);
+      if (!open) {
+        setLoginReturnTo(null);
+      }
       if (!open && isLoginRequired) {
         const params = new URLSearchParams(searchParams.toString());
         params.delete('loginRequired');
+        params.delete(RETURN_TO_PARAM);
         const query = params.toString();
         router.replace(query ? `${pathname}?${query}` : pathname, {
           scroll: false,
@@ -140,6 +148,7 @@ export default function HomeScreen({
         open={showLoginDialog}
         onOpenChange={handleDialogOpenChange}
         description={loginDialogDescription}
+        returnTo={loginReturnTo}
       />
       <div
         className={cn(
