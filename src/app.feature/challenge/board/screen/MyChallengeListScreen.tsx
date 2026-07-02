@@ -1,7 +1,9 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
-import ChallengeCard from '@component/cards/ChallengeCard';
+import ChallengeCard, {
+  type ChallengeCardGoalType,
+} from '@component/cards/ChallengeCard';
 import EmptyState from '@component/EmptyState';
 import { ChallengeCardSkeletonGrid } from '@component/skeletons/ChallengeCardSkeleton';
 import {
@@ -9,33 +11,32 @@ import {
   getCategoryLabel,
   getCategoryStripeTone,
 } from '@constants/categories';
-import { normalizeApiError } from '@module/api/error';
+import { useMyPage } from '@feature/member/hooks/useMemberQueries';
+import type { MyPageChallenge } from '@feature/member/type/member';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useCallback } from 'react';
 
-import { useMemberChallenges } from '../hooks/useChallengeQueries';
-import type { ChallengeListItem } from '../type/challenge';
 import {
   formatChallengeRemainingLabel,
   isChallengeEndedOrArchived,
   isInfiniteChallengeEndDate,
 } from '../utils/challengePeriod';
 
-interface MemberChallengeCardItemProps {
-  challenge: ChallengeListItem;
+interface MyChallengeCardItemProps {
+  challenge: MyPageChallenge;
   onCardClick(challengeId: number): void;
 }
 
-// 보드와 동일한 매핑. React.memo(ChallengeCard) 가 재렌더를 건너뛰도록
-// 파생 계산을 컴포넌트로 분리한다.
-const MemberChallengeCardItem = React.memo(
+// MyPageActiveChallenges 와 동일한 매핑. React.memo(ChallengeCard) 가
+// 재렌더를 건너뛰도록 파생 계산을 컴포넌트로 분리한다.
+const MyChallengeCardItem = React.memo(
   ({
     challenge,
     onCardClick,
-  }: MemberChallengeCardItemProps): React.ReactElement => {
+  }: MyChallengeCardItemProps): React.ReactElement => {
     const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
     const ended = isChallengeEndedOrArchived(
       challenge.endDate,
@@ -66,31 +67,26 @@ const MemberChallengeCardItem = React.memo(
         startDate={challenge.startDate}
         endDate={challenge.endDate}
         isInfinite={isInfinite}
-        goalType={challenge.goalType}
+        goalType={challenge.goalType as ChallengeCardGoalType}
         isGroup={challenge.participationType === 'GROUP'}
         isEnded={ended}
-        isOfficial={challenge.challengeType === 'OFFICIAL'}
         participants={challenge.randomParticipants}
         onClick={handleClick}
       />
     );
   }
 );
-MemberChallengeCardItem.displayName = 'MemberChallengeCardItem';
+MyChallengeCardItem.displayName = 'MyChallengeCardItem';
 
-interface MemberChallengeListScreenProps {
-  memberId: string;
-}
-
-export function MemberChallengeListScreen({
-  memberId,
-}: MemberChallengeListScreenProps): React.ReactElement {
-  const memberIdNum = Number(memberId);
+// ponytail: /member/my-page 의 challengeList(참여 중 챌린지)를 그대로 사용.
+// 내 memberId 가 클라이언트에 없어 /challenges/member 를 호출할 수 없고,
+// 완료 포함 "전체" 가 필요하면 백엔드 self 챌린지 목록 엔드포인트가 필요.
+export function MyChallengeListScreen(): React.ReactElement {
   const router = useRouter();
-  const { data, isLoading, isError, error } = useMemberChallenges(memberIdNum);
+  const { data, isLoading } = useMyPage();
   const showSkeleton = useMinimumLoading(isLoading);
 
-  const challenges = data ?? [];
+  const challenges = data?.challengeList ?? [];
   const hasChallenges = challenges.length > 0;
 
   const handleCardClick = useCallback(
@@ -102,7 +98,7 @@ export function MemberChallengeListScreen({
 
   return (
     <div className="min-h-screen w-full">
-      {/* 모바일 sticky 헤더 — ← + 챌린지 전체 보기 */}
+      {/* 모바일 sticky 헤더 — ← + 내 챌린지 전체 보기 */}
       <div
         className={cn(
           'sticky top-0 z-30 flex items-center gap-3',
@@ -114,7 +110,7 @@ export function MemberChallengeListScreen({
         <button
           type="button"
           aria-label="뒤로가기"
-          onClick={() => router.push(`/member/${memberId}`)}
+          onClick={() => router.push('/mypage')}
           className={cn(
             'flex h-8 w-8 items-center justify-center rounded-lg',
             'text-gray-700 transition-colors hover:bg-gray-100'
@@ -127,7 +123,7 @@ export function MemberChallengeListScreen({
           weight="extrabold"
           className="flex-1 tracking-[-0.3px] text-gray-900"
         >
-          챌린지 전체 보기
+          내 챌린지 전체 보기
         </Text>
       </div>
 
@@ -149,7 +145,7 @@ export function MemberChallengeListScreen({
               weight="extrabold"
               className="tracking-tight text-gray-900"
             >
-              챌린지 전체 보기
+              내 챌린지 전체 보기
             </Text>
             <Text size="body2" weight="regular" className="text-gray-500">
               참여 중인 챌린지 전체 목록입니다.
@@ -164,16 +160,6 @@ export function MemberChallengeListScreen({
           />
         ) : null}
 
-        {isError && !hasChallenges ? (
-          <div className="mt-10 flex w-full justify-center py-10">
-            <Text size="body1" weight="medium" className="text-red-600">
-              {error
-                ? normalizeApiError(error).message
-                : '챌린지를 불러오지 못했습니다.'}
-            </Text>
-          </div>
-        ) : null}
-
         {!showSkeleton && hasChallenges ? (
           <div
             className={cn(
@@ -182,7 +168,7 @@ export function MemberChallengeListScreen({
             )}
           >
             {challenges.map((challenge) => (
-              <MemberChallengeCardItem
+              <MyChallengeCardItem
                 key={challenge.challengeId}
                 challenge={challenge}
                 onCardClick={handleCardClick}
@@ -191,7 +177,7 @@ export function MemberChallengeListScreen({
           </div>
         ) : null}
 
-        {!showSkeleton && !isError && !hasChallenges ? (
+        {!showSkeleton && !hasChallenges ? (
           <EmptyState
             variant="challenge"
             title="참여 중인 챌린지가 없어요"

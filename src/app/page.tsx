@@ -58,9 +58,8 @@ async function MainPageContent(): Promise<React.ReactElement> {
 }
 
 /**
- * page 자체를 async 로 두면 app/loading.tsx(전역 얇은 바)를 먼저 타게 된다.
- * 홈만 전역 로딩바가 노출되는 불균형을 막기 위해 내부 async 컴포넌트를
- * Suspense 로 감싸 홈 전용 스켈레톤을 fallback 으로 사용한다.
+ * page 자체를 async 로 두지 않고 내부 async 컴포넌트를 Suspense 로 감싸
+ * 홈 전용 스켈레톤을 fallback 으로 사용한다.
  */
 export default function MainPage(): React.ReactElement {
   return (

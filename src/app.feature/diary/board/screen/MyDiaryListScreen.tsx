@@ -198,7 +198,10 @@ export function MyDiaryListScreen(): React.ReactElement {
         </header>
 
         {showSkeleton ? (
-          <DiaryCardSkeletonGrid count={MY_DIARY_PAGE_SIZE} className="mt-6" />
+          <DiaryCardSkeletonGrid
+            count={MY_DIARY_PAGE_SIZE}
+            className="data-fade-in mt-6"
+          />
         ) : null}
 
         {isError && !hasDiaries ? (
