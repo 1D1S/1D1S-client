@@ -42,6 +42,11 @@ export function loginUrlFromCurrentLocation(): string {
   return buildLoginUrl(window.location.pathname + window.location.search);
 }
 
+// consume() 이 한 로그인 왕복 안에서 여러 번 불려도(StrictMode 이중
+// 마운트, effect 재실행 등) 같은 값을 돌려주도록 첫 소비 결과를 캐시한다.
+// 다음 로그인 시도(save)에서 리셋된다.
+let consumedCache: string | null | undefined;
+
 /**
  * OAuth 왕복 동안 returnTo 를 보존하는 저장소.
  * 소셜 인증 서버를 갔다 오면 쿼리 파라미터가 유실되므로, 소셜 로그인
@@ -53,6 +58,7 @@ export const returnToStorage = {
     if (typeof window === 'undefined') {
       return;
     }
+    consumedCache = undefined;
     const target = sanitizeReturnTo(value);
     if (target) {
       window.sessionStorage.setItem(STORAGE_KEY, target);
@@ -60,13 +66,17 @@ export const returnToStorage = {
       window.sessionStorage.removeItem(STORAGE_KEY);
     }
   },
-  /** 로그인 성공 시 1회 소비 — 꺼낸 뒤 즉시 삭제한다. */
+  /** 로그인 성공 시 소비 — storage 에서 꺼내 즉시 삭제한다(재호출 안전). */
   consume(): string | null {
     if (typeof window === 'undefined') {
       return null;
     }
-    const value = window.sessionStorage.getItem(STORAGE_KEY);
-    window.sessionStorage.removeItem(STORAGE_KEY);
-    return sanitizeReturnTo(value);
+    if (consumedCache === undefined) {
+      consumedCache = sanitizeReturnTo(
+        window.sessionStorage.getItem(STORAGE_KEY)
+      );
+      window.sessionStorage.removeItem(STORAGE_KEY);
+    }
+    return consumedCache;
   },
 };
