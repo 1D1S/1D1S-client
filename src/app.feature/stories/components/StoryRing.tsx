@@ -43,19 +43,12 @@ function StoryRing({
   const showMySlot = typeof onAddStory === 'function';
   const cardWidthClass = compact ? 'w-[120px]' : 'w-[140px]';
   // 내 스토리는 sortStoryGroups 로 항상 맨 앞에 고정된다. 응답에 포함되면
-  // 리딩 슬롯이 실제 스토리를 보여주고 클릭 시 뷰어를 연다. 없으면 기존처럼
-  // 일지 작성으로 유도하는 추가 카드만 그린다.
-  const myGroupIndex = groups.findIndex((group) => group.isMyStory);
-  const myGroup = myGroupIndex >= 0 ? groups[myGroupIndex] : undefined;
-  const friendCount = myGroup ? groups.length - 1 : groups.length;
-  const myImageUrl =
-    resolveDiaryImageUrl(myGroup?.profileImage ?? myProfileImage ?? null) ??
-    undefined;
+  // 일반 스토리 카드로 렌더돼 뷰어로 열리고, 없으면 일지 작성으로 유도하는
+  // 추가 카드를 대신 그린다.
+  const hasMyStory = groups.some((group) => group.isMyStory);
+  const friendCount = hasMyStory ? groups.length - 1 : groups.length;
+  const myImageUrl = resolveDiaryImageUrl(myProfileImage ?? null) ?? undefined;
   const hasMyImage = isValidNextImageSrc(myImageUrl);
-  const myThumbnailUrl =
-    resolveDiaryImageUrl(myGroup?.stories[0]?.diaryThumbnail ?? null) ??
-    undefined;
-  const myHasThumbnail = isValidNextImageSrc(myThumbnailUrl);
 
   return (
     <div
@@ -64,14 +57,14 @@ function StoryRing({
         compact ? 'gap-2.5 px-4 py-3' : 'gap-3 px-5 py-3.5 lg:px-8'
       )}
     >
-      {showMySlot ? (
+      {showMySlot && !hasMyStory ? (
         <Card
           interactive
           radius="md"
           role="button"
           tabIndex={0}
-          onClick={myGroup ? () => onSelect(myGroupIndex) : onAddStory}
-          aria-label={myGroup ? '내 스토리 열기' : '내 일지 추가'}
+          onClick={onAddStory}
+          aria-label="내 일지 추가"
           className={cn(
             'flex-shrink-0 transition-all duration-500 ease-out',
             'hover:shadow-warm',
@@ -79,45 +72,17 @@ function StoryRing({
           )}
         >
           <Card.Thumb className="bg-main-100 aspect-[4/5]">
-            {myHasThumbnail ? (
-              <FadeInImage
-                src={myThumbnailUrl as string}
-                alt=""
-                fill
-                sizes="(min-width: 1024px) 140px, 120px"
-                className="object-cover"
-              />
-            ) : (
-              <Stripe tone="peach" />
-            )}
+            <Stripe tone="peach" />
             <Card.Overlay position="top-right">
-              {myGroup ? (
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onAddStory?.();
-                  }}
-                  aria-label="새 일지 작성"
-                  className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-full',
-                    'bg-main-500 cursor-pointer border-2 border-white',
-                    'text-white shadow-sm'
-                  )}
-                >
-                  <Icon name="Plus" size={14} />
-                </button>
-              ) : (
-                <span
-                  className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-full',
-                    'bg-main-500 border-2 border-white text-white shadow-sm'
-                  )}
-                  aria-hidden
-                >
-                  <Icon name="Plus" size={14} />
-                </span>
-              )}
+              <span
+                className={cn(
+                  'flex h-7 w-7 items-center justify-center rounded-full',
+                  'bg-main-500 border-2 border-white text-white shadow-sm'
+                )}
+                aria-hidden
+              >
+                <Icon name="Plus" size={14} />
+              </span>
             </Card.Overlay>
           </Card.Thumb>
           <Card.Body className="gap-1.5 p-3">
@@ -154,7 +119,7 @@ function StoryRing({
                     'truncate text-[11px] font-medium text-gray-500'
                   )}
                 >
-                  {myGroup ? '내 스토리 보기' : '새 일지 작성하기'}
+                  새 일지 작성하기
                 </span>
               </span>
             </Card.Meta>
@@ -171,10 +136,6 @@ function StoryRing({
         />
       ) : null}
       {groups.map((group, index) => {
-        // 내 스토리는 리딩 슬롯에서 이미 렌더링했으므로 건너뛴다.
-        if (group.isMyStory) {
-          return null;
-        }
         const seen = isGroupAllSeen(group);
         const [preview] = group.stories;
         const thumbnailUrl =
