@@ -48,11 +48,16 @@ export const challengeBoardApi = {
   getChallengeList: async (
     params: ChallengeListParams = {}
   ): Promise<{ data: ChallengeListResponse; message: string }> => {
+    // 미선택 필터는 키 자체를 생략해야 한다(빈 값이면 서버 enum 변환 400).
+    // buildQueryString 이 undefined 생략 + 배열을 같은 키 반복(repeat,
+    // status=ONGOING&status=UPCOMING)으로 직렬화한다.
     const query = buildQueryString({
       limit: params.limit,
       cursor: params.cursor,
       keyword: params.keyword,
       category: params.category,
+      challengeType: params.challengeType,
+      status: params.status,
     });
 
     return requestBody<{ data: ChallengeListResponse; message: string }>(

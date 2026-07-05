@@ -36,6 +36,25 @@ export function ChallengeBoardSkeleton(): React.ReactElement {
           <Skeleton shape="pill" className="h-7 w-20" />
         </div>
         <Skeleton shape="rounded" className="h-10 w-full" />
+        {/* 필터 토글 2행 — 실제 화면(ChallengeBoardFilters)과 높이 동기 */}
+        <div className="mt-3 flex flex-col gap-2.5">
+          {Array.from({ length: 2 }).map((_, rowIndex) => (
+            <div
+              key={rowIndex}
+              className="scrollbar-hide -mx-5 flex gap-1.5 overflow-x-auto px-5"
+            >
+              {Array.from({ length: rowIndex === 0 ? 8 : 7 }).map(
+                (_, index) => (
+                  <Skeleton
+                    key={index}
+                    shape="pill"
+                    className="h-8 w-16 shrink-0"
+                  />
+                )
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="mx-auto w-full max-w-[1200px] px-5 py-5 lg:px-8 lg:py-10">
@@ -68,25 +87,23 @@ export function ChallengeBoardSkeleton(): React.ReactElement {
             <Skeleton shape="rounded" className="h-10 w-20" />
           </div>
 
-          {/* TODO: 카테고리 칩 스켈레톤 — 보드 화면의 카테고리 토글이
-              임시 비활성화되어 동기화로 함께 숨김. 토글 복구 시 아래
-              블록의 주석을 해제할 것. */}
-          {/*
-          <div
-            className={cn(
-              'scrollbar-hide -mx-5 flex gap-1.5 overflow-x-auto px-5',
-              'sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0'
-            )}
-          >
-            {Array.from({ length: 7 }).map((_, index) => (
-              <Skeleton
-                key={index}
-                shape="pill"
-                className="h-9 w-16 shrink-0 sm:shrink"
-              />
+          {/* 필터 토글 2행(카테고리 / 종류+상태) — 데스크탑 전용.
+              모바일(<lg)은 sticky 헤더 쪽 스켈레톤이 담당한다. */}
+          <div className="hidden flex-col gap-2.5 lg:flex">
+            {Array.from({ length: 2 }).map((_, rowIndex) => (
+              <div key={rowIndex} className="flex flex-wrap gap-1.5">
+                {Array.from({ length: rowIndex === 0 ? 8 : 7 }).map(
+                  (_, index) => (
+                    <Skeleton
+                      key={index}
+                      shape="pill"
+                      className="h-8 w-16 shrink-0"
+                    />
+                  )
+                )}
+              </div>
             ))}
           </div>
-          */}
         </div>
 
         {/* 카드 그리드 */}

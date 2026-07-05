@@ -21,9 +21,15 @@ import { X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { ChallengeBoardFilters } from '../components/ChallengeBoardFilters';
 import { toCategoryParam } from '../consts/categoryFilters';
 import { useChallengeList } from '../hooks/useChallengeQueries';
-import type { ChallengeCategory, ChallengeListItem } from '../type/challenge';
+import type {
+  ChallengeCategory,
+  ChallengeListItem,
+  ChallengeStatus,
+  ChallengeTypeFilter,
+} from '../type/challenge';
 import {
   formatChallengeRemainingLabel,
   isChallengeEndedOrArchived,
@@ -32,7 +38,9 @@ import {
 
 interface ChallengeBoardCardItemProps {
   challenge: ChallengeListItem;
-  onCardClick(challengeId: number): void;
+  /** 로그인 시 상세 링크. 비로그인 시 undefined + onRequireLogin 사용. */
+  href?: string;
+  onRequireLogin(): void;
 }
 
 // 카드 매핑에서 인라인 람다·파생 계산을 제거해 React.memo(ChallengeCard) 가
@@ -40,7 +48,8 @@ interface ChallengeBoardCardItemProps {
 const ChallengeBoardCardItem = React.memo(
   ({
     challenge,
-    onCardClick,
+    href,
+    onRequireLogin,
   }: ChallengeBoardCardItemProps): React.ReactElement => {
     const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
     const ended = isChallengeEndedOrArchived(
@@ -52,10 +61,6 @@ const ChallengeBoardCardItem = React.memo(
       isInfinite,
       ended
     );
-
-    const handleClick = useCallback(() => {
-      onCardClick(challenge.challengeId);
-    }, [onCardClick, challenge.challengeId]);
 
     return (
       <ChallengeCard
@@ -77,7 +82,8 @@ const ChallengeBoardCardItem = React.memo(
         isEnded={ended}
         isOfficial={challenge.challengeType === 'OFFICIAL'}
         participants={challenge.randomParticipants}
-        onClick={handleClick}
+        href={href}
+        onClick={onRequireLogin}
       />
     );
   }
@@ -96,7 +102,15 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     useState('로그인 후 이용할 수 있습니다.');
   const [inputValue, setInputValue] = useState('');
   const [query, setQuery] = useState('');
-  const [category] = useState<ChallengeCategory>('ALL');
+  const [category, setCategory] = useState<ChallengeCategory>('ALL');
+  const [challengeType, setChallengeType] = useState<
+    ChallengeTypeFilter | 'ALL'
+  >('ALL');
+  // 기본 진입 시 종료된 챌린지는 숨긴다 — 모집중/진행중만 선택된 상태.
+  const [statuses, setStatuses] = useState<ChallengeStatus[]>([
+    'UPCOMING',
+    'ONGOING',
+  ]);
 
   // 상세 → 목록 바운스 시 원래 가려던 상세 경로. 로그인 후 그리로 복귀한다.
   const [loginReturnTo, setLoginReturnTo] = useState<string | null>(null);
@@ -133,14 +147,46 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     [isLoggedIn]
   );
 
+  // 필터/검색이 바뀌면 결과 목록이 처음부터 보이도록 즉시 최상단으로.
+  // (라우트 이동 시의 ScrollToTop 과 동일하게 instant 스크롤)
+  const scrollListToTop = useCallback((): void => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const handleSearch = useCallback((): void => {
     setQuery(inputValue);
-  }, [inputValue]);
+    scrollListToTop();
+  }, [inputValue, scrollListToTop]);
 
   const handleClear = useCallback((): void => {
     setInputValue('');
     setQuery('');
-  }, []);
+    scrollListToTop();
+  }, [scrollListToTop]);
+
+  const handleCategoryChange = useCallback(
+    (value: ChallengeCategory): void => {
+      setCategory(value);
+      scrollListToTop();
+    },
+    [scrollListToTop]
+  );
+
+  const handleChallengeTypeChange = useCallback(
+    (value: ChallengeTypeFilter | 'ALL'): void => {
+      setChallengeType(value);
+      scrollListToTop();
+    },
+    [scrollListToTop]
+  );
+
+  const handleStatusesChange = useCallback(
+    (value: ChallengeStatus[]): void => {
+      setStatuses(value);
+      scrollListToTop();
+    },
+    [scrollListToTop]
+  );
 
   const handleCreateChallenge = useCallback((): void => {
     requireAuth('챌린지 만들기는 로그인 후 이용할 수 있습니다.', () =>
@@ -148,20 +194,21 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     );
   }, [requireAuth, router]);
 
-  const handleChallengeCardClick = useCallback(
-    (challengeId: number): void => {
-      requireAuth('챌린지 상세는 로그인 후 이용할 수 있습니다.', () =>
-        router.push(`/challenge/${challengeId}`)
-      );
-    },
-    [requireAuth, router]
-  );
+  // 로그인 시 카드 자체가 Link(prefetch)로 이동하므로 비로그인 유도만 남는다.
+  const handleCardRequireLogin = useCallback((): void => {
+    setLoginDialogDescription('챌린지 상세는 로그인 후 이용할 수 있습니다.');
+    setShowLoginDialog(true);
+  }, []);
 
+  // 미선택 필터는 undefined 로 넘겨 요청에서 키 자체가 빠지게 한다
+  // (빈 값 전송 시 서버 enum 변환 400). status 빈 배열도 동일.
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useChallengeList({
       limit: 12,
       keyword: query || undefined,
       category: toCategoryParam(category),
+      challengeType: challengeType === 'ALL' ? undefined : challengeType,
+      status: statuses.length > 0 ? statuses : undefined,
     });
 
   const { ref } = useInfiniteScroll({
@@ -214,7 +261,8 @@ export default function ChallengeBoardScreen(): React.ReactElement {
             onClick={handleCreateChallenge}
             data-native-hide
             className={cn(
-              'bg-main-800 inline-flex items-center gap-1 rounded-full',
+              // bg-brand ≡ bg-main-800 — 의미 토큰으로 통일
+              'bg-brand inline-flex items-center gap-1 rounded-full',
               'px-3 py-1.5 text-[11px] font-extrabold text-white',
               'transition hover:brightness-105'
             )}
@@ -246,6 +294,15 @@ export default function ChallengeBoardScreen(): React.ReactElement {
             }
           }}
         />
+        <ChallengeBoardFilters
+          category={category}
+          onCategoryChange={handleCategoryChange}
+          challengeType={challengeType}
+          onChallengeTypeChange={handleChallengeTypeChange}
+          statuses={statuses}
+          onStatusesChange={handleStatusesChange}
+          className="mt-3"
+        />
       </div>
 
       <div className="mx-auto w-full max-w-[1200px] px-5 py-5 lg:px-8 lg:py-10">
@@ -268,7 +325,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
             </Text>
           </div>
           <Button
-            size="medium"
+            size="md"
             onClick={handleCreateChallenge}
             className="self-start whitespace-nowrap lg:self-auto"
           >
@@ -308,13 +365,24 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               />
             </div>
             <Button
-              size="medium"
+              size="md"
               onClick={handleSearch}
               className="h-10 whitespace-nowrap"
             >
               검색
             </Button>
           </div>
+
+          {/* 필터 — 모바일(<lg)은 sticky 헤더 쪽에서 렌더 */}
+          <ChallengeBoardFilters
+            category={category}
+            onCategoryChange={handleCategoryChange}
+            challengeType={challengeType}
+            onChallengeTypeChange={handleChallengeTypeChange}
+            statuses={statuses}
+            onStatusesChange={handleStatusesChange}
+            className="hidden lg:flex"
+          />
         </div>
 
         <div className="mt-4 lg:mt-6">
@@ -331,7 +399,12 @@ export default function ChallengeBoardScreen(): React.ReactElement {
                 <ChallengeBoardCardItem
                   key={challenge.challengeId}
                   challenge={challenge}
-                  onCardClick={handleChallengeCardClick}
+                  href={
+                    isLoggedIn
+                      ? `/challenge/${challenge.challengeId}`
+                      : undefined
+                  }
+                  onRequireLogin={handleCardRequireLogin}
                 />
               ))}
             </div>

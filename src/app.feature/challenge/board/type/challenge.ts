@@ -15,6 +15,10 @@ export type GoalType = 'FIXED' | 'FLEXIBLE';
 export type ParticipationType = 'INDIVIDUAL' | 'GROUP';
 // 챌린지 공개 범위 — PUBLIC: 공개, PRIVATE: 비공개(비밀번호), OFFICIAL: 공식
 export type ChallengeType = 'PUBLIC' | 'PRIVATE' | 'OFFICIAL';
+// 목록 필터로 지정 가능한 종류 — PRIVATE 는 미지정 시에도 서버가 항상 제외
+export type ChallengeTypeFilter = Exclude<ChallengeType, 'PRIVATE'>;
+// 진행 상태 — UPCOMING: 모집중, ONGOING: 진행중, ENDED: 종료
+export type ChallengeStatus = 'UPCOMING' | 'ONGOING' | 'ENDED';
 export type ParticipantStatus =
   | 'NONE'
   | 'PENDING'
@@ -179,6 +183,9 @@ export interface ChallengeListParams {
   cursor?: string;
   keyword?: string;
   category?: Exclude<ChallengeCategory, 'ALL'>;
+  challengeType?: ChallengeTypeFilter;
+  /** 진행 상태 다중 선택 — 빈 배열 대신 undefined 로 전달해야 전체 조회 */
+  status?: ChallengeStatus[];
 }
 
 export interface RandomChallengesParams {
