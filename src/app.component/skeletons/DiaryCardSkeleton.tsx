@@ -28,9 +28,7 @@ export function DiaryCardSkeleton({
       <div className="flex flex-col gap-1.5 p-3">
         <Skeleton shape="text" className="h-3.5 w-[80%]" />
         <Skeleton shape="pill" className="h-4 w-14" />
-        <div
-          className={cn('mt-1 flex items-center justify-between gap-2 pt-1.5')}
-        >
+        <div className="mt-1 flex items-center justify-between gap-2 pt-1.5">
           <div className="flex min-w-0 items-center gap-1.5">
             <Skeleton shape="circle" className="h-5 w-5" />
             <Skeleton shape="text" className="h-2.5 w-12" />

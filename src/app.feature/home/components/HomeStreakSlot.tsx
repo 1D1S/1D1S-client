@@ -140,9 +140,7 @@ export default function HomeStreakSlot({
               )}
             />
           ) : (
-            <div
-              className={cn('data-fade-in mt-0.5 flex items-baseline gap-1')}
-            >
+            <div className="data-fade-in mt-0.5 flex items-baseline gap-1">
               <span
                 className={cn(
                   'text-main-800 text-[26px] leading-none font-extrabold',

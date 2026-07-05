@@ -69,7 +69,7 @@ function StoryLoginPrompt({
           <Text
             size="caption2"
             weight="extrabold"
-            className={cn('truncate leading-snug tracking-tight text-gray-900')}
+            className="truncate leading-snug tracking-tight text-gray-900"
           >
             친구 스토리
           </Text>
@@ -82,9 +82,7 @@ function StoryLoginPrompt({
                 )}
                 aria-hidden
               />
-              <span
-                className={cn('truncate text-[11px] font-medium text-gray-500')}
-              >
+              <span className="truncate text-[11px] font-medium text-gray-500">
                 로그인하고 확인하기
               </span>
             </span>

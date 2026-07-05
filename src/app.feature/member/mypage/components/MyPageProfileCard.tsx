@@ -157,7 +157,7 @@ export function MyPageProfileCard({
   return (
     <>
       {/* 모바일: 부모 컨테이너 패딩에 정렬, 72px 아바타 + 3-col stats grid */}
-      <section className={cn('relative lg:hidden')}>
+      <section className="relative lg:hidden">
         <div className="flex min-h-8 items-center justify-end gap-1">
           {actions ?? (
             <>

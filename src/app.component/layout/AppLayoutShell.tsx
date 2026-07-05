@@ -6,7 +6,6 @@ import { BrowserPermissionPrompt } from '@feature/notification/components/Browse
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { useServiceWorkerNavigation } from '@module/hooks/useServiceWorkerNavigation';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
-import { cn } from '@module/utils/cn';
 import { buildLoginUrl } from '@module/utils/returnTo';
 import { ArrowLeft } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -246,7 +245,7 @@ export default function AppLayoutShell({
             {children}
           </main>
           {showRightRail ? (
-            <div className={cn('hidden lg:flex')}>
+            <div className="hidden lg:flex">
               <AppRightRail
                 isLoggedIn={isLoggedIn}
                 isAuthLoading={isAuthLoading}
