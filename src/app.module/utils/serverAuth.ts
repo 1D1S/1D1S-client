@@ -1,7 +1,10 @@
 import { cookies, headers } from 'next/headers';
 
 import { RETURN_TO_PARAM } from './returnTo';
-import { ACCESS_TOKEN_COOKIE_CANDIDATES } from './tokenCookie';
+import {
+  ACCESS_TOKEN_COOKIE_CANDIDATES,
+  AUTH_HINT_COOKIE_SERVER_NAMES,
+} from './tokenCookie';
 
 /**
  * 서버 컴포넌트에서 접근 토큰 쿠키 존재 여부를 확인한다.
@@ -14,6 +17,26 @@ export async function hasServerAccessToken(): Promise<boolean> {
     const value = cookieStore.get(name)?.value;
     return Boolean(value?.trim());
   });
+}
+
+/**
+ * 로그인 세션이 있다고 볼 수 있는지 판정한다(보호 페이지 게이팅용).
+ *
+ * access 토큰 쿠키는 수명이 짧아 자주 만료되는데, 만료된 채로 보호 페이지를
+ * 새로고침하면 accessToken 만 검사하는 게이트가 "비로그인"으로 오판해 사용자를
+ * 목록으로 튕겨낸다(클라이언트가 토큰을 refresh 할 기회도 없이). 그래서
+ * access 토큰이 없더라도 도메인 공유 세션 힌트 쿠키가 있으면 세션으로 간주해
+ * 페이지를 렌더한다. 실제로 만료됐다면 클라이언트의 401→refresh 흐름이
+ * 처리하고, 그래도 실패하면 상세 화면의 LoginRequiredDialog 가 가린다.
+ */
+export async function hasServerSession(): Promise<boolean> {
+  if (await hasServerAccessToken()) {
+    return true;
+  }
+  const cookieStore = await cookies();
+  return AUTH_HINT_COOKIE_SERVER_NAMES.some((name) =>
+    Boolean(cookieStore.get(name)?.value?.trim())
+  );
 }
 
 function appendLoginRequired(

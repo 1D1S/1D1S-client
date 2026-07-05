@@ -1,5 +1,6 @@
 import { apiClient, publicApiClient } from '@module/api/client';
 import { requestBody } from '@module/api/request';
+import { refreshAccessTokenOnce } from '@module/api/tokenRefresh';
 
 import {
   LogoutResponse,
@@ -46,11 +47,8 @@ export const authApi = {
     }),
 
   // 토큰 재발급 (refresh token cookie → 새 access token)
-  refreshToken: async (): Promise<void> =>
-    requestBody<void>(publicApiClient, {
-      url: '/auth/token',
-      method: 'GET',
-    }),
+  // 회전 레이스 방지를 위해 전역 single-flight 를 공유한다.
+  refreshToken: async (): Promise<void> => refreshAccessTokenOnce(),
 
   // 로그아웃
   logout: async (): Promise<LogoutResponse> =>

@@ -2,7 +2,7 @@ import { CHALLENGE_QUERY_KEYS } from '@feature/challenge/board/consts/queryKeys'
 import { ChallengeDetailScreen } from '@feature/challenge/detail/screen/ChallengeDetailScreen';
 import { getServerChallengeDetail } from '@module/api/serverApi';
 import {
-  hasServerAccessToken,
+  hasServerSession,
   resolveLoginRequiredRedirect,
 } from '@module/utils/serverAuth';
 import { redirect } from 'next/navigation';
@@ -20,7 +20,7 @@ export default async function ChallengeDetail({
   const { id } = await params;
   const challengeId = Number(id);
 
-  const isAuthenticated = await hasServerAccessToken();
+  const isAuthenticated = await hasServerSession();
   if (!isAuthenticated) {
     const target = await resolveLoginRequiredRedirect(
       '/challenge',

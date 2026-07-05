@@ -1,5 +1,5 @@
 import { trimTrailingSlash } from '@module/utils/url';
-import axios, {
+import {
   type AxiosInstance,
   type AxiosResponse,
   InternalAxiosRequestConfig,
@@ -8,6 +8,7 @@ import axios, {
 import { API_BASE_URL } from './config';
 import { isUnauthorizedError } from './error';
 import { handleAuthError, notifyApiError } from './errorNotify';
+import { refreshAccessTokenOnce } from './tokenRefresh';
 
 export interface ClientOptions {
   handleUnauthorized: boolean;
@@ -43,11 +44,9 @@ const addRefreshSubscriber = ({
   refreshSubscribers.push({ resolve, reject });
 };
 
-const refreshAccessToken = async (): Promise<void> => {
-  await axios.get(`${API_BASE_URL}/auth/token`, {
-    withCredentials: true,
-  });
-};
+// 회전형 refresh 토큰의 동시 갱신 레이스를 막기 위해 모든 갱신 경로가
+// 공유하는 single-flight 를 사용한다 (tokenRefresh.ts 참고).
+const refreshAccessToken = refreshAccessTokenOnce;
 
 export const attachInterceptors = (
   client: AxiosInstance,

@@ -1,7 +1,6 @@
 'use client';
 
 import { authApi } from '@feature/auth/api/authApi';
-import { isInvalidRefreshTokenError } from '@module/api/error';
 import { authStorage } from '@module/utils/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
@@ -47,13 +46,13 @@ export function useTokenRefreshOnResume(): void {
         // 마운트된 쿼리만 즉시 refetch 되고, 백그라운드 쿼리는 다음 사용 때
         // 갱신된다.
         await queryClient.invalidateQueries();
-      } catch (error) {
-        // refresh token 이 무효(AUTH-006)면 로컬 토큰을 정리해 같은 요청이
-        // 새로고침/재개마다 무한 반복되는 것을 막는다. 그 외 일시적 오류는
-        // 그대로 두어 다음 API 호출의 401 → interceptor 흐름에서 정리되게 한다.
-        if (isInvalidRefreshTokenError(error)) {
-          authStorage.clearTokens();
-        }
+      } catch {
+        // 선제 갱신 실패는 조용히 무시한다. 여기서 clearTokens() 하면 연속
+        // 새로고침의 회전 레이스에 진 일시적 401(세션은 살아있음)에도 로그인
+        // 힌트 쿠키가 지워져, 다음 새로고침에서 미들웨어가 보호 상세를
+        // 목록으로 튕겨내는 버그가 있었다. 세션이 정말 만료됐다면 실제 API
+        // 경로(사이드바 401 → 재시도 실패 → forceLogout)가 권위 있게
+        // 정리하고, 그 후엔 hasTokens() 가 false 라 이 훅의 재시도도 멈춘다.
       } finally {
         isRefreshingRef.current = false;
       }

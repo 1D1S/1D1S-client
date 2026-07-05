@@ -1,11 +1,14 @@
 import Cookies from 'js-cookie';
 
-import { ACCESS_TOKEN_COOKIE_CANDIDATES } from './tokenCookie';
+import {
+  ACCESS_TOKEN_COOKIE_CANDIDATES,
+  AUTH_HINT_COOKIE_DOMAIN,
+  AUTH_HINT_COOKIE_NAME,
+} from './tokenCookie';
 
 const AUTH_SESSION_KEY = '1d1s:isAuthenticated';
 // 서브도메인 간 인증 상태 공유를 위한 힌트 쿠키 (토큰 값 아님, httpOnly 아님)
-const AUTH_HINT_COOKIE = '1d1s:hasSession';
-const AUTH_HINT_COOKIE_DOMAIN = '.1day1streak.com';
+const AUTH_HINT_COOKIE = AUTH_HINT_COOKIE_NAME;
 
 /**
  * 실제 access 토큰 쿠키가 JS에서 읽히는지 확인한다.
