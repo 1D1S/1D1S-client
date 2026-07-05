@@ -133,7 +133,9 @@ export default function HomeStreakSlot({
             <span
               aria-hidden
               className={cn(
-                'skeleton-pulse my-1 inline-block h-7 w-32 rounded',
+                // 실제 숫자 줄(mt-0.5 + text-[26px] leading-none)과 높이를
+                // 맞춰 로드 시 아래 문구가 위로 당겨지지 않게 한다.
+                'skeleton-pulse mt-0.5 inline-block h-[26px] w-32 rounded',
                 'bg-white/70'
               )}
             />

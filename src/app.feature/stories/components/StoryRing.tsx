@@ -126,15 +126,6 @@ function StoryRing({
           </Card.Body>
         </Card>
       ) : null}
-      {showMySlot && friendCount === 0 ? (
-        <EmptyState
-          variant="friends"
-          animate={false}
-          title="친구 스토리가 아직 없어요"
-          description="친구를 추가하면 친구들의 일지가 여기에 나타나요"
-          className="min-w-[220px] flex-1 py-6"
-        />
-      ) : null}
       {groups.map((group, index) => {
         const seen = isGroupAllSeen(group);
         const [preview] = group.stories;
@@ -240,6 +231,18 @@ function StoryRing({
           </Card>
         );
       })}
+      {/* 내 스토리 카드(groups 맨 앞에 정렬됨) 뒤에 두어야 flex 행에서
+          빈 상태가 내 스토리 오른쪽에 그려진다. 앞에 두면 flex-1 이
+          왼쪽을 차지해 내 스토리가 오른쪽 끝으로 밀린다. */}
+      {showMySlot && friendCount === 0 ? (
+        <EmptyState
+          variant="friends"
+          animate={false}
+          title="친구 스토리가 아직 없어요"
+          description="친구를 추가하면 친구들의 일지가 여기에 나타나요"
+          className="min-w-[220px] flex-1 py-6"
+        />
+      ) : null}
     </div>
   );
 }

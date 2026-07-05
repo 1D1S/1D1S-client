@@ -29,7 +29,13 @@ export default function StoryRingSkeleton({
             <div className="skeleton-pulse h-full w-full bg-gray-100" />
           </Card.Thumb>
           <Card.Body className="gap-1.5 p-3">
-            <div className="skeleton-pulse h-3 w-3/4 rounded bg-gray-100" />
+            {/* 실제 제목(Text caption2=13px, leading-snug ≈ 18px)과 줄
+                높이를 맞춰 데이터 로드 시 링 아래 콘텐츠가 밀리지 않게 한다. */}
+            <div
+              className={cn(
+                'skeleton-pulse my-[3px] h-3 w-3/4 rounded bg-gray-100'
+              )}
+            />
             <Card.Meta>
               <span className="inline-flex min-w-0 items-center gap-1.5">
                 <span

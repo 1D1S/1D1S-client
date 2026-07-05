@@ -297,7 +297,17 @@ export function mapDiaryToViewData(
     checkedChecklistIds = achievedGoalIds;
   }
 
-  const summary = challengeDetailData?.challengeSummary;
+  // 연동 챌린지 카드는 프리페치된 일지 상세(diary.challenge)에 이미 필요한
+  // 필드(제목/카테고리/기간/인원/썸네일)를 모두 갖고 있다. 늦게 도착하는
+  // useChallengeDetail 응답을 기다리면 Fallback(한 줄) → 풀 카드로 커지며
+  // 레이아웃 시프트가 난다. diary.challenge 로 첫 페인트부터 풀 카드를 그리고,
+  // challengeDetailData 가 오면 같은 높이로 값만 갱신한다(시프트 없음).
+  // 백엔드가 동일 shape 를 주므로 enum 좁힘 캐스트는 안전. challengeDetailData
+  // 는 체크리스트 goals 용으로 계속 사용한다.
+  const summary =
+    challengeDetailData?.challengeSummary ??
+    (diary.challenge as ChallengeSummary | null) ??
+    undefined;
   const diaryWithImageAliases = diary as DiaryDetail & DiaryImageFields;
   const contentImageUrl =
     resolveFirstImage(
