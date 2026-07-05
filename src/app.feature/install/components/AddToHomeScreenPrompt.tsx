@@ -93,12 +93,12 @@ export function AddToHomeScreenPrompt(): React.ReactElement | null {
           <Button
             type="button"
             variant="ghost"
-            size="medium"
+            size="md"
             onClick={handleNeverShow}
           >
             다시 보지 않기
           </Button>
-          <Button type="button" size="medium" onClick={handleGoToGuide}>
+          <Button type="button" size="md" onClick={handleGoToGuide}>
             가이드 보러가기
           </Button>
         </DialogFooter>

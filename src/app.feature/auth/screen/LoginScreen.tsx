@@ -122,7 +122,7 @@ export function LoginScreen(): React.ReactElement {
                     provider={provider}
                     img={meta.img}
                     text={meta.text}
-                    size="large"
+                    size="lg"
                     recentBadge={index === 0 && recommended === provider}
                     className={cn('h-13 text-[15px]', meta.className)}
                   />

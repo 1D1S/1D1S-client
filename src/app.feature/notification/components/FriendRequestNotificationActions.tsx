@@ -85,7 +85,7 @@ export function FriendRequestNotificationActions({
         수락
       </Button>
       <Button
-        variant="outlined"
+        variant="secondary"
         size="sm"
         disabled={isMutating}
         onClick={handleReject}

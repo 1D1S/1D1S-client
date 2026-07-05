@@ -132,8 +132,8 @@ export function MyPageProfileCard({
   const defaultActions = (
     <>
       <Button
-        variant="default"
-        size="medium"
+        variant="primary"
+        size="md"
         onClick={() => router.push('/mypage/settings/profile')}
       >
         프로필 편집
@@ -141,7 +141,7 @@ export function MyPageProfileCard({
       <Button
         type="button"
         variant="ghost"
-        size="medium"
+        size="md"
         aria-label="설정"
         onClick={() => router.push('/mypage/settings')}
         className={cn(

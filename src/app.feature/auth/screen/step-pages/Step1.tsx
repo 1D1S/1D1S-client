@@ -359,7 +359,7 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
       <div className="mt-8 flex justify-end">
         <Button
           type="button"
-          size="large"
+          size="lg"
           fullWidth
           disabled={!isVerified}
           onClick={handleNext}

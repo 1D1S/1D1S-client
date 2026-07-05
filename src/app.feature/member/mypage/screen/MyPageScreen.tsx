@@ -124,7 +124,7 @@ export default function MyPageScreen(): React.ReactElement | null {
             viewAllHref="/mypage/diary"
             action={
               <Button
-                size="small"
+                size="sm"
                 onClick={() => router.push('/diary/create')}
               >
                 새 일지 작성하기

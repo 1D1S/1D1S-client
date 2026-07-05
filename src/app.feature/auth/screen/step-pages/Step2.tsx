@@ -126,8 +126,8 @@ export function Step2({
       <div className="mt-8 flex items-center gap-2.5">
         <Button
           type="button"
-          size="large"
-          variant="outlined"
+          size="lg"
+          variant="secondary"
           disabled={isSubmitting}
           onClick={onPrev}
           className="w-[120px] flex-shrink-0"
@@ -136,7 +136,7 @@ export function Step2({
         </Button>
         <Button
           type="button"
-          size="large"
+          size="lg"
           fullWidth
           disabled={isSubmitting || selectedTopics.length === 0}
           onClick={onSubmit}

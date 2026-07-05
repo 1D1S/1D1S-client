@@ -202,7 +202,7 @@ export function ChallengeCreateSuccessDialog({
 
             <div className="grid grid-cols-2 gap-3">
               <Button
-                variant="outlined"
+                variant="secondary"
                 type="button"
                 fullWidth
                 className={KAKAO_BUTTON_CLASS}
@@ -218,7 +218,7 @@ export function ChallengeCreateSuccessDialog({
                 카카오톡
               </Button>
               <Button
-                variant="outlined"
+                variant="secondary"
                 type="button"
                 fullWidth
                 onClick={() => copyText(shareLink, '참여 링크가 복사되었습니다.')}
@@ -232,14 +232,14 @@ export function ChallengeCreateSuccessDialog({
 
         <div className="grid w-full grid-cols-2 gap-3">
           <Button
-            variant="outlined"
+            variant="secondary"
             type="button"
             onClick={() => closeAndNavigate('/')}
           >
             홈
           </Button>
           <Button
-            variant="default"
+            variant="primary"
             type="button"
             onClick={() => {
               if (challengeId !== undefined) {

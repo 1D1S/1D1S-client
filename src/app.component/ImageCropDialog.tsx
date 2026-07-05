@@ -314,7 +314,7 @@ export function ImageCropDialog({
         >
           <Button
             type="button"
-            variant="outlined"
+            variant="secondary"
             onClick={() => onOpenChange(false)}
           >
             취소

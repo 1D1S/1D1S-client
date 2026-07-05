@@ -27,10 +27,10 @@ export default function NotFound(): React.ReactElement {
         </Text>
       </div>
       <div className="flex gap-3">
-        <Button variant="ghost" size="medium" onClick={() => router.back()}>
+        <Button variant="ghost" size="md" onClick={() => router.back()}>
           이전 페이지
         </Button>
-        <Button size="medium" onClick={() => router.push('/')}>
+        <Button size="md" onClick={() => router.push('/')}>
           홈으로 이동
         </Button>
       </div>

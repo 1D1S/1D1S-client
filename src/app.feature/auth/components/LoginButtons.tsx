@@ -37,7 +37,7 @@ interface LoginButtonProps
   img: string;
   text: string;
   provider: OAuthProvider;
-  size?: 'medium' | 'large';
+  size?: 'md' | 'lg';
   recentBadge?: boolean;
 }
 
@@ -46,7 +46,7 @@ export function LoginButton({
   text,
   provider,
   className,
-  size = 'medium',
+  size = 'md',
   recentBadge = false,
 }: LoginButtonProps): React.ReactElement {
   return (

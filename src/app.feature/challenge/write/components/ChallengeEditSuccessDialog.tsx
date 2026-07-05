@@ -86,14 +86,14 @@ export function ChallengeEditSuccessDialog({
         </div>
         <div className="grid w-full grid-cols-2 gap-3">
           <Button
-            variant="outlined"
+            variant="secondary"
             type="button"
             onClick={() => closeThen(() => router.back())}
           >
             돌아가기
           </Button>
           <Button
-            variant="default"
+            variant="primary"
             type="button"
             onClick={() => {
               if (challengeId !== undefined) {

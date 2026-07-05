@@ -162,8 +162,8 @@ function DiaryOwnerMenu({
   return (
     <div ref={menuRef} className="relative">
       <Button
-        variant="outlined"
-        size="medium"
+        variant="secondary"
+        size="md"
         onClick={() => setIsOpen((prev) => !prev)}
       >
         <MoreVertical className="h-4 w-4" />
@@ -587,7 +587,7 @@ function DiaryCommentSection({
             }}
           />
           <Button
-            size="small"
+            size="sm"
             className="shrink-0 whitespace-nowrap"
             onClick={handleCreateComment}
             disabled={isCommentPending || !commentContent.trim()}
@@ -655,7 +655,7 @@ function DiaryMobileCommentBar({
         }}
       />
       <Button
-        size="small"
+        size="sm"
         className="shrink-0 whitespace-nowrap"
         onClick={handleSubmit}
         disabled={disabled}
@@ -830,8 +830,8 @@ function DiaryDetailView({
               <div className="flex shrink-0 items-center gap-2">
                 {!isOwner ? (
                   <Button
-                    variant="outlined"
-                    size="small"
+                    variant="secondary"
+                    size="sm"
                     onClick={() => setIsReportOpen(true)}
                   >
                     <Flag className="mr-1 h-3.5 w-3.5" />

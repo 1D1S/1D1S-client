@@ -239,7 +239,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
           ) : null}
           <div className="w-full lg:ml-auto lg:w-auto">
             <Button
-              size="large"
+              size="lg"
               className="w-full lg:w-auto"
               onClick={() => void handleSubmit()}
               disabled={!canSubmit}

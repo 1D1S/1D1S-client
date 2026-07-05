@@ -147,7 +147,7 @@ export function InquiryScreen(): React.ReactElement {
                 rel="noopener noreferrer"
                 className="w-full"
               >
-                <Button variant="primary" size="medium" className="w-full">
+                <Button variant="primary" size="md" className="w-full">
                   문의 남기기
                   <ExternalLink className="h-4 w-4" />
                 </Button>

@@ -203,7 +203,7 @@ export function MemberFriendActionButton({
           수락
         </Button>
         <Button
-          variant="outlined"
+          variant="secondary"
           size="md"
           iconLeft={<UserMinus className="h-4 w-4" />}
           disabled={disabled}

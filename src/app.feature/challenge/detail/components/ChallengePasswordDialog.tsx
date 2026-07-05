@@ -119,8 +119,8 @@ export function ChallengePasswordDialog({
           </DialogBody>
           <DialogFooter>
             <Button
-              size="medium"
-              variant="outlined"
+              size="md"
+              variant="secondary"
               type="button"
               className="min-w-[80px]"
               onClick={onClose}
@@ -128,7 +128,7 @@ export function ChallengePasswordDialog({
               닫기
             </Button>
             <Button
-              size="medium"
+              size="md"
               type="submit"
               className="min-w-[96px]"
               disabled={!canSubmit}

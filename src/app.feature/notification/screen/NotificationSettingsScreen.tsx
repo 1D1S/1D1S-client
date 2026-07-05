@@ -171,8 +171,8 @@ export function NotificationSettingsScreen(): React.ReactElement {
                   </Text>
                 </div>
                 <Button
-                  variant="outlined"
-                  size="small"
+                  variant="secondary"
+                  size="sm"
                   disabled={status === 'loading'}
                   onClick={() => {
                     void subscribe();
@@ -195,8 +195,8 @@ export function NotificationSettingsScreen(): React.ReactElement {
                   </Text>
                 </div>
                 <Button
-                  variant="outlined"
-                  size="small"
+                  variant="secondary"
+                  size="sm"
                   onClick={openBrowserSettings}
                   className="self-start"
                 >

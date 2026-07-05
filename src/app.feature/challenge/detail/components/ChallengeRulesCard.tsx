@@ -34,7 +34,7 @@ export function ChallengeRulesCard({
           목표
         </Text>
         {editLabel && onEdit ? (
-          <Button variant="outlined" size="small" onClick={onEdit}>
+          <Button variant="secondary" size="sm" onClick={onEdit}>
             {editLabel}
           </Button>
         ) : null}

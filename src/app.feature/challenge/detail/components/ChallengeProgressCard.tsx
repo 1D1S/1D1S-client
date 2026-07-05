@@ -14,12 +14,12 @@ interface ChallengeProgressCardProps {
   ctaLabel: string;
   onCtaClick(): void;
   ctaDisabled?: boolean;
-  ctaVariant?: 'default' | 'outlined';
+  ctaVariant?: 'primary' | 'secondary';
   showCta?: boolean;
   ctaHint?: string;
   secondaryCtaLabel?: string;
   onSecondaryCtaClick?(): void;
-  secondaryCtaVariant?: 'default' | 'outlined';
+  secondaryCtaVariant?: 'primary' | 'secondary';
   isInfinite?: boolean;
   likeCount?: number;
   likedByMe?: boolean;
@@ -34,12 +34,12 @@ export function ChallengeProgressCard({
   ctaLabel,
   onCtaClick,
   ctaDisabled = false,
-  ctaVariant = 'default',
+  ctaVariant = 'primary',
   showCta = true,
   ctaHint,
   secondaryCtaLabel,
   onSecondaryCtaClick,
-  secondaryCtaVariant = 'outlined',
+  secondaryCtaVariant = 'secondary',
   isInfinite = false,
   likeCount,
   likedByMe = false,
@@ -111,7 +111,7 @@ export function ChallengeProgressCard({
       {showCta ? (
         <div className="mt-3.5">
           <Button
-            size="medium"
+            size="md"
             variant={ctaVariant}
             fullWidth
             onClick={onCtaClick}
@@ -121,7 +121,7 @@ export function ChallengeProgressCard({
           </Button>
           {secondaryCtaLabel && onSecondaryCtaClick ? (
             <Button
-              size="medium"
+              size="md"
               variant={secondaryCtaVariant}
               fullWidth
               onClick={onSecondaryCtaClick}

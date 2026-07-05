@@ -139,7 +139,7 @@ export function BrowserPermissionPrompt(): React.ReactElement {
           <Button
             type="button"
             variant="ghost"
-            size="medium"
+            size="md"
             onClick={handleNeverShow}
             disabled={isPending}
           >
@@ -148,20 +148,20 @@ export function BrowserPermissionPrompt(): React.ReactElement {
           <Button
             type="button"
             variant="ghost"
-            size="medium"
+            size="md"
             onClick={handleClose}
             disabled={isPending}
           >
             닫기
           </Button>
           {isDenied ? (
-            <Button type="button" size="medium" onClick={handleGoToSettings}>
+            <Button type="button" size="md" onClick={handleGoToSettings}>
               알림 설정으로 이동
             </Button>
           ) : (
             <Button
               type="button"
-              size="medium"
+              size="md"
               onClick={handleEnable}
               disabled={isPending}
             >
