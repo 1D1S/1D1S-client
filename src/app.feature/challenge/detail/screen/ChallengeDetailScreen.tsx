@@ -142,15 +142,15 @@ function GoalAddListModal({
         </DialogBody>
         <DialogFooter>
           <Button
-            size="medium"
-            variant="outlined"
+            size="md"
+            variant="secondary"
             className="min-w-[80px]"
             onClick={() => onOpenChange(false)}
           >
             취소
           </Button>
           <Button
-            size="medium"
+            size="md"
             className={submitMinWidthClass}
             disabled={submitDisabled}
             onClick={onSubmit}
@@ -639,13 +639,13 @@ export function ChallengeDetailScreen({
     label: string;
     onClick(): void;
     disabled: boolean;
-    variant: 'default' | 'outlined';
+    variant: 'primary' | 'secondary';
     show: boolean;
     hint?: string;
     secondary?: {
       label: string;
       onClick(): void;
-      variant: 'default' | 'outlined';
+      variant: 'primary' | 'secondary';
     };
   }
   // 클릭 불가 안내 버튼(대기/종료/중도참여불가)의 공통 형태.
@@ -653,7 +653,7 @@ export function ChallengeDetailScreen({
     label,
     onClick: () => undefined,
     disabled: true,
-    variant: 'outlined',
+    variant: 'secondary',
     show: true,
     hint,
   });
@@ -663,7 +663,7 @@ export function ChallengeDetailScreen({
       const editChallenge = {
         label: '챌린지 수정',
         onClick: () => router.push(`/challenge/${id}/edit`),
-        variant: 'outlined' as const,
+        variant: 'secondary' as const,
       };
       // 호스트도 참여자이므로 진행 중에는 일지 작성을 우선 CTA 로 노출하고
       // 챌린지 수정은 보조 버튼으로 함께 제공한다.
@@ -672,7 +672,7 @@ export function ChallengeDetailScreen({
           label: '일지 작성하기',
           onClick: handleDiaryCreateClick,
           disabled: isCheckWriteDatesLoading,
-          variant: 'default',
+          variant: 'primary',
           show: true,
           secondary: editChallenge,
         };
@@ -690,7 +690,7 @@ export function ChallengeDetailScreen({
           : '진행 중이 아닙니다',
         onClick: handleDiaryCreateClick,
         disabled: !isChallengeCurrentlyOngoing || isCheckWriteDatesLoading,
-        variant: 'default',
+        variant: 'primary',
         show: true,
       };
     }
@@ -711,7 +711,7 @@ export function ChallengeDetailScreen({
         label: '챌린지 참여하기',
         onClick: handleJoinChallenge,
         disabled: joinChallenge.isPending,
-        variant: 'default',
+        variant: 'primary',
         show: true,
       };
     }
@@ -719,7 +719,7 @@ export function ChallengeDetailScreen({
       label: '참여 불가',
       onClick: () => undefined,
       disabled: true,
-      variant: 'outlined',
+      variant: 'secondary',
       show: false,
     };
   })();
@@ -807,8 +807,8 @@ export function ChallengeDetailScreen({
             ))}
           </div>
           <Button
-            variant="outlined"
-            size="small"
+            variant="secondary"
+            size="sm"
             type="button"
             disabled={challengeGoalInputs.length >= 10}
             onClick={() =>
@@ -820,15 +820,15 @@ export function ChallengeDetailScreen({
         </DialogBody>
         <DialogFooter>
           <Button
-            size="medium"
-            variant="outlined"
+            size="md"
+            variant="secondary"
             className="min-w-[80px]"
             onClick={() => setShowEditChallengeGoalsModal(false)}
           >
             취소
           </Button>
           <Button
-            size="medium"
+            size="md"
             className="min-w-[96px]"
             disabled={updateChallenge.isPending}
             onClick={handleEditChallengeGoalsSubmit}
@@ -1167,7 +1167,6 @@ export function ChallengeDetailScreen({
                 <ChallengeDiaryGrid
                   diaries={previewDiaries.slice(0, 4)}
                   isLoading={isDiariesLoading}
-                  onDiaryClick={(diaryId) => router.push(`/diary/${diaryId}`)}
                   onLikeToggle={handleDiaryLikeToggle}
                   gridClassName={cn(
                     'scrollbar-hide flex gap-3 overflow-x-auto',
@@ -1251,7 +1250,7 @@ export function ChallengeDetailScreen({
       {ctaConfig.show ? (
         <MobileBottomActionBar>
           <Button
-            size="medium"
+            size="md"
             variant={ctaConfig.variant}
             fullWidth
             onClick={ctaConfig.onClick}
@@ -1261,7 +1260,7 @@ export function ChallengeDetailScreen({
           </Button>
           {ctaConfig.secondary ? (
             <Button
-              size="medium"
+              size="md"
               variant={ctaConfig.secondary.variant}
               fullWidth
               onClick={ctaConfig.secondary.onClick}
