@@ -320,7 +320,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
           </DialogDescription>
           <DialogFooter className="mt-2">
             <DialogClose asChild>
-              <Button variant="default" type="button" className="w-full">
+              <Button variant="primary" type="button" className="w-full">
                 확인
               </Button>
             </DialogClose>

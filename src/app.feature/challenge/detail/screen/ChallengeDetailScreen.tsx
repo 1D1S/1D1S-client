@@ -93,6 +93,76 @@ interface ChallengeDetailScreenProps {
 // 이 신호를 받으면 비밀번호 다이얼로그를 목표 입력 단계로 전환한다.
 const FREE_GOAL_REQUIRED_CODE = 'CHALLENGE_022';
 
+interface GoalAddListModalProps {
+  open: boolean;
+  onOpenChange(open: boolean): void;
+  title: string;
+  description: string;
+  goals: string[];
+  onGoalsChange(goals: string[]): void;
+  submitLabel: string;
+  submitDisabled: boolean;
+  submitMinWidthClass: string;
+  onSubmit(): void;
+}
+
+// 목표 입력/수정 모달의 공통 chrome. 본문은 GoalAddList 로 동일하고
+// 제목·설명·제출 버튼(라벨/너비/핸들러)만 다르다.
+function GoalAddListModal({
+  open,
+  onOpenChange,
+  title,
+  description,
+  goals,
+  onGoalsChange,
+  submitLabel,
+  submitDisabled,
+  submitMinWidthClass,
+  onSubmit,
+}: GoalAddListModalProps): React.ReactElement {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[460px]">
+        <DialogHeader className="flex-col items-start gap-1.5 pb-2">
+          <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
+            {title}
+          </DialogTitle>
+          <DialogDescription className="text-[13px] leading-relaxed text-gray-500">
+            {description}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogBody>
+          <GoalAddList
+            goals={goals}
+            onGoalsChange={onGoalsChange}
+            placeholder="목표를 입력하고 Enter를 눌러 추가하세요"
+            inputAriaLabel="목표 입력"
+            maxGoals={5}
+          />
+        </DialogBody>
+        <DialogFooter>
+          <Button
+            size="md"
+            variant="secondary"
+            className="min-w-[80px]"
+            onClick={() => onOpenChange(false)}
+          >
+            취소
+          </Button>
+          <Button
+            size="md"
+            className={submitMinWidthClass}
+            disabled={submitDisabled}
+            onClick={onSubmit}
+          >
+            {submitLabel}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function ChallengeDetailScreen({
   id,
 }: ChallengeDetailScreenProps): React.ReactElement {
@@ -565,24 +635,35 @@ export function ChallengeDetailScreen({
   const heroMetaLabel = `${participantsLabel} · ${remainingLabel}`;
 
   // CTA 결정 로직: 호스트 / 참여 중 / 대기 / 신청 가능 / 신청 불가
-  const ctaConfig = ((): {
+  interface ChallengeCtaConfig {
     label: string;
     onClick(): void;
     disabled: boolean;
-    variant: 'default' | 'outlined';
+    variant: 'primary' | 'secondary';
     show: boolean;
     hint?: string;
     secondary?: {
       label: string;
       onClick(): void;
-      variant: 'default' | 'outlined';
+      variant: 'primary' | 'secondary';
     };
-  } => {
+  }
+  // 클릭 불가 안내 버튼(대기/종료/중도참여불가)의 공통 형태.
+  const disabledCta = (label: string, hint?: string): ChallengeCtaConfig => ({
+    label,
+    onClick: () => undefined,
+    disabled: true,
+    variant: 'secondary',
+    show: true,
+    hint,
+  });
+
+  const ctaConfig = ((): ChallengeCtaConfig => {
     if (isHost) {
       const editChallenge = {
         label: '챌린지 수정',
         onClick: () => router.push(`/challenge/${id}/edit`),
-        variant: 'outlined' as const,
+        variant: 'secondary' as const,
       };
       // 호스트도 참여자이므로 진행 중에는 일지 작성을 우선 CTA 로 노출하고
       // 챌린지 수정은 보조 버튼으로 함께 제공한다.
@@ -591,7 +672,7 @@ export function ChallengeDetailScreen({
           label: '일지 작성하기',
           onClick: handleDiaryCreateClick,
           disabled: isCheckWriteDatesLoading,
-          variant: 'default',
+          variant: 'primary',
           show: true,
           secondary: editChallenge,
         };
@@ -609,44 +690,28 @@ export function ChallengeDetailScreen({
           : '진행 중이 아닙니다',
         onClick: handleDiaryCreateClick,
         disabled: !isChallengeCurrentlyOngoing || isCheckWriteDatesLoading,
-        variant: 'default',
+        variant: 'primary',
         show: true,
       };
     }
     if (isPending) {
-      return {
-        label: '참여 승인 대기중',
-        onClick: () => undefined,
-        disabled: true,
-        variant: 'outlined',
-        show: true,
-      };
+      return disabledCta('참여 승인 대기중');
     }
     if (canJoinByStatus && isChallengeAlreadyEnded) {
-      return {
-        label: '종료된 챌린지',
-        onClick: () => undefined,
-        disabled: true,
-        variant: 'outlined',
-        show: true,
-      };
+      return disabledCta('종료된 챌린지');
     }
     if (canJoinByStatus && isMidJoinBlocked) {
-      return {
-        label: '중도 참여 불가',
-        onClick: () => undefined,
-        disabled: true,
-        variant: 'outlined',
-        show: true,
-        hint: '이미 시작된 챌린지는 중도 참여가 불가능합니다',
-      };
+      return disabledCta(
+        '중도 참여 불가',
+        '이미 시작된 챌린지는 중도 참여가 불가능합니다'
+      );
     }
     if (canJoin) {
       return {
         label: '챌린지 참여하기',
         onClick: handleJoinChallenge,
         disabled: joinChallenge.isPending,
-        variant: 'default',
+        variant: 'primary',
         show: true,
       };
     }
@@ -654,100 +719,39 @@ export function ChallengeDetailScreen({
       label: '참여 불가',
       onClick: () => undefined,
       disabled: true,
-      variant: 'outlined',
+      variant: 'secondary',
       show: false,
     };
   })();
 
   const freeGoalModal = (
-    <Dialog open={showFreeGoalModal} onOpenChange={setShowFreeGoalModal}>
-      {/*
-        디자인 시스템의 Dialog 는 Header/Body/Footer 가 각자 자체 padding 을
-        가지므로 DialogContent 엔 `p-0 gap-0` 을 줘 이중 padding 을 막는다.
-        Footer 는 기본 회색 bg + 상단 border 가 있어, 취소 버튼은 outlined 로
-        둬야 회색 배경 위에서도 또렷하게 보인다.
-      */}
-      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[460px]">
-        <DialogHeader className="flex-col items-start gap-1.5 pb-2">
-          <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
-            내 목표 입력
-          </DialogTitle>
-          <DialogDescription className="text-[13px] leading-relaxed text-gray-500">
-            챌린지에서 달성할 목표를 입력하고 Enter 를 눌러 추가해 주세요. (최대
-            5개)
-          </DialogDescription>
-        </DialogHeader>
-        <DialogBody>
-          <GoalAddList
-            goals={freeGoalInputs}
-            onGoalsChange={setFreeGoalInputs}
-            placeholder="목표를 입력하고 Enter를 눌러 추가하세요"
-            inputAriaLabel="목표 입력"
-            maxGoals={5}
-          />
-        </DialogBody>
-        <DialogFooter>
-          <Button
-            size="medium"
-            variant="outlined"
-            className="min-w-[80px]"
-            onClick={() => setShowFreeGoalModal(false)}
-          >
-            취소
-          </Button>
-          <Button
-            size="medium"
-            className="min-w-[112px]"
-            disabled={joinChallenge.isPending}
-            onClick={handleFreeGoalSubmit}
-          >
-            {joinChallenge.isPending ? '처리 중...' : '참여 신청'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <GoalAddListModal
+      open={showFreeGoalModal}
+      onOpenChange={setShowFreeGoalModal}
+      title="내 목표 입력"
+      description="챌린지에서 달성할 목표를 입력하고 Enter 를 눌러 추가해 주세요. (최대 5개)"
+      goals={freeGoalInputs}
+      onGoalsChange={setFreeGoalInputs}
+      submitLabel={joinChallenge.isPending ? '처리 중...' : '참여 신청'}
+      submitDisabled={joinChallenge.isPending}
+      submitMinWidthClass="min-w-[112px]"
+      onSubmit={handleFreeGoalSubmit}
+    />
   );
 
   const editGoalModal = (
-    <Dialog open={showEditGoalModal} onOpenChange={setShowEditGoalModal}>
-      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[460px]">
-        <DialogHeader className="flex-col items-start gap-1.5 pb-2">
-          <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
-            내 목표 수정
-          </DialogTitle>
-          <DialogDescription className="text-[13px] leading-relaxed text-gray-500">
-            새 목표를 입력하고 Enter 를 눌러 추가해 주세요. (최대 5개)
-          </DialogDescription>
-        </DialogHeader>
-        <DialogBody>
-          <GoalAddList
-            goals={editGoalInputs}
-            onGoalsChange={setEditGoalInputs}
-            placeholder="목표를 입력하고 Enter를 눌러 추가하세요"
-            inputAriaLabel="목표 입력"
-            maxGoals={5}
-          />
-        </DialogBody>
-        <DialogFooter>
-          <Button
-            size="medium"
-            variant="outlined"
-            className="min-w-[80px]"
-            onClick={() => setShowEditGoalModal(false)}
-          >
-            취소
-          </Button>
-          <Button
-            size="medium"
-            className="min-w-[96px]"
-            disabled={updateParticipantGoal.isPending}
-            onClick={handleEditGoalSubmit}
-          >
-            {updateParticipantGoal.isPending ? '저장 중...' : '저장'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <GoalAddListModal
+      open={showEditGoalModal}
+      onOpenChange={setShowEditGoalModal}
+      title="내 목표 수정"
+      description="새 목표를 입력하고 Enter 를 눌러 추가해 주세요. (최대 5개)"
+      goals={editGoalInputs}
+      onGoalsChange={setEditGoalInputs}
+      submitLabel={updateParticipantGoal.isPending ? '저장 중...' : '저장'}
+      submitDisabled={updateParticipantGoal.isPending}
+      submitMinWidthClass="min-w-[96px]"
+      onSubmit={handleEditGoalSubmit}
+    />
   );
 
   const editChallengeGoalsModal = (
@@ -803,8 +807,8 @@ export function ChallengeDetailScreen({
             ))}
           </div>
           <Button
-            variant="outlined"
-            size="small"
+            variant="secondary"
+            size="sm"
             type="button"
             disabled={challengeGoalInputs.length >= 10}
             onClick={() =>
@@ -816,15 +820,15 @@ export function ChallengeDetailScreen({
         </DialogBody>
         <DialogFooter>
           <Button
-            size="medium"
-            variant="outlined"
+            size="md"
+            variant="secondary"
             className="min-w-[80px]"
             onClick={() => setShowEditChallengeGoalsModal(false)}
           >
             취소
           </Button>
           <Button
-            size="medium"
+            size="md"
             className="min-w-[96px]"
             disabled={updateChallenge.isPending}
             onClick={handleEditChallengeGoalsSubmit}
@@ -1163,7 +1167,6 @@ export function ChallengeDetailScreen({
                 <ChallengeDiaryGrid
                   diaries={previewDiaries.slice(0, 4)}
                   isLoading={isDiariesLoading}
-                  onDiaryClick={(diaryId) => router.push(`/diary/${diaryId}`)}
                   onLikeToggle={handleDiaryLikeToggle}
                   gridClassName={cn(
                     'scrollbar-hide flex gap-3 overflow-x-auto',
@@ -1210,6 +1213,8 @@ export function ChallengeDetailScreen({
                   nickname: participant.nickname,
                   profileImg: participant.profileImg,
                   isHost: participant.status === 'HOST',
+                  // 고정 목표는 전원 공통이라 참여자별로 볼 의미가 없다.
+                  goals: isFreeChallenge ? participant.goals : undefined,
                 }))}
                 onMemberClick={(memberId) => router.push(`/member/${memberId}`)}
                 canPoke={canPokeMembers}
@@ -1245,7 +1250,7 @@ export function ChallengeDetailScreen({
       {ctaConfig.show ? (
         <MobileBottomActionBar>
           <Button
-            size="medium"
+            size="md"
             variant={ctaConfig.variant}
             fullWidth
             onClick={ctaConfig.onClick}
@@ -1255,7 +1260,7 @@ export function ChallengeDetailScreen({
           </Button>
           {ctaConfig.secondary ? (
             <Button
-              size="medium"
+              size="md"
               variant={ctaConfig.secondary.variant}
               fullWidth
               onClick={ctaConfig.secondary.onClick}

@@ -6,6 +6,7 @@ import ScrollToTop from '@component/layout/ScrollToTop';
 import { AppProviders } from '@module/providers';
 import { cn } from '@module/utils/cn';
 import { isNativeAppUserAgent } from '@module/utils/nativeApp';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 
@@ -109,6 +110,7 @@ export default async function RootLayout({
           <ScrollToTop />
           <AppLayoutShell isNativeApp={isNativeApp}>{children}</AppLayoutShell>
         </AppProviders>
+        <SpeedInsights />
       </body>
     </html>
   );

@@ -16,7 +16,12 @@ import {
   useRemoveFriend,
   useSendFriendRequest,
 } from '../hooks/useFriendMutations';
-import { useFriendList, useFriendRelation } from '../hooks/useFriendQueries';
+import {
+  useFriendList,
+  useFriendRelation,
+  useReceivedFriendRequests,
+  useSentFriendRequests,
+} from '../hooks/useFriendQueries';
 import type { FriendRelationStatus } from '../type/friend';
 
 interface MemberFriendActionButtonProps {
@@ -53,7 +58,23 @@ export function MemberFriendActionButton({
     useFriendRelation(shouldFetchRelation ? memberId : 0);
   const status: FriendRelationStatus | undefined =
     relationStatus ?? fetchedRelation?.status;
-  const requestId = fetchedRelation?.requestId;
+  // relation 응답이 requestId 를 안 내려주면 취소/수락/거절 버튼이 영구 disabled
+  // 가 된다. 보낸/받은 신청 목록에서 memberId 로 requestId 를 보강한다.
+  const { data: sentRequests } = useSentFriendRequests(
+    status === 'REQUEST_SENT'
+  );
+  const { data: receivedRequests } = useReceivedFriendRequests(
+    status === 'REQUEST_RECEIVED'
+  );
+  const requestList =
+    status === 'REQUEST_SENT'
+      ? sentRequests
+      : status === 'REQUEST_RECEIVED'
+        ? receivedRequests
+        : undefined;
+  const requestId =
+    fetchedRelation?.requestId ??
+    requestList?.find((request) => request.memberId === memberId)?.requestId;
   const isLoading = relationStatus === undefined && isRelationLoading;
   // 백엔드 relation 응답이 누락/오타로 FRIEND 분기를 못 탈 때를 위한 fallback.
   // 친구 목록에 있는 회원이면 상태와 무관하게 친구로 간주한다.
@@ -182,7 +203,7 @@ export function MemberFriendActionButton({
           수락
         </Button>
         <Button
-          variant="outlined"
+          variant="secondary"
           size="md"
           iconLeft={<UserMinus className="h-4 w-4" />}
           disabled={disabled}

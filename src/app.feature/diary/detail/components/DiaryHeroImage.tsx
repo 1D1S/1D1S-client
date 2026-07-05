@@ -70,8 +70,10 @@ export function DiaryImageLightbox({
           width={0}
           height={0}
           sizes="90vw"
-          className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain"
-          style={{ width: 'auto', height: 'auto' }}
+          className={cn(
+            'h-auto max-h-[90vh] w-auto max-w-[90vw]',
+            'rounded-xl object-contain'
+          )}
         />
       </div>
     </div>

@@ -33,7 +33,7 @@ function isValidNextImageSrc(src: string | undefined): src is string {
   return /^(https?:|data:|blob:)/i.test(src);
 }
 
-export default function StoryRing({
+function StoryRing({
   groups,
   onSelect,
   compact = false,
@@ -42,6 +42,11 @@ export default function StoryRing({
 }: StoryRingProps): React.ReactElement {
   const showMySlot = typeof onAddStory === 'function';
   const cardWidthClass = compact ? 'w-[120px]' : 'w-[140px]';
+  // 내 스토리는 sortStoryGroups 로 항상 맨 앞에 고정된다. 응답에 포함되면
+  // 일반 스토리 카드로 렌더돼 뷰어로 열리고, 없으면 일지 작성으로 유도하는
+  // 추가 카드를 대신 그린다.
+  const hasMyStory = groups.some((group) => group.isMyStory);
+  const friendCount = hasMyStory ? groups.length - 1 : groups.length;
   const myImageUrl = resolveDiaryImageUrl(myProfileImage ?? null) ?? undefined;
   const hasMyImage = isValidNextImageSrc(myImageUrl);
 
@@ -52,7 +57,7 @@ export default function StoryRing({
         compact ? 'gap-2.5 px-4 py-3' : 'gap-3 px-5 py-3.5 lg:px-8'
       )}
     >
-      {showMySlot ? (
+      {showMySlot && !hasMyStory ? (
         <Card
           interactive
           radius="md"
@@ -120,15 +125,6 @@ export default function StoryRing({
             </Card.Meta>
           </Card.Body>
         </Card>
-      ) : null}
-      {showMySlot && groups.length === 0 ? (
-        <EmptyState
-          variant="friends"
-          animate={false}
-          title="친구 스토리가 아직 없어요"
-          description="친구를 추가하면 친구들의 일지가 여기에 나타나요"
-          className="min-w-[220px] flex-1 py-6"
-        />
       ) : null}
       {groups.map((group, index) => {
         const seen = isGroupAllSeen(group);
@@ -235,6 +231,23 @@ export default function StoryRing({
           </Card>
         );
       })}
+      {/* 내 스토리 카드(groups 맨 앞에 정렬됨) 뒤에 두어야 flex 행에서
+          빈 상태가 내 스토리 오른쪽에 그려진다. 앞에 두면 flex-1 이
+          왼쪽을 차지해 내 스토리가 오른쪽 끝으로 밀린다. */}
+      {showMySlot && friendCount === 0 ? (
+        <EmptyState
+          variant="friends"
+          animate={false}
+          title="친구 스토리가 아직 없어요"
+          description="친구를 추가하면 친구들의 일지가 여기에 나타나요"
+          className="min-w-[220px] flex-1 py-6"
+        />
+      ) : null}
     </div>
   );
 }
+
+// 스토리 뷰어 open/close(부모 state 변경) 때 링 카드 전체가 재렌더되지
+// 않도록 React.memo 로 감싼다. 부모는 onSelect/onAddStory 를 안정된
+// 참조로 넘겨야 한다.
+export default React.memo(StoryRing);

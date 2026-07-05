@@ -2,6 +2,7 @@ import axios, { type AxiosInstance } from 'axios';
 
 import { API_BASE_URL } from './config';
 import { attachInterceptors, type ClientOptions } from './interceptors';
+import { refreshAccessTokenOnce } from './tokenRefresh';
 
 const createClient = (options: ClientOptions): AxiosInstance =>
   attachInterceptors(
@@ -51,7 +52,8 @@ export const silentAuthClient: AxiosInstance = (() => {
       if ((status === 401 || status === 302) && config && !config._retried) {
         config._retried = true;
         try {
-          await tokenClient.get('/auth/token');
+          // 동시 갱신 레이스 방지 — 전역 single-flight 공유
+          await refreshAccessTokenOnce();
           return instance.request(config);
         } catch {
           // 재발급 실패는 호출부(forceLogout)에서 처리

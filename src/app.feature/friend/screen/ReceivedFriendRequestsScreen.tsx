@@ -86,7 +86,7 @@ export default function ReceivedFriendRequestsScreen(): React.ReactElement {
                         수락
                       </Button>
                       <Button
-                        variant="outlined"
+                        variant="secondary"
                         size="sm"
                         disabled={isMutating}
                         onClick={() =>

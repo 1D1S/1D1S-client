@@ -13,6 +13,10 @@ import {
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { cn } from '@module/utils/cn';
 import { openNativeModal } from '@module/utils/nativeBridge';
+import {
+  buildLoginUrl,
+  loginUrlFromCurrentLocation,
+} from '@module/utils/returnTo';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 
@@ -28,6 +32,12 @@ interface LoginRequiredDialogProps {
   required?: boolean;
   /** required 모드의 닫기 동작. */
   onClose?(): void;
+  /**
+   * 로그인 후 복귀할 경로. 미지정 시 현재 위치(pathname + search).
+   * loginRequired 바운스처럼 "원래 가려던 경로"가 현재 위치와 다를 때
+   * 지정한다.
+   */
+  returnTo?: string | null;
 }
 
 export function LoginRequiredDialog({
@@ -37,9 +47,16 @@ export function LoginRequiredDialog({
   description = '로그인 후 이용할 수 있습니다.',
   required = false,
   onClose,
+  returnTo,
 }: LoginRequiredDialogProps): React.ReactElement | null {
   const router = useRouter();
   const isNativeApp = useIsNativeApp(false);
+
+  const goLogin = (): void => {
+    router.push(
+      returnTo ? buildLoginUrl(returnTo) : loginUrlFromCurrentLocation()
+    );
+  };
 
   // 네이티브 쉘에서는 웹 다이얼로그 대신 OS 다이얼로그(showDialog 의
   // AlertDialog) 가 뜨도록 모달 브릿지로 위임한다. required 모드도
@@ -63,7 +80,9 @@ export function LoginRequiredDialog({
       }
       onOpenChange(false);
       if (result === 'login') {
-        router.push('/login');
+        router.push(
+          returnTo ? buildLoginUrl(returnTo) : loginUrlFromCurrentLocation()
+        );
       } else if (required) {
         onClose?.();
       }
@@ -80,6 +99,7 @@ export function LoginRequiredDialog({
     onOpenChange,
     onClose,
     router,
+    returnTo,
   ]);
 
   // 네이티브에서는 본 컴포넌트가 그릴 게 없다 — Flutter 가 다이얼로그를
@@ -99,7 +119,7 @@ export function LoginRequiredDialog({
         description={description}
         confirmLabel="로그인"
         cancelLabel="닫기"
-        onConfirm={() => router.push('/login')}
+        onConfirm={goLogin}
       />
     );
   }
@@ -159,7 +179,7 @@ export function LoginRequiredDialog({
             <Button
               variant="primary"
               className="h-11 flex-1 rounded-[10px]"
-              onClick={() => router.push('/login')}
+              onClick={goLogin}
             >
               로그인
             </Button>

@@ -18,7 +18,6 @@ import { ChallengeDiaryItem } from '../type/challengeDiary';
 interface ChallengeDiaryGridProps {
   diaries: ChallengeDiaryItem[];
   isLoading: boolean;
-  onDiaryClick(diaryId: number): void;
   onLikeToggle(diary: ChallengeDiaryItem): void;
   gridClassName?: string;
   itemClassName?: string;
@@ -27,7 +26,6 @@ interface ChallengeDiaryGridProps {
 export function ChallengeDiaryGrid({
   diaries,
   isLoading,
-  onDiaryClick,
   onLikeToggle,
   gridClassName = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4',
   itemClassName,
@@ -78,7 +76,7 @@ export function ChallengeDiaryGrid({
               '챌린지'
             }
             emotion={mapFeelingToEmotion(diary.diaryInfo?.feeling ?? 'NONE')}
-            onClick={() => onDiaryClick(diary.id)}
+            href={`/diary/${diary.id}`}
             onLikeToggle={() => onLikeToggle(diary)}
           />
         </div>

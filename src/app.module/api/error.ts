@@ -46,13 +46,24 @@ const isAxiosErrorLike = (error: unknown): error is AxiosErrorLike => {
   return (error as { isAxiosError?: unknown }).isAxiosError === true;
 };
 
+// 백엔드가 상태 텍스트를 그대로 message 로 내려주는 경우(예: 500 →
+// "Internal Server Error")는 사용자에게 의미가 없으므로 무시하고 상태 코드
+// 기반 한글 메시지로 대체한다. 이 메시지를 그대로 쓰면 토스트가 영문 원문을
+// 노출하거나, 호출부에서 통째로 swallow 되어 사용자가 아무 피드백을 못 받는다.
+const GENERIC_SERVER_MESSAGES = new Set(['internal server error']);
+
+const isGenericServerMessage = (message: string): boolean =>
+  GENERIC_SERVER_MESSAGES.has(message.trim().toLowerCase());
+
 const getResponseMessage = (payload: unknown): string | null => {
   if (!payload || typeof payload !== 'object') {
     return null;
   }
 
   const apiError = payload as ApiErrorResponse;
-  return typeof apiError.message === 'string' && apiError.message.trim()
+  return typeof apiError.message === 'string' &&
+    apiError.message.trim() &&
+    !isGenericServerMessage(apiError.message)
     ? apiError.message
     : null;
 };

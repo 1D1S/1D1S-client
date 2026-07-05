@@ -69,7 +69,7 @@ function StoryLoginPrompt({
           <Text
             size="caption2"
             weight="extrabold"
-            className={cn('truncate leading-snug tracking-tight text-gray-900')}
+            className="truncate leading-snug tracking-tight text-gray-900"
           >
             친구 스토리
           </Text>
@@ -82,9 +82,7 @@ function StoryLoginPrompt({
                 )}
                 aria-hidden
               />
-              <span
-                className={cn('truncate text-[11px] font-medium text-gray-500')}
-              >
+              <span className="truncate text-[11px] font-medium text-gray-500">
                 로그인하고 확인하기
               </span>
             </span>
@@ -149,8 +147,12 @@ export default function Stories({
     () => (data ? sortStoryGroups(data.storyGroups) : []),
     [data]
   );
-  // 인라인 핸들러는 매 렌더마다 새로 생성돼 뷰어의 콜백 안정성을 깬다.
+  // 인라인 핸들러는 매 렌더마다 새로 생성돼 뷰어의 콜백 안정성과
+  // React.memo(StoryRing) 를 깬다.
   const handleCloseViewer = useCallback(() => setOpenIndex(-1), []);
+  const handleAddStory = useCallback(() => {
+    router.push('/diary/create');
+  }, [router]);
 
   if (!isLoggedIn) {
     return <StoryLoginPrompt onRequireLogin={onRequireLogin} />;
@@ -162,10 +164,6 @@ export default function Stories({
   if (showSkeleton) {
     return <StoryRingSkeleton />;
   }
-
-  const handleAddStory = (): void => {
-    router.push('/diary/create');
-  };
 
   return (
     <>

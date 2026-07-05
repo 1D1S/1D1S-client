@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { API_BASE_URL } from '../api/config';
-import { ACCESS_TOKEN_COOKIE_CANDIDATES } from '../utils/tokenCookie';
+import { buildLoginUrl, RETURN_TO_PARAM } from '../utils/returnTo';
+import {
+  ACCESS_TOKEN_COOKIE_CANDIDATES,
+  AUTH_HINT_COOKIE_SERVER_NAMES,
+  buildAuthHintSetCookie,
+} from '../utils/tokenCookie';
 
 type ProtectedRoute =
   | { pattern: RegExp; type: 'list-redirect'; fallback: string }
@@ -37,15 +42,31 @@ function getAccessToken(req: NextRequest): string | undefined {
   ).find((value): value is string => Boolean(value?.trim()));
 }
 
+// 도메인 공유 세션 힌트 쿠키(90일). access/refresh 토큰이 만료됐어도 로그인
+// 세션의 흔적이 남아 있는지 판정한다. js-cookie 가 이름의 ':' 를 %3A 로
+// 인코딩해 저장하므로 인코딩된 이름으로도 조회한다.
+function hasSessionHint(req: NextRequest): boolean {
+  return AUTH_HINT_COOKIE_SERVER_NAMES.some((name) =>
+    Boolean(req.cookies.get(name)?.value?.trim())
+  );
+}
+
 function buildUnauthorizedResponse(
   req: NextRequest,
   matched: ProtectedRoute
 ): NextResponse {
   if (matched.type === 'login-redirect') {
-    return NextResponse.redirect(new URL('/login', req.url));
+    // 로그인 후 원래 가려던 경로로 복귀할 수 있게 returnTo 를 싣는다.
+    const loginUrl = buildLoginUrl(req.nextUrl.pathname + req.nextUrl.search);
+    return NextResponse.redirect(new URL(loginUrl, req.url));
   }
   const redirectUrl = new URL(matched.fallback, req.url);
   redirectUrl.searchParams.set('loginRequired', 'true');
+  // 목록의 로그인 다이얼로그에서 로그인하면 원래 상세로 복귀하도록 전달
+  redirectUrl.searchParams.set(
+    RETURN_TO_PARAM,
+    req.nextUrl.pathname + req.nextUrl.search
+  );
   return NextResponse.redirect(redirectUrl);
 }
 
@@ -141,6 +162,15 @@ export async function authMiddleware(
 
   const refreshed = await refreshTokens(req);
   if (!refreshed) {
+    // 서버 refresh 가 실패해도(백엔드 지연, 쿠키 미전달, refresh 토큰 만료
+    // 등) 세션 힌트가 있으면 상세 페이지를 튕기지 않고 렌더한다. 클라이언트
+    // axios 인터셉터가 401→refresh 로 access 토큰을 복구하고, 그래도 세션이
+    // 끝났다면 상세 화면의 LoginRequiredDialog 가 가린다. 목록으로 하드
+    // 리다이렉트해 사용자를 잃던 문제(잦은 access 토큰 만료)를 막는다.
+    // login-redirect(마이페이지/작성 등 민감 경로)는 기존대로 하드 게이트.
+    if (matched.type === 'list-redirect' && hasSessionHint(req)) {
+      return {};
+    }
     return { block: buildUnauthorizedResponse(req, matched) };
   }
 
@@ -150,8 +180,18 @@ export async function authMiddleware(
     refreshed.accessTokenCookie.value
   );
 
+  // refresh 성공 = 세션 생존 확정. 일시적 401 레이스로 클라이언트가 지워버린
+  // 세션 힌트 쿠키를 여기서 재발급해 자가 치유한다. (힌트가 없으면 사이드바
+  // 쿼리가 비활성화돼 클라이언트 스스로는 복구하지 못한다.)
+  const setCookies = hasSessionHint(req)
+    ? refreshed.setCookies
+    : [
+        ...refreshed.setCookies,
+        buildAuthHintSetCookie(req.nextUrl.protocol === 'https:'),
+      ];
+
   return {
-    setCookies: refreshed.setCookies,
+    setCookies,
     cookieHeader: newCookieHeader,
   };
 }

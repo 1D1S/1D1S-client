@@ -45,7 +45,7 @@ export function MyPageActiveChallenges({
           title="진행 중인 챌린지가 없어요"
           className="mt-4"
           action={
-            <Button size="small" onClick={() => router.push('/challenge')}>
+            <Button size="sm" onClick={() => router.push('/challenge')}>
               챌린지 찾아보기
             </Button>
           }
@@ -92,9 +92,7 @@ export function MyPageActiveChallenges({
                   isGroup={challenge.participationType === 'GROUP'}
                   isEnded={ended}
                   participants={challenge.randomParticipants}
-                  onClick={() =>
-                    router.push(`/challenge/${challenge.challengeId}`)
-                  }
+                  href={`/challenge/${challenge.challengeId}`}
                 />
               </div>
             );

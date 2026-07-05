@@ -92,7 +92,7 @@ function ToolbarButton({
     <Button
       type="button"
       variant="ghost"
-      size="small"
+      size="sm"
       aria-label={ariaLabel}
       className={cn(
         'rounded-lg border p-2',

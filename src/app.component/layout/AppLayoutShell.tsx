@@ -6,7 +6,7 @@ import { BrowserPermissionPrompt } from '@feature/notification/components/Browse
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { useServiceWorkerNavigation } from '@module/hooks/useServiceWorkerNavigation';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
-import { cn } from '@module/utils/cn';
+import { buildLoginUrl } from '@module/utils/returnTo';
 import { ArrowLeft } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo } from 'react';
@@ -191,7 +191,8 @@ export default function AppLayoutShell({
   // 핸들러 참조가 안정적이어야 자식 컴포넌트의 재렌더를 피한다.
   const handleProfileClick = useCallback((): void => {
     if (!isLoggedIn) {
-      router.push('/login');
+      // 로그인 후 원래 목적지(마이페이지)로 복귀
+      router.push(buildLoginUrl('/mypage'));
       return;
     }
     router.push('/mypage');
@@ -200,13 +201,6 @@ export default function AppLayoutShell({
   const handleBackClick = useCallback((): void => {
     router.back();
   }, [router]);
-
-  const handleRailChallengeClick = useCallback(
-    (id: string): void => {
-      router.push(`/challenge/${id}`);
-    },
-    [router]
-  );
 
   // Context value 객체를 매 렌더마다 새로 만들면 모든 구독자가 재렌더된다.
   // showRightRail 이 실제로 바뀔 때만 새 객체를 만든다.
@@ -236,7 +230,7 @@ export default function AppLayoutShell({
 
         {showBackButton ? (
           <div className="hidden shrink-0 px-7 pt-3 lg:flex">
-            <Button variant="ghost" size="small" onClick={handleBackClick}>
+            <Button variant="ghost" size="sm" onClick={handleBackClick}>
               <ArrowLeft className="mr-1 h-4 w-4" />
               뒤로가기
             </Button>
@@ -251,7 +245,7 @@ export default function AppLayoutShell({
             {children}
           </main>
           {showRightRail ? (
-            <div className={cn('hidden lg:flex')}>
+            <div className="hidden lg:flex">
               <AppRightRail
                 isLoggedIn={isLoggedIn}
                 isAuthLoading={isAuthLoading}
@@ -263,7 +257,6 @@ export default function AppLayoutShell({
                 streakDays={sidebarData?.streakCount ?? 0}
                 todayGoalCount={sidebarData?.todayGoalCount ?? 0}
                 challenges={railChallenges}
-                onChallengeClick={handleRailChallengeClick}
               />
             </div>
           ) : null}

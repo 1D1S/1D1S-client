@@ -1,6 +1,10 @@
 import { useSyncExternalStore } from 'react';
 
-const NOOP_SUBSCRIBE = (): (() => void) => () => {};
+/**
+ * `useSyncExternalStore` 용 no-op subscribe.
+ * 외부 변경 구독이 필요 없고 스냅샷만 SSR-safe 하게 읽을 때 공유한다.
+ */
+export const NOOP_SUBSCRIBE = (): (() => void) => () => {};
 
 /**
  * SSR + 하이드레이션 안전한 mount 감지 hook.

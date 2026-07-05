@@ -1,9 +1,8 @@
+import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
 import { authStorage } from '@module/utils/auth';
 import { useSyncExternalStore } from 'react';
 
 import { useSidebar } from './useMemberQueries';
-
-const NOOP_SUBSCRIBE = (): (() => void) => () => {};
 
 /**
  * 권위 있는 로그인 상태 판정.

@@ -11,7 +11,6 @@ import {
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { cn } from '@module/utils/cn';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React, { useMemo } from 'react';
 
 import { buildDiaryCardViewModels } from '../utils/mypageUtils';
@@ -35,7 +34,6 @@ export function MyPageDiarySection({
   emptyMessage = '작성한 일지가 없습니다.',
   action,
 }: MyPageDiarySectionProps): React.ReactElement {
-  const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
@@ -99,8 +97,8 @@ export function MyPageDiarySection({
                 user={diary.user}
                 challengeLabel={diary.challengeLabel}
                 emotion={diary.emotion}
+                href={`/diary/${diary.id}`}
                 onLikeToggle={() => handleLikeToggle(diary.id, diary.isLiked)}
-                onClick={() => router.push(`/diary/${diary.id}`)}
               />
             </div>
           ))}

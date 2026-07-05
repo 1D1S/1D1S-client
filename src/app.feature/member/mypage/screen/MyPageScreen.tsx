@@ -6,7 +6,9 @@ import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
 import { MyPageFriendsEntry } from '@feature/friend/components/MyPageFriendsEntry';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
+import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
+import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useSyncExternalStore } from 'react';
@@ -19,8 +21,6 @@ import { MyPageHeroBanner } from '../components/MyPageHeroBanner';
 import { MyPageProfileCard } from '../components/MyPageProfileCard';
 import { MyPageStatSection } from '../components/MyPageStatSection';
 import { MyPageStreakHeroCard } from '../components/MyPageStreakHeroCard';
-
-const NOOP_SUBSCRIBE = (): (() => void) => () => {};
 
 export default function MyPageScreen(): React.ReactElement | null {
   const router = useRouter();
@@ -38,7 +38,7 @@ export default function MyPageScreen(): React.ReactElement | null {
   // 미들웨어가 잔존 쿠키 등으로 통과시킨 비로그인 사용자를 /login 으로 보낸다.
   useEffect(() => {
     if (hasMounted && !isLoggedIn) {
-      router.replace('/login');
+      router.replace(loginUrlFromCurrentLocation());
     }
   }, [hasMounted, isLoggedIn, router]);
 
@@ -77,6 +77,8 @@ export default function MyPageScreen(): React.ReactElement | null {
             streak.completedFiniteChallengeCount ?? 0
           }
           currentStreak={streak.currentStreak}
+          diaryHref="/mypage/diary"
+          challengeHref="/mypage/challenge"
         />
 
         <div className="mt-6">
@@ -122,7 +124,7 @@ export default function MyPageScreen(): React.ReactElement | null {
             viewAllHref="/mypage/diary"
             action={
               <Button
-                size="small"
+                size="sm"
                 onClick={() => router.push('/diary/create')}
               >
                 새 일지 작성하기

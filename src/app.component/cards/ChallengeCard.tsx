@@ -1,10 +1,11 @@
 'use client';
 
-import { Card, CircleAvatar, Stripe } from '@1d1s/design-system';
+import { Card, CircleAvatar, Icon, Stripe } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
 import { CalendarDays, Target, Users } from 'lucide-react';
+import Link from 'next/link';
 import React, { useMemo } from 'react';
 
 export type ChallengeCardGoalType = 'FIXED' | 'FLEXIBLE';
@@ -30,7 +31,13 @@ export interface ChallengeCardProps {
   goalType?: ChallengeCardGoalType;
   isGroup?: boolean;
   isEnded?: boolean;
+  // 공식 챌린지 — 브랜드 링/글로우 + "공식" 배지로 강조한다.
+  isOfficial?: boolean;
   participants?: ChallengeCardParticipant[];
+  /** 지정 시 카드 전체가 <Link> 가 된다(stretched-link). 뷰포트 진입 시
+   *  자동 prefetch 되고 onClick 은 무시된다. 로그인 게이팅처럼 이동 대신
+   *  다른 동작이 필요하면 href 를 생략하고 onClick 을 사용한다. */
+  href?: string;
   onClick?(): void;
   className?: string;
 }
@@ -120,11 +127,23 @@ function ChallengeCard({
   goalType,
   isGroup = true,
   isEnded = false,
+  isOfficial = false,
   participants,
+  href,
   onClick,
   className,
 }: ChallengeCardProps): React.ReactElement {
   const handleKeyDown = createActivationKeydownHandler<HTMLDivElement>(onClick);
+  // href 모드에서는 내부의 stretched-link 가 키보드 포커스/활성화를 담당
+  // 하므로 루트에 button 시맨틱을 주지 않는다 (탭 스톱 중복 방지).
+  const rootInteractiveProps = href
+    ? {}
+    : {
+        role: 'button' as const,
+        tabIndex: 0,
+        onClick,
+        onKeyDown: handleKeyDown,
+      };
 
   const participationLabel = isGroup ? '단체' : '개인';
   const goalLabel = goalType ? GOAL_TYPE_LABELS[goalType] : null;
@@ -150,17 +169,26 @@ function ChallengeCard({
     <Card
       interactive
       radius="md"
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={handleKeyDown}
+      {...rootInteractiveProps}
       className={cn(
         'transition-all duration-500 ease-out',
         'hover:shadow-warm',
+        isOfficial &&
+          'ring-main-800 shadow-[0_10px_30px_-8px_rgba(255,89,0,0.45)] ring-2',
         isEnded && 'opacity-60',
+        href && 'relative',
         className
       )}
     >
+      {href ? (
+        // z-[2]: Card.Thumb(relative) 와 오버레이(z-[1]) 위로 올려 썸네일
+        // 영역 클릭도 링크에 닿게 한다.
+        <Link
+          href={href}
+          aria-label={`${title} 챌린지 보기`}
+          className="absolute inset-0 z-[2]"
+        />
+      ) : null}
       <Card.Thumb className="px-3 pt-3">
         <div className="bg-main-100 relative aspect-[21/9] overflow-hidden rounded-lg">
           {imageUrl ? (
@@ -183,7 +211,16 @@ function ChallengeCard({
                   'flex-col items-center justify-center gap-1.5 text-white'
                 )}
               >
-                {categoryIcon ? (
+                {isOfficial ? (
+                  <span
+                    className={cn(
+                      'flex h-10 w-10 items-center justify-center',
+                      'rounded-full bg-white shadow-md'
+                    )}
+                  >
+                    <Icon name="Logo" size={22} className="text-main-800" />
+                  </span>
+                ) : categoryIcon ? (
                   <span
                     className={cn(
                       'flex h-10 w-10 items-center justify-center',
@@ -194,7 +231,17 @@ function ChallengeCard({
                     {categoryIcon}
                   </span>
                 ) : null}
-                {category ? (
+                {isOfficial ? (
+                  <span
+                    className={cn(
+                      'rounded-full bg-white px-2 py-0.5',
+                      'text-[11px] font-extrabold tracking-tight',
+                      'text-main-800 shadow-md'
+                    )}
+                  >
+                    공식 챌린지
+                  </span>
+                ) : category ? (
                   <span
                     className={cn(
                       'text-[11px] font-bold tracking-tight',
@@ -209,7 +256,10 @@ function ChallengeCard({
           )}
           <div
             className={cn(
-              'absolute top-2 right-2 z-10 flex items-center gap-1'
+              // pointer-events-none: stretched-link 위의 장식 배지가 클릭
+              // 데드존이 되지 않도록 포인터 이벤트를 통과시킨다.
+              'pointer-events-none absolute top-2 right-2 z-10 flex',
+              'items-center gap-1'
             )}
           >
             {goalLabel ? (
@@ -276,7 +326,13 @@ function ChallengeCard({
         <Card.Meta className="mt-2 border-t border-gray-100 pt-2">
           {/* 참여자가 0명일 때도 행 높이가 줄지 않도록 아바타 슬롯 높이를
               고정해 종료 라벨의 수직 위치를 다른 카드와 맞춘다. */}
-          <span className="inline-flex min-h-8 items-center gap-2">
+          {/* pointer-events-none: 아바타(내부적으로 relative)가
+              stretched-link 위 클릭 데드존이 되지 않게 한다. */}
+          <span
+            className={cn(
+              'pointer-events-none inline-flex min-h-8 items-center gap-2'
+            )}
+          >
             <span className="flex -space-x-2">
               {visibleParticipants.length > 0
                 ? visibleParticipants.map((participant, index) => (

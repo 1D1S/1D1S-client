@@ -28,7 +28,6 @@ const nextConfig = {
       '@radix-ui/react-checkbox',
       '@radix-ui/react-dialog',
       '@radix-ui/react-menubar',
-      '@radix-ui/react-popover',
       '@radix-ui/react-progress',
       '@radix-ui/react-radio-group',
       '@radix-ui/react-scroll-area',
@@ -39,8 +38,6 @@ const nextConfig = {
       '@radix-ui/react-toggle-group',
       'class-variance-authority',
       'tailwind-merge',
-      'cmdk',
-      'sonner',
     ],
   },
   images: {

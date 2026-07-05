@@ -19,7 +19,9 @@ import {
 
 interface HomeDiaryItemProps {
   item: DiaryItem;
-  onDiaryClick(diaryId: number): void;
+  /** 로그인 시 상세 링크. 비로그인 시 undefined + onRequireLogin 사용. */
+  href?: string;
+  onRequireLogin(): void;
   onLikeToggle(diary: DiaryItem): void;
 }
 
@@ -29,13 +31,10 @@ interface HomeDiaryItemProps {
 const HomeDiaryItem = React.memo(
   ({
     item,
-    onDiaryClick,
+    href,
+    onRequireLogin,
     onLikeToggle,
   }: HomeDiaryItemProps): React.ReactElement => {
-    const handleClick = useCallback(() => {
-      onDiaryClick(item.id);
-    }, [onDiaryClick, item.id]);
-
     const handleLike = useCallback(() => {
       onLikeToggle(item);
     }, [onLikeToggle, item]);
@@ -61,7 +60,8 @@ const HomeDiaryItem = React.memo(
           '챌린지'
         }
         emotion={mapFeelingToEmotion(item.diaryInfoDto?.feeling ?? 'NONE')}
-        onClick={handleClick}
+        href={href}
+        onClick={onRequireLogin}
         onLikeToggle={handleLike}
       />
     );
@@ -74,8 +74,10 @@ interface HomeRandomDiariesSectionProps {
   isLoading: boolean;
   isError: boolean;
   errorMessage: string | null;
+  /** 로그인 시 카드가 상세 Link(prefetch)로, 비로그인 시 로그인 유도로 동작 */
+  isLoggedIn: boolean;
   onMoreClick(): void;
-  onDiaryClick(diaryId: number): void;
+  onRequireLogin(): void;
   onLikeToggle(diary: DiaryItem): void;
 }
 
@@ -84,8 +86,9 @@ export default function HomeRandomDiariesSection({
   isLoading,
   isError,
   errorMessage,
+  isLoggedIn,
   onMoreClick,
-  onDiaryClick,
+  onRequireLogin,
   onLikeToggle,
 }: HomeRandomDiariesSectionProps): React.ReactElement {
   const showSkeleton = useMinimumLoading(isLoading);
@@ -126,7 +129,8 @@ export default function HomeRandomDiariesSection({
             <HomeDiaryItem
               key={item.id}
               item={item}
-              onDiaryClick={onDiaryClick}
+              href={isLoggedIn ? `/diary/${item.id}` : undefined}
+              onRequireLogin={onRequireLogin}
               onLikeToggle={onLikeToggle}
             />
           ))}

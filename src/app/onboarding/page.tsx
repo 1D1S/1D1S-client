@@ -153,7 +153,7 @@ export default function OnboardingPage(): React.ReactElement {
         <div className="mx-auto max-w-lg">
           <Button
             asChild
-            variant="default"
+            variant="primary"
             className="h-14 w-full text-base"
           >
             <Link href="/challenge">지금 시작하기</Link>

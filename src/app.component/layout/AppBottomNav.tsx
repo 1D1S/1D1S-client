@@ -1,11 +1,13 @@
 'use client';
 
 import { BottomNav } from '@1d1s/design-system';
+import { ChallengeTrophyIcon } from '@component/ChallengeTrophyIcon';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
-import { BookOpen, Home, LayoutGrid, User } from 'lucide-react';
+import { buildLoginUrl } from '@module/utils/returnTo';
+import { BookOpen, Home, User } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useTransition } from 'react';
@@ -14,12 +16,21 @@ interface BottomNavConfigItem {
   id: string;
   label: string;
   href: string;
-  Icon: typeof Home;
+  Icon: React.ComponentType<{
+    className?: string;
+    size?: number | string;
+    strokeWidth?: number | string;
+  }>;
 }
 
 const ITEMS: BottomNavConfigItem[] = [
   { id: 'home', label: '홈', href: '/', Icon: Home },
-  { id: 'challenge', label: '챌린지', href: '/challenge', Icon: LayoutGrid },
+  {
+    id: 'challenge',
+    label: '챌린지',
+    href: '/challenge',
+    Icon: ChallengeTrophyIcon,
+  },
   { id: 'diary', label: '일지', href: '/diary', Icon: BookOpen },
   { id: 'mypage', label: '마이', href: '/mypage', Icon: User },
 ];
@@ -54,9 +65,10 @@ export default function AppBottomNav({
 
   const handleChange = useCallback(
     (id: string): void => {
+      // 비로그인 마이 탭: 로그인 후 원래 목적지(마이페이지)로 복귀
       const target =
         id === 'mypage' && !isLoggedIn
-          ? '/login'
+          ? buildLoginUrl('/mypage')
           : ITEMS.find((it) => it.id === id)?.href;
       if (!target) {
         return;

@@ -133,7 +133,7 @@ export function DiaryReportDialog({
 
           <DialogFooter>
             <Button
-              size="medium"
+              size="md"
               variant="ghost"
               className="flex-1"
               onClick={handleClose}
@@ -141,7 +141,7 @@ export function DiaryReportDialog({
               취소
             </Button>
             <Button
-              size="medium"
+              size="md"
               className="flex-1"
               disabled={
                 !selectedType || !content.trim() || reportMutation.isPending

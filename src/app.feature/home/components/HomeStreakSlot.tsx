@@ -2,6 +2,7 @@
 
 import { CountUp } from '@component/CountUp';
 import { cn } from '@module/utils/cn';
+import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -132,14 +133,14 @@ export default function HomeStreakSlot({
             <span
               aria-hidden
               className={cn(
-                'skeleton-pulse my-1 inline-block h-7 w-32 rounded',
+                // 실제 숫자 줄(mt-0.5 + text-[26px] leading-none)과 높이를
+                // 맞춰 로드 시 아래 문구가 위로 당겨지지 않게 한다.
+                'skeleton-pulse mt-0.5 inline-block h-[26px] w-32 rounded',
                 'bg-white/70'
               )}
             />
           ) : (
-            <div
-              className={cn('data-fade-in mt-0.5 flex items-baseline gap-1')}
-            >
+            <div className="data-fade-in mt-0.5 flex items-baseline gap-1">
               <span
                 className={cn(
                   'text-main-800 text-[26px] leading-none font-extrabold',
@@ -185,7 +186,7 @@ export default function HomeStreakSlot({
   return (
     <button
       type="button"
-      onClick={() => router.push('/login')}
+      onClick={() => router.push(loginUrlFromCurrentLocation())}
       aria-label="로그인하고 스트릭 시작하기"
       className={cn(
         SLOT_BASE,

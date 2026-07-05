@@ -30,22 +30,13 @@ const MY_DIARY_PAGE_SIZE = 12;
 
 interface MyDiaryListItemProps {
   item: DiaryCardViewModel;
-  onCardClick(id: number): void;
   onLikeToggle(id: number, isLiked: boolean): void;
 }
 
 // React.memo로 감싸 부모 재렌더 시 동일 item 카드는 재렌더를 건너뛴다.
-// 부모는 onCardClick / onLikeToggle을 useCallback으로 안정화해야 한다.
+// 부모는 onLikeToggle을 useCallback으로 안정화해야 한다.
 const MyDiaryListItem = React.memo(
-  ({
-    item,
-    onCardClick,
-    onLikeToggle,
-  }: MyDiaryListItemProps): React.ReactElement => {
-    const handleClick = useCallback(() => {
-      onCardClick(item.id);
-    }, [onCardClick, item.id]);
-
+  ({ item, onLikeToggle }: MyDiaryListItemProps): React.ReactElement => {
     const handleLike = useCallback(() => {
       onLikeToggle(item.id, item.isLiked);
     }, [onLikeToggle, item.id, item.isLiked]);
@@ -61,7 +52,7 @@ const MyDiaryListItem = React.memo(
         user={item.user}
         challengeLabel={item.challengeLabel}
         emotion={item.emotion}
-        onClick={handleClick}
+        href={`/diary/${item.id}`}
         onLikeToggle={handleLike}
       />
     );
@@ -109,13 +100,6 @@ export function MyDiaryListScreen(): React.ReactElement {
 
   const hasDiaries = diaryCards.length > 0;
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
-
-  const handleCardClick = useCallback(
-    (id: number): void => {
-      router.push(`/diary/${id}`);
-    },
-    [router]
-  );
 
   const handleLikeToggle = useCallback(
     (id: number, isLiked: boolean): void => {
@@ -198,7 +182,10 @@ export function MyDiaryListScreen(): React.ReactElement {
         </header>
 
         {showSkeleton ? (
-          <DiaryCardSkeletonGrid count={MY_DIARY_PAGE_SIZE} className="mt-6" />
+          <DiaryCardSkeletonGrid
+            count={MY_DIARY_PAGE_SIZE}
+            className="data-fade-in mt-6"
+          />
         ) : null}
 
         {isError && !hasDiaries ? (
@@ -222,7 +209,6 @@ export function MyDiaryListScreen(): React.ReactElement {
               <MyDiaryListItem
                 key={diary.id}
                 item={diary}
-                onCardClick={handleCardClick}
                 onLikeToggle={handleLikeToggle}
               />
             ))}

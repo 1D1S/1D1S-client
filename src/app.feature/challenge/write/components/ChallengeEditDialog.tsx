@@ -33,7 +33,7 @@ export function ChallengeEditDialog({
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          variant="default"
+          variant="primary"
           type="button"
           disabled={disabled}
           className={triggerClassName}
@@ -63,12 +63,12 @@ export function ChallengeEditDialog({
 
           <DialogFooter className="grid grid-cols-2 gap-3 sm:gap-3">
             <DialogClose asChild>
-              <Button variant="outlined" type="button">
+              <Button variant="secondary" type="button">
                 취소
               </Button>
             </DialogClose>
             <DialogClose asChild>
-              <Button variant="default" type="submit" onClick={onConfirm}>
+              <Button variant="primary" type="submit" onClick={onConfirm}>
                 수정 완료
               </Button>
             </DialogClose>

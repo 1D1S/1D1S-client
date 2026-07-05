@@ -2,7 +2,7 @@ import { DIARY_QUERY_KEYS } from '@feature/diary/board/consts/queryKeys';
 import { DiaryDetailScreen } from '@feature/diary/detail/screen/DiaryDetailScreen';
 import { getServerDiaryDetail } from '@module/api/serverApi';
 import {
-  hasServerAccessToken,
+  hasServerSession,
   resolveLoginRequiredRedirect,
 } from '@module/utils/serverAuth';
 import { redirect } from 'next/navigation';
@@ -20,7 +20,7 @@ export default async function DiaryDetailPage({
   const { id } = await params;
   const diaryId = Number(id);
 
-  const isAuthenticated = await hasServerAccessToken();
+  const isAuthenticated = await hasServerSession();
   if (!isAuthenticated) {
     const target = await resolveLoginRequiredRedirect('/diary', `/diary/${id}`);
     redirect(target);

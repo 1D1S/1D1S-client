@@ -30,22 +30,13 @@ const MEMBER_DIARY_PAGE_SIZE = 12;
 
 interface MemberDiaryListItemProps {
   item: DiaryItem;
-  onCardClick(id: number): void;
   onLikeToggle(diary: DiaryItem): void;
 }
 
 // React.memo로 감싸 부모 재렌더 시 동일 item 카드는 재렌더를 건너뛴다.
-// 부모는 onCardClick / onLikeToggle을 useCallback으로 안정화해야 한다.
+// 부모는 onLikeToggle을 useCallback으로 안정화해야 한다.
 const MemberDiaryListItem = React.memo(
-  ({
-    item,
-    onCardClick,
-    onLikeToggle,
-  }: MemberDiaryListItemProps): React.ReactElement => {
-    const handleClick = useCallback(() => {
-      onCardClick(item.id);
-    }, [onCardClick, item.id]);
-
+  ({ item, onLikeToggle }: MemberDiaryListItemProps): React.ReactElement => {
     const handleLike = useCallback(() => {
       onLikeToggle(item);
     }, [onLikeToggle, item]);
@@ -75,8 +66,8 @@ const MemberDiaryListItem = React.memo(
           '일지'
         }
         emotion={mapFeelingToEmotion(item.diaryInfoDto?.feeling ?? 'NONE')}
+        href={`/diary/${item.id}`}
         onLikeToggle={handleLike}
-        onClick={handleClick}
       />
     );
   }
@@ -124,13 +115,6 @@ export function MemberDiaryListScreen({
 
   const hasDiaries = diaryItems.length > 0;
   const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
-
-  const handleCardClick = useCallback(
-    (id: number): void => {
-      router.push(`/diary/${id}`);
-    },
-    [router]
-  );
 
   const handleLikeToggle = useCallback(
     (diary: DiaryItem): void => {
@@ -215,7 +199,7 @@ export function MemberDiaryListScreen({
         {showSkeleton ? (
           <DiaryCardSkeletonGrid
             count={MEMBER_DIARY_PAGE_SIZE}
-            className="mt-6"
+            className="data-fade-in mt-6"
           />
         ) : null}
 
@@ -240,7 +224,6 @@ export function MemberDiaryListScreen({
               <MemberDiaryListItem
                 key={diary.id}
                 item={diary}
-                onCardClick={handleCardClick}
                 onLikeToggle={handleLikeToggle}
               />
             ))}

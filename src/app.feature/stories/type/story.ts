@@ -10,6 +10,7 @@ export interface StoryGroup {
   userId: number;
   userName?: string | null;
   profileImage: string | null;
+  isMyStory?: boolean;
   stories: StoryItem[];
 }
 

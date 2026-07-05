@@ -43,7 +43,7 @@ export function AlertDialog({
         <DialogBody>{description}</DialogBody>
         <DialogFooter>
           <DialogClose asChild>
-            <Button type="button" size="medium" onClick={onConfirm}>
+            <Button type="button" size="md" onClick={onConfirm}>
               {confirmLabel}
             </Button>
           </DialogClose>

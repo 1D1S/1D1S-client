@@ -25,6 +25,10 @@
 @layer base {
   html {
     font-size: 16px;
+    /* 페이지 길이 변화(데이터 로드, 라우트 이동)로 세로 스크롤바가
+       생겼다 사라질 때 본문 전체가 가로로 밀리는 CLS 방지.
+       overlay 스크롤바(macOS/모바일)에는 영향 없음. */
+    scrollbar-gutter: stable;
   }
 
   /* iOS Safari는 input/textarea/select의 font-size가 16px 미만이면

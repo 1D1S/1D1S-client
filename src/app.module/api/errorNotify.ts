@@ -2,6 +2,7 @@
 
 import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
+import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 
 import { API_BASE_URL } from './config';
 import {
@@ -72,7 +73,8 @@ export const handleAuthError = (error: unknown): void => {
 
   if (!isRedirecting && isProtectedRoute(window.location.pathname)) {
     isRedirecting = true;
-    window.location.assign('/');
+    // 로그인 후 보던 페이지로 복귀할 수 있게 returnTo 를 실어 보낸다.
+    window.location.assign(loginUrlFromCurrentLocation());
   }
 };
 
@@ -93,11 +95,6 @@ const shouldSkipToast = (error: unknown): boolean => {
   return false;
 };
 
-const IGNORED_SERVER_MESSAGES = new Set(['internal server error']);
-
-const isIgnoredServerMessage = (message: string): boolean =>
-  IGNORED_SERVER_MESSAGES.has(message.trim().toLowerCase());
-
 export const notifyApiError = (error: unknown): void => {
   if (typeof window === 'undefined') {
     return;
@@ -116,9 +113,5 @@ export const notifyApiError = (error: unknown): void => {
   }
 
   const normalizedError = normalizeApiError(error);
-  if (isIgnoredServerMessage(normalizedError.message)) {
-    return;
-  }
-
   toast.error(normalizedError.message);
 };

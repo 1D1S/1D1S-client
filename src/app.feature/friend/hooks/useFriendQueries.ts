@@ -33,28 +33,26 @@ export function useFriendRelation(
   });
 }
 
-export function useSentFriendRequests(): UseQueryResult<
-  FriendRequestSummary[],
-  Error
-> {
+export function useSentFriendRequests(
+  enabled = true
+): UseQueryResult<FriendRequestSummary[], Error> {
   const isLoggedIn = useIsLoggedIn();
   return useQuery({
     queryKey: FRIEND_QUERY_KEYS.sentRequests(),
     queryFn: () => friendApi.getSentRequests(),
-    enabled: isLoggedIn,
+    enabled: isLoggedIn && enabled,
     staleTime: FRIEND_STALE_TIME,
   });
 }
 
-export function useReceivedFriendRequests(): UseQueryResult<
-  FriendRequestSummary[],
-  Error
-> {
+export function useReceivedFriendRequests(
+  enabled = true
+): UseQueryResult<FriendRequestSummary[], Error> {
   const isLoggedIn = useIsLoggedIn();
   return useQuery({
     queryKey: FRIEND_QUERY_KEYS.receivedRequests(),
     queryFn: () => friendApi.getReceivedRequests(),
-    enabled: isLoggedIn,
+    enabled: isLoggedIn && enabled,
     staleTime: FRIEND_STALE_TIME,
   });
 }

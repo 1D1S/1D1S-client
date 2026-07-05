@@ -1,8 +1,11 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
+import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
+import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { BrandPanel } from '../components/BrandPanel';
@@ -13,6 +16,7 @@ import { OAuthProvider } from '../type/auth';
 import { getLaunchStreakDay } from '../utils/streakDay';
 
 export function LoginScreen(): React.ReactElement {
+  const router = useRouter();
   const [recommended, setRecommended] = React.useState<OAuthProvider | null>(
     null
   );
@@ -24,6 +28,17 @@ export function LoginScreen(): React.ReactElement {
     setRecommended(getLastOAuthProvider());
     setStreakDay(getLaunchStreakDay());
   }, []);
+
+  // 이미 로그인된 상태로 /login?returnTo=... 에 오면 바로 복귀시킨다.
+  // (returnTo 가 없으면 기존처럼 로그인 화면을 그대로 보여준다)
+  React.useEffect(() => {
+    const returnTo = sanitizeReturnTo(
+      new URLSearchParams(window.location.search).get(RETURN_TO_PARAM)
+    );
+    if (returnTo && authStorage.hasTokens()) {
+      router.replace(returnTo);
+    }
+  }, [router]);
 
   const providers = getOrderedProviders(recommended);
 
@@ -107,7 +122,7 @@ export function LoginScreen(): React.ReactElement {
                     provider={provider}
                     img={meta.img}
                     text={meta.text}
-                    size="large"
+                    size="lg"
                     recentBadge={index === 0 && recommended === provider}
                     className={cn('h-13 text-[15px]', meta.className)}
                   />

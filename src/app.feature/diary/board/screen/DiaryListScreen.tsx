@@ -1,6 +1,6 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { Icon, Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
@@ -11,6 +11,7 @@ import { normalizeApiError } from '@module/api/error';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { cn } from '@module/utils/cn';
 import { getDateTimestamp } from '@module/utils/date';
+import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -72,7 +73,9 @@ function getDiaryAchievementRate(diary: DiaryItem): number {
 
 interface DiaryListItemProps {
   item: DiaryItem;
-  onCardClick(id: number): void;
+  /** 로그인 시 상세 링크. 비로그인 시 undefined + onRequireLogin 사용. */
+  href?: string;
+  onRequireLogin(): void;
   onLikeToggle(diary: DiaryItem): void;
 }
 
@@ -82,19 +85,18 @@ interface DiaryListItemProps {
 const DiaryListItem = React.memo(
   ({
     item,
-    onCardClick,
+    href,
+    onRequireLogin,
     onLikeToggle,
   }: DiaryListItemProps): React.ReactElement => {
     const diaryInfo = getDiaryInfo(item);
     const authorInfo = getDiaryAuthorInfo(item);
 
-    const handleClick = useCallback(() => {
-      onCardClick(item.id);
-    }, [onCardClick, item.id]);
-
-    const handleLike = useCallback(() => {
+    // 수동 useCallback 은 React Compiler 의 자동 메모이제이션과 충돌해
+    // (preserve-manual-memoization) 제거 — 컴파일러가 참조를 안정화한다.
+    const handleLike = (): void => {
       onLikeToggle(item);
-    }, [onLikeToggle, item]);
+    };
 
     return (
       <div className="min-w-0 self-start">
@@ -114,8 +116,9 @@ const DiaryListItem = React.memo(
             '챌린지'
           }
           emotion={mapFeelingToEmotion(diaryInfo?.feeling ?? 'NONE')}
+          href={href}
           onLikeToggle={handleLike}
-          onClick={handleClick}
+          onClick={onRequireLogin}
         />
       </div>
     );
@@ -135,11 +138,16 @@ export default function DiaryListScreen(): React.ReactElement {
   const [showLoginDialog, setShowLoginDialog] = useState(
     () => isLoginRequired && !isLoggedIn
   );
-  const [loginDialogDescription, setLoginDialogDescription] = useState(
-    () =>
-      isLoginRequired && !isLoggedIn
-        ? '일지 상세는 로그인 후 이용할 수 있습니다.'
-        : '로그인 후 이용할 수 있습니다.'
+  // 상세 → 목록 바운스 시 원래 가려던 상세 경로. 로그인 후 그리로 복귀한다.
+  const [loginReturnTo, setLoginReturnTo] = useState<string | null>(() =>
+    isLoginRequired && !isLoggedIn
+      ? sanitizeReturnTo(searchParams.get(RETURN_TO_PARAM))
+      : null
+  );
+  const [loginDialogDescription, setLoginDialogDescription] = useState(() =>
+    isLoginRequired && !isLoggedIn
+      ? '일지 상세는 로그인 후 이용할 수 있습니다.'
+      : '로그인 후 이용할 수 있습니다.'
   );
 
   useEffect(() => {
@@ -148,6 +156,7 @@ export default function DiaryListScreen(): React.ReactElement {
     }
     const params = new URLSearchParams(searchParams.toString());
     params.delete('loginRequired');
+    params.delete(RETURN_TO_PARAM);
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, {
       scroll: false,
@@ -192,17 +201,11 @@ export default function DiaryListScreen(): React.ReactElement {
 
   // useCallback 으로 핸들러 참조를 안정화 — DiaryCard 는 React.memo 로
   // 감싸여 있어 부모 재렌더 시에도 props 가 같으면 재렌더를 건너뛴다.
-  const handleCardClick = useCallback(
-    (id: number): void => {
-      if (!isLoggedIn) {
-        setLoginDialogDescription('일지 상세는 로그인 후 이용할 수 있습니다.');
-        setShowLoginDialog(true);
-        return;
-      }
-      router.push(`/diary/${id}`);
-    },
-    [isLoggedIn, router]
-  );
+  // 로그인 시 카드 자체가 Link(prefetch)로 이동하므로 비로그인 유도만 남는다.
+  const handleRequireLogin = useCallback((): void => {
+    setLoginDialogDescription('일지 상세는 로그인 후 이용할 수 있습니다.');
+    setShowLoginDialog(true);
+  }, []);
 
   const handleLikeToggle = useCallback(
     (diary: DiaryItem): void => {
@@ -232,8 +235,14 @@ export default function DiaryListScreen(): React.ReactElement {
     <div className="min-h-screen w-full">
       <LoginRequiredDialog
         open={showLoginDialog}
-        onOpenChange={setShowLoginDialog}
+        onOpenChange={(open) => {
+          setShowLoginDialog(open);
+          if (!open) {
+            setLoginReturnTo(null);
+          }
+        }}
         description={loginDialogDescription}
+        returnTo={loginReturnTo}
       />
 
       {/* 모바일 sticky 헤더 — 일지.
@@ -263,12 +272,14 @@ export default function DiaryListScreen(): React.ReactElement {
             aria-label="일지 쓰기"
             data-native-hide
             className={cn(
-              'rounded-2 bg-brand shrink-0 px-3 py-1.5',
-              'text-[12px] font-bold text-white transition',
-              'hover:brightness-105'
+              // 챌린지 보드의 "새 챌린지" 버튼과 동일한 모바일 헤더 CTA 스타일
+              'bg-brand inline-flex shrink-0 items-center gap-1 rounded-full',
+              'px-3 py-1.5 text-[11px] font-extrabold text-white',
+              'transition hover:brightness-105'
             )}
           >
-            + 일지 쓰기
+            <Icon name="Plus" size={12} aria-hidden />
+            일지 쓰기
           </button>
         ) : null}
       </div>
@@ -300,7 +311,7 @@ export default function DiaryListScreen(): React.ReactElement {
         </header>
 
         {showSkeleton ? (
-          <DiaryCardSkeletonGrid count={12} className="mt-6" />
+          <DiaryCardSkeletonGrid count={12} className="data-fade-in mt-6" />
         ) : null}
 
         {isError && !hasLoadedDiaries ? (
@@ -324,7 +335,8 @@ export default function DiaryListScreen(): React.ReactElement {
               <DiaryListItem
                 key={item.id}
                 item={item}
-                onCardClick={handleCardClick}
+                href={isLoggedIn ? `/diary/${item.id}` : undefined}
+                onRequireLogin={handleRequireLogin}
                 onLikeToggle={handleLikeToggle}
               />
             ))}

@@ -206,7 +206,7 @@ export function CommentReportDialog({
               하단 모서리를 둥글게 클립한다.) */}
           <DialogFooter className="-mx-6 -mb-6 flex-row gap-2 px-6">
             <Button
-              size="medium"
+              size="md"
               variant="ghost"
               className="flex-1"
               onClick={handleClose}
@@ -214,7 +214,7 @@ export function CommentReportDialog({
               취소
             </Button>
             <Button
-              size="medium"
+              size="md"
               className="flex-1"
               disabled={!canSubmit}
               onClick={handleSubmit}

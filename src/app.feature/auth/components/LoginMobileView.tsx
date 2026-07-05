@@ -138,7 +138,7 @@ export function LoginMobileView({
                 provider={provider}
                 img={meta.img}
                 text={meta.text}
-                size="large"
+                size="lg"
                 recentBadge={index === 0 && recommended === provider}
                 className={cn('h-14 text-[15px]', meta.className)}
               />

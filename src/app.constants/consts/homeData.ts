@@ -13,7 +13,7 @@ export const HOME_MAIN_BANNERS: HomeMainBanner[] = [
   {
     id: 'popular-challenge',
     kind: 'HOT',
-    title: '5월 챌린지 시즌\n오픈!',
+    title: '7월 챌린지 시즌\n오픈!',
     subtitle: '함께 도전할 챌린저를 찾아보세요',
     gradient: 'linear-gradient(135deg, #ff8a65 0%, #ff5722 100%)',
     href: '/challenge',

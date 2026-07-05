@@ -10,12 +10,12 @@ import {
   DialogTitle,
 } from '@1d1s/design-system';
 import { useAddToHomeScreenTarget } from '@module/hooks/useAddToHomeScreenTarget';
+import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useCallback, useState, useSyncExternalStore } from 'react';
 
 const DISMISS_STORAGE_KEY = '1d1s:addToHomePromptDismissed';
 const GUIDE_PATH = '/install';
-const NOOP_SUBSCRIBE = (): (() => void) => () => {};
 
 function readPersistedDismiss(): boolean {
   if (typeof window === 'undefined') {
@@ -93,12 +93,12 @@ export function AddToHomeScreenPrompt(): React.ReactElement | null {
           <Button
             type="button"
             variant="ghost"
-            size="medium"
+            size="md"
             onClick={handleNeverShow}
           >
             다시 보지 않기
           </Button>
-          <Button type="button" size="medium" onClick={handleGoToGuide}>
+          <Button type="button" size="md" onClick={handleGoToGuide}>
             가이드 보러가기
           </Button>
         </DialogFooter>
