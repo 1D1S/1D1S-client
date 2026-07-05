@@ -7,6 +7,7 @@ import { ChallengeChip } from '@feature/challenge/shared/components/ChallengeChi
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
 import Image from 'next/image';
+import Link from 'next/link';
 import React from 'react';
 
 export type DiaryEmotion = 'happy' | 'soso' | 'sad';
@@ -45,6 +46,10 @@ export interface DiaryCardProps {
   user: string;
   challengeLabel: string;
   emotion: DiaryEmotion;
+  /** 지정 시 카드 전체가 <Link> 가 된다(stretched-link). 뷰포트 진입 시
+   *  자동 prefetch 되고 onClick 은 무시된다. 로그인 게이팅처럼 이동 대신
+   *  다른 동작이 필요하면 href 를 생략하고 onClick 을 사용한다. */
+  href?: string;
   onClick?(): void;
   onLikeToggle?(): void;
   className?: string;
@@ -60,11 +65,22 @@ function DiaryCard({
   user,
   challengeLabel,
   emotion,
+  href,
   onClick,
   onLikeToggle,
   className,
 }: DiaryCardProps): React.ReactElement {
   const handleKeyDown = createActivationKeydownHandler<HTMLDivElement>(onClick);
+  // href 모드에서는 내부의 stretched-link 가 키보드 포커스/활성화를 담당
+  // 하므로 루트에 button 시맨틱을 주지 않는다 (탭 스톱 중복 방지).
+  const rootInteractiveProps = href
+    ? {}
+    : {
+        role: 'button' as const,
+        tabIndex: 0,
+        onClick,
+        onKeyDown: handleKeyDown,
+      };
 
   const handleLikeClick = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -82,16 +98,23 @@ function DiaryCard({
     <Card
       interactive
       radius="md"
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={handleKeyDown}
+      {...rootInteractiveProps}
       className={cn(
         'transition-all duration-500 ease-out',
         'hover:shadow-warm',
+        href && 'relative',
         className
       )}
     >
+      {href ? (
+        // z-[2]: Card.Thumb(relative) 와 오버레이(z-[1]) 위로 올려 썸네일
+        // 영역 클릭도 링크에 닿게 한다. 좋아요 버튼만 z-[3] 로 위에 둔다.
+        <Link
+          href={href}
+          aria-label={`${title} 일지 보기`}
+          className="absolute inset-0 z-[2]"
+        />
+      ) : null}
       <Card.Thumb className="bg-main-100 aspect-[4/5]">
         {hasImage ? (
           <FadeInImage
@@ -105,7 +128,9 @@ function DiaryCard({
         ) : (
           <Stripe tone={tone} />
         )}
-        <Card.Overlay position="top-left">
+        {/* 배지/무드 오버레이는 장식 요소 — stretched-link 위에 떠서
+            클릭 데드존이 되지 않도록 포인터 이벤트를 통과시킨다. */}
+        <Card.Overlay position="top-left" className="pointer-events-none">
           {isComplete ? (
             <span
               className={cn(
@@ -128,7 +153,7 @@ function DiaryCard({
             </span>
           )}
         </Card.Overlay>
-        <Card.Overlay position="top-right">
+        <Card.Overlay position="top-right" className="pointer-events-none">
           {/* 무드 SVG는 정적 에셋이라 최적화가 불필요하고, next/image 최적화기는
               prod 에서 SVG를 차단(dangerouslyAllowSVG=false)하므로 unoptimized 로
               /public 에서 직접 서빙한다. */}
@@ -159,8 +184,10 @@ function DiaryCard({
           <span className="inline-flex min-w-0 items-center gap-1.5">
             <span
               className={cn(
-                'relative h-5 w-5 shrink-0 overflow-hidden rounded-full',
-                'bg-gray-100'
+                // pointer-events-none: positioned 장식 요소가 stretched-link
+                // 위 클릭 데드존이 되지 않게 한다.
+                'pointer-events-none relative h-5 w-5 shrink-0',
+                'overflow-hidden rounded-full bg-gray-100'
               )}
               aria-hidden
             >
@@ -184,8 +211,11 @@ function DiaryCard({
             aria-pressed={isLiked}
             aria-label={isLiked ? '좋아요 취소' : '좋아요'}
             className={cn(
-              'group/like inline-flex shrink-0 cursor-pointer items-center',
-              'gap-1 rounded-full px-2 py-1 font-bold transition-colors',
+              // z-[3]: stretched-link(z-[2]) 위에 둬서 좋아요 클릭이
+              // 링크로 새지 않게 한다.
+              'group/like relative z-[3] inline-flex shrink-0',
+              'cursor-pointer items-center gap-1 rounded-full px-2 py-1',
+              'font-bold transition-colors',
               'hover:bg-red-50 motion-safe:active:scale-95',
               isLiked
                 ? 'bg-red-50 text-red-500'

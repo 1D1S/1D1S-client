@@ -5,6 +5,7 @@ import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useCallback, useMemo } from 'react';
 
@@ -26,7 +27,6 @@ interface AppRightRailProps {
   streakDays: number;
   todayGoalCount: number;
   challenges: ChallengeProgressItem[];
-  onChallengeClick(id: string): void;
 }
 
 const ASIDE_CLASS = cn(
@@ -83,7 +83,6 @@ export default function AppRightRail({
   streakDays,
   todayGoalCount,
   challenges,
-  onChallengeClick,
 }: AppRightRailProps): React.ReactElement {
   const router = useRouter();
   const pathname = usePathname();
@@ -268,10 +267,9 @@ export default function AppRightRail({
                     ? challenge.progress
                     : 100;
                   return (
-                    <button
+                    <Link
                       key={challenge.id}
-                      type="button"
-                      onClick={() => onChallengeClick(challenge.id)}
+                      href={`/challenge/${challenge.id}`}
                       tabIndex={contentHidden ? -1 : 0}
                       className={cn(
                         'rounded-2 flex flex-col gap-1.5 p-2 text-left',
@@ -292,7 +290,7 @@ export default function AppRightRail({
                           ? `${challenge.progress}% 진행`
                           : '무기한'}
                       </span>
-                    </button>
+                    </Link>
                   );
                 })}
               </div>
@@ -305,12 +303,13 @@ export default function AppRightRail({
               onClick={handleWriteDiaryClick}
               tabIndex={contentHidden ? -1 : 0}
               className={cn(
-                'rounded-2 bg-brand mt-auto py-2.5',
-                'text-[12px] font-bold text-white transition',
-                'hover:brightness-105'
+                'rounded-2 bg-brand mt-auto inline-flex items-center',
+                'justify-center gap-1 py-2.5 text-[12px] font-bold',
+                'text-white transition hover:brightness-105'
               )}
             >
-              + 일지 쓰기
+              <Icon name="Plus" size={12} aria-hidden />
+              일지 쓰기
             </button>
           )}
         </div>

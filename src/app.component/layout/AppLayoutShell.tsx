@@ -203,13 +203,6 @@ export default function AppLayoutShell({
     router.back();
   }, [router]);
 
-  const handleRailChallengeClick = useCallback(
-    (id: string): void => {
-      router.push(`/challenge/${id}`);
-    },
-    [router]
-  );
-
   // Context value 객체를 매 렌더마다 새로 만들면 모든 구독자가 재렌더된다.
   // showRightRail 이 실제로 바뀔 때만 새 객체를 만든다.
   const layoutContextValue = useMemo(
@@ -238,7 +231,7 @@ export default function AppLayoutShell({
 
         {showBackButton ? (
           <div className="hidden shrink-0 px-7 pt-3 lg:flex">
-            <Button variant="ghost" size="small" onClick={handleBackClick}>
+            <Button variant="ghost" size="sm" onClick={handleBackClick}>
               <ArrowLeft className="mr-1 h-4 w-4" />
               뒤로가기
             </Button>
@@ -265,7 +258,6 @@ export default function AppLayoutShell({
                 streakDays={sidebarData?.streakCount ?? 0}
                 todayGoalCount={sidebarData?.todayGoalCount ?? 0}
                 challenges={railChallenges}
-                onChallengeClick={handleRailChallengeClick}
               />
             </div>
           ) : null}

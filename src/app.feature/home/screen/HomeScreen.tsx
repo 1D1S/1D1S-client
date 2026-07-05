@@ -88,28 +88,13 @@ export default function HomeScreen({
     [router]
   );
 
-  const handleChallengeClick = useCallback(
-    (challengeId: number): void => {
-      if (!isLoggedIn) {
-        setShowLoginDialog(true);
-        return;
-      }
-      router.push(`/challenge/${challengeId}`);
-    },
-    [isLoggedIn, setShowLoginDialog, router]
-  );
-
   const handleMoreDiaries = useCallback(() => router.push('/diary'), [router]);
 
-  const handleDiaryClick = useCallback(
-    (diaryId: number): void => {
-      if (!isLoggedIn) {
-        setShowLoginDialog(true);
-        return;
-      }
-      router.push(`/diary/${diaryId}`);
-    },
-    [isLoggedIn, setShowLoginDialog, router]
+  // 로그인 시 카드 자체가 Link(prefetch)로 동작하므로, 여기서는 비로그인
+  // 클릭에 대한 로그인 유도만 담당한다.
+  const handleRequireLogin = useCallback(
+    () => setShowLoginDialog(true),
+    [setShowLoginDialog]
   );
 
   const {
@@ -201,8 +186,9 @@ export default function HomeScreen({
           isLoading={isChallengesLoading}
           isError={isChallengesError}
           errorMessage={challengesErrorMessage}
+          isLoggedIn={isLoggedIn}
           onMoreClick={handleMoreChallenges}
-          onChallengeClick={handleChallengeClick}
+          onRequireLogin={handleRequireLogin}
         />
 
         <HomeRandomDiariesSection
@@ -210,8 +196,9 @@ export default function HomeScreen({
           isLoading={isDiariesLoading}
           isError={isDiariesError}
           errorMessage={diariesErrorMessage}
+          isLoggedIn={isLoggedIn}
           onMoreClick={handleMoreDiaries}
-          onDiaryClick={handleDiaryClick}
+          onRequireLogin={handleRequireLogin}
           onLikeToggle={onLikeToggle}
         />
 

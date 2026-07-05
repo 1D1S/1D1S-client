@@ -14,7 +14,7 @@ import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useCallback } from 'react';
+import React from 'react';
 
 import { useMemberChallenges } from '../hooks/useChallengeQueries';
 import type { ChallengeListItem } from '../type/challenge';
@@ -26,16 +26,12 @@ import {
 
 interface MemberChallengeCardItemProps {
   challenge: ChallengeListItem;
-  onCardClick(challengeId: number): void;
 }
 
 // 보드와 동일한 매핑. React.memo(ChallengeCard) 가 재렌더를 건너뛰도록
 // 파생 계산을 컴포넌트로 분리한다.
 const MemberChallengeCardItem = React.memo(
-  ({
-    challenge,
-    onCardClick,
-  }: MemberChallengeCardItemProps): React.ReactElement => {
+  ({ challenge }: MemberChallengeCardItemProps): React.ReactElement => {
     const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
     const ended = isChallengeEndedOrArchived(
       challenge.endDate,
@@ -46,10 +42,6 @@ const MemberChallengeCardItem = React.memo(
       isInfinite,
       ended
     );
-
-    const handleClick = useCallback(() => {
-      onCardClick(challenge.challengeId);
-    }, [onCardClick, challenge.challengeId]);
 
     return (
       <ChallengeCard
@@ -71,7 +63,7 @@ const MemberChallengeCardItem = React.memo(
         isEnded={ended}
         isOfficial={challenge.challengeType === 'OFFICIAL'}
         participants={challenge.randomParticipants}
-        onClick={handleClick}
+        href={`/challenge/${challenge.challengeId}`}
       />
     );
   }
@@ -92,13 +84,6 @@ export function MemberChallengeListScreen({
 
   const challenges = data ?? [];
   const hasChallenges = challenges.length > 0;
-
-  const handleCardClick = useCallback(
-    (challengeId: number): void => {
-      router.push(`/challenge/${challengeId}`);
-    },
-    [router]
-  );
 
   return (
     <div className="min-h-screen w-full">
@@ -185,7 +170,6 @@ export function MemberChallengeListScreen({
               <MemberChallengeCardItem
                 key={challenge.challengeId}
                 challenge={challenge}
-                onCardClick={handleCardClick}
               />
             ))}
           </div>

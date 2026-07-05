@@ -22,7 +22,6 @@ import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { useChallengeDiaryListInfinite } from '../hooks/useChallengeDiaryQueries';
@@ -36,7 +35,6 @@ interface ChallengeDiaryListScreenProps {
 
 interface ChallengeDiaryListItemProps {
   diary: ChallengeDiaryItem;
-  onCardClick(id: number): void;
   onLikeToggle(diary: ChallengeDiaryItem): void;
 }
 
@@ -46,13 +44,8 @@ interface ChallengeDiaryListItemProps {
 const ChallengeDiaryListItem = React.memo(
   ({
     diary,
-    onCardClick,
     onLikeToggle,
   }: ChallengeDiaryListItemProps): React.ReactElement => {
-    const handleClick = useCallback(() => {
-      onCardClick(diary.id);
-    }, [onCardClick, diary.id]);
-
     const handleLike = useCallback(() => {
       onLikeToggle(diary);
     }, [onLikeToggle, diary]);
@@ -77,8 +70,8 @@ const ChallengeDiaryListItem = React.memo(
           '챌린지'
         }
         emotion={mapFeelingToEmotion(diary.diaryInfo?.feeling ?? 'NONE')}
+        href={`/diary/${diary.id}`}
         onLikeToggle={handleLike}
-        onClick={handleClick}
       />
     );
   }
@@ -89,7 +82,6 @@ export function ChallengeDiaryListScreen({
   id,
 }: ChallengeDiaryListScreenProps): React.ReactElement {
   const challengeId = Number(id);
-  const router = useRouter();
   const handleBack = useSafeBack(`/challenge/${id}`);
   const isLoggedIn = useIsLoggedIn();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
@@ -125,13 +117,6 @@ export function ChallengeDiaryListScreen({
 
   // useCallback 으로 핸들러 참조를 안정화 — DiaryCard 는 React.memo 로
   // 감싸여 있어 부모 재렌더 시에도 props 가 같으면 재렌더를 건너뛴다.
-  const handleCardClick = useCallback(
-    (diaryId: number): void => {
-      router.push(`/diary/${diaryId}`);
-    },
-    [router]
-  );
-
   const handleLikeToggle = useCallback(
     (diary: ChallengeDiaryItem): void => {
       if (!isLoggedIn) {
@@ -241,7 +226,6 @@ export function ChallengeDiaryListScreen({
               <ChallengeDiaryListItem
                 key={diary.id}
                 diary={diary}
-                onCardClick={handleCardClick}
                 onLikeToggle={handleLikeToggle}
               />
             ))}

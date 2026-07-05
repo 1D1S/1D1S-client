@@ -23,8 +23,10 @@ interface HomeRandomChallengesSectionProps {
   isLoading: boolean;
   isError: boolean;
   errorMessage: string | null;
+  /** 로그인 시 카드가 상세 Link(prefetch)로, 비로그인 시 로그인 유도로 동작 */
+  isLoggedIn: boolean;
   onMoreClick(): void;
-  onChallengeClick(challengeId: number): void;
+  onRequireLogin(): void;
 }
 
 export default function HomeRandomChallengesSection({
@@ -32,8 +34,9 @@ export default function HomeRandomChallengesSection({
   isLoading,
   isError,
   errorMessage,
+  isLoggedIn,
   onMoreClick,
-  onChallengeClick,
+  onRequireLogin,
 }: HomeRandomChallengesSectionProps): React.ReactElement {
   const showSkeleton = useMinimumLoading(isLoading);
   return (
@@ -114,7 +117,12 @@ export default function HomeRandomChallengesSection({
                   isGroup={challenge.participationType === 'GROUP'}
                   isEnded={ended}
                   participants={challenge.randomParticipants}
-                  onClick={() => onChallengeClick(challenge.challengeId)}
+                  href={
+                    isLoggedIn
+                      ? `/challenge/${challenge.challengeId}`
+                      : undefined
+                  }
+                  onClick={onRequireLogin}
                 />
               </div>
             );
