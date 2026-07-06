@@ -1172,7 +1172,7 @@ export function ChallengeDetailScreen({
                     'scrollbar-hide flex gap-3 overflow-x-auto',
                     'py-2 sm:gap-2.5'
                   )}
-                  itemClassName="w-[170px] shrink-0 sm:w-[190px]"
+                  itemClassName="w-[240px] shrink-0 sm:w-[260px]"
                 />
               </section>
             </div>

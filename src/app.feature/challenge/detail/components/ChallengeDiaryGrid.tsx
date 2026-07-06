@@ -10,6 +10,7 @@ import {
 } from '@feature/diary/shared/utils/diaryImageUrl';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { cn } from '@module/utils/cn';
+import { formatMonthDayKR } from '@module/utils/date';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React from 'react';
 
@@ -27,7 +28,10 @@ export function ChallengeDiaryGrid({
   diaries,
   isLoading,
   onLikeToggle,
-  gridClassName = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4',
+  gridClassName = cn(
+    'grid grid-cols-2 items-start gap-2.5',
+    'sm:grid-cols-3 sm:gap-3'
+  ),
   itemClassName,
 }: ChallengeDiaryGridProps): React.ReactElement {
   const showSkeleton = useMinimumLoading(isLoading);
@@ -69,6 +73,12 @@ export function ChallengeDiaryGrid({
             isLiked={diary.likeInfo.likedByMe}
             likes={diary.likeInfo.likeCnt}
             title={diary.title}
+            content={diary.content}
+            commentCount={diary.commentCount}
+            goals={diary.diaryInfo?.diaryGoal}
+            dateLabel={
+              formatMonthDayKR(diary.diaryInfo?.challengedDate) || undefined
+            }
             user={diary.author?.nickname || '익명'}
             challengeLabel={
               diary.challenge?.title ||

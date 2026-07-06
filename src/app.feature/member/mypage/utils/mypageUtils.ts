@@ -1,5 +1,8 @@
 import { getCategoryLabel } from '@constants/categories';
-import type { DiaryItem } from '@feature/diary/board/type/diary';
+import type {
+  DiaryGoalStatus,
+  DiaryItem,
+} from '@feature/diary/board/type/diary';
 import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import {
   type DiaryEmotion,
@@ -35,6 +38,9 @@ export interface MyPageBadge {
 export interface DiaryCardViewModel {
   id: number;
   title: string;
+  content: string;
+  commentCount: number;
+  goals: DiaryGoalStatus[] | null;
   imageUrl: string | undefined;
   profileImageUrl: string | undefined;
   percent: number;
@@ -184,6 +190,9 @@ export function buildDiaryCardViewModels(
     return {
       id: diary.id,
       title: diary.title || '제목 없는 일지',
+      content: diary.content,
+      commentCount: diary.commentCount,
+      goals: diaryInfo?.diaryGoal ?? null,
       imageUrl: resolveDiaryImage(diary),
       profileImageUrl:
         resolveDiaryImageUrl(diary.authorInfoDto?.profileImage) ?? undefined,

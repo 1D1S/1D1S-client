@@ -94,6 +94,10 @@ export function MyPageDiarySection({
                 isLiked={diary.isLiked}
                 likes={diary.likes}
                 title={diary.title}
+                content={diary.content}
+                commentCount={diary.commentCount}
+                goals={diary.goals}
+                dateLabel={diary.date || undefined}
                 user={diary.user}
                 challengeLabel={diary.challengeLabel}
                 emotion={diary.emotion}

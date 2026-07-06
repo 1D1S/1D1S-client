@@ -1,6 +1,7 @@
 import { SectionHeader, Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
+import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
@@ -9,6 +10,7 @@ import {
   resolveDiaryImageUrl,
 } from '@feature/diary/shared/utils/diaryImageUrl';
 import { cn } from '@module/utils/cn';
+import { formatMonthDayKR } from '@module/utils/date';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React, { useCallback } from 'react';
 
@@ -53,6 +55,12 @@ const HomeDiaryItem = React.memo(
         isLiked={item.likeInfo.likedByMe}
         likes={item.likeInfo.likeCnt}
         title={item.title}
+        content={item.content}
+        commentCount={item.commentCount}
+        goals={item.diaryInfoDto?.diaryGoal}
+        dateLabel={
+          formatMonthDayKR(item.diaryInfoDto?.challengedDate) || undefined
+        }
         user={item.authorInfoDto?.nickname ?? '익명'}
         challengeLabel={
           item.challenge?.title ||
@@ -102,9 +110,10 @@ export default function HomeRandomDiariesSection({
       />
       {showSkeleton ? (
         <div
-          className={
-            'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'
-          }
+          className={cn(
+            'mt-4 grid grid-cols-2 items-start gap-2.5',
+            'sm:grid-cols-3 sm:gap-3'
+          )}
         >
           {Array.from({ length: 8 }).map((_, index) => (
             <DiaryCardSkeleton key={index} />
@@ -119,11 +128,9 @@ export default function HomeRandomDiariesSection({
         </div>
       ) : null}
       {!showSkeleton && !isError && diaries.length > 0 ? (
-        <div
-          className={cn(
-            'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4',
-            'data-fade-in'
-          )}
+        <MasonryColumns
+          className="data-fade-in mt-4"
+          gapClassName="gap-2.5 sm:gap-3"
         >
           {diaries.slice(0, 8).map((item) => (
             <HomeDiaryItem
@@ -134,7 +141,7 @@ export default function HomeRandomDiariesSection({
               onLikeToggle={onLikeToggle}
             />
           ))}
-        </div>
+        </MasonryColumns>
       ) : null}
       {!showSkeleton && !isError && diaries.length === 0 ? (
         <EmptyState variant="diary" title="표시할 일지가 없어요" className="py-8" />

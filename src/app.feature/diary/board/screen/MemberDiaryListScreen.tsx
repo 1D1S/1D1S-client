@@ -4,6 +4,7 @@ import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { DiaryItem } from '@feature/diary/board/type/diary';
@@ -21,6 +22,7 @@ import { useMemberProfileDiariesInfinite } from '@feature/member/hooks/useMember
 import { normalizeApiError } from '@module/api/error';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { cn } from '@module/utils/cn';
+import { formatMonthDayKR } from '@module/utils/date';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -59,6 +61,12 @@ const MemberDiaryListItem = React.memo(
         isLiked={item.likeInfo.likedByMe}
         likes={item.likeInfo.likeCnt}
         title={item.title}
+        content={item.content}
+        commentCount={item.commentCount}
+        goals={item.diaryInfoDto?.diaryGoal}
+        dateLabel={
+          formatMonthDayKR(item.diaryInfoDto?.challengedDate) || undefined
+        }
         user={item.authorInfoDto?.nickname ?? '익명'}
         challengeLabel={
           item.challenge?.title ||
@@ -214,12 +222,7 @@ export function MemberDiaryListScreen({
         ) : null}
 
         {!showSkeleton && hasDiaries ? (
-          <div
-            className={cn(
-              'data-fade-in mt-6 grid gap-4',
-              'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
-            )}
-          >
+          <MasonryColumns className="data-fade-in mt-6">
             {diaryItems.map((diary) => (
               <MemberDiaryListItem
                 key={diary.id}
@@ -227,7 +230,7 @@ export function MemberDiaryListScreen({
                 onLikeToggle={handleLikeToggle}
               />
             ))}
-          </div>
+          </MasonryColumns>
         ) : null}
 
         {!showSkeleton && !isError && !hasDiaries ? (
