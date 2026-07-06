@@ -27,6 +27,19 @@ export function formatDateKR(date: Date): string {
   return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
+/**
+ * ISO 날짜 문자열("YYYY-MM-DD…")을 "7월 6일" 로 변환한다.
+ * Date 파싱을 거치지 않아 타임존에 의한 하루 밀림이 없다.
+ * 형식이 아니면 빈 문자열을 반환한다.
+ */
+export function formatMonthDayKR(isoDate: string | undefined): string {
+  const match = /^\d{4}-(\d{2})-(\d{2})/.exec(isoDate ?? '');
+  if (!match) {
+    return '';
+  }
+  return `${Number(match[1])}월 ${Number(match[2])}일`;
+}
+
 const relativeTimeFormatter = new Intl.RelativeTimeFormat('ko', {
   numeric: 'auto',
 });

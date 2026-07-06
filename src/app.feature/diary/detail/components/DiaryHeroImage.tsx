@@ -18,7 +18,8 @@ export function DiaryHeroImage({
       type="button"
       onClick={onOpen}
       className={cn(
-        'relative aspect-[4/5] w-full cursor-zoom-in',
+        // 일지 카드 썸네일과 동일한 16:9 비율
+        'relative aspect-video w-full cursor-zoom-in',
         'overflow-hidden rounded-2xl border border-gray-200 bg-gray-100'
       )}
     >

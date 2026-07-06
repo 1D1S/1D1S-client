@@ -4,13 +4,14 @@ import { Icon, Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { cn } from '@module/utils/cn';
-import { getDateTimestamp } from '@module/utils/date';
+import { formatMonthDayKR, getDateTimestamp } from '@module/utils/date';
 import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -99,7 +100,7 @@ const DiaryListItem = React.memo(
     };
 
     return (
-      <div className="min-w-0 self-start">
+      <div className="min-w-0">
         <DiaryCard
           imageUrl={item.imgUrl?.[0]}
           profileImageUrl={
@@ -109,6 +110,10 @@ const DiaryListItem = React.memo(
           isLiked={item.likeInfo.likedByMe}
           likes={item.likeInfo.likeCnt}
           title={item.title}
+          content={item.content}
+          commentCount={item.commentCount}
+          goals={diaryInfo?.diaryGoal}
+          dateLabel={formatMonthDayKR(diaryInfo?.challengedDate) || undefined}
           user={authorInfo?.nickname ?? '익명'}
           challengeLabel={
             item.challenge?.title ||
@@ -325,12 +330,7 @@ export default function DiaryListScreen(): React.ReactElement {
         ) : null}
 
         {!showSkeleton && hasLoadedDiaries ? (
-          <div
-            className={cn(
-              'data-fade-in mt-6 grid gap-4',
-              'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
-            )}
-          >
+          <MasonryColumns className="data-fade-in mt-6">
             {sortedDiaries.map((item) => (
               <DiaryListItem
                 key={item.id}
@@ -340,7 +340,7 @@ export default function DiaryListScreen(): React.ReactElement {
                 onLikeToggle={handleLikeToggle}
               />
             ))}
-          </div>
+          </MasonryColumns>
         ) : null}
 
         {!showSkeleton && !isError && !hasLoadedDiaries ? (

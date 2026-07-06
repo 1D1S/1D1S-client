@@ -392,7 +392,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
             <div
               className={cn(
                 'data-fade-in grid gap-4',
-                'grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4'
+                'grid-cols-2 sm:grid-cols-3'
               )}
             >
               {challenges.map((challenge) => (
@@ -421,7 +421,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
             <div
               className={cn(
                 'mt-4 grid gap-4',
-                'grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4'
+                'grid-cols-2 sm:grid-cols-3'
               )}
             >
               {Array.from({ length: 4 }).map((_, index) => (

@@ -35,10 +35,13 @@ const STATUS_ORDER: readonly ChallengeStatus[] = STATUS_OPTIONS.map(
   (option) => option.value
 );
 
-// 모바일(<sm): 가로 스크롤, sm 이상: 줄바꿈
+// 모바일(<sm): 가로 스크롤, sm 이상: 줄바꿈.
+// overflow-x-auto 는 세로 오버플로도 클리핑해 칩 그림자가 위아래로
+// 잘리므로, 안쪽 py 로 그림자 공간을 확보하고 -my 로 상쇄한다.
 const ROW_CLASS = cn(
-  'scrollbar-hide -mx-5 flex items-center gap-1.5 overflow-x-auto px-5',
-  'sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0'
+  'scrollbar-hide -mx-5 -my-2 flex items-center gap-1.5',
+  'overflow-x-auto px-5 py-2',
+  'sm:mx-0 sm:my-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:py-0'
 );
 
 const GROUP_LABEL_CLASS = 'shrink-0 text-[11px] font-bold text-gray-400';

@@ -1,7 +1,6 @@
 'use client';
 
 import { authApi } from '@feature/auth/api/authApi';
-import { authStorage } from '@module/utils/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 
@@ -29,9 +28,12 @@ export function useTokenRefreshOnResume(): void {
       if (isRefreshingRef.current) {
         return;
       }
-      if (!authStorage.hasTokens()) {
-        return;
-      }
+      // hasTokens() 가 false 여도 probe 한다. Safari ITP 는 httpOnly 세션 토큰은
+      // 남기고 JS 로 쓴 힌트(쿠키/localStorage)만 퇴출시키므로, 힌트만 보고
+      // 게이팅하면 세션이 살아있는데도 게스트로 굳어 스스로 복구하지 못한다.
+      // refreshToken() 이 성공하면 markAuthenticated() 로 힌트가 복구된다.
+      // 진짜 게스트는 401 → catch 로 흡수되고, 아래 throttle 로 60초당 1회로
+      // 제한된다.
 
       const now = Date.now();
       if (now - lastRefreshAtRef.current < MIN_REFRESH_INTERVAL_MS) {
@@ -41,7 +43,6 @@ export function useTokenRefreshOnResume(): void {
       isRefreshingRef.current = true;
       try {
         await authApi.refreshToken();
-        lastRefreshAtRef.current = Date.now();
         // 새 토큰으로 재요청되도록 모든 쿼리를 stale 처리. activeOnly: 화면에
         // 마운트된 쿼리만 즉시 refetch 되고, 백그라운드 쿼리는 다음 사용 때
         // 갱신된다.
@@ -51,9 +52,11 @@ export function useTokenRefreshOnResume(): void {
         // 새로고침의 회전 레이스에 진 일시적 401(세션은 살아있음)에도 로그인
         // 힌트 쿠키가 지워져, 다음 새로고침에서 미들웨어가 보호 상세를
         // 목록으로 튕겨내는 버그가 있었다. 세션이 정말 만료됐다면 실제 API
-        // 경로(사이드바 401 → 재시도 실패 → forceLogout)가 권위 있게
-        // 정리하고, 그 후엔 hasTokens() 가 false 라 이 훅의 재시도도 멈춘다.
+        // 경로(사이드바 401 → 재시도 실패 → forceLogout)가 권위 있게 정리한다.
       } finally {
+        // 성공/실패 모두 타임스탬프를 갱신해, 힌트 없는 게스트의 반복 probe 도
+        // 60초당 1회로 throttle 한다.
+        lastRefreshAtRef.current = Date.now();
         isRefreshingRef.current = false;
       }
     };

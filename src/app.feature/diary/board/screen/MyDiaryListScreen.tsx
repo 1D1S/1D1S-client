@@ -4,6 +4,7 @@ import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { DiaryItem } from '@feature/diary/board/type/diary';
 import {
@@ -49,6 +50,10 @@ const MyDiaryListItem = React.memo(
         isLiked={item.isLiked}
         likes={item.likes}
         title={item.title}
+        content={item.content}
+        commentCount={item.commentCount}
+        goals={item.goals}
+        dateLabel={item.date || undefined}
         user={item.user}
         challengeLabel={item.challengeLabel}
         emotion={item.emotion}
@@ -199,12 +204,7 @@ export function MyDiaryListScreen(): React.ReactElement {
         ) : null}
 
         {!showSkeleton && hasDiaries ? (
-          <div
-            className={cn(
-              'data-fade-in mt-6 grid gap-4',
-              'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
-            )}
-          >
+          <MasonryColumns className="data-fade-in mt-6">
             {diaryCards.map((diary) => (
               <MyDiaryListItem
                 key={diary.id}
@@ -212,7 +212,7 @@ export function MyDiaryListScreen(): React.ReactElement {
                 onLikeToggle={handleLikeToggle}
               />
             ))}
-          </div>
+          </MasonryColumns>
         ) : null}
 
         {!showSkeleton && !isError && !hasDiaries ? (

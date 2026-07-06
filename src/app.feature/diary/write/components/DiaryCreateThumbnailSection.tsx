@@ -2,9 +2,10 @@ import { ImagePicker, Text } from '@1d1s/design-system';
 import { ImageCropDialog } from '@component/ImageCropDialog';
 import React from 'react';
 
+// 일지 카드 썸네일과 동일한 16:9 비율
 const DIARY_THUMBNAIL_SIZE = {
-  width: 1200,
-  height: 1500,
+  width: 1600,
+  height: 900,
 } as const;
 
 interface DiaryCreateThumbnailSectionProps {
@@ -51,7 +52,7 @@ function DiaryCreateThumbnailSectionComponent({
         onSelectFile={handleSelectFile}
         onClear={onClearThumbnail}
         clearLabel={hasThumbnail ? '사진 제거' : undefined}
-        dropZoneClassName="aspect-4/5"
+        dropZoneClassName="aspect-video"
       />
       <ImageCropDialog
         open={isCropDialogOpen}

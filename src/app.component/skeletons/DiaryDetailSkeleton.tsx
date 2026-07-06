@@ -151,7 +151,7 @@ export function DiaryDetailSkeleton(): React.ReactElement {
               <Skeleton shape="text" className="h-3 w-20" />
               <Skeleton
                 shape="rounded"
-                className="mt-3.5 aspect-[4/5] w-full rounded-2xl"
+                className="mt-3.5 aspect-video w-full rounded-2xl"
               />
               <div className="mt-4 flex flex-col gap-2.5">
                 <Skeleton shape="text" className="h-3.5 w-full" />
