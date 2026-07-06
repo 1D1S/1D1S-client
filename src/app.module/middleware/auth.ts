@@ -140,24 +140,40 @@ function buildCookieHeaderWithToken(
   return pairs.join('; ');
 }
 
+// 세션이 살아있는데(서버만 읽는 httpOnly access 토큰) Safari ITP 등이 JS 로 쓴
+// 힌트 쿠키/localStorage 를 지웠으면, 서버가 힌트를 재발급해 클라이언트가 로그인
+// 상태를 스스로 복구하게 한다. 클라이언트는 httpOnly 토큰을 못 읽으므로 힌트가
+// 없으면 사이드바 쿼리·resume refresh 가 모두 비활성화돼 게스트로 굳는다.
+function restoreSessionHintCookies(req: NextRequest): string[] {
+  if (getAccessToken(req) && !hasSessionHint(req)) {
+    return [buildAuthHintSetCookie(req.nextUrl.protocol === 'https:')];
+  }
+  return [];
+}
+
 /**
  * 인증 미들웨어
  * - 보호된 경로 진입 시 access 토큰 쿠키 존재 확인
  * - 없으면 백엔드 /auth/token 으로 refresh 시도
  *   - 성공: 새 Set-Cookie를 응답에, 새 access 토큰을 요청 헤더에 주입해 RSC 통과
  *   - 실패: 기존대로 로그인/목록으로 리다이렉트
+ * - 유효 토큰 + 힌트 소실 시엔 (공개/보호 무관) 힌트만 재발급해 통과
  */
 export async function authMiddleware(
   req: NextRequest
 ): Promise<AuthCheckResult> {
   const { pathname } = req.nextUrl;
   const matched = matchRoute(pathname);
+  const hintCookies = restoreSessionHintCookies(req);
+  const passThrough: AuthCheckResult =
+    hintCookies.length > 0 ? { setCookies: hintCookies } : {};
+
   if (!matched) {
-    return {};
+    return passThrough;
   }
 
   if (getAccessToken(req)) {
-    return {};
+    return passThrough;
   }
 
   const refreshed = await refreshTokens(req);
