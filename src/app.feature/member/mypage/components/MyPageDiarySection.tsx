@@ -57,7 +57,7 @@ export function MyPageDiarySection({
   return (
     <section>
       <div className="flex items-center justify-between">
-        <Text size="display2" weight="bold" className="text-gray-900">
+        <Text size="heading2" weight="bold" className="text-gray-900">
           {title}
         </Text>
         {hasMore && (

@@ -104,7 +104,7 @@ export function MyChallengeListScreen(): React.ReactElement {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <Text
-          size="body1"
+          size="heading2"
           weight="extrabold"
           className="flex-1 tracking-[-0.3px] text-gray-900"
         >
