@@ -1,6 +1,5 @@
 'use client';
 
-import { Card } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 
@@ -9,10 +8,15 @@ interface StoryRingSkeletonProps {
   count?: number;
 }
 
-// 실제 StoryRing 과 동일한 Card 테두리 래퍼 + 썸네일/제목/프로필+이름/시간
-// 레이아웃을 그대로 두고, 내용만 회색 pulse 플레이스홀더로 채운다.
+const SKELETON_SURFACES = [
+  'bg-[linear-gradient(180deg,#ffe1d7_0%,#fff7f3_100%)]',
+  'bg-[linear-gradient(180deg,#def4ec_0%,#f8fffc_100%)]',
+  'bg-[linear-gradient(180deg,#f4e8dc_0%,#fffaf5_100%)]',
+];
+
+// 실제 StoryRing 과 동일한 비율을 두고 내용만 pulse 플레이스홀더로 채운다.
 export default function StoryRingSkeleton({
-  count = 5,
+  count = 3,
 }: StoryRingSkeletonProps): React.ReactElement {
   return (
     <div
@@ -24,36 +28,31 @@ export default function StoryRingSkeleton({
       aria-label="스토리 불러오는 중"
     >
       {Array.from({ length: count }).map((_, index) => (
-        <Card key={index} radius="md" className="w-[140px] flex-shrink-0">
-          <Card.Thumb className="aspect-[4/5] bg-gray-100">
-            <div className="skeleton-pulse h-full w-full bg-gray-100" />
-          </Card.Thumb>
-          <Card.Body className="gap-1.5 p-3">
-            {/* 실제 제목(Text caption2=13px, leading-snug ≈ 18px)과 줄
-                높이를 맞춰 데이터 로드 시 링 아래 콘텐츠가 밀리지 않게 한다. */}
+        <div
+          key={index}
+          className={cn(
+            'h-[208px] w-[168px] shrink-0 overflow-hidden rounded-[22px]',
+            'border border-gray-100',
+            SKELETON_SURFACES[index % SKELETON_SURFACES.length]
+          )}
+        >
+          <div className="flex h-full flex-col justify-between px-4 py-6">
+            <div className="skeleton-pulse h-6 w-25 rounded-full bg-white/55" />
             <div
               className={cn(
-                'skeleton-pulse my-[3px] h-3 w-3/4 rounded bg-gray-100'
+                'skeleton-pulse mx-auto h-12 w-12 rounded-full',
+                'bg-white/65'
               )}
             />
-            <Card.Meta>
-              <span className="inline-flex min-w-0 items-center gap-1.5">
-                <span
-                  className={cn(
-                    'skeleton-pulse h-5 w-5 shrink-0 rounded-full bg-gray-100'
-                  )}
-                  aria-hidden
-                />
-                <span className="skeleton-pulse h-2.5 w-12 rounded bg-gray-100" />
-              </span>
+            <div className="flex items-center gap-3">
               <span
-                className={cn(
-                  'skeleton-pulse h-2.5 w-8 shrink-0 rounded bg-gray-100'
-                )}
+                className="skeleton-pulse h-10 w-10 rounded-full bg-white/60"
+                aria-hidden
               />
-            </Card.Meta>
-          </Card.Body>
-        </Card>
+              <span className="skeleton-pulse h-4 w-20 rounded bg-white/60" />
+            </div>
+          </div>
+        </div>
       ))}
     </div>
   );
