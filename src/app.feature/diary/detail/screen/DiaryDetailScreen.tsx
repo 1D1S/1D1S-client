@@ -48,10 +48,7 @@ import {
   DiaryConnectedChallengeFallback,
 } from '../components/DiaryConnectedChallenge';
 import { DiaryGoalsCard } from '../components/DiaryGoalsCard';
-import {
-  DiaryHeroImage,
-  DiaryImageLightbox,
-} from '../components/DiaryHeroImage';
+import { DiaryImageGallery } from '../components/DiaryImageGallery';
 import { DiaryReportDialog } from '../components/DiaryReportDialog';
 import {
   useCreateCommentReply,
@@ -93,16 +90,21 @@ function DiaryActionToolbar({
   onLikeToggle(): void;
   onShare(): void;
 }): React.ReactElement {
+  const pillClass = cn(
+    'inline-flex items-center gap-1.5 rounded-full border',
+    'px-4 py-2 text-[13px] font-bold transition-colors'
+  );
+
   return (
-    <div className="mt-1 flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <button
         type="button"
+        aria-label="좋아요"
         onClick={onLikeToggle}
         disabled={isLikePending}
         className={cn(
-          'relative inline-flex items-center gap-1.5 rounded-full border',
-          'px-4 py-2 text-[13px] font-bold transition-colors',
-          'disabled:opacity-60',
+          pillClass,
+          'relative disabled:opacity-60',
           diaryData.likedByMe
             ? 'border-main-800 bg-main-100 text-main-800'
             : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
@@ -112,26 +114,26 @@ function DiaryActionToolbar({
         <Heart
           className={cn('h-3.5 w-3.5', diaryData.likedByMe && 'fill-current')}
         />
-        좋아요 {diaryData.likeCount}
+        {diaryData.likeCount}
       </button>
+      <span
+        aria-label={`댓글 ${totalCommentCount}개`}
+        className={cn(pillClass, 'border-gray-200 bg-white text-gray-700')}
+      >
+        <MessageCircle className="h-3.5 w-3.5" />
+        {totalCommentCount}
+      </span>
       <button
         type="button"
+        aria-label="공유"
         onClick={onShare}
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-full border px-4 py-2',
-          'border-gray-200 bg-white text-[13px] font-bold text-gray-700',
-          'transition-colors hover:bg-gray-50'
+          pillClass,
+          'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
         )}
       >
         <Share2 className="h-3.5 w-3.5" />
-        공유
       </button>
-      <div className="ml-auto flex items-center gap-1 text-gray-500">
-        <MessageCircle className="h-4 w-4" />
-        <Text size="caption1" weight="medium" className="text-gray-500">
-          댓글 {totalCommentCount}
-        </Text>
-      </div>
     </div>
   );
 }
@@ -569,7 +571,7 @@ function DiaryCommentSection({
           }}
         />
 
-        <div className="mt-3 hidden items-end gap-1.5 lg:flex">
+        <div className="mt-3 hidden items-end gap-1.5 sm:flex">
           <TextField
             id="diary-comment-content"
             size="sm"
@@ -636,7 +638,10 @@ function DiaryMobileCommentBar({
 
   return (
     <MobileBottomActionBar
-      className={cn('comment-readable flex items-end gap-2 bg-white px-4 pt-2.5')}
+      className={cn(
+        'comment-readable flex items-end gap-2 bg-white px-4 pt-2.5',
+        'sm:hidden'
+      )}
     >
       <TextField
         id="diary-comment-content-mobile"
@@ -694,7 +699,6 @@ function DiaryDetailView({
     () => sidebarData?.nickname?.trim() ?? null,
     [sidebarData?.nickname]
   );
-  const [isImageOpen, setIsImageOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const { data: commentsData } = useDiaryComments(
     diaryData.id,
@@ -732,19 +736,6 @@ function DiaryDetailView({
     commentRepliesMap,
   ]);
 
-  useEffect(() => {
-    if (!isImageOpen) {
-      return;
-    }
-    const handleKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
-        setIsImageOpen(false);
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isImageOpen]);
-
   const handleShare = async (): Promise<void> => {
     const shareUrl = window.location.href;
 
@@ -766,7 +757,7 @@ function DiaryDetailView({
     <div
       className={cn(
         'detail-fade-in min-h-screen w-full bg-white',
-        'pb-mobile-action-bar-tall lg:pb-0'
+        'pb-mobile-action-bar-tall sm:pb-0'
       )}
     >
       {/* 모바일 sticky 헤더 — ← + 일지 */}
@@ -849,14 +840,6 @@ function DiaryDetailView({
               </div>
             </section>
 
-            <DiaryActionToolbar
-              diaryData={diaryData}
-              totalCommentCount={totalCommentCount}
-              isLikePending={isLikePending}
-              onLikeToggle={onLikeToggle}
-              onShare={() => void handleShare()}
-            />
-
             {/* 연동된 챌린지 카드 — 풀 리스트 아이템 */}
             {diaryData.connectedChallengeSummary &&
             diaryData.connectedChallengeId ? (
@@ -872,16 +855,11 @@ function DiaryDetailView({
               />
             )}
 
-            <DiaryGoalsCard
-              checklistItems={diaryData.checklistItems}
-              checkedChecklistIds={diaryData.checkedChecklistIds}
-            />
-
-            {/* 제목 + 기분 + 이미지 + 본문 — 한 카드로 통합 */}
+            {/* Card 2 — 제목 + 액션(좋아요/댓글/공유) */}
             <section
               className={cn(
-                'rounded-[14px] border border-gray-200 bg-white',
-                'p-4 sm:p-5 lg:p-6'
+                'lg:rounded-[14px] lg:border lg:border-gray-200',
+                'lg:bg-white lg:p-6'
               )}
             >
               <Text
@@ -893,96 +871,103 @@ function DiaryDetailView({
                 {diaryData.title}
               </Text>
 
-              {/* 모바일: 인라인 이모지 + 기분 라벨 + 달성 뱃지 */}
-              <div className="mt-3 flex items-center gap-2 lg:hidden">
-                {diaryData.feelingMoodImage ? (
-                  /* 무드 SVG: prod 최적화기 SVG 차단 회피 위해 unoptimized */
-                  <Image
-                    src={diaryData.feelingMoodImage.src}
-                    alt={diaryData.feelingMoodImage.alt}
-                    width={20}
-                    height={20}
-                    className="h-5 w-5"
-                    unoptimized
-                  />
-                ) : (
-                  <span className="text-lg leading-none" aria-hidden>
-                    {diaryData.feelingEmoji}
-                  </span>
-                )}
-                <Text size="caption1" weight="medium" className="text-gray-600">
-                  오늘의 기분 · {diaryData.feelingLabel}
-                </Text>
-                <span
-                  className={cn(
-                    'ml-auto inline-flex items-center rounded-full',
-                    'px-2 py-0.5 text-[10px] font-extrabold text-white',
-                    isHundredPercent ? 'bg-green-500' : 'bg-main-800'
-                  )}
-                >
-                  {diaryData.achievementPercent}%
-                </span>
-              </div>
-
-              {/* 데스크탑: gray-50 톤 emotion 메터 */}
-              <div
-                className={cn(
-                  'mt-3.5 hidden flex-wrap items-center gap-2.5',
-                  'rounded-[10px] bg-gray-50 px-3.5 py-2.5 lg:flex'
-                )}
-              >
-                {diaryData.feelingMoodImage ? (
-                  /* 무드 SVG: prod 최적화기 SVG 차단 회피 위해 unoptimized */
-                  <Image
-                    src={diaryData.feelingMoodImage.src}
-                    alt={diaryData.feelingMoodImage.alt}
-                    width={24}
-                    height={24}
-                    className="h-6 w-6"
-                    unoptimized
-                  />
-                ) : (
-                  <span className="text-xl leading-none" aria-hidden>
-                    {diaryData.feelingEmoji}
-                  </span>
-                )}
-                <Text size="caption1" weight="medium" className="text-gray-600">
-                  오늘의 기분 · {diaryData.feelingLabel}
-                </Text>
-                <span
-                  className={cn(
-                    'ml-auto inline-flex items-center rounded-full',
-                    'px-2.5 py-1 text-[10px] font-extrabold text-white',
-                    isHundredPercent ? 'bg-green-500' : 'bg-main-800'
-                  )}
-                >
-                  {diaryData.achievementPercent}% 달성
-                </span>
-              </div>
-
-              {diaryData.contentImageUrl ? (
-                <div className="mt-4 sm:mt-5">
-                  <DiaryHeroImage
-                    imageUrl={diaryData.contentImageUrl}
-                    title={diaryData.title}
-                    onOpen={() => setIsImageOpen(true)}
-                  />
-                </div>
-              ) : null}
-
-              <div className="mt-4 sm:mt-5">
-                {diaryData.hasContentHtml ? (
-                  <DiaryContentRenderer
-                    html={diaryData.contentHtml}
-                    className="text-[15px] leading-[1.9]"
-                  />
-                ) : (
-                  <Text size="body2" weight="regular" className="text-gray-500">
-                    작성된 내용이 없습니다.
-                  </Text>
-                )}
+              <div className="mt-4">
+                <DiaryActionToolbar
+                  diaryData={diaryData}
+                  totalCommentCount={totalCommentCount}
+                  isLikePending={isLikePending}
+                  onLikeToggle={onLikeToggle}
+                  onShare={() => void handleShare()}
+                />
               </div>
             </section>
+
+            {/* Card 3 — 오늘의 기분 + 달성률 (독립 섹션, 프레스 모션) */}
+            <section
+              className={cn(
+                'flex items-center gap-2.5 rounded-[10px]',
+                'border border-gray-200 bg-white px-3.5 py-3',
+                'transition duration-200 ease-out active:scale-[0.97]'
+              )}
+            >
+              {diaryData.feelingMoodImage ? (
+                /* 무드 SVG: prod 최적화기 SVG 차단 회피 위해 unoptimized */
+                <Image
+                  src={diaryData.feelingMoodImage.src}
+                  alt={diaryData.feelingMoodImage.alt}
+                  width={24}
+                  height={24}
+                  className="h-6 w-6"
+                  unoptimized
+                />
+              ) : (
+                <span className="text-xl leading-none" aria-hidden>
+                  {diaryData.feelingEmoji}
+                </span>
+              )}
+              <Text
+                size="caption1"
+                weight="semibold"
+                className={cn(
+                  isHundredPercent ? 'text-green-600' : 'text-main-800'
+                )}
+              >
+                오늘의 기분 · {diaryData.feelingLabel}
+              </Text>
+              <Text
+                size="caption1"
+                weight="extrabold"
+                className={cn(
+                  'ml-auto shrink-0',
+                  isHundredPercent ? 'text-green-600' : 'text-main-800'
+                )}
+              >
+                달성 {diaryData.achievementPercent}%
+              </Text>
+            </section>
+
+            <DiaryGoalsCard
+              checklistItems={diaryData.checklistItems}
+              checkedChecklistIds={diaryData.checkedChecklistIds}
+            />
+
+            {/* Card 4 — 오늘의 기록: 본문 + 이미지 (모바일·태블릿은 플랫).
+                본문·이미지가 모두 없으면 섹션 자체를 렌더하지 않는다. */}
+            {diaryData.hasContentHtml ||
+            diaryData.contentImageUrls.length > 0 ? (
+              <section
+                className={cn(
+                  'lg:rounded-[14px] lg:border lg:border-gray-200',
+                  'lg:bg-white lg:p-6'
+                )}
+              >
+                <Text
+                  size="caption2"
+                  weight="semibold"
+                  className="hidden tracking-[0.2px] text-gray-500 lg:block"
+                >
+                  오늘의 기록
+                </Text>
+
+                {diaryData.hasContentHtml ? (
+                  <div className="lg:mt-3.5">
+                    <DiaryContentRenderer
+                      html={diaryData.contentHtml}
+                      className="text-[15px] leading-[1.9]"
+                    />
+                  </div>
+                ) : null}
+
+                {/* 첨부 이미지 — 하단 정사각형 갤러리 (다중 대응) */}
+                {diaryData.contentImageUrls.length > 0 ? (
+                  <div className={cn(diaryData.hasContentHtml && 'mt-5')}>
+                    <DiaryImageGallery
+                      imageUrls={diaryData.contentImageUrls}
+                    />
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
           </article>
 
           <aside>
@@ -996,13 +981,6 @@ function DiaryDetailView({
           </aside>
         </div>
       </div>
-
-      {isImageOpen && diaryData.contentImageUrl ? (
-        <DiaryImageLightbox
-          imageUrl={diaryData.contentImageUrl}
-          onClose={() => setIsImageOpen(false)}
-        />
-      ) : null}
 
       <DiaryReportDialog
         diaryId={diaryData.id}

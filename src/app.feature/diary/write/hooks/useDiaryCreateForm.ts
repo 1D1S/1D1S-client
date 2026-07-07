@@ -63,6 +63,7 @@ interface UseDiaryCreateFormResult {
   thumbnailPreviewUrl: string;
   submitButtonLabel: string;
   canSubmit: boolean;
+  isSubmitting: boolean;
   isMissingChallengeDialogOpen: boolean;
   isCreateUnavailableDialogOpen: boolean;
   handleSelectChallenge(challenge: ChallengeListItem): void;
@@ -591,6 +592,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     thumbnailPreviewUrl,
     submitButtonLabel,
     canSubmit,
+    isSubmitting,
     isMissingChallengeDialogOpen,
     isCreateUnavailableDialogOpen,
     handleSelectChallenge,

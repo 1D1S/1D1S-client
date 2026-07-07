@@ -1,12 +1,5 @@
-import { ImagePicker, Text } from '@1d1s/design-system';
-import { ImageCropDialog } from '@component/ImageCropDialog';
+import { Text, ThumbnailPicker } from '@1d1s/design-system';
 import React from 'react';
-
-// 일지 카드 썸네일과 동일한 16:9 비율
-const DIARY_THUMBNAIL_SIZE = {
-  width: 1600,
-  height: 900,
-} as const;
 
 interface DiaryCreateThumbnailSectionProps {
   thumbnailPreviewUrl: string;
@@ -21,25 +14,12 @@ function DiaryCreateThumbnailSectionComponent({
   onSelectThumbnailFile,
   onClearThumbnail,
 }: DiaryCreateThumbnailSectionProps): React.ReactElement {
-  const [pendingFile, setPendingFile] = React.useState<File | null>(null);
-  const [isCropDialogOpen, setIsCropDialogOpen] = React.useState(false);
-
-  const handleSelectFile = (file: File): void => {
-    setPendingFile(file);
-    setIsCropDialogOpen(true);
-  };
-
-  const handleCropDialogOpenChange = (open: boolean): void => {
-    setIsCropDialogOpen(open);
-
-    if (!open) {
-      setPendingFile(null);
+  // 크롭/비율 조정 없이 선택한 원본을 그대로 업로드한다.
+  const handleSelectFiles = (files: File[]): void => {
+    const [file] = files;
+    if (file) {
+      onSelectThumbnailFile(file);
     }
-  };
-
-  const handleCropApply = (file: File): void => {
-    setPendingFile(null);
-    onSelectThumbnailFile(file);
   };
 
   return (
@@ -47,20 +27,12 @@ function DiaryCreateThumbnailSectionComponent({
       <Text size="caption1" weight="bold" className="mb-2 block text-gray-600">
         사진 첨부 <span className="font-medium text-gray-400">· 선택</span>
       </Text>
-      <ImagePicker
-        previewUrl={thumbnailPreviewUrl}
-        onSelectFile={handleSelectFile}
-        onClear={onClearThumbnail}
-        clearLabel={hasThumbnail ? '사진 제거' : undefined}
-        dropZoneClassName="aspect-video"
-      />
-      <ImageCropDialog
-        open={isCropDialogOpen}
-        file={pendingFile}
-        title="일지 사진 맞추기"
-        outputSize={DIARY_THUMBNAIL_SIZE}
-        onOpenChange={handleCropDialogOpenChange}
-        onApply={handleCropApply}
+
+      <ThumbnailPicker
+        max={1}
+        previews={hasThumbnail ? [thumbnailPreviewUrl] : []}
+        onSelectFiles={handleSelectFiles}
+        onRemove={onClearThumbnail}
       />
     </div>
   );

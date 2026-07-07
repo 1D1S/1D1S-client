@@ -113,6 +113,7 @@ export function ChallengeCreateSuccessDialog({
         )}
         onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => event.preventDefault()}
+        aria-describedby={undefined}
       >
         <DialogHeader className="items-center">
           <DialogTitle>

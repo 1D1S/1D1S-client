@@ -9,7 +9,6 @@ import {
 } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
-import TiptapUnderline from '@tiptap/extension-underline';
 import { TextSelection } from '@tiptap/pm/state';
 import { type Editor, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -148,8 +147,8 @@ export function DiaryContentEditor({
   const lastSyncedHtmlRef = useRef('');
   const editor = useEditor({
     extensions: [
+      // underline 은 StarterKit v3 에 포함 — 별도 등록 시 중복 경고
       StarterKit.configure({ codeBlock: false }),
-      TiptapUnderline,
       CodeBlockWithEscape.configure({ lowlight, defaultLanguage: 'plaintext' }),
       // TiptapImage, // 본문 이미지 삽입 기능은 임시 비활성화
     ],

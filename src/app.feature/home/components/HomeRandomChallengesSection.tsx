@@ -46,6 +46,7 @@ export default function HomeRandomChallengesSection({
         subtitle="함께 도전할 친구를 찾아보세요"
         actionLabel="전체보기 →"
         onActionClick={onMoreClick}
+        className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
       />
       {showSkeleton ? (
         <div

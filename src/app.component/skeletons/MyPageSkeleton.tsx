@@ -6,7 +6,7 @@ import React from 'react';
 
 // 실제 MyPageScreen 레이아웃과 1:1로 맞춘 스켈레톤.
 // - 풀블리드 배너 h-[180px] (MyPageHeroBanner)
-// - 컨테이너 px-5 py-5 lg:px-8 lg:py-10 (MyPageScreen 컨테이너)
+// - 컨테이너 px-5 py-7 lg:px-8 lg:py-10 (MyPageScreen 컨테이너)
 // - 데스크탑 프로필 카드: -mt-25 로 배너에 겹치고 border 만(그림자 없음)
 export function MyPageSkeleton(): React.ReactElement {
   return (
@@ -20,7 +20,7 @@ export function MyPageSkeleton(): React.ReactElement {
       <div
         className={cn(
           'mx-auto w-full max-w-[1200px]',
-          'px-5 py-5 lg:px-8 lg:py-10'
+          'px-5 py-7 lg:px-8 lg:py-10'
         )}
       >
         {/* 모바일 프로필 */}

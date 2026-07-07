@@ -108,7 +108,7 @@ export function MemberChallengeListScreen({
           <ArrowLeft className="h-5 w-5" />
         </button>
         <Text
-          size="body1"
+          size="heading2"
           weight="extrabold"
           className="flex-1 tracking-[-0.3px] text-gray-900"
         >
@@ -163,7 +163,7 @@ export function MemberChallengeListScreen({
           <div
             className={cn(
               'data-fade-in mt-6 grid gap-4',
-              'grid-cols-2 sm:grid-cols-3'
+              'xs:grid-cols-2 grid-cols-1 sm:grid-cols-3'
             )}
           >
             {challenges.map((challenge) => (

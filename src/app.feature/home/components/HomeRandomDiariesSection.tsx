@@ -107,6 +107,7 @@ export default function HomeRandomDiariesSection({
         subtitle="응원의 ❤️ 한 번씩 눌러주세요"
         actionLabel="전체보기 →"
         onActionClick={onMoreClick}
+        className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
       />
       {showSkeleton ? (
         <div

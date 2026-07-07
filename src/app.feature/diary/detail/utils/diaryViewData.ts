@@ -87,7 +87,7 @@ export interface DiaryDetailViewData {
   checkedChecklistIds: string[];
   contentHtml: string;
   hasContentHtml: boolean;
-  contentImageUrl: string | null;
+  contentImageUrls: string[];
   authorName: string | null;
   authorId: number | null;
   authorProfileImage: string | null;
@@ -118,28 +118,40 @@ export function hasVisibleHtmlContent(contentHtml: string): boolean {
     return true;
   }
 
-  const textWithoutTags = contentHtml
+  // 태그 제거 후, 일반 공백·&nbsp;·제로폭 문자 등 "보이지 않는" 문자를
+  // 모두 걷어내 실제 표시될 텍스트가 있는지 판단한다. 빈 문단(<p></p>)이나
+  // 공백만 있는 본문이 렌더되어 불필요한 여백을 만드는 것을 막는다.
+  const visibleText = contentHtml
     .replace(/<[^>]*>/g, '')
-    .replace(/&nbsp;/gi, ' ')
+    .replace(/&nbsp;|&#160;|&#xa0;/gi, ' ')
+    .replace(/[\s\u200B-\u200D\uFEFF]/g, '')
     .trim();
 
-  return textWithoutTags.length > 0;
+  return visibleText.length > 0;
 }
 
-function resolveFirstImage(...rawSources: unknown[]): string | null {
-  for (const rawSource of rawSources) {
-    const resolvedImage = resolveDiaryImageList(rawSource)?.[0];
-    if (resolvedImage) {
-      return resolvedImage;
+// 여러 소스(배열/단일)에서 모든 이미지를 순서 유지 + 중복 제거로 수집.
+// 현재 API 는 보통 1장이지만, 다중 이미지 확장을 고려한 인터페이스다.
+function resolveImageList(...rawSources: unknown[]): string[] {
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  const push = (url: string | null): void => {
+    if (url && !seen.has(url)) {
+      seen.add(url);
+      urls.push(url);
     }
+  };
 
-    const resolvedSingleImage = resolveDiaryImageUrl(rawSource);
-    if (resolvedSingleImage) {
-      return resolvedSingleImage;
+  for (const rawSource of rawSources) {
+    const list = resolveDiaryImageList(rawSource);
+    if (list) {
+      list.forEach(push);
+      continue;
     }
+    push(resolveDiaryImageUrl(rawSource));
   }
 
-  return null;
+  return urls;
 }
 
 export function getDiaryInfo(diary: DiaryDetail): DiaryInfoWithAliases | null {
@@ -297,27 +309,21 @@ export function mapDiaryToViewData(
     checkedChecklistIds = achievedGoalIds;
   }
 
-  // 연동 챌린지 카드는 프리페치된 일지 상세(diary.challenge)에 이미 필요한
-  // 필드(제목/카테고리/기간/인원/썸네일)를 모두 갖고 있다. 늦게 도착하는
-  // useChallengeDetail 응답을 기다리면 Fallback(한 줄) → 풀 카드로 커지며
-  // 레이아웃 시프트가 난다. diary.challenge 로 첫 페인트부터 풀 카드를 그리고,
-  // challengeDetailData 가 오면 같은 높이로 값만 갱신한다(시프트 없음).
-  // 백엔드가 동일 shape 를 주므로 enum 좁힘 캐스트는 안전. challengeDetailData
-  // 는 체크리스트 goals 용으로 계속 사용한다.
+  // 연동 챌린지 필은 프리페치된 일지 상세(diary.challenge)로 첫 페인트부터
+  // 그리고, challengeDetailData 는 체크리스트 goals 용으로 계속 사용한다.
   const summary =
     challengeDetailData?.challengeSummary ??
     (diary.challenge as ChallengeSummary | null) ??
     undefined;
   const diaryWithImageAliases = diary as DiaryDetail & DiaryImageFields;
-  const contentImageUrl =
-    resolveFirstImage(
-      diaryWithImageAliases.imgUrl,
-      diaryWithImageAliases.img,
-      diaryWithImageAliases.imageUrl,
-      diaryWithImageAliases.thumbnailUrl,
-      diaryWithImageAliases.images,
-      diaryWithImageAliases.thumbnail
-    ) ?? null;
+  const contentImageUrls = resolveImageList(
+    diaryWithImageAliases.imgUrl,
+    diaryWithImageAliases.img,
+    diaryWithImageAliases.imageUrl,
+    diaryWithImageAliases.thumbnailUrl,
+    diaryWithImageAliases.images,
+    diaryWithImageAliases.thumbnail
+  );
 
   const feeling: Feeling = diaryInfo?.feeling ?? 'NONE';
   const rawAchievementRate =
@@ -348,7 +354,7 @@ export function mapDiaryToViewData(
     checkedChecklistIds,
     contentHtml: diary.content ?? '',
     hasContentHtml: hasVisibleHtmlContent(diary.content ?? ''),
-    contentImageUrl,
+    contentImageUrls,
     authorName: authorInfo?.nickname ?? null,
     authorId: authorInfo?.id ?? null,
     authorProfileImage: authorInfo?.profileImage ?? null,

@@ -17,6 +17,9 @@
 @theme {
   --default-transition-duration: 200ms;
   --default-transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  /* 좁은 모바일에서 목록을 1열로 떨어뜨리기 위한 브레이크포인트.
+     xs 미만: 1열 / xs~sm: 2열 / sm 이상: 3열 */
+  --breakpoint-xs: 480px;
 }
 
 /* highlight.js github 테마는 일지 뷰어에서만 필요하므로 글로벌이 아닌

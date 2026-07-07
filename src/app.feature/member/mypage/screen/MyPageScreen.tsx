@@ -65,7 +65,7 @@ export default function MyPageScreen(): React.ReactElement | null {
       <div
         className={cn(
           'mx-auto w-full max-w-[1200px]',
-          'px-5 py-5 lg:px-8 lg:py-10'
+          'px-5 py-7 lg:px-8 lg:py-10'
         )}
       >
         <MyPageProfileCard

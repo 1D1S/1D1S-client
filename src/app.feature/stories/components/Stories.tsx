@@ -1,10 +1,10 @@
 'use client';
 
-import { Card, Stripe, Text } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import { Lock } from 'lucide-react';
+import { ArrowRight, Lock } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -32,6 +32,21 @@ function StoryLoginPrompt({
 }: {
   onRequireLogin?(): void;
 }): React.ReactElement {
+  const lockedCards = [
+    {
+      surface: 'bg-[linear-gradient(180deg,#ffe1d7_0%,#fff7f3_100%)]',
+      active: true,
+    },
+    {
+      surface: 'bg-[linear-gradient(180deg,#def4ec_0%,#f8fffc_100%)]',
+      active: false,
+    },
+    {
+      surface: 'bg-[linear-gradient(180deg,#f4e8dc_0%,#fffaf5_100%)]',
+      active: false,
+    },
+  ];
+
   return (
     <div
       className={cn(
@@ -39,90 +54,66 @@ function StoryLoginPrompt({
         'gap-3 px-5 py-3.5 lg:px-8'
       )}
     >
-      <Card
-        interactive
-        radius="md"
-        role="button"
-        tabIndex={0}
-        onClick={onRequireLogin}
-        aria-label="로그인 후 스토리 확인"
-        className={cn(
-          'w-[140px] flex-shrink-0 transition-all duration-300 ease-out',
-          'hover:shadow-warm'
-        )}
-      >
-        <Card.Thumb className="bg-main-100 aspect-[4/5]">
-          <Stripe tone="peach" />
-          <Card.Overlay position="top-right">
-            <span
-              className={cn(
-                'flex h-7 w-7 items-center justify-center rounded-full',
-                'border-2 border-white bg-white text-gray-500 shadow-sm'
-              )}
-              aria-hidden
-            >
-              <Lock className="h-3.5 w-3.5" />
-            </span>
-          </Card.Overlay>
-        </Card.Thumb>
-        <Card.Body className="gap-1.5 p-3">
-          <Text
-            size="caption2"
-            weight="extrabold"
-            className="truncate leading-snug tracking-tight text-gray-900"
-          >
-            친구 스토리
-          </Text>
-          <Card.Meta>
-            <span className="inline-flex min-w-0 items-center gap-1.5">
-              <span
-                className={cn(
-                  'relative h-5 w-5 shrink-0 overflow-hidden rounded-full',
-                  'bg-gray-100'
-                )}
-                aria-hidden
-              />
-              <span className="truncate text-[11px] font-medium text-gray-500">
-                로그인하고 확인하기
-              </span>
-            </span>
-          </Card.Meta>
-        </Card.Body>
-      </Card>
-
-      {Array.from({ length: 4 }).map((_, index) => (
-        <Card
+      {lockedCards.map((card, index) => (
+        <button
           key={index}
-          interactive
-          radius="md"
-          role="button"
-          tabIndex={0}
+          type="button"
           onClick={onRequireLogin}
           aria-label="로그인 후 스토리 확인"
           className={cn(
-            'w-[140px] flex-shrink-0 transition-all duration-300 ease-out',
-            'hover:shadow-warm'
+            'relative flex h-[208px] w-[168px] shrink-0 flex-col',
+            'overflow-hidden rounded-[22px] border border-gray-100',
+            'hover:shadow-warm text-left transition-all duration-300 ease-out',
+            card.surface
           )}
         >
-          <Card.Thumb className="bg-main-100 aspect-[4/5]">
-            <Stripe tone="peach" />
-          </Card.Thumb>
-          <Card.Body className="gap-1.5 p-3">
-            <div className="h-3 w-3/4 rounded bg-gray-200" />
-            <Card.Meta>
-              <span className="inline-flex min-w-0 items-center gap-1.5">
+          <span className="flex flex-1 items-center justify-center pt-7">
+            <span
+              className={cn(
+                'flex h-13 w-13 items-center justify-center rounded-full',
+                'bg-white/80 shadow-sm',
+                card.active ? 'text-main-700' : 'text-gray-400'
+              )}
+              aria-hidden
+            >
+              <Lock className="h-5 w-5" />
+            </span>
+          </span>
+
+          <span className="px-4 pb-6">
+            {card.active ? (
+              <>
+                <Text
+                  size="body2"
+                  weight="extrabold"
+                  className="block text-gray-900"
+                >
+                  친구 스토리
+                </Text>
                 <span
                   className={cn(
-                    'relative h-5 w-5 shrink-0 overflow-hidden rounded-full',
-                    'bg-gray-100'
+                    'mt-1 inline-flex items-center gap-1 text-[13px]',
+                    'text-main-800 font-extrabold'
                   )}
+                >
+                  로그인하고 확인하기
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </span>
+              </>
+            ) : (
+              <span className="flex items-center gap-3">
+                <span
+                  className="h-9 w-9 shrink-0 rounded-full bg-white/50"
                   aria-hidden
                 />
-                <span className="h-2.5 w-12 rounded bg-gray-200" />
+                <span
+                  className="h-3 w-30 rounded-full bg-white/50"
+                  aria-hidden
+                />
               </span>
-            </Card.Meta>
-          </Card.Body>
-        </Card>
+            )}
+          </span>
+        </button>
       ))}
     </div>
   );

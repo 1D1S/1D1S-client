@@ -46,7 +46,11 @@ export function ChallengePicker({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="md" className="max-h-[85dvh]">
+      <DialogContent
+        size="md"
+        className="max-h-[85dvh]"
+        aria-describedby={undefined}
+      >
         <DialogHeader>
           <DialogTitle>챌린지 선택</DialogTitle>
         </DialogHeader>

@@ -189,6 +189,7 @@ export function ImageCropDialog({
           'flex max-h-[92dvh] flex-col gap-0 p-0',
           'sm:max-w-[560px]'
         )}
+        aria-describedby={undefined}
       >
         <DialogHeader className="border-b border-gray-100 px-5 py-4">
           <DialogTitle>{title}</DialogTitle>

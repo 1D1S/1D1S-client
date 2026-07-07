@@ -20,11 +20,23 @@ function MoodOptionButton({
     <button
       type="button"
       onClick={onClick}
+      /* 선택 시 무드 색(tone)으로 테두리·배경·라벨 색을 지정.
+         배경은 tone 에 알파 '1f'(약 12%)를 붙여 옅은 틴트로 사용. */
+      style={
+        active
+          ? {
+              borderColor: option.tone,
+              backgroundColor: `${option.tone}1f`,
+              color: option.tone,
+            }
+          : undefined
+      }
       className={cn(
         'rounded-3 relative flex flex-1 cursor-pointer flex-col items-center',
-        'justify-center gap-1 border px-3 py-3 transition',
+        'justify-center gap-1 border px-3 py-3',
+        'transition duration-150 ease-out motion-safe:active:scale-[0.94]',
         active
-          ? 'border-main-800 bg-main-100 text-main-800'
+          ? 'font-semibold'
           : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
       )}
     >
