@@ -41,17 +41,14 @@ const nextConfig = {
     ],
   },
   images: {
-    // Vercel 기본 최적화기(/_next/image)를 우회하는 커스텀 로더.
-    // 한도(Image Transformations) 소진 시 이 엔드포인트가 402 를 반환해
-    // 업로드 이미지가 통째로 빈 이미지로 내려오던 문제를 회피한다.
-    // 로더는 변환기를 거치지 않고 원본 URL 을 그대로 쓰므로 한도와
-    // 무관하다. 동작/확장은 src/app.lib/imageLoader.ts 참고.
-    loader: 'custom',
-    loaderFile: './src/app.lib/imageLoader.ts',
-    // srcset 의 width 후보. 지금은 로더가 width 를 무시하지만, 백엔드
-    // 리사이징 도입 시 그대로 변환 폭으로 재사용된다.
-    deviceSizes: [640, 828, 1080, 1920, 2048],
-    imageSizes: [32, 64, 128, 256, 384],
+    // Vercel 기본 최적화기(/_next/image) 우회 — 한도(Image
+    // Transformations) 소진 시 402 로 이미지가 통째로 깨지던 문제 회피.
+    // 이전의 pass-through 커스텀 로더는 width 를 무시해 (1) "loader
+    // does not implement width" 경고, (2) 동일 URL 반복 + 공백 포함
+    // 파일명으로 인한 srcset 파싱 실패를 유발했다. 변환을 안 쓸 거면
+    // unoptimized 가 정확한 설정: srcset 없이 원본 <img src> 만 낸다.
+    // 백엔드/CDN 리사이징 도입 시 이 값을 지우고 커스텀 로더로 복귀.
+    unoptimized: true,
   },
 };
 

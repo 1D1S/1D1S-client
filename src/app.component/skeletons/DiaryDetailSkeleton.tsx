@@ -76,34 +76,13 @@ export function DiaryDetailSkeleton(): React.ReactElement {
               <Skeleton shape="rounded" className="h-8 w-16 rounded-lg" />
             </section>
 
-            {/* 좋아요/댓글 액션 툴바 */}
-            <div
-              className={cn(
-                'flex items-center gap-4',
-                'border-y border-gray-100 py-3'
-              )}
-            >
-              <div className="flex items-center gap-1.5">
-                <Skeleton shape="circle" className="h-5 w-5" />
-                <Skeleton shape="text" className="h-3 w-6" />
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Skeleton shape="circle" className="h-5 w-5" />
-                <Skeleton shape="text" className="h-3 w-6" />
-              </div>
-              <div className="ml-auto">
-                <Skeleton shape="circle" className="h-5 w-5" />
-              </div>
-            </div>
-
-            {/* 연동된 챌린지 카드 — 실제 카드 높이(썸네일 aspect-video
-                + 패딩)와 맞춰 로드 후 레이아웃 시프트를 막는다 */}
+            {/* 연동 챌린지 카드 — 풀 리스트 아이템 높이 */}
             <Skeleton
               shape="rounded"
               className="h-[95px] w-full rounded-[14px] sm:h-[119px]"
             />
 
-            {/* 제목 + 감정 메터 섹션 */}
+            {/* 제목 + 액션 툴바 섹션 */}
             <section
               className={cn(
                 'lg:rounded-[14px] lg:border lg:border-gray-200',
@@ -111,11 +90,18 @@ export function DiaryDetailSkeleton(): React.ReactElement {
               )}
             >
               <Skeleton shape="text" className="h-7 w-[70%]" />
-              <Skeleton
-                shape="rounded"
-                className="mt-3.5 h-10 w-full rounded-[10px]"
-              />
+              <div className="mt-4 flex items-center gap-2">
+                <Skeleton shape="rounded" className="h-9 w-16 rounded-full" />
+                <Skeleton shape="rounded" className="h-9 w-16 rounded-full" />
+                <Skeleton shape="rounded" className="h-9 w-12 rounded-full" />
+              </div>
             </section>
+
+            {/* 오늘의 기분 + 달성률 */}
+            <Skeleton
+              shape="rounded"
+              className="h-12 w-full rounded-[10px]"
+            />
 
             {/* 목표 체크리스트 카드 */}
             <section
@@ -127,37 +113,40 @@ export function DiaryDetailSkeleton(): React.ReactElement {
               <Skeleton shape="text" className="h-4 w-24" />
               <div className="mt-3 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <Skeleton shape="rounded" className="h-5 w-5" />
+                  <Skeleton shape="circle" className="h-5 w-5" />
                   <Skeleton shape="text" className="h-3.5 w-[60%]" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Skeleton shape="rounded" className="h-5 w-5" />
+                  <Skeleton shape="circle" className="h-5 w-5" />
                   <Skeleton shape="text" className="h-3.5 w-[50%]" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Skeleton shape="rounded" className="h-5 w-5" />
+                  <Skeleton shape="circle" className="h-5 w-5" />
                   <Skeleton shape="text" className="h-3.5 w-[45%]" />
                 </div>
               </div>
             </section>
 
-            {/* 오늘의 기록 (이미지 + 본문) */}
+            {/* 오늘의 기록 (이미지 + 본문) — 모바일·태블릿은 플랫 */}
             <section
               className={cn(
-                'rounded-[14px] border border-gray-200 bg-white',
-                'p-4 sm:p-5 lg:p-6'
+                'lg:rounded-[14px] lg:border lg:border-gray-200',
+                'lg:bg-white lg:p-6'
               )}
             >
-              <Skeleton shape="text" className="h-3 w-20" />
-              <Skeleton
-                shape="rounded"
-                className="mt-3.5 aspect-video w-full rounded-2xl"
-              />
-              <div className="mt-4 flex flex-col gap-2.5">
+              <Skeleton shape="text" className="hidden h-3 w-20 lg:block" />
+              <div className="flex flex-col gap-2.5 lg:mt-3.5">
                 <Skeleton shape="text" className="h-3.5 w-full" />
                 <Skeleton shape="text" className="h-3.5 w-full" />
                 <Skeleton shape="text" className="h-3.5 w-[88%]" />
                 <Skeleton shape="text" className="h-3.5 w-[60%]" />
+              </div>
+              {/* 하단 정사각형 이미지 갤러리 */}
+              <div className="mt-5 flex gap-2.5">
+                <Skeleton
+                  shape="rounded"
+                  className="aspect-square w-[200px] max-w-full rounded-xl"
+                />
               </div>
             </section>
           </article>

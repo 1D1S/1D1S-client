@@ -4,7 +4,7 @@ import { Card, Stripe, Text } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import { Lock } from 'lucide-react';
+import { ArrowRight, Lock } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -53,19 +53,19 @@ function StoryLoginPrompt({
       >
         <Card.Thumb className="bg-main-100 aspect-[4/5]">
           <Stripe tone="peach" />
-          <Card.Overlay position="top-right">
+          <div className="absolute inset-0 flex items-center justify-center">
             <span
               className={cn(
-                'flex h-7 w-7 items-center justify-center rounded-full',
-                'border-2 border-white bg-white text-gray-500 shadow-sm'
+                'flex h-11 w-11 items-center justify-center rounded-full',
+                'text-main-700 bg-white/80 shadow-sm'
               )}
               aria-hidden
             >
-              <Lock className="h-3.5 w-3.5" />
+              <Lock className="h-5 w-5" />
             </span>
-          </Card.Overlay>
+          </div>
         </Card.Thumb>
-        <Card.Body className="gap-1.5 p-3">
+        <Card.Body className="gap-1 p-3">
           <Text
             size="caption2"
             weight="extrabold"
@@ -73,20 +73,15 @@ function StoryLoginPrompt({
           >
             친구 스토리
           </Text>
-          <Card.Meta>
-            <span className="inline-flex min-w-0 items-center gap-1.5">
-              <span
-                className={cn(
-                  'relative h-5 w-5 shrink-0 overflow-hidden rounded-full',
-                  'bg-gray-100'
-                )}
-                aria-hidden
-              />
-              <span className="truncate text-[11px] font-medium text-gray-500">
-                로그인하고 확인하기
-              </span>
-            </span>
-          </Card.Meta>
+          <span
+            className={cn(
+              'text-main-800 inline-flex items-center gap-1',
+              'text-[11px] font-bold'
+            )}
+          >
+            로그인하고 확인하기
+            <ArrowRight className="h-3 w-3" />
+          </span>
         </Card.Body>
       </Card>
 
@@ -104,8 +99,18 @@ function StoryLoginPrompt({
             'hover:shadow-warm'
           )}
         >
-          <Card.Thumb className="bg-main-100 aspect-[4/5]">
-            <Stripe tone="peach" />
+          <Card.Thumb className="aspect-[4/5] bg-gray-100">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span
+                className={cn(
+                  'flex h-10 w-10 items-center justify-center rounded-full',
+                  'bg-white/70 text-gray-400 shadow-sm'
+                )}
+                aria-hidden
+              >
+                <Lock className="h-4 w-4" />
+              </span>
+            </div>
           </Card.Thumb>
           <Card.Body className="gap-1.5 p-3">
             <div className="h-3 w-3/4 rounded bg-gray-200" />
@@ -114,7 +119,7 @@ function StoryLoginPrompt({
                 <span
                   className={cn(
                     'relative h-5 w-5 shrink-0 overflow-hidden rounded-full',
-                    'bg-gray-100'
+                    'bg-gray-200'
                   )}
                   aria-hidden
                 />

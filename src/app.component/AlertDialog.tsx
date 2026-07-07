@@ -36,7 +36,8 @@ export function AlertDialog({
 }: AlertDialogProps): React.ReactElement {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="sm">
+      {/* 본문이 DialogDescription 이 아니므로 Radix 경고 억제 */}
+      <DialogContent size="sm" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

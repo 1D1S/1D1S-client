@@ -126,7 +126,7 @@ export function BrowserPermissionPrompt(): React.ReactElement {
         }
       }}
     >
-      <DialogContent size="sm">
+      <DialogContent size="sm" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>브라우저 알림이 꺼져 있어요</DialogTitle>
         </DialogHeader>

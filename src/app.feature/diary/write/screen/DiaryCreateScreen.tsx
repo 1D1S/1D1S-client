@@ -1,18 +1,18 @@
 'use client';
 
-import { Button, Text } from '@1d1s/design-system';
+import { Button, DatePicker, Text } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { cn } from '@module/utils/cn';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import React, { useMemo } from 'react';
 
 import type { ChallengeGoal } from '../../../challenge/board/type/challenge';
 import { DiaryCreateChallengeSection } from '../components/DiaryCreateChallengeSection';
-import { DiaryCreateFinishSection } from '../components/DiaryCreateFinishSection';
 import { DiaryCreateGoalsSection } from '../components/DiaryCreateGoalsSection';
+import { DiaryCreateMoodSelector } from '../components/DiaryCreateMoodSelector';
 import { DiaryCreateThumbnailSection } from '../components/DiaryCreateThumbnailSection';
 import { useDiaryCreateForm } from '../hooks/useDiaryCreateForm';
 
@@ -60,6 +60,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
     thumbnailPreviewUrl,
     submitButtonLabel,
     canSubmit,
+    isSubmitting,
     isMissingChallengeDialogOpen,
     isCreateUnavailableDialogOpen,
     handleSelectChallenge,
@@ -90,11 +91,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
         onClearThumbnail={clearThumbnail}
       />
     ),
-    [
-      thumbnailPreviewUrl,
-      handleThumbnailFileSelect,
-      clearThumbnail,
-    ]
+    [thumbnailPreviewUrl, handleThumbnailFileSelect, clearThumbnail]
   );
 
   return (
@@ -119,13 +116,25 @@ export default function DiaryCreateScreen(): React.ReactElement {
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <Text
-          size="body1"
-          weight="extrabold"
-          className="flex-1 tracking-[-0.3px] text-gray-900"
-        >
-          {isEditMode ? '일지 수정' : '일지 작성'}
-        </Text>
+        <div className="min-w-0 flex-1">
+          <Text
+            size="body1"
+            weight="extrabold"
+            className="block tracking-[-0.3px] text-gray-900"
+          >
+            {isEditMode ? '일지 수정' : '일지 작성'}
+          </Text>
+          {/* 태블릿(sm~lg)에서만 서브타이틀 노출 — 디자인 시안 기준 */}
+          <Text
+            size="caption2"
+            weight="regular"
+            className="hidden truncate text-gray-500 sm:block"
+          >
+            {isEditMode
+              ? '기록을 최신 상태로 업데이트해보세요.'
+              : '오늘 챌린지를 어떻게 실천하셨나요?'}
+          </Text>
+        </div>
         {totalGoalCount > 0 ? (
           <span
             className={cn(
@@ -160,60 +169,91 @@ export default function DiaryCreateScreen(): React.ReactElement {
           </Text>
         </header>
 
-        <div className="mx-auto w-full max-w-[860px]">
-          <div className="flex flex-col gap-7">
-            <DiaryCreateChallengeSection
-              selectedChallenge={
-                isSelectedChallengeConfirmed ? selectedChallenge : null
-              }
-              isInitialChallengeLoading={isInitialChallengeLoading}
-              isCheckingAvailability={isCheckingChallengeAvailability}
-              challenges={memberChallenges}
-              isChallengesLoading={isMemberChallengesLoading}
-              onSelectChallenge={handleSelectChallenge}
+        {/* 다른 페이지처럼 1200px 컨테이너를 꽉 채우는 폼 영역 */}
+        <div className="flex w-full flex-col gap-6">
+          <DiaryCreateChallengeSection
+            selectedChallenge={
+              isSelectedChallengeConfirmed ? selectedChallenge : null
+            }
+            isInitialChallengeLoading={isInitialChallengeLoading}
+            isCheckingAvailability={isCheckingChallengeAvailability}
+            challenges={memberChallenges}
+            isChallengesLoading={isMemberChallengesLoading}
+            onSelectChallenge={handleSelectChallenge}
+          />
+
+          <section>
+            <input
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="제목을 입력하세요"
+              className={cn(
+                'w-full border-0 border-b-2 border-gray-200 bg-transparent',
+                'px-0 py-3 text-2xl font-extrabold tracking-tight',
+                'text-gray-900 placeholder:text-gray-400',
+                'focus:border-main-800 transition-colors outline-none',
+                'lg:text-[26px]'
+              )}
             />
+          </section>
 
-            <section>
-              <input
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                placeholder="제목을 입력하세요"
-                className={cn(
-                  'w-full border-0 border-b-2 border-gray-200 bg-transparent',
-                  'px-0 py-3 text-2xl font-extrabold tracking-tight',
-                  'text-gray-900 placeholder:text-gray-400',
-                  'focus:border-main-800 transition-colors outline-none',
-                  'lg:text-[26px]'
-                )}
-              />
-            </section>
+          <DiaryCreateGoalsSection
+            goals={isSelectedChallengeConfirmed ? goals : EMPTY_GOALS}
+            achievedGoalIds={achievedGoalIds}
+            onGoalIdsChange={handleGoalIdsChange}
+          />
 
-            <DiaryCreateGoalsSection
-              goals={isSelectedChallengeConfirmed ? goals : EMPTY_GOALS}
-              achievedGoalIds={achievedGoalIds}
-              onGoalIdsChange={handleGoalIdsChange}
+          <section>
+            <Text
+              size="caption1"
+              weight="bold"
+              className="mb-2 block text-gray-600"
+            >
+              언제의 기록인가요?
+            </Text>
+            <DatePicker
+              value={achievedDate}
+              onChange={handleAchievedDateChange}
+              placeholder="날짜를 선택해주세요"
+              calendarProps={{ disabled: isAchievedDateDisabled }}
             />
+            <Text
+              size="caption2"
+              weight="regular"
+              className="mt-1.5 block text-gray-400"
+            >
+              오늘 포함 최근 3일 중 작성 가능한 날짜만 반영됩니다.
+            </Text>
+          </section>
 
-            <DiaryCreateFinishSection
-              achievedDate={achievedDate}
-              onAchievedDateChange={handleAchievedDateChange}
-              isDateDisabled={isAchievedDateDisabled}
+          {/* 오늘의 기분 — 시안 기준 독립 섹션 */}
+          <section>
+            <Text
+              size="caption1"
+              weight="bold"
+              className="mb-2 block text-gray-600"
+            >
+              오늘의 기분
+            </Text>
+            <DiaryCreateMoodSelector
               selectedMood={selectedMood}
-              onMoodChange={setSelectedMood}
-              thumbnailSlot={thumbnailSlot}
+              onSelectMood={setSelectedMood}
             />
+          </section>
 
-            <section>
-              <Text
-                size="caption1"
-                weight="bold"
-                className="mb-2 block text-gray-600"
-              >
-                오늘 이야기
-              </Text>
-              <DiaryContentEditor content={content} onChange={setContent} />
-            </section>
-          </div>
+          <section>
+            <Text
+              size="caption1"
+              weight="bold"
+              className="mb-2 block text-gray-600"
+            >
+              오늘 이야기
+            </Text>
+            <DiaryContentEditor content={content} onChange={setContent} />
+          </section>
+
+          {/* 사진 첨부 — 시안 기준 마지막 섹션 */}
+          <section>{thumbnailSlot}</section>
         </div>
       </div>
 
@@ -249,6 +289,31 @@ export default function DiaryCreateScreen(): React.ReactElement {
           </div>
         </div>
       </MobileBottomActionBar>
+
+      {isSubmitting && (
+        <div
+          className={cn(
+            'fixed inset-0 z-[60] flex items-center justify-center',
+            'bg-black/30 backdrop-blur-sm'
+          )}
+          role="alert"
+          aria-busy="true"
+        >
+          <div
+            className={cn(
+              'rounded-3 flex flex-col items-center gap-3 bg-white',
+              'px-8 py-7 shadow-xl'
+            )}
+          >
+            <Loader2 className="text-main-700 h-8 w-8 animate-spin" />
+            <Text size="body2" weight="medium" className="text-gray-600">
+              {isEditMode
+                ? '일지를 수정하고 있어요...'
+                : '일지를 올리고 있어요...'}
+            </Text>
+          </div>
+        </div>
+      )}
 
       <AlertDialog
         open={isMissingChallengeDialogOpen}

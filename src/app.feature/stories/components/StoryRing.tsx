@@ -64,37 +64,41 @@ function StoryRing({
           role="button"
           tabIndex={0}
           onClick={onAddStory}
-          aria-label="내 일지 추가"
+          aria-label="오늘 일지 올리기"
           className={cn(
             'flex-shrink-0 transition-all duration-500 ease-out',
-            'hover:shadow-warm',
+            'border-main-300 bg-main-100/30 hover:shadow-warm border-dashed',
             cardWidthClass
           )}
         >
-          <Card.Thumb className="bg-main-100 aspect-[4/5]">
-            <Stripe tone="peach" />
-            <Card.Overlay position="top-right">
+          <Card.Thumb className="aspect-[4/5] bg-transparent">
+            <div
+              className={cn(
+                'absolute inset-0 flex flex-col items-center justify-center',
+                'gap-2.5'
+              )}
+            >
               <span
                 className={cn(
-                  'flex h-7 w-7 items-center justify-center rounded-full',
-                  'bg-main-500 border-2 border-white text-white shadow-sm'
+                  'flex h-14 w-14 items-center justify-center rounded-full',
+                  'bg-main-500 shadow-warm text-white'
                 )}
                 aria-hidden
               >
-                <Icon name="Plus" size={14} />
+                <Icon name="Plus" size={24} />
               </span>
-            </Card.Overlay>
+              <Text
+                size="caption2"
+                weight="extrabold"
+                className="text-main-800"
+              >
+                오늘 일지 올리기
+              </Text>
+            </div>
           </Card.Thumb>
-          <Card.Body className="gap-1.5 p-3">
-            <Text
-              size="caption2"
-              weight="extrabold"
-              className={cn(
-                'truncate leading-snug tracking-tight text-gray-900'
-              )}
-            >
-              내 일지
-            </Text>
+          <Card.Body
+            className={cn('border-main-200 gap-1.5 border-t border-dashed p-3')}
+          >
             <Card.Meta>
               <span className="inline-flex min-w-0 items-center gap-1.5">
                 <span
@@ -116,10 +120,10 @@ function StoryRing({
                 </span>
                 <span
                   className={cn(
-                    'truncate text-[11px] font-medium text-gray-500'
+                    'truncate text-[11px] font-bold text-gray-700'
                   )}
                 >
-                  새 일지 작성하기
+                  내 스토리
                 </span>
               </span>
             </Card.Meta>

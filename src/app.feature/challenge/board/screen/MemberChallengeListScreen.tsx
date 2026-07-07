@@ -163,7 +163,7 @@ export function MemberChallengeListScreen({
           <div
             className={cn(
               'data-fade-in mt-6 grid gap-4',
-              'grid-cols-2 sm:grid-cols-3'
+              'xs:grid-cols-2 grid-cols-1 sm:grid-cols-3'
             )}
           >
             {challenges.map((challenge) => (

@@ -38,7 +38,10 @@ export function ChallengeCreateDialog({
           {triggerText}
         </Button>
       </DialogTrigger>
-      <DialogContent className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-[520px]">
+      <DialogContent
+        className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-[520px]"
+        aria-describedby={undefined}
+      >
         <DialogTitle className="sr-only">챌린지 만들기 미리보기</DialogTitle>
         <div className="min-h-0 flex-1 overflow-y-auto p-6 pt-10">
           <ChallengeCreateDialogContent />

@@ -81,7 +81,7 @@ export function AddToHomeScreenPrompt(): React.ReactElement | null {
         }
       }}
     >
-      <DialogContent size="sm">
+      <DialogContent size="sm" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>홈 화면에 추가해보세요</DialogTitle>
         </DialogHeader>

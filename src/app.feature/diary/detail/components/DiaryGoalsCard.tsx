@@ -32,7 +32,7 @@ export function DiaryGoalsCard({
         'p-4 sm:p-5'
       )}
     >
-      <div className="mb-3 flex items-baseline justify-between">
+      <div className="mb-4 flex items-baseline justify-between">
         <Text size="caption1" weight="bold" className="text-gray-900">
           오늘의 목표
         </Text>
@@ -45,7 +45,7 @@ export function DiaryGoalsCard({
           options={checklistOptions}
           value={checkedChecklistIds}
           onValueChange={NOOP_VALUE_CHANGE}
-          disabled
+          readOnly
         />
       ) : (
         <Text size="caption1" weight="regular" className="text-gray-500">
