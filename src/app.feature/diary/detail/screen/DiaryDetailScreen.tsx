@@ -77,6 +77,21 @@ import {
 const COMMENT_LIST_PARAMS = { page: 0, size: 10 } as const;
 const REPLIES_MAP_PARAMS = { page: 0, size: 10 } as const;
 
+function getFeelingTextClass(
+  feeling: DiaryDetailViewData['feeling']
+): string {
+  if (feeling === 'HAPPY') {
+    return 'text-main-800';
+  }
+  if (feeling === 'NORMAL') {
+    return 'text-green-800';
+  }
+  if (feeling === 'SAD') {
+    return 'text-blue-600';
+  }
+  return 'text-gray-500';
+}
+
 function DiaryActionToolbar({
   diaryData,
   totalCommentCount,
@@ -908,9 +923,7 @@ function DiaryDetailView({
               <Text
                 size="caption1"
                 weight="semibold"
-                className={cn(
-                  isHundredPercent ? 'text-green-600' : 'text-main-800'
-                )}
+                className={getFeelingTextClass(diaryData.feeling)}
               >
                 오늘의 기분 · {diaryData.feelingLabel}
               </Text>
