@@ -1,6 +1,7 @@
 import { compressImageFile } from '@/app.lib/compressImage';
 
 import { apiClient } from './client';
+import { UPLOAD_TIMEOUT_MS } from './config';
 import { requestData } from './request';
 
 export interface PresignedUrlItem {
@@ -43,17 +44,27 @@ export async function putToStorage(
   uploadUrl: string,
   file: File
 ): Promise<void> {
-  const response = await fetch(uploadUrl, {
-    method: 'PUT',
-    body: file,
-    headers: {
-      'Content-Type': file.type || 'image/jpeg',
-      'Cache-Control': IMAGE_CACHE_CONTROL,
-    },
-  });
+  // 이미지 여러 장 업로드가 무한정 매달리지 않게 120초 타임아웃을 건다.
+  // raw fetch 는 axios 처럼 timeout 옵션이 없어 AbortController 로 끊는다.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
 
-  if (!response.ok) {
-    throw new Error(`이미지 업로드 실패 (${response.status})`);
+  try {
+    const response = await fetch(uploadUrl, {
+      method: 'PUT',
+      body: file,
+      headers: {
+        'Content-Type': file.type || 'image/jpeg',
+        'Cache-Control': IMAGE_CACHE_CONTROL,
+      },
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`이미지 업로드 실패 (${response.status})`);
+    }
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
