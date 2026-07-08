@@ -1,6 +1,7 @@
 import { compressImageFile } from '@/app.lib/compressImage';
 
 import { apiClient } from './client';
+import { API_UPLOAD_TIMEOUT_MS } from './config';
 import { requestData } from './request';
 
 export interface PresignedUrlItem {
@@ -33,14 +34,24 @@ async function requestPresignedUrls(
 // 정확히 일치해야 S3 가 403 을 내지 않는다. 여기선 ①의 fileType 에
 // file.type 을 넣었으므로 동일 file.type 으로 PUT 하면 항상 일치한다.
 async function putToStorage(uploadUrl: string, file: File): Promise<void> {
-  const response = await fetch(uploadUrl, {
-    method: 'PUT',
-    body: file,
-    headers: { 'Content-Type': file.type },
-  });
+  // raw fetch 는 기본 타임아웃이 없어 느린/멈춘 업로드가 무한정 hang 될 수
+  // 있다. AbortController 로 큰 파일도 견딜 만큼 긴 상한만 건다.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_UPLOAD_TIMEOUT_MS);
 
-  if (!response.ok) {
-    throw new Error(`이미지 업로드 실패 (${response.status})`);
+  try {
+    const response = await fetch(uploadUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': file.type },
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`이미지 업로드 실패 (${response.status})`);
+    }
+  } finally {
+    clearTimeout(timer);
   }
 }
 

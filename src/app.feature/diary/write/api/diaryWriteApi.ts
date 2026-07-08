@@ -1,4 +1,5 @@
 import { apiClient } from '@module/api/client';
+import { API_UPLOAD_TIMEOUT_MS } from '@module/api/config';
 import { requestData } from '@module/api/request';
 
 import {
@@ -16,6 +17,7 @@ export const diaryWriteApi = {
       url: '/diaries',
       method: 'POST',
       data,
+      timeout: API_UPLOAD_TIMEOUT_MS,
     }),
 
   // 다이어리 수정하기
@@ -27,6 +29,7 @@ export const diaryWriteApi = {
       url: `/diaries/${id}`,
       method: 'PATCH',
       data,
+      timeout: API_UPLOAD_TIMEOUT_MS,
     }),
 
   // 다이어리 리포트 생성

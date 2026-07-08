@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance } from 'axios';
 
-import { API_BASE_URL } from './config';
+import { API_BASE_URL, API_DEFAULT_TIMEOUT_MS } from './config';
 import { attachInterceptors, type ClientOptions } from './interceptors';
 import { refreshAccessTokenOnce } from './tokenRefresh';
 
@@ -8,7 +8,7 @@ const createClient = (options: ClientOptions): AxiosInstance =>
   attachInterceptors(
     axios.create({
       baseURL: API_BASE_URL,
-      timeout: 10000,
+      timeout: API_DEFAULT_TIMEOUT_MS,
       maxRedirects: 0,
       withCredentials: true,
     }),
@@ -26,7 +26,7 @@ export const publicApiClient = createClient({
 // auth/token, auth/logout 직접 호출용 (순환 임포트 방지 - auth-api.ts가 client.ts를 임포트함)
 export const tokenClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: API_DEFAULT_TIMEOUT_MS,
   withCredentials: true,
 });
 
@@ -35,7 +35,7 @@ export const tokenClient = axios.create({
 export const silentAuthClient: AxiosInstance = (() => {
   const instance = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 10000,
+    timeout: API_DEFAULT_TIMEOUT_MS,
     withCredentials: true,
   });
 
