@@ -198,9 +198,9 @@ function StoryRing({
             {!seen ? (
               <span
                 className={cn(
-                  'absolute top-4 right-4 flex h-10 w-10 items-center',
-                  'border-main-700 justify-center rounded-full border-5',
-                  'text-main-800 bg-white text-xs font-extrabold shadow-sm'
+                  'absolute top-4 right-4 flex h-5 min-w-5 items-center',
+                  'bg-main-600 justify-center rounded-full px-1',
+                  'text-[11px] font-bold text-white ring-2 ring-white'
                 )}
                 aria-label={`${unreadCount || 1}개 새 스토리`}
               >

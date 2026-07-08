@@ -972,9 +972,15 @@ function DiaryDetailView({
                   </div>
                 ) : null}
 
-                {/* 첨부 이미지 — 하단 정사각형 갤러리 (다중 대응) */}
+                {/* 첨부 이미지 — 하단 정사각형 갤러리 (다중 대응).
+                    본문이 있으면 본문 아래 mt-5, 없으면 데스크톱에서
+                    '오늘의 기록' 라벨 아래 일정 간격(lg:mt-3.5)을 준다. */}
                 {diaryData.contentImageUrls.length > 0 ? (
-                  <div className={cn(diaryData.hasContentHtml && 'mt-5')}>
+                  <div
+                    className={cn(
+                      diaryData.hasContentHtml ? 'mt-5' : 'lg:mt-3.5'
+                    )}
+                  >
                     <DiaryImageGallery
                       imageUrls={diaryData.contentImageUrls}
                     />
