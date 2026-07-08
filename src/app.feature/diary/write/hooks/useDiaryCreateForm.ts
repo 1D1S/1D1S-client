@@ -62,6 +62,8 @@ interface UseDiaryCreateFormResult {
   achievedGoalIds: number[];
   disabledAchievedDateKeys: string[];
   imagePreviewUrls: string[];
+  /** imagePreviewUrls 중 대표 썸네일 인덱스(없으면 -1). */
+  thumbnailIndex: number;
   submitButtonLabel: string;
   canSubmit: boolean;
   isSubmitting: boolean;
@@ -74,6 +76,7 @@ interface UseDiaryCreateFormResult {
   isAchievedDateDisabled(date: Date): boolean;
   handleAddImageFiles(files: File[]): void;
   handleRemoveImageAt(index: number): void;
+  handleSelectThumbnailAt(index: number): void;
   closeMissingChallengeDialog(): void;
   closeCreateUnavailableDialog(): void;
   handleSubmit(): Promise<void>;
@@ -110,6 +113,10 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   const [isEditFormInitialized, setIsEditFormInitialized] = useState(false);
   const [achievedGoalIds, setAchievedGoalIds] = useState<number[]>([]);
   const [images, setImages] = useState<DiaryImageItem[]>([]);
+  // 대표 썸네일로 지정된 이미지의 url(existing=raw, new=objectURL).
+  const [thumbnailImageUrl, setThumbnailImageUrl] = useState<string | null>(
+    null
+  );
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   // 언마운트 시 신규 이미지 objectURL 정리를 위한 최신 참조.
   const imagesRef = useRef(images);
@@ -304,6 +311,12 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         ? parsedDate
         : new Date();
     const nextImageUrls = getDiaryImageUrls(existingDiary);
+    // 기존 대표 썸네일(raw). 목록에 있으면 그 값을, 없으면 첫 이미지로.
+    const existingThumbnail = existingDiary.thumbnailUrl ?? null;
+    const nextThumbnail =
+      existingThumbnail && nextImageUrls.includes(existingThumbnail)
+        ? existingThumbnail
+        : nextImageUrls[0] ?? null;
     const timerId = window.setTimeout(() => {
       setTitle(existingDiary.title ?? '');
       setContent(existingDiary.content ?? '');
@@ -320,6 +333,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       setImages(
         nextImageUrls.map((url) => ({ kind: 'existing' as const, url }))
       );
+      setThumbnailImageUrl(nextThumbnail);
       setIsEditFormInitialized(true);
     }, 0);
 
@@ -455,25 +469,46 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       return;
     }
 
-    setImages((prevImages) => [
-      ...prevImages,
-      ...files.map((file) => ({
-        kind: 'new' as const,
-        url: URL.createObjectURL(file),
-        file,
-      })),
-    ]);
+    const addedImages = files.map((file) => ({
+      kind: 'new' as const,
+      url: URL.createObjectURL(file),
+      file,
+    }));
+
+    setImages((prevImages) => [...prevImages, ...addedImages]);
+    // 대표가 아직 없으면(첫 이미지) 자동으로 첫 장을 대표로 지정.
+    setThumbnailImageUrl((prev) => prev ?? addedImages[0].url);
   }, []);
 
-  const handleRemoveImageAt = useCallback((index: number) => {
-    setImages((prevImages) => {
-      const target = prevImages[index];
+  const handleRemoveImageAt = useCallback(
+    (index: number) => {
+      const target = images[index];
       if (target?.kind === 'new') {
         revokeObjectUrlIfNeeded(target.url);
       }
-      return prevImages.filter((_, itemIndex) => itemIndex !== index);
-    });
-  }, []);
+
+      const nextImages = images.filter((_, itemIndex) => itemIndex !== index);
+      setImages(nextImages);
+
+      // 대표를 삭제하면 남은 첫 이미지로 재지정(없으면 null).
+      if (target && thumbnailImageUrl === target.url) {
+        setThumbnailImageUrl(nextImages[0]?.url ?? null);
+      }
+    },
+    [images, thumbnailImageUrl]
+  );
+
+  const handleSelectThumbnailAt = useCallback(
+    (index: number) => {
+      setThumbnailImageUrl(images[index]?.url ?? null);
+    },
+    [images]
+  );
+
+  const thumbnailIndex = useMemo(
+    () => images.findIndex((image) => image.url === thumbnailImageUrl),
+    [images, thumbnailImageUrl]
+  );
 
   // existing 의 url 은 재전송용 raw 값이라, 표시할 때만 resolve 한다.
   // new 의 url 은 objectURL(blob:) 이라 그대로 쓴다.
@@ -545,6 +580,17 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
           : uploadedFileUrls[nextUploadedIndex++]
       );
 
+      // 대표 썸네일: 선택 이미지의 최종 URL(imageUrls 와 index 정렬). 삭제돼
+      // 못 찾으면 첫 장. imageUrls 가 비면 생략(undefined → JSON 에서 빠짐,
+      // 서버가 null 처리). 비었는데 보내면 DIARY-009.
+      const thumbnailImageIndex = images.findIndex(
+        (image) => image.url === thumbnailImageUrl
+      );
+      const thumbnailUrl =
+        imageUrls.length > 0
+          ? imageUrls[thumbnailImageIndex >= 0 ? thumbnailImageIndex : 0]
+          : undefined;
+
       if (isEditMode && requestedDiaryId) {
         await updateDiary.mutateAsync({
           id: requestedDiaryId,
@@ -557,6 +603,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
             achievedDate: achievedDate ? formatDateISO(achievedDate) : '',
             achievedGoalIds,
             imageUrls,
+            thumbnailUrl,
           },
         });
 
@@ -573,6 +620,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         achievedDate: achievedDate ? formatDateISO(achievedDate) : '',
         achievedGoalIds,
         imageUrls,
+        thumbnailUrl,
       });
 
       router.push('/diary');
@@ -593,6 +641,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     requestedDiaryId,
     selectedChallenge,
     selectedMood,
+    thumbnailImageUrl,
     trimmedTitle,
     updateDiary,
   ]);
@@ -624,6 +673,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     achievedGoalIds,
     disabledAchievedDateKeys,
     imagePreviewUrls,
+    thumbnailIndex,
     submitButtonLabel,
     canSubmit,
     isSubmitting,
@@ -636,6 +686,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     isAchievedDateDisabled,
     handleAddImageFiles,
     handleRemoveImageAt,
+    handleSelectThumbnailAt,
     closeMissingChallengeDialog,
     closeCreateUnavailableDialog,
     handleSubmit,

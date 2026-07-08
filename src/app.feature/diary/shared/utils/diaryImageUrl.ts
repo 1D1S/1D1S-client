@@ -93,6 +93,18 @@ export function resolveDiaryImageList(rawImages: unknown): string[] | null {
   return resolved.length > 0 ? resolved : null;
 }
 
+// 목록/피드/카드에 표시할 대표 이미지 한 장.
+// 서버 thumbnailUrl 을 우선하고, 없으면(기존 데이터=null) imgUrl[0] 로
+// fallback 한다. thumbnailUrl 이 raw 든 resolve 된 값이든 idempotent.
+export function resolveDiaryThumbnail(
+  thumbnailUrl: string | null | undefined,
+  imgUrl: string[] | string | null | undefined
+): string | undefined {
+  return (
+    resolveDiaryImageUrl(thumbnailUrl) ?? resolveDiaryImageList(imgUrl)?.[0]
+  );
+}
+
 // resolve(IMAGE_BASE_URL prepend 등) 없이 백엔드 원본 문자열만 뽑는다.
 // 수정 시 기존 이미지를 그대로 재전송할 때 사용 — 계약상 imgUrl 원본값을
 // 변형 없이 다시 보내야 하기 때문(변형 시 400 DIARY-008).

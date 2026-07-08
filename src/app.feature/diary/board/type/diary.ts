@@ -50,6 +50,9 @@ export interface DiaryItem {
   title: string;
   content: string;
   imgUrl: string[] | null;
+  // 대표 썸네일(imgUrl 중 하나). 기존 데이터는 null → 표시 시
+  // `thumbnailUrl ?? imgUrl[0]` fallback (resolveDiaryThumbnail).
+  thumbnailUrl: string | null;
   isPublic: boolean;
   likeInfo: LikeInfo;
   commentCount: number;
@@ -71,6 +74,9 @@ export interface CreateDiaryRequest {
   achievedGoalIds: number[];
   // presigned 업로드로 받은 fileUrl 목록 (버킷 prefix URL 만 허용)
   imageUrls: string[];
+  // 대표 썸네일 — 반드시 imageUrls 안의 값. imageUrls 가 비면 생략(보내면
+  // DIARY-009). null 이면 서버가 imageUrls[0] 자동 지정.
+  thumbnailUrl?: string | null;
 }
 
 export type CreateDiaryResponse = DiaryItem;
@@ -86,6 +92,9 @@ export interface UpdateDiaryRequest {
   // 전체 덮어쓰기(clear-and-replace) — 유지할 기존 URL + 신규 fileUrl 을
   // 모두 명시적으로 담아 보낸다. 빈 배열이면 이미지 전체 삭제.
   imageUrls: string[];
+  // 대표 썸네일 — imageUrls 안의 값이어야 함. imageUrls 가 비면 생략.
+  // 썸네일은 imageUrls 를 보낼 때만 재계산되므로 항상 함께 보낸다.
+  thumbnailUrl?: string | null;
 }
 
 export type UpdateDiaryResponse = DiaryDetail;
