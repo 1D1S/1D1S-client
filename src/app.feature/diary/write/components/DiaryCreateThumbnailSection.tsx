@@ -41,7 +41,7 @@ function DiaryCreateThumbnailSectionComponent({
           >
             대표 썸네일{' '}
             <span className="font-medium text-gray-400">
-              · 목록·카드에 표시됩니다
+              · 미선택 시 첫 이미지가 표시됩니다
             </span>
           </Text>
           <div className="flex gap-2 overflow-x-auto pb-1">

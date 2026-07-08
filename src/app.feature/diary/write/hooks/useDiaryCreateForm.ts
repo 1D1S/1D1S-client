@@ -311,12 +311,13 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         ? parsedDate
         : new Date();
     const nextImageUrls = getDiaryImageUrls(existingDiary);
-    // 기존 대표 썸네일(raw). 목록에 있으면 그 값을, 없으면 첫 이미지로.
+    // 기존 대표 썸네일(raw). 목록에 있으면 그 값을, 서버가 미지정(null)
+    // 이거나 목록에 없으면 미선택(null) — 자동으로 첫 장을 삼지 않는다.
     const existingThumbnail = existingDiary.thumbnailUrl ?? null;
     const nextThumbnail =
       existingThumbnail && nextImageUrls.includes(existingThumbnail)
         ? existingThumbnail
-        : nextImageUrls[0] ?? null;
+        : null;
     const timerId = window.setTimeout(() => {
       setTitle(existingDiary.title ?? '');
       setContent(existingDiary.content ?? '');
@@ -475,9 +476,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       file,
     }));
 
+    // 대표는 자동 지정하지 않는다 — 사용자가 고를 때까지 미선택(null).
     setImages((prevImages) => [...prevImages, ...addedImages]);
-    // 대표가 아직 없으면(첫 이미지) 자동으로 첫 장을 대표로 지정.
-    setThumbnailImageUrl((prev) => prev ?? addedImages[0].url);
   }, []);
 
   const handleRemoveImageAt = useCallback(
@@ -487,12 +487,11 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         revokeObjectUrlIfNeeded(target.url);
       }
 
-      const nextImages = images.filter((_, itemIndex) => itemIndex !== index);
-      setImages(nextImages);
+      setImages(images.filter((_, itemIndex) => itemIndex !== index));
 
-      // 대표를 삭제하면 남은 첫 이미지로 재지정(없으면 null).
+      // 대표를 삭제하면 미지정(null)으로. 다른 장을 자동 대표로 삼지 않는다.
       if (target && thumbnailImageUrl === target.url) {
-        setThumbnailImageUrl(nextImages[0]?.url ?? null);
+        setThumbnailImageUrl(null);
       }
     },
     [images, thumbnailImageUrl]
@@ -500,7 +499,10 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
 
   const handleSelectThumbnailAt = useCallback(
     (index: number) => {
-      setThumbnailImageUrl(images[index]?.url ?? null);
+      // 이미 대표면 해제(null) — 미선택도 유효 상태(저장 시 thumbnailUrl
+      // 생략 → 서버 null). 아니면 그 이미지를 대표로 지정.
+      const nextUrl = images[index]?.url ?? null;
+      setThumbnailImageUrl((prev) => (prev === nextUrl ? null : nextUrl));
     },
     [images]
   );
@@ -580,16 +582,14 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
           : uploadedFileUrls[nextUploadedIndex++]
       );
 
-      // 대표 썸네일: 선택 이미지의 최종 URL(imageUrls 와 index 정렬). 삭제돼
-      // 못 찾으면 첫 장. imageUrls 가 비면 생략(undefined → JSON 에서 빠짐,
-      // 서버가 null 처리). 비었는데 보내면 DIARY-009.
-      const thumbnailImageIndex = images.findIndex(
-        (image) => image.url === thumbnailImageUrl
-      );
+      // 대표 미선택(null)이면 thumbnailUrl 을 보내지 않는다(undefined → JSON
+      // 에서 생략 → 서버가 null 저장). 자동 첫 장 지정 없음. 선택했으면 그
+      // 이미지의 최종 URL(imageUrls 안의 값)만 전송 — 아니면 DIARY-009.
+      const thumbnailImageIndex = thumbnailImageUrl
+        ? images.findIndex((image) => image.url === thumbnailImageUrl)
+        : -1;
       const thumbnailUrl =
-        imageUrls.length > 0
-          ? imageUrls[thumbnailImageIndex >= 0 ? thumbnailImageIndex : 0]
-          : undefined;
+        thumbnailImageIndex >= 0 ? imageUrls[thumbnailImageIndex] : undefined;
 
       if (isEditMode && requestedDiaryId) {
         await updateDiary.mutateAsync({
