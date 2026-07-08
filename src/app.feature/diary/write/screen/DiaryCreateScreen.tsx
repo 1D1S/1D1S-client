@@ -57,7 +57,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
     isSelectedChallengeConfirmed,
     goals,
     achievedGoalIds,
-    thumbnailPreviewUrl,
+    imagePreviewUrls,
     submitButtonLabel,
     canSubmit,
     isSubmitting,
@@ -65,10 +65,10 @@ export default function DiaryCreateScreen(): React.ReactElement {
     isCreateUnavailableDialogOpen,
     handleSelectChallenge,
     handleGoalIdsChange,
-    handleThumbnailFileSelect,
+    handleAddImageFiles,
+    handleRemoveImageAt,
     closeMissingChallengeDialog,
     closeCreateUnavailableDialog,
-    clearThumbnail,
     handleSubmit,
   } = useDiaryCreateForm();
 
@@ -85,13 +85,12 @@ export default function DiaryCreateScreen(): React.ReactElement {
   const thumbnailSlot = useMemo(
     () => (
       <DiaryCreateThumbnailSection
-        thumbnailPreviewUrl={thumbnailPreviewUrl}
-        hasThumbnail={Boolean(thumbnailPreviewUrl)}
-        onSelectThumbnailFile={handleThumbnailFileSelect}
-        onClearThumbnail={clearThumbnail}
+        previews={imagePreviewUrls}
+        onSelectFiles={handleAddImageFiles}
+        onRemove={handleRemoveImageAt}
       />
     ),
-    [thumbnailPreviewUrl, handleThumbnailFileSelect, clearThumbnail]
+    [imagePreviewUrls, handleAddImageFiles, handleRemoveImageAt]
   );
 
   return (

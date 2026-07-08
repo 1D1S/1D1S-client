@@ -69,6 +69,8 @@ export interface CreateDiaryRequest {
   isPublic: boolean;
   achievedDate: string;
   achievedGoalIds: number[];
+  // presigned 업로드로 받은 fileUrl 목록 (버킷 prefix URL 만 허용)
+  imageUrls: string[];
 }
 
 export type CreateDiaryResponse = DiaryItem;
@@ -81,6 +83,9 @@ export interface UpdateDiaryRequest {
   isPublic: boolean;
   achievedGoalIds: number[];
   achievedDate: string;
+  // 전체 덮어쓰기(clear-and-replace) — 유지할 기존 URL + 신규 fileUrl 을
+  // 모두 명시적으로 담아 보낸다. 빈 배열이면 이미지 전체 삭제.
+  imageUrls: string[];
 }
 
 export type UpdateDiaryResponse = DiaryDetail;
@@ -120,12 +125,4 @@ export interface CreateDiaryReportRequest {
   diaryId: number;
   content: string;
   reportType: ReportType;
-}
-
-export interface UploadImageResponse {
-  imageUrl: string;
-}
-
-export interface UploadImagesResponse {
-  imageUrls: string[];
 }

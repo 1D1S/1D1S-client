@@ -7,8 +7,6 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
-import { compressImageFile } from '@/app.lib/compressImage';
-
 import { CHALLENGE_QUERY_KEYS } from '../../../challenge/board/consts/queryKeys';
 import { MEMBER_QUERY_KEYS } from '../../../member/consts/queryKeys';
 import { DIARY_QUERY_KEYS } from '../../board/consts/queryKeys';
@@ -18,7 +16,6 @@ import {
   CreateDiaryResponse,
   UpdateDiaryRequest,
   UpdateDiaryResponse,
-  UploadImageResponse,
 } from '../../board/type/diary';
 import { diaryWriteApi } from '../../write/api/diaryWriteApi';
 import { diaryDetailApi } from '../api/diaryDetailApi';
@@ -209,26 +206,5 @@ export function useCreateDiaryReport(): UseMutationResult<
   return useMutation({
     mutationFn: (data: CreateDiaryReportRequest) =>
       diaryWriteApi.createDiaryReport(data),
-  });
-}
-
-// 다이어리에 이미지 1개 업로드하기
-export function useUploadDiaryImage(): UseMutationResult<
-  UploadImageResponse,
-  Error,
-  { id: number; file: File }
-> {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, file }: { id: number; file: File }) => {
-      const compressed = await compressImageFile(file);
-      return diaryWriteApi.uploadDiaryImage(id, compressed);
-    },
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({
-        queryKey: DIARY_QUERY_KEYS.detail(id),
-      });
-    },
   });
 }

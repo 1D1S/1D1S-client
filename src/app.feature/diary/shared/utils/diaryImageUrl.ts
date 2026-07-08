@@ -92,3 +92,19 @@ export function resolveDiaryImageList(rawImages: unknown): string[] | null {
 
   return resolved.length > 0 ? resolved : null;
 }
+
+// resolve(IMAGE_BASE_URL prepend 등) 없이 백엔드 원본 문자열만 뽑는다.
+// 수정 시 기존 이미지를 그대로 재전송할 때 사용 — 계약상 imgUrl 원본값을
+// 변형 없이 다시 보내야 하기 때문(변형 시 400 DIARY-008).
+export function extractDiaryImageList(rawImages: unknown): string[] | null {
+  if (!rawImages) {
+    return null;
+  }
+
+  const list = Array.isArray(rawImages) ? rawImages : [rawImages];
+  const extracted = list
+    .map((image) => pickImageString(image))
+    .filter((image): image is string => Boolean(image));
+
+  return extracted.length > 0 ? extracted : null;
+}
