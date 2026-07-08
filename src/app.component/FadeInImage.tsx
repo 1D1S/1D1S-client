@@ -22,6 +22,21 @@ import React, { useCallback, useState } from 'react';
  * 이미지로 남는다. fallbackSrc 가 있으면 1회 그 이미지로 교체하고,
  * 없으면 페이드인만 끝내 부모 placeholder 배경이 드러나게 한다.
  */
+// 이미 한 번 디코드가 끝난 이미지 src(문자열 URL) 를 기억한다. 스크롤·
+// 리스트 리렌더 등으로 카드가 재마운트될 때 캐시에 있으면 페이드 없이
+// 즉시 opacity-100 으로 그려, 매 재마운트마다 깜빡이던 문제를 없앤다.
+// 최초 로드에서만 페이드인이 보인다.
+const loadedSrcCache = new Set<string>();
+
+function stringSrc(src: ImageProps['src']): string | null {
+  return typeof src === 'string' ? src : null;
+}
+
+function isSrcCached(src: ImageProps['src']): boolean {
+  const key = stringSrc(src);
+  return key !== null && loadedSrcCache.has(key);
+}
+
 type FadeInImageProps = ImageProps & {
   /** 로드 실패 시 1회 교체할 대체 이미지. 미지정 시 교체하지 않는다. */
   fallbackSrc?: ImageProps['src'];
@@ -36,21 +51,34 @@ function FadeInImage({
   fallbackSrc,
   ...rest
 }: FadeInImageProps): React.ReactElement {
-  const [loaded, setLoaded] = useState(false);
+  // 이미 로드된 적 있는 src 면 처음부터 opacity-100 (페이드·깜빡임 없음).
+  const [loaded, setLoaded] = useState(() => isSrcCached(src));
   const [errored, setErrored] = useState(false);
-  // src 가 바뀌면(다른 이미지로 교체) 로드/에러 상태를 초기화한다.
+  // src 가 바뀌면(다른 이미지로 교체) 로드/에러 상태를 초기화한다. 단
+  // 이미 캐시된 src 로 바뀌면 즉시 표시해 깜빡임을 막는다.
   const [trackedSrc, setTrackedSrc] = useState(src);
   if (trackedSrc !== src) {
     setTrackedSrc(src);
-    setLoaded(false);
+    setLoaded(isSrcCached(src));
     setErrored(false);
   }
 
-  const setRef = useCallback((node: HTMLImageElement | null) => {
-    if (node?.complete) {
-      setLoaded(true);
+  const markLoaded = useCallback((loadedSrc: ImageProps['src']) => {
+    const key = stringSrc(loadedSrc);
+    if (key !== null) {
+      loadedSrcCache.add(key);
     }
+    setLoaded(true);
   }, []);
+
+  const setRef = useCallback(
+    (node: HTMLImageElement | null) => {
+      if (node?.complete) {
+        markLoaded(src);
+      }
+    },
+    [markLoaded, src]
+  );
 
   const resolvedSrc = errored && fallbackSrc ? fallbackSrc : src;
 
@@ -67,7 +95,7 @@ function FadeInImage({
         className
       )}
       onLoad={(event) => {
-        setLoaded(true);
+        markLoaded(resolvedSrc);
         onLoad?.(event);
       }}
       onError={(event) => {
