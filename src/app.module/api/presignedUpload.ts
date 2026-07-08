@@ -29,14 +29,27 @@ async function requestPresignedUrls(
   );
 }
 
-// ② 스토리지 직접 PUT 업로드. Content-Type 이 ①에서 보낸 fileType 과
-// 정확히 일치해야 S3 가 403 을 내지 않는다. 여기선 ①의 fileType 에
-// file.type 을 넣었으므로 동일 file.type 으로 PUT 하면 항상 일치한다.
-async function putToStorage(uploadUrl: string, file: File): Promise<void> {
+// presigned PUT 시 S3 오브젝트에 저장되는 캐시 정책. 백엔드가 presigned
+// 서명에 이 값을 포함하므로, PUT 헤더도 한 글자까지 정확히 일치해야 S3 가
+// 403 SignatureDoesNotMatch 를 내지 않는다. 업로드 URL 은 UUID 키라 내용이
+// 바뀌지 않으므로 immutable + 1년 max-age 가 안전하다.
+const IMAGE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
+
+// presigned URL 로 스토리지에 직접 PUT 업로드하는 공용 헬퍼. 모든 이미지
+// 업로드(단건/배치)가 이 함수를 지나가 Content-Type·Cache-Control 헤더를
+// 한 곳에서만 관리한다. Content-Type 은 ①에서 서명한 fileType 과 일치해야
+// 하며, HEIC 등 file.type 이 빈 문자열이면 image/jpeg 로 fallback 한다.
+export async function putToStorage(
+  uploadUrl: string,
+  file: File
+): Promise<void> {
   const response = await fetch(uploadUrl, {
     method: 'PUT',
     body: file,
-    headers: { 'Content-Type': file.type },
+    headers: {
+      'Content-Type': file.type || 'image/jpeg',
+      'Cache-Control': IMAGE_CACHE_CONTROL,
+    },
   });
 
   if (!response.ok) {

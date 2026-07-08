@@ -4,6 +4,7 @@ import { ConfirmDialog, Icon, StepIndicator, Text } from '@1d1s/design-system';
 import { Form } from '@component/ui/Form';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import { notifyApiError } from '@module/api/errorNotify';
+import { putToStorage } from '@module/api/presignedUpload';
 import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
@@ -73,12 +74,7 @@ export function SignUpScreen(): React.ReactElement {
           fileName: values.img.name,
           fileType: values.img.type,
         });
-        // iOS에서 HEIC 등 일부 포맷은 file.type이 빈 문자열일 수 있음
-        await fetch(presigned.presignedUrl, {
-          method: 'PUT',
-          body: values.img,
-          headers: { 'Content-Type': values.img.type || 'image/jpeg' },
-        });
+        await putToStorage(presigned.presignedUrl, values.img);
         profileImageKey = presigned.objectKey;
       }
 
