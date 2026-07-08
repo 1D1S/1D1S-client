@@ -24,8 +24,10 @@ function DiaryCreateThumbnailSectionComponent({
         사진 첨부 <span className="font-medium text-gray-400">· 선택</span>
       </Text>
 
-      {/* max 미지정 = 다중 업로드. 크롭/비율 조정 없이 원본을 업로드한다. */}
+      {/* 최대 5장(useDiaryCreateForm 의 MAX_DIARY_IMAGES 와 일치). 크롭/비율
+          조정 없이 원본을 업로드한다. */}
       <ThumbnailPicker
+        max={5}
         previews={previews}
         onSelectFiles={onSelectFiles}
         onRemove={onRemove}
@@ -44,7 +46,8 @@ function DiaryCreateThumbnailSectionComponent({
               · 미선택 시 첫 이미지가 표시됩니다
             </span>
           </Text>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          {/* py-1 로 선택 테두리가 스크롤 컨테이너에 잘리지 않게 여유를 준다. */}
+          <div className="flex gap-2 overflow-x-auto px-0.5 py-1">
             {previews.map((url, index) => {
               const isSelected = index === thumbnailIndex;
               return (
@@ -56,9 +59,9 @@ function DiaryCreateThumbnailSectionComponent({
                   aria-label={`${index + 1}번째 이미지를 대표로 지정`}
                   className={cn(
                     'relative h-16 w-16 shrink-0 overflow-hidden rounded-lg',
-                    'border transition-all',
+                    'border-2 transition-colors',
                     isSelected
-                      ? 'border-main-600 ring-main-600 ring-2'
+                      ? 'border-main-600'
                       : 'border-gray-200 opacity-60 hover:opacity-100'
                   )}
                 >
@@ -71,8 +74,8 @@ function DiaryCreateThumbnailSectionComponent({
                   {isSelected ? (
                     <span
                       className={cn(
-                        'bg-main-600 absolute inset-x-0 bottom-0 py-0.5',
-                        'text-center text-[10px] font-bold text-white'
+                        'bg-main-600 absolute top-1 left-1 rounded px-1',
+                        'text-[9px] leading-tight font-bold text-white'
                       )}
                     >
                       대표

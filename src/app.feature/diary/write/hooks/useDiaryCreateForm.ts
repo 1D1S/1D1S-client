@@ -41,6 +41,10 @@ import {
 
 const EMPTY_GOALS: ChallengeGoal[] = [];
 
+// 일지 이미지 최대 등록 장수. DiaryCreateThumbnailSection 의
+// ThumbnailPicker max 와 일치시킨다.
+export const MAX_DIARY_IMAGES = 5;
+
 interface UseDiaryCreateFormResult {
   isEditMode: boolean;
   title: string;
@@ -477,7 +481,19 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     }));
 
     // 대표는 자동 지정하지 않는다 — 사용자가 고를 때까지 미선택(null).
-    setImages((prevImages) => [...prevImages, ...addedImages]);
+    // 최대 장수를 넘는 분은 버리고, 만든 objectURL 은 누수 방지로 revoke.
+    setImages((prevImages) => {
+      const remaining = MAX_DIARY_IMAGES - prevImages.length;
+      if (remaining <= 0) {
+        addedImages.forEach((image) => revokeObjectUrlIfNeeded(image.url));
+        return prevImages;
+      }
+
+      addedImages
+        .slice(remaining)
+        .forEach((image) => revokeObjectUrlIfNeeded(image.url));
+      return [...prevImages, ...addedImages.slice(0, remaining)];
+    });
   }, []);
 
   const handleRemoveImageAt = useCallback(
