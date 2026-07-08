@@ -94,15 +94,12 @@ export function resolveDiaryImageList(rawImages: unknown): string[] | null {
 }
 
 // 목록/피드/카드에 표시할 대표 이미지 한 장.
-// 서버 thumbnailUrl 을 우선하고, 없으면(기존 데이터=null) imgUrl[0] 로
-// fallback 한다. thumbnailUrl 이 raw 든 resolve 된 값이든 idempotent.
+// 대표 미지정(null)이면 undefined — imgUrl[0] 로 폴백하지 않는다
+// (대표를 안 고르면 카드 이미지도 없음). raw/resolve 값 모두 idempotent.
 export function resolveDiaryThumbnail(
-  thumbnailUrl: string | null | undefined,
-  imgUrl: string[] | string | null | undefined
+  thumbnailUrl: string | null | undefined
 ): string | undefined {
-  return (
-    resolveDiaryImageUrl(thumbnailUrl) ?? resolveDiaryImageList(imgUrl)?.[0]
-  );
+  return resolveDiaryImageUrl(thumbnailUrl) ?? undefined;
 }
 
 // resolve(IMAGE_BASE_URL prepend 등) 없이 백엔드 원본 문자열만 뽑는다.

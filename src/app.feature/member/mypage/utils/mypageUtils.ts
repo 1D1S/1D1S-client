@@ -60,7 +60,7 @@ function toRelativeDateLabel(createdAt: string | undefined): string {
 }
 
 function resolveDiaryImage(diary: DiaryItem): string | undefined {
-  return resolveDiaryThumbnail(diary.thumbnailUrl, diary.imgUrl);
+  return resolveDiaryThumbnail(diary.thumbnailUrl);
 }
 
 export function getLongestGoalStreakSummary(

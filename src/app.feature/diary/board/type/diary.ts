@@ -50,8 +50,8 @@ export interface DiaryItem {
   title: string;
   content: string;
   imgUrl: string[] | null;
-  // 대표 썸네일(imgUrl 중 하나). 기존 데이터는 null → 표시 시
-  // `thumbnailUrl ?? imgUrl[0]` fallback (resolveDiaryThumbnail).
+  // 대표 썸네일(imgUrl 중 하나). 미지정이면 null — 목록/카드는 대표가
+  // 없으면 이미지를 표시하지 않는다(imgUrl[0] 폴백 없음).
   thumbnailUrl: string | null;
   isPublic: boolean;
   likeInfo: LikeInfo;

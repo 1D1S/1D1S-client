@@ -43,7 +43,7 @@ function DiaryCreateThumbnailSectionComponent({
           >
             대표 썸네일{' '}
             <span className="font-medium text-gray-400">
-              · 미선택 시 첫 이미지가 표시됩니다
+              · 미선택 시 목록·카드에 이미지가 표시되지 않습니다
             </span>
           </Text>
           {/* py-1 로 선택 테두리가 스크롤 컨테이너에 잘리지 않게 여유를 준다. */}

@@ -53,7 +53,7 @@ const MemberDiaryListItem = React.memo(
 
     return (
       <DiaryCard
-        imageUrl={resolveDiaryThumbnail(item.thumbnailUrl, item.imgUrl)}
+        imageUrl={resolveDiaryThumbnail(item.thumbnailUrl)}
         profileImageUrl={
           resolveDiaryImageUrl(item.authorInfoDto?.profileImage) ?? undefined
         }
