@@ -469,32 +469,34 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     [disabledAchievedDateKeySet, selectedChallenge?.startDate]
   );
 
-  const handleAddImageFiles = useCallback((files: File[]) => {
-    if (files.length === 0) {
-      return;
-    }
-
-    const addedImages = files.map((file) => ({
-      kind: 'new' as const,
-      url: URL.createObjectURL(file),
-      file,
-    }));
-
-    // 대표는 자동 지정하지 않는다 — 사용자가 고를 때까지 미선택(null).
-    // 최대 장수를 넘는 분은 버리고, 만든 objectURL 은 누수 방지로 revoke.
-    setImages((prevImages) => {
-      const remaining = MAX_DIARY_IMAGES - prevImages.length;
-      if (remaining <= 0) {
-        addedImages.forEach((image) => revokeObjectUrlIfNeeded(image.url));
-        return prevImages;
+  const handleAddImageFiles = useCallback(
+    (files: File[]) => {
+      if (files.length === 0) {
+        return;
       }
 
-      addedImages
-        .slice(remaining)
-        .forEach((image) => revokeObjectUrlIfNeeded(image.url));
-      return [...prevImages, ...addedImages.slice(0, remaining)];
-    });
-  }, []);
+      // 최대 장수까지만 받는다(초과분은 애초에 objectURL 을 만들지 않음).
+      const remaining = MAX_DIARY_IMAGES - images.length;
+      if (remaining <= 0) {
+        return;
+      }
+
+      const addedImages = files.slice(0, remaining).map((file) => ({
+        kind: 'new' as const,
+        url: URL.createObjectURL(file),
+        file,
+      }));
+
+      setImages([...images, ...addedImages]);
+
+      // 첫 등록 이미지는 자동으로 대표 지정(빈 목록일 때만). 이후 변경·해제는
+      // 사용자 몫이라 여기서 다시 건드리지 않는다.
+      if (images.length === 0 && addedImages.length > 0) {
+        setThumbnailImageUrl(addedImages[0].url);
+      }
+    },
+    [images]
+  );
 
   const handleRemoveImageAt = useCallback(
     (index: number) => {
@@ -503,11 +505,14 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         revokeObjectUrlIfNeeded(target.url);
       }
 
-      setImages(images.filter((_, itemIndex) => itemIndex !== index));
+      const nextImages = images.filter((_, itemIndex) => itemIndex !== index);
+      setImages(nextImages);
 
-      // 대표를 삭제하면 미지정(null)으로. 다른 장을 자동 대표로 삼지 않는다.
+      // 대표 이미지를 삭제하면 남은 첫 이미지로 재지정(첫 이미지가 기본
+      // 대표). 목록이 비면 null. 사용자가 직접 해제한 null 은 유지된다
+      // (지운 대상이 대표와 다르면 건드리지 않음).
       if (target && thumbnailImageUrl === target.url) {
-        setThumbnailImageUrl(null);
+        setThumbnailImageUrl(nextImages[0]?.url ?? null);
       }
     },
     [images, thumbnailImageUrl]
