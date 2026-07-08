@@ -6,8 +6,8 @@ import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
 import {
-  resolveDiaryImageList,
   resolveDiaryImageUrl,
+  resolveDiaryThumbnail,
 } from '@feature/diary/shared/utils/diaryImageUrl';
 import { cn } from '@module/utils/cn';
 import { formatMonthDayKR } from '@module/utils/date';
@@ -43,7 +43,7 @@ const HomeDiaryItem = React.memo(
 
     return (
       <DiaryCard
-        imageUrl={resolveDiaryImageList(item.imgUrl)?.[0]}
+        imageUrl={resolveDiaryThumbnail(item.thumbnailUrl)}
         profileImageUrl={
           resolveDiaryImageUrl(item.authorInfoDto?.profileImage) ??
           undefined

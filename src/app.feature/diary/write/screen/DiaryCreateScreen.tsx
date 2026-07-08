@@ -7,7 +7,7 @@ import { cn } from '@module/utils/cn';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 import type { ChallengeGoal } from '../../../challenge/board/type/challenge';
 import { DiaryCreateChallengeSection } from '../components/DiaryCreateChallengeSection';
@@ -57,7 +57,8 @@ export default function DiaryCreateScreen(): React.ReactElement {
     isSelectedChallengeConfirmed,
     goals,
     achievedGoalIds,
-    thumbnailPreviewUrl,
+    imagePreviewUrls,
+    thumbnailIndex,
     submitButtonLabel,
     canSubmit,
     isSubmitting,
@@ -65,12 +66,26 @@ export default function DiaryCreateScreen(): React.ReactElement {
     isCreateUnavailableDialogOpen,
     handleSelectChallenge,
     handleGoalIdsChange,
-    handleThumbnailFileSelect,
+    handleAddImageFiles,
+    handleRemoveImageAt,
+    handleSelectThumbnailAt,
     closeMissingChallengeDialog,
     closeCreateUnavailableDialog,
-    clearThumbnail,
     handleSubmit,
   } = useDiaryCreateForm();
+
+  // 저장 중 오버레이가 떠 있는 동안 뒤 화면 스크롤을 잠근다.
+  useEffect(() => {
+    if (!isSubmitting) {
+      return;
+    }
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isSubmitting]);
 
   const totalGoalCount = isSelectedChallengeConfirmed ? goals.length : 0;
   const achievedGoalCount = isSelectedChallengeConfirmed
@@ -85,13 +100,20 @@ export default function DiaryCreateScreen(): React.ReactElement {
   const thumbnailSlot = useMemo(
     () => (
       <DiaryCreateThumbnailSection
-        thumbnailPreviewUrl={thumbnailPreviewUrl}
-        hasThumbnail={Boolean(thumbnailPreviewUrl)}
-        onSelectThumbnailFile={handleThumbnailFileSelect}
-        onClearThumbnail={clearThumbnail}
+        previews={imagePreviewUrls}
+        thumbnailIndex={thumbnailIndex}
+        onSelectFiles={handleAddImageFiles}
+        onRemove={handleRemoveImageAt}
+        onSelectThumbnail={handleSelectThumbnailAt}
       />
     ),
-    [thumbnailPreviewUrl, handleThumbnailFileSelect, clearThumbnail]
+    [
+      imagePreviewUrls,
+      thumbnailIndex,
+      handleAddImageFiles,
+      handleRemoveImageAt,
+      handleSelectThumbnailAt,
+    ]
   );
 
   return (

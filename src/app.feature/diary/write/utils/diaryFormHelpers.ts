@@ -12,10 +12,7 @@ import type {
   DiaryDetail,
   DiaryInfo,
 } from '../../board/type/diary';
-import {
-  resolveDiaryImageList,
-  resolveDiaryImageUrl,
-} from '../../shared/utils/diaryImageUrl';
+import { extractDiaryImageList } from '../../shared/utils/diaryImageUrl';
 
 export function parsePositiveInteger(value: string | null): number | null {
   if (!value) {
@@ -119,7 +116,7 @@ export function getSubmitButtonLabel({
     return '수정 중...';
   }
   if (isUploadingImage) {
-    return '썸네일 업로드 중...';
+    return '이미지 업로드 중...';
   }
   return isEditMode ? '수정 완료' : '작성 완료';
 }
@@ -218,12 +215,24 @@ export function getDiaryInfo(
   return diaryWithAliases?.diaryInfoDto ?? diaryWithAliases?.diaryInfo ?? null;
 }
 
-export function getDiaryThumbnailPreviewUrl(
+// 폼에서 다루는 이미지 한 장.
+// - existing: 조회 응답 imgUrl 원본값(버킷 URL). 저장 시 resolve 없이
+//   그대로 재전송한다(변형하면 400 DIARY-008). 표시용 resolve 는 소비처가.
+// - new: 아직 업로드 전 로컬 File. url 은 미리보기용 objectURL.
+export interface DiaryImageItem {
+  kind: 'existing' | 'new';
+  url: string;
+  file?: File;
+}
+
+// 수정 폼 진입 시 기존 이미지의 raw imgUrl 목록(순서 유지).
+// 재전송용이므로 resolve 하지 않은 백엔드 원본 문자열을 돌려준다.
+export function getDiaryImageUrls(
   diary: DiaryDetail | null | undefined
-): string {
+): string[] {
   const diaryWithAliases = diary as DiaryDetailWithAliases | null | undefined;
   if (!diaryWithAliases) {
-    return '';
+    return [];
   }
 
   const imageCandidates: unknown[] = [
@@ -236,13 +245,11 @@ export function getDiaryThumbnailPreviewUrl(
   ];
 
   for (const candidate of imageCandidates) {
-    const resolvedImage = resolveDiaryImageList(candidate)?.[0];
-    if (resolvedImage) {
-      return resolvedImage;
+    const extracted = extractDiaryImageList(candidate);
+    if (extracted && extracted.length > 0) {
+      return extracted;
     }
   }
 
-  const imageFromLegacyFields = resolveDiaryImageUrl(diaryWithAliases.img);
-
-  return imageFromLegacyFields ?? '';
+  return [];
 }

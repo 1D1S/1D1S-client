@@ -133,3 +133,24 @@
     padding-bottom: calc(10rem + env(safe-area-inset-bottom));
   }
 }
+
+/* 드래그(텍스트 선택) 복사 방지 — 전역 차단.
+   예외: 입력·편집 요소와 .allow-user-select 영역(챌린지/일지 상세)은 허용.
+   @layer 밖에 두어 Tailwind 유틸보다 우선 적용되게 한다. */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea,
+[contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.allow-user-select,
+.allow-user-select * {
+  -webkit-user-select: text;
+  user-select: text;
+}

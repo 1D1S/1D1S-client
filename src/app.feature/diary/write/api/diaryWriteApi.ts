@@ -7,8 +7,6 @@ import {
   CreateDiaryResponse,
   UpdateDiaryRequest,
   UpdateDiaryResponse,
-  UploadImageResponse,
-  UploadImagesResponse,
 } from '../../board/type/diary';
 
 export const diaryWriteApi = {
@@ -38,42 +36,4 @@ export const diaryWriteApi = {
       method: 'POST',
       data,
     }),
-
-  // 다이어리에 이미지 1개 추가하기
-  uploadDiaryImage: async (
-    id: number,
-    file: File
-  ): Promise<UploadImageResponse> => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    // Content-Type을 명시하지 않아야 Axios가 boundary를 포함한
-    // 'multipart/form-data; boundary=...' 를 자동으로 설정함
-    const imageUrl = await requestData<string, FormData>(apiClient, {
-      url: `/diaries/${id}/image`,
-      method: 'POST',
-      data: formData,
-    });
-
-    return { imageUrl };
-  },
-
-  // 다이어리 이미지 여러개 한번에 올리기
-  uploadDiaryImages: async (
-    id: number,
-    files: File[]
-  ): Promise<UploadImagesResponse> => {
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append('file', file);
-    });
-
-    const imageUrls = await requestData<string[], FormData>(apiClient, {
-      url: `/diaries/${id}/images`,
-      method: 'POST',
-      data: formData,
-    });
-
-    return { imageUrls };
-  },
 };

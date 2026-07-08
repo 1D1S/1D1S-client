@@ -3,7 +3,10 @@ import type {
   DiaryGoalStatus,
   DiaryItem,
 } from '@feature/diary/board/type/diary';
-import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
+import {
+  resolveDiaryImageUrl,
+  resolveDiaryThumbnail,
+} from '@feature/diary/shared/utils/diaryImageUrl';
 import {
   type DiaryEmotion,
   mapFeelingToEmotion,
@@ -57,10 +60,7 @@ function toRelativeDateLabel(createdAt: string | undefined): string {
 }
 
 function resolveDiaryImage(diary: DiaryItem): string | undefined {
-  if (Array.isArray(diary.imgUrl) && diary.imgUrl.length > 0) {
-    return diary.imgUrl[0];
-  }
-  return undefined;
+  return resolveDiaryThumbnail(diary.thumbnailUrl);
 }
 
 export function getLongestGoalStreakSummary(

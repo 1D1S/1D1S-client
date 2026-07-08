@@ -882,6 +882,7 @@ export function ChallengeDetailScreen({
 
       <div
         className={cn(
+          'allow-user-select',
           'data-fade-in min-h-screen w-full bg-white',
           ctaConfig.show ? 'pb-mobile-action-bar lg:pb-12' : 'pb-12'
         )}

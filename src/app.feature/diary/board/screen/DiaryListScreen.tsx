@@ -21,7 +21,10 @@ import {
   useLikeDiary,
   useUnlikeDiary,
 } from '../../detail/hooks/useDiaryMutations';
-import { resolveDiaryImageUrl } from '../../shared/utils/diaryImageUrl';
+import {
+  resolveDiaryImageUrl,
+  resolveDiaryThumbnail,
+} from '../../shared/utils/diaryImageUrl';
 import { mapFeelingToEmotion } from '../../shared/utils/feeling';
 import { useDiaryList } from '../hooks/useDiaryQueries';
 import { type DiaryItem } from '../type/diary';
@@ -102,7 +105,7 @@ const DiaryListItem = React.memo(
     return (
       <div className="min-w-0">
         <DiaryCard
-          imageUrl={item.imgUrl?.[0]}
+          imageUrl={resolveDiaryThumbnail(item.thumbnailUrl)}
           profileImageUrl={
             resolveDiaryImageUrl(authorInfo?.profileImage) ?? undefined
           }

@@ -13,8 +13,8 @@ import {
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
 import {
-  resolveDiaryImageList,
   resolveDiaryImageUrl,
+  resolveDiaryThumbnail,
 } from '@feature/diary/shared/utils/diaryImageUrl';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
@@ -53,7 +53,7 @@ const MemberDiaryListItem = React.memo(
 
     return (
       <DiaryCard
-        imageUrl={resolveDiaryImageList(item.imgUrl)?.[0]}
+        imageUrl={resolveDiaryThumbnail(item.thumbnailUrl)}
         profileImageUrl={
           resolveDiaryImageUrl(item.authorInfoDto?.profileImage) ?? undefined
         }

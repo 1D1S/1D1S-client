@@ -771,6 +771,7 @@ function DiaryDetailView({
   return (
     <div
       className={cn(
+        'allow-user-select',
         'detail-fade-in min-h-screen w-full bg-white',
         'pb-mobile-action-bar-tall sm:pb-0'
       )}

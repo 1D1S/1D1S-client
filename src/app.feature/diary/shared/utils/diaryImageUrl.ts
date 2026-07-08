@@ -92,3 +92,28 @@ export function resolveDiaryImageList(rawImages: unknown): string[] | null {
 
   return resolved.length > 0 ? resolved : null;
 }
+
+// 목록/피드/카드에 표시할 대표 이미지 한 장.
+// 대표 미지정(null)이면 undefined — imgUrl[0] 로 폴백하지 않는다
+// (대표를 안 고르면 카드 이미지도 없음). raw/resolve 값 모두 idempotent.
+export function resolveDiaryThumbnail(
+  thumbnailUrl: string | null | undefined
+): string | undefined {
+  return resolveDiaryImageUrl(thumbnailUrl) ?? undefined;
+}
+
+// resolve(IMAGE_BASE_URL prepend 등) 없이 백엔드 원본 문자열만 뽑는다.
+// 수정 시 기존 이미지를 그대로 재전송할 때 사용 — 계약상 imgUrl 원본값을
+// 변형 없이 다시 보내야 하기 때문(변형 시 400 DIARY-008).
+export function extractDiaryImageList(rawImages: unknown): string[] | null {
+  if (!rawImages) {
+    return null;
+  }
+
+  const list = Array.isArray(rawImages) ? rawImages : [rawImages];
+  const extracted = list
+    .map((image) => pickImageString(image))
+    .filter((image): image is string => Boolean(image));
+
+  return extracted.length > 0 ? extracted : null;
+}

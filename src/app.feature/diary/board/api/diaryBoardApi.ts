@@ -20,6 +20,7 @@ type DiaryItemApi = Omit<DiaryItem, 'authorInfoDto' | 'diaryInfoDto'> & {
   author?: DiaryItem['authorInfoDto'] | null;
   diaryInfo?: DiaryItem['diaryInfoDto'] | null;
   imgUrl?: string[] | string | null;
+  thumbnailUrl?: string | null;
 };
 
 type DiaryListApiResponse = Omit<DiaryListResponse, 'items'> & {
@@ -34,6 +35,7 @@ const normalizeDiaryItem = (item: DiaryItemApi): DiaryItem => {
   return {
     ...rest,
     imgUrl: resolveDiaryImageList(item.imgUrl),
+    thumbnailUrl: item.thumbnailUrl ?? null,
     authorInfoDto: authorInfoDto ?? author ?? null,
     diaryInfoDto: diaryInfoDto ?? diaryInfo ?? null,
   };
