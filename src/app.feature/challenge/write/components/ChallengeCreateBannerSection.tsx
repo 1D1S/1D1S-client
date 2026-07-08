@@ -9,6 +9,7 @@ import {
 import { ImageCropDialog } from '@component/ImageCropDialog';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { apiClient } from '@module/api/client';
+import { putToStorage } from '@module/api/presignedUpload';
 import { requestData } from '@module/api/request';
 import { useState } from 'react';
 import { Control, useFormContext, useWatch } from 'react-hook-form';
@@ -82,12 +83,7 @@ export function ChallengeCreateBannerSection(): React.ReactElement {
         data: { fileName: file.name, fileType: file.type },
       });
 
-      // iOS HEIC 등 일부 포맷은 file.type 이 빈 문자열일 수 있어 fallback 적용.
-      await fetch(presignedUrl, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type || 'image/jpeg' },
-      });
+      await putToStorage(presignedUrl, file);
 
       setValue('thumbnailImageKey', objectKey);
       setValue('thumbnailPreviewUrl', blobUrl);

@@ -9,6 +9,7 @@ import {
 import { ImageCropDialog } from '@component/ImageCropDialog';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { apiClient } from '@module/api/client';
+import { putToStorage } from '@module/api/presignedUpload';
 import { requestData } from '@module/api/request';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -58,11 +59,7 @@ export function ChallengeEditBannerSection(): React.ReactElement {
         data: { fileName: file.name, fileType: file.type },
       });
 
-      await fetch(presignedUrl, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type || 'image/jpeg' },
-      });
+      await putToStorage(presignedUrl, file);
 
       setValue('thumbnailImageKey', objectKey, { shouldDirty: true });
       setValue('thumbnailPreviewUrl', blobUrl, { shouldDirty: true });
