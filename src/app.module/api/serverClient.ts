@@ -44,12 +44,3 @@ export async function serverRequestData<TData>(
   const response = await client.request<ApiResponse<TData>>(config);
   return response.data.data;
 }
-
-export async function serverRequestBody<TResponse>(
-  config: ServerRequestOptions
-): Promise<TResponse> {
-  const cookieHeader = await buildCookieHeader();
-  const client = createServerClient(cookieHeader);
-  const response = await client.request<TResponse>(config);
-  return response.data;
-}

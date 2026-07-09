@@ -5,6 +5,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 
+// 루트 레이아웃에서 headers() 를 제거해 앱 전역이 정적 prerender 대상이
+// 됐는데, 이 페이지의 `Button asChild`(Radix Slot) 조합이 빌드타임 정적
+// prerender 에서 React.Children.only 로 실패한다(이전엔 레이아웃이 전역을
+// dynamic 으로 강제해 빌드 prerender 를 건너뛰어 드러나지 않던 기존 이슈).
+// 핫 라우트 범위 밖이므로 이전과 동일한 on-demand 렌더로 고정만 하고, DS
+// Slot 이슈 자체 수정은 후속 작업으로 남긴다.
+export const dynamic = 'force-dynamic';
+
 const STEPS = [
   {
     icon: Flag,
