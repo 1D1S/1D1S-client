@@ -26,12 +26,20 @@ interface LeaderboardEntry {
   profileImg?: string | null;
   isHost: boolean;
   goals?: LeaderboardEntryGoal[];
+  // 등수 — 시작 전/순위 미산정이면 null. 양수일 때만 배지로 노출한다.
+  rank?: number | null;
+  streak?: number;
+  completedGoalCount?: number;
 }
 
 interface ChallengeLeaderboardCardProps {
   entries: LeaderboardEntry[];
   onMemberClick?(memberId: number): void;
   maxRows?: number;
+  // 전체 참여자 수 — "전체 보기" 노출 여부 판단(상세는 상위 5명만 내려온다).
+  totalCount?: number;
+  // 전체 참여자 목록 화면으로 이동. 지정 시 "전체 보기"가 모달 대신 이동한다.
+  onShowAll?(): void;
   // 찌르기: 내가 참여 중 + 진행 중 + 오늘 일지 작성 완료일 때만 true
   canPoke?: boolean;
   // 내 행에는 찌르기 버튼을 노출하지 않기 위한 현재 로그인 사용자 식별값.
@@ -60,6 +68,8 @@ function MemberRow({
 }: MemberRowProps): React.ReactElement {
   const hasGoals = (entry.goals?.length ?? 0) > 0;
 
+  const hasRank = typeof entry.rank === 'number' && entry.rank > 0;
+
   return (
     <div className="flex items-center gap-1">
       <button
@@ -71,18 +81,44 @@ function MemberRow({
           'hover:bg-gray-50'
         )}
       >
+        {hasRank ? (
+          <span
+            className={cn(
+              'flex h-5 w-5 shrink-0 items-center justify-center',
+              'text-[12px] font-extrabold tabular-nums',
+              entry.rank === 1
+                ? 'text-main-800'
+                : entry.rank && entry.rank <= 3
+                  ? 'text-gray-700'
+                  : 'text-gray-400'
+            )}
+          >
+            {entry.rank}
+          </span>
+        ) : null}
         <CircleAvatar
           size="sm"
           imageUrl={entry.profileImg ?? undefined}
           tone="cream"
         />
-        <Text
-          size="caption1"
-          weight="bold"
-          className="flex-1 truncate text-gray-800"
-        >
-          {entry.nickname}
-        </Text>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Text
+            size="caption1"
+            weight="bold"
+            className="truncate text-gray-800"
+          >
+            {entry.nickname}
+          </Text>
+          {hasRank ? (
+            <Text
+              size="caption2"
+              weight="regular"
+              className="truncate text-gray-400"
+            >
+              {entry.streak ?? 0}일 연속 · 목표 {entry.completedGoalCount ?? 0}개
+            </Text>
+          ) : null}
+        </div>
         {entry.isHost ? (
           <span
             className={cn(
@@ -126,6 +162,8 @@ export function ChallengeLeaderboardCard({
   entries,
   onMemberClick,
   maxRows = 5,
+  totalCount,
+  onShowAll,
   canPoke = false,
   currentMemberId = null,
   currentNickname = null,
@@ -136,9 +174,11 @@ export function ChallengeLeaderboardCard({
   const rows = entries.slice(0, maxRows);
   // 목표 보기 다이얼로그 — 선택된 참여자만 보관해 화면 상태와 분리한다.
   const [goalsOf, setGoalsOf] = useState<LeaderboardEntry | null>(null);
-  // 참여자 5명 이상이면 전체 목록을 모달로 펼친다.
+  // 참여자 5명 이상이면 전체 목록을 모달로 펼친다(레거시 폴백).
   const [showAll, setShowAll] = useState(false);
-  const canShowAll = entries.length >= 5;
+  const displayCount = totalCount ?? entries.length;
+  // onShowAll 이 있으면 전체 목록 화면으로 이동, 없으면 모달로 펼친다.
+  const canShowAll = onShowAll ? displayCount > maxRows : entries.length >= 5;
 
   return (
     <Card radius="lg" className="p-5">
@@ -147,15 +187,15 @@ export function ChallengeLeaderboardCard({
           참여자
         </Text>
         <div className="flex items-center gap-2">
-          {entries.length > 0 ? (
+          {displayCount > 0 ? (
             <Text size="caption2" weight="medium" className="text-gray-500">
-              {entries.length}명
+              {displayCount}명
             </Text>
           ) : null}
           {canShowAll ? (
             <button
               type="button"
-              onClick={() => setShowAll(true)}
+              onClick={() => (onShowAll ? onShowAll() : setShowAll(true))}
               className={cn(
                 'shrink-0 rounded-full bg-gray-100 px-2.5 py-1',
                 'text-[11px] font-bold text-gray-600',

@@ -1216,7 +1216,14 @@ export function ChallengeDetailScreen({
                   isHost: participant.status === 'HOST',
                   // 고정 목표는 전원 공통이라 참여자별로 볼 의미가 없다.
                   goals: isFreeChallenge ? participant.goals : undefined,
+                  rank: participant.rank,
+                  streak: participant.streak,
+                  completedGoalCount: participant.completedGoalCount,
                 }))}
+                totalCount={summaryParticipantCnt}
+                onShowAll={() =>
+                  router.push(`/challenge/${id}/participants`)
+                }
                 onMemberClick={(memberId) => router.push(`/member/${memberId}`)}
                 canPoke={canPokeMembers}
                 currentMemberId={currentMemberId}

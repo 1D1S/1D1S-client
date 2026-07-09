@@ -88,12 +88,41 @@ export interface Participant {
   status: ParticipantStatus;
   // 참여자별 목표 — FIXED 는 공통 목표, FLEXIBLE 는 본인이 설정한 목표.
   goals?: ChallengeGoal[];
+  // 등수 — 시작 전이거나 순위 산정 대상이 아니면 null.
+  rank: number | null;
+  // 연속 달성일수 / 완료한 목표 개수
+  streak: number;
+  completedGoalCount: number;
+}
+
+// 참여자 목록 정렬 — 참여순(기본) / 등수순
+export type ParticipantSort = 'PARTICIPATION' | 'RANK';
+
+export interface ParticipantListParams {
+  sort?: ParticipantSort;
+  page?: number;
+  size?: number;
+}
+
+// 오프셋 페이지네이션 공통 페이지 정보 (챌린지 일지 목록과 동일 형태)
+export interface OffsetPageInfo {
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNextPage: boolean;
+}
+
+export interface ParticipantListResponse {
+  items: Participant[];
+  pageInfo: OffsetPageInfo;
 }
 
 export interface ChallengeDetailResponse {
   challengeSummary: ChallengeSummary;
   challengeDetail: ChallengeDetail;
   challengeGoals: ChallengeGoal[];
+  // 챌린지 상세는 등수순 상위 5명만 내려준다(각 항목에 rank 포함).
   participants: Participant[];
 }
 

@@ -5,6 +5,8 @@ import {
   ChallengeDetailResponse,
   JoinChallengeRequest,
   JoinChallengeResponse,
+  ParticipantListParams,
+  ParticipantListResponse,
   PokeChallengeRequest,
   PokeChallengeResponse,
   VerifyChallengePasswordRequest,
@@ -21,6 +23,29 @@ export const challengeDetailApi = {
       url: `/challenges/${challengeId}`,
       method: 'GET',
     }),
+
+  // 챌린지 참여자 목록 조회 (오프셋 페이지네이션 + 정렬)
+  getParticipants: async (
+    challengeId: number,
+    params: ParticipantListParams = {}
+  ): Promise<ParticipantListResponse> => {
+    const requestParams: Record<string, string | number> = {};
+    if (params.sort !== undefined) {
+      requestParams.sort = params.sort;
+    }
+    if (params.page !== undefined) {
+      requestParams.page = params.page;
+    }
+    if (params.size !== undefined) {
+      requestParams.size = params.size;
+    }
+
+    return requestData<ParticipantListResponse>(apiClient, {
+      url: `/challenges/${challengeId}/participants`,
+      method: 'GET',
+      params: Object.keys(requestParams).length > 0 ? requestParams : undefined,
+    });
+  },
 
   // 챌린지 신청하기
   joinChallenge: async (
