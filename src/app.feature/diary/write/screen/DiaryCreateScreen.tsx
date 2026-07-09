@@ -266,6 +266,9 @@ export default function DiaryCreateScreen(): React.ReactElement {
             />
           </section>
 
+          {/* 사진 첨부 — 오늘 이야기(본문) 위에 배치 */}
+          <section>{thumbnailSlot}</section>
+
           <section>
             <Text
               size="caption1"
@@ -276,9 +279,6 @@ export default function DiaryCreateScreen(): React.ReactElement {
             </Text>
             <DiaryContentEditor content={content} onChange={setContent} />
           </section>
-
-          {/* 사진 첨부 — 시안 기준 마지막 섹션 */}
-          <section>{thumbnailSlot}</section>
         </div>
       </div>
 

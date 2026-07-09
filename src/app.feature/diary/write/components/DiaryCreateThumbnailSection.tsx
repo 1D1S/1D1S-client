@@ -45,8 +45,11 @@ function DiaryCreateThumbnailSectionComponent({
 
       {/* 최대 5장. 이미지를 누르면 대표 썸네일로 지정/해제(토글)된다.
           대표는 목록·카드에 노출되며, 미선택 시 표시되지 않는다. */}
+      {/* size=200: DS ThumbnailPicker 는 고정 정사각형만 지원한다(fluid 없음).
+          최대 크기를 200px 로 키워 폼 폭을 최대한 채우게 한다. */}
       <ThumbnailPicker
         max={5}
+        size={200}
         previews={previews}
         onSelectFiles={onSelectFiles}
         onRemove={onRemove}
