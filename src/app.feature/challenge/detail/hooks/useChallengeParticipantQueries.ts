@@ -23,7 +23,8 @@ const PENDING_FETCH_SIZE = 100;
 export function useChallengeParticipantsInfinite(
   challengeId: number,
   sort: ParticipantSort,
-  size?: number
+  size?: number,
+  enabled = true
 ): UseInfiniteQueryResult<InfiniteData<ParticipantListResponse>, Error> {
   return useInfiniteQuery({
     queryKey: CHALLENGE_QUERY_KEYS.participantList(challengeId, { sort, size }),
@@ -36,7 +37,7 @@ export function useChallengeParticipantsInfinite(
     initialPageParam: 0,
     getNextPageParam: (lastPage) =>
       lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.page + 1 : undefined,
-    enabled: Boolean(challengeId),
+    enabled: enabled && Boolean(challengeId),
   });
 }
 

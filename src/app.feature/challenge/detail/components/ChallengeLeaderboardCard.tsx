@@ -174,11 +174,9 @@ export function ChallengeLeaderboardCard({
   const rows = entries.slice(0, maxRows);
   // 목표 보기 다이얼로그 — 선택된 참여자만 보관해 화면 상태와 분리한다.
   const [goalsOf, setGoalsOf] = useState<LeaderboardEntry | null>(null);
-  // 참여자 5명 이상이면 전체 목록을 모달로 펼친다(레거시 폴백).
-  const [showAll, setShowAll] = useState(false);
   const displayCount = totalCount ?? entries.length;
-  // onShowAll 이 있으면 전체 목록 화면으로 이동, 없으면 모달로 펼친다.
-  const canShowAll = onShowAll ? displayCount > maxRows : entries.length >= 5;
+  // "전체 보기"는 전체 참여자 목록 화면으로 이동한다(onShowAll 제공 시에만).
+  const canShowAll = Boolean(onShowAll) && displayCount > maxRows;
 
   return (
     <Card radius="lg" className="p-5">
@@ -195,7 +193,7 @@ export function ChallengeLeaderboardCard({
           {canShowAll ? (
             <button
               type="button"
-              onClick={() => (onShowAll ? onShowAll() : setShowAll(true))}
+              onClick={onShowAll}
               className={cn(
                 'shrink-0 rounded-full bg-gray-100 px-2.5 py-1',
                 'text-[11px] font-bold text-gray-600',
@@ -277,45 +275,6 @@ export function ChallengeLeaderboardCard({
           })}
         </ul>
       )}
-
-      <Dialog
-        open={showAll}
-        onOpenChange={setShowAll}
-      >
-        <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[420px]">
-          <DialogHeader className="flex-col items-start gap-1.5 pb-2">
-            <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
-              참여자 {entries.length}명
-            </DialogTitle>
-          </DialogHeader>
-          <DialogBody>
-            <ul className="flex max-h-[60vh] flex-col overflow-y-auto">
-              {entries.map((entry, index) => {
-                const isLast = index === entries.length - 1;
-
-                return (
-                  <li
-                    key={entry.participantId}
-                    className={cn(!isLast && 'border-b border-gray-100')}
-                  >
-                    <MemberRow
-                      entry={entry}
-                      onSelect={() => {
-                        setShowAll(false);
-                        onMemberClick?.(entry.memberId);
-                      }}
-                      onGoals={() => {
-                        setShowAll(false);
-                        setGoalsOf(entry);
-                      }}
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-          </DialogBody>
-        </DialogContent>
-      </Dialog>
 
       <Dialog
         open={goalsOf !== null}

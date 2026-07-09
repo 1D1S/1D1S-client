@@ -88,7 +88,8 @@ function ParticipantRow({
           ) : null}
         </div>
         <Text size="caption2" weight="regular" className="text-gray-400">
-          {participant.streak}일 연속 · 완료 목표 {participant.completedGoalCount}개
+          {participant.streak ?? 0}일 연속 · 완료 목표{' '}
+          {participant.completedGoalCount ?? 0}개
         </Text>
       </div>
     </button>
@@ -115,7 +116,8 @@ export function ChallengeParticipantListScreen({
   } = useChallengeParticipantsInfinite(
     challengeId,
     sort,
-    PARTICIPANT_PAGE_SIZE
+    PARTICIPANT_PAGE_SIZE,
+    isLoggedIn
   );
   const showSkeleton = useMinimumLoading(isLoading);
   const { ref } = useInfiniteScroll({
@@ -205,6 +207,7 @@ export function ChallengeParticipantListScreen({
                 <button
                   key={option.value}
                   type="button"
+                  aria-pressed={isActive}
                   onClick={() => setSort(option.value)}
                   className={cn(
                     'rounded-full px-3 py-1 text-[12px] font-bold',
