@@ -98,6 +98,12 @@ export const isUnauthorizedError = (error: unknown): boolean =>
 export const isRedirectError = (error: unknown): boolean =>
   isAxiosErrorLike(error) && error.response?.status === 302;
 
+// 요청이 서버에 도달해 HTTP 응답(상태 코드)을 받았는지 여부. 네트워크/타임아웃
+// (응답 없음)과 서버의 명시적 거부를 구분한다. 리프레시 실패가 일시적 오프라인
+// 인지, 세션 무효(회전형 refresh 재사용 감지 등)인지 판정하는 데 쓴다.
+export const hasHttpResponseStatus = (error: unknown): boolean =>
+  isAxiosErrorLike(error) && error.response?.status !== undefined;
+
 export const isInvalidRefreshTokenError = (error: unknown): boolean => {
   if (!isAxiosErrorLike(error)) {
     return false;

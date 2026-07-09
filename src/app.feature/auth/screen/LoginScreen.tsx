@@ -1,7 +1,7 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
-import { authStorage } from '@module/utils/auth';
+import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { cn } from '@module/utils/cn';
 import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import Link from 'next/link';
@@ -17,6 +17,7 @@ import { getLaunchStreakDay } from '../utils/streakDay';
 
 export function LoginScreen(): React.ReactElement {
   const router = useRouter();
+  const isLoggedIn = useIsLoggedIn();
   const [recommended, setRecommended] = React.useState<OAuthProvider | null>(
     null
   );
@@ -31,14 +32,20 @@ export function LoginScreen(): React.ReactElement {
 
   // 이미 로그인된 상태로 /login?returnTo=... 에 오면 바로 복귀시킨다.
   // (returnTo 가 없으면 기존처럼 로그인 화면을 그대로 보여준다)
+  //
+  // 판정은 토큰 존재(hasTokens)가 아니라 권위 있는 세션 상태(useIsLoggedIn)로
+  // 한다. 무효/만료 세션에서도 90일 힌트 쿠키가 남아 hasTokens() 는 true 일 수
+  // 있는데, 이걸로 리다이렉트하면 보호 라우트→/login→보호 라우트 무한 루프에
+  // 갇혀 재로그인이 불가능해진다. useIsLoggedIn 은 사이드바 응답으로 세션을
+  // 확인하며, 세션이 죽으면 forceLogout 이 힌트를 정리해 루프가 풀린다.
   React.useEffect(() => {
     const returnTo = sanitizeReturnTo(
       new URLSearchParams(window.location.search).get(RETURN_TO_PARAM)
     );
-    if (returnTo && authStorage.hasTokens()) {
+    if (returnTo && isLoggedIn) {
       router.replace(returnTo);
     }
-  }, [router]);
+  }, [router, isLoggedIn]);
 
   const providers = getOrderedProviders(recommended);
 
