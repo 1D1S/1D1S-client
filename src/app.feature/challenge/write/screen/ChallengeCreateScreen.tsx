@@ -94,6 +94,7 @@ function formatFormValues(
     goals: values.goals.map((goal) => goal.value),
     allowMidJoin:
       values.participationType === 'INDIVIDUAL' ? false : values.allowMidJoin,
+    // 와이어(서버) 키는 photoRequired, 폼 내부 필드명은 isPhotoRequired.
     photoRequired: values.isPhotoRequired,
     thumbnailImage: values.thumbnailImageKey,
     challengeType: values.challengeType,
