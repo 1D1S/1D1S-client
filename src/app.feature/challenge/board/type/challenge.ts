@@ -102,6 +102,8 @@ export interface ParticipantListParams {
   sort?: ParticipantSort;
   page?: number;
   size?: number;
+  // 상태 필터 (다중). 미지정 시 서버 기본(호스트: 전체 / 그 외: 승인자만).
+  status?: ParticipantStatus[];
 }
 
 // 오프셋 페이지네이션 공통 페이지 정보 (챌린지 일지 목록과 동일 형태)
