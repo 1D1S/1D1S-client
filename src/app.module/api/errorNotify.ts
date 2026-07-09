@@ -6,7 +6,7 @@ import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 
 import { API_BASE_URL } from './config';
 import {
-  hasHttpResponseStatus,
+  isForbiddenError,
   isInvalidRefreshTokenError,
   isRedirectError,
   isUnauthorizedError,
@@ -55,16 +55,21 @@ export const handleAuthError = (error: unknown): void => {
     return;
   }
 
-  // 401(토큰 없음/만료), refresh token 무효(AUTH-006), 그 외 서버가 응답으로
-  // 거부한 모든 인증/리프레시 실패(403·회전형 refresh 재사용 감지로 family
-  // 무효화 등)를 세션 복구 불가로 보고 동일하게 정리한다. 특정 상태/코드만
-  // 정리하면, 서버가 다른 에러로 리프레시를 거부할 때 hasTokens() 가 계속 true 라
-  // 무효 토큰이 남아 재로그인이 막히고 같은 에러가 무한 반복된다.
-  // 네트워크/타임아웃(응답 없음)은 일시적일 수 있어 세션을 유지하고 다음 요청에서
-  // 재시도하게 둔다.
+  // 서버가 세션을 명시적으로 거부한 경우만 정리한다:
+  //   - 401(토큰 없음/만료)
+  //   - 403(회전형 refresh 재사용 감지로 family 무효화 등)
+  //   - refresh token 무효 코드(AUTH-006)
+  // 401/AUTH-006 만 정리하면, 서버가 403 등 다른 에러로 리프레시를 거부할 때
+  // hasTokens() 가 계속 true 라 무효 토큰이 남아 재로그인이 막히고 같은 에러가
+  // 무한 반복된다. 반대로 5xx·429·408·네트워크/타임아웃(일시적)에는 세션을
+  // 유지하고 다음 요청에서 재시도하게 둔다 — 백엔드 순단으로 로그인 사용자를
+  // 일괄 로그아웃시키지 않기 위함.
   const invalidRefresh = isInvalidRefreshTokenError(error);
-  const serverRejected = hasHttpResponseStatus(error);
-  if (!isUnauthorizedError(error) && !invalidRefresh && !serverRejected) {
+  if (
+    !isUnauthorizedError(error) &&
+    !isForbiddenError(error) &&
+    !invalidRefresh
+  ) {
     return;
   }
 

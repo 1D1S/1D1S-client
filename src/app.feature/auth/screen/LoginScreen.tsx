@@ -1,7 +1,7 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
-import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
 import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import Link from 'next/link';
@@ -17,7 +17,11 @@ import { getLaunchStreakDay } from '../utils/streakDay';
 
 export function LoginScreen(): React.ReactElement {
   const router = useRouter();
-  const isLoggedIn = useIsLoggedIn();
+  // 사이드바 실데이터(= 서버가 확인해 준 살아있는 세션)만 리다이렉트 근거로
+  // 삼는다. isLoading 동안 낙관적으로 true 를 주는 useIsLoggedIn 을 쓰면, 무효
+  // 세션(힌트만 남음)에서 조회가 끝나기 전에 returnTo 로 튕겼다가 미들웨어에
+  // 다시 /login 으로 돌아오는 깜빡임이 생긴다. data 가 확정될 때만 이동한다.
+  const { data: sidebarData } = useSidebar();
   const [recommended, setRecommended] = React.useState<OAuthProvider | null>(
     null
   );
@@ -33,19 +37,19 @@ export function LoginScreen(): React.ReactElement {
   // 이미 로그인된 상태로 /login?returnTo=... 에 오면 바로 복귀시킨다.
   // (returnTo 가 없으면 기존처럼 로그인 화면을 그대로 보여준다)
   //
-  // 판정은 토큰 존재(hasTokens)가 아니라 권위 있는 세션 상태(useIsLoggedIn)로
+  // 판정은 토큰 존재(hasTokens)가 아니라 서버가 확인한 세션(sidebarData)으로
   // 한다. 무효/만료 세션에서도 90일 힌트 쿠키가 남아 hasTokens() 는 true 일 수
   // 있는데, 이걸로 리다이렉트하면 보호 라우트→/login→보호 라우트 무한 루프에
-  // 갇혀 재로그인이 불가능해진다. useIsLoggedIn 은 사이드바 응답으로 세션을
-  // 확인하며, 세션이 죽으면 forceLogout 이 힌트를 정리해 루프가 풀린다.
+  // 갇혀 재로그인이 불가능해진다. 세션이 죽으면 사이드바 조회가 실패하며
+  // forceLogout 이 힌트를 정리하고 data 는 계속 비어 있어 루프가 생기지 않는다.
   React.useEffect(() => {
     const returnTo = sanitizeReturnTo(
       new URLSearchParams(window.location.search).get(RETURN_TO_PARAM)
     );
-    if (returnTo && isLoggedIn) {
+    if (returnTo && sidebarData) {
       router.replace(returnTo);
     }
-  }, [router, isLoggedIn]);
+  }, [router, sidebarData]);
 
   const providers = getOrderedProviders(recommended);
 
