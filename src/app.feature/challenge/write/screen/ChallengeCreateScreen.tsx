@@ -18,6 +18,7 @@ import { ChallengeCreateDialog } from '@feature/challenge/write/components/Chall
 import { ChallengeCreateGoalSection } from '@feature/challenge/write/components/ChallengeCreateGoalSection';
 import { ChallengeCreateParticipationSection } from '@feature/challenge/write/components/ChallengeCreateParticipationSection';
 import { ChallengeCreatePeriodSection } from '@feature/challenge/write/components/ChallengeCreatePeriodSection';
+import { ChallengeCreatePhotoSection } from '@feature/challenge/write/components/ChallengeCreatePhotoSection';
 import { ChallengeCreatePreviewCard } from '@feature/challenge/write/components/ChallengeCreatePreviewCard';
 import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/components/ChallengeCreateSuccessDialog';
 import { ChallengeCreateVisibilitySection } from '@feature/challenge/write/components/ChallengeCreateVisibilitySection';
@@ -93,6 +94,8 @@ function formatFormValues(
     goals: values.goals.map((goal) => goal.value),
     allowMidJoin:
       values.participationType === 'INDIVIDUAL' ? false : values.allowMidJoin,
+    // 와이어(서버) 키는 photoRequired, 폼 내부 필드명은 isPhotoRequired.
+    photoRequired: values.isPhotoRequired,
     thumbnailImage: values.thumbnailImageKey,
     challengeType: values.challengeType,
     // 비공개일 때만 비밀번호를 동봉한다.
@@ -195,6 +198,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
               <ChallengeCreateGoalSection />
               <ChallengeCreatePeriodSection />
               <ChallengeCreateVisibilitySection />
+              <ChallengeCreatePhotoSection />
             </div>
 
             <aside className="hidden lg:block">

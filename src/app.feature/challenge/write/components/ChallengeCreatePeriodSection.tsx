@@ -9,7 +9,7 @@ import {
 } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { formatDateKR } from '@module/utils/date';
-import { add } from 'date-fns';
+import { add, startOfToday } from 'date-fns';
 import { type ChangeEvent } from 'react';
 import { useFormContext } from 'react-hook-form';
 
@@ -103,6 +103,7 @@ export function ChallengeCreatePeriodSection(): React.ReactElement {
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="YYYY/MM/DD"
+                    calendarProps={{ disabled: { before: startOfToday() } }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -162,7 +163,7 @@ export function ChallengeCreatePeriodSection(): React.ReactElement {
                           inputMode="numeric"
                           pattern="[0-9]*"
                           maxLength={3}
-                          placeholder="1 ~ 730"
+                          placeholder="7 ~ 730"
                           className="w-full"
                           value={field.value ?? ''}
                           onChange={(event: ChangeEvent<HTMLInputElement>) => {

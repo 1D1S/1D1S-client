@@ -7,22 +7,13 @@
  *   dehydrate 설정에 의해 캐시되지 않아 클라이언트가 마운트 시 새로 fetch 한다.
  *
  * 응답 정규화 로직은 클라이언트 API 와 동일하게 적용한다.
+ *
+ * NOTE: 핫 라우트(홈/보드/상세/멤버 프로필)의 프리페치는 클라이언트 React
+ * Query 로 이관되어 이 파일에는 `/member/[memberId]/diary` 서브 라우트가
+ * 쓰는 `getServerMemberProfile` 만 남는다.
  */
 
-import type {
-  ChallengeDetailResponse,
-  ChallengeListItem,
-  ChallengeListParams,
-  ChallengeListResponse,
-  RandomChallengesParams,
-} from '@feature/challenge/board/type/challenge';
-import type {
-  DiaryDetail,
-  DiaryItem,
-  DiaryListParams,
-  DiaryListResponse,
-  RandomDiaryParams,
-} from '@feature/diary/board/type/diary';
+import type { DiaryItem } from '@feature/diary/board/type/diary';
 import { resolveDiaryImageList } from '@feature/diary/shared/utils/diaryImageUrl';
 import type {
   MemberDiaryPageInfo,
@@ -30,7 +21,7 @@ import type {
 } from '@feature/member/type/member';
 
 import { buildQueryString } from './request';
-import { serverRequestBody, serverRequestData } from './serverClient';
+import { serverRequestData } from './serverClient';
 
 type DiaryItemApi = Omit<DiaryItem, 'authorInfoDto' | 'diaryInfoDto'> & {
   authorInfoDto?: DiaryItem['authorInfoDto'] | null;
@@ -52,85 +43,6 @@ const normalizeDiaryItem = (item: DiaryItemApi): DiaryItem => {
 
 const normalizeDiaryItems = (items: DiaryItemApi[]): DiaryItem[] =>
   items.map(normalizeDiaryItem);
-
-export async function getServerRandomChallenges(
-  params: RandomChallengesParams = {}
-): Promise<ChallengeListItem[]> {
-  const { size = 10 } = params;
-  const query = buildQueryString({ size });
-  return serverRequestData<ChallengeListItem[]>({
-    url: `/challenges/random?${query}`,
-    method: 'GET',
-  });
-}
-
-export async function getServerRandomDiaries(
-  params: RandomDiaryParams = {}
-): Promise<DiaryItem[]> {
-  const { size = 10 } = params;
-  const query = buildQueryString({ size });
-  const data = await serverRequestData<DiaryItemApi[]>({
-    url: `/diaries/random?${query}`,
-    method: 'GET',
-  });
-  return normalizeDiaryItems(data);
-}
-
-export async function getServerDiaryList(
-  params: DiaryListParams = {}
-): Promise<DiaryListResponse> {
-  const query = buildQueryString({
-    size: params.size,
-    cursor: params.cursor,
-  });
-  const data = await serverRequestData<{
-    items: DiaryItemApi[];
-    pageInfo: DiaryListResponse['pageInfo'];
-  }>({
-    url: query ? `/diaries?${query}` : '/diaries',
-    method: 'GET',
-  });
-  return {
-    ...data,
-    items: normalizeDiaryItems(data.items),
-  };
-}
-
-export async function getServerChallengeList(
-  params: ChallengeListParams = {}
-): Promise<{ data: ChallengeListResponse; message: string }> {
-  const query = buildQueryString({
-    limit: params.limit,
-    cursor: params.cursor,
-    keyword: params.keyword,
-    category: params.category,
-  });
-  return serverRequestBody<{
-    data: ChallengeListResponse;
-    message: string;
-  }>({
-    url: query ? `/challenges?${query}` : '/challenges',
-    method: 'GET',
-  });
-}
-
-export async function getServerChallengeDetail(
-  challengeId: number
-): Promise<ChallengeDetailResponse> {
-  return serverRequestData<ChallengeDetailResponse>({
-    url: `/challenges/${challengeId}`,
-    method: 'GET',
-  });
-}
-
-export async function getServerDiaryDetail(
-  diaryId: number
-): Promise<DiaryDetail> {
-  return serverRequestData<DiaryDetail>({
-    url: `/diaries/${diaryId}`,
-    method: 'GET',
-  });
-}
 
 export async function getServerMemberProfile(
   memberId: number,

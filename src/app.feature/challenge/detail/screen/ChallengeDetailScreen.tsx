@@ -73,6 +73,7 @@ import {
   useUpdateParticipantGoal,
   useVerifyChallengePassword,
 } from '../hooks/useChallengeMutations';
+import { useChallengePendingParticipants } from '../hooks/useChallengeParticipantQueries';
 import { ChallengeDiaryItem } from '../type/challengeDiary';
 import { buildHeroGradient, getCategoryAccent } from '../utils/challengeAccent';
 import {
@@ -246,12 +247,6 @@ export function ChallengeDetailScreen({
       Math.min(100, Math.max(0, detail?.participationRate ?? 0)) * 10
     ) / 10;
 
-  const pendingParticipants = useMemo(
-    () =>
-      participants.filter((participant) => participant.status === 'PENDING'),
-    [participants]
-  );
-
   const activeParticipants = useMemo(
     () =>
       participants.filter((participant) =>
@@ -262,6 +257,10 @@ export function ChallengeDetailScreen({
 
   const myStatus = detail?.myStatus ?? 'NONE';
   const isHost = myStatus === 'HOST';
+  // 상세 응답 participants 는 등수순 상위 5명이라 PENDING 이 빠진다.
+  // 대기 승인 카드는 status=PENDING 목록을 호스트일 때만 별도 조회한다.
+  const { data: pendingParticipants = EMPTY_PARTICIPANTS } =
+    useChallengePendingParticipants(challengeId, isHost);
   const isPending = myStatus === 'PENDING';
   const isParticipating = PARTICIPATING_STATUS.includes(myStatus);
   const canJoinByStatus = myStatus === 'NONE' || myStatus === 'REJECTED';
@@ -1053,6 +1052,7 @@ export function ChallengeDetailScreen({
                     name={participant.nickname}
                     joinedAt={formatRelativeJoinedText(participant.status)}
                     profileImg={participant.profileImg}
+                    goals={isFreeChallenge ? participant.goals : undefined}
                     onProfileClick={() =>
                       router.push(`/member/${participant.memberId}`)
                     }
@@ -1216,7 +1216,14 @@ export function ChallengeDetailScreen({
                   isHost: participant.status === 'HOST',
                   // 고정 목표는 전원 공통이라 참여자별로 볼 의미가 없다.
                   goals: isFreeChallenge ? participant.goals : undefined,
+                  rank: participant.rank,
+                  streak: participant.streak,
+                  completedGoalCount: participant.completedGoalCount,
                 }))}
+                totalCount={summaryParticipantCnt}
+                onShowAll={() =>
+                  router.push(`/challenge/${id}/participants`)
+                }
                 onMemberClick={(memberId) => router.push(`/member/${memberId}`)}
                 canPoke={canPokeMembers}
                 currentMemberId={currentMemberId}

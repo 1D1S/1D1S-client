@@ -26,12 +26,20 @@ interface LeaderboardEntry {
   profileImg?: string | null;
   isHost: boolean;
   goals?: LeaderboardEntryGoal[];
+  // 등수 — 시작 전/순위 미산정이면 null. 양수일 때만 배지로 노출한다.
+  rank?: number | null;
+  streak?: number;
+  completedGoalCount?: number;
 }
 
 interface ChallengeLeaderboardCardProps {
   entries: LeaderboardEntry[];
   onMemberClick?(memberId: number): void;
   maxRows?: number;
+  // 전체 참여자 수 — "전체 보기" 노출 여부 판단(상세는 상위 5명만 내려온다).
+  totalCount?: number;
+  // 전체 참여자 목록 화면으로 이동. 지정 시 "전체 보기"가 모달 대신 이동한다.
+  onShowAll?(): void;
   // 찌르기: 내가 참여 중 + 진행 중 + 오늘 일지 작성 완료일 때만 true
   canPoke?: boolean;
   // 내 행에는 찌르기 버튼을 노출하지 않기 위한 현재 로그인 사용자 식별값.
@@ -51,6 +59,49 @@ interface MemberRowProps {
   onGoals(): void;
 }
 
+// 1/2/3등 메달 색상 (금 / 은 / 동).
+interface MedalTone {
+  disc: string;
+  ribbon: string;
+  edge: string;
+}
+
+const MEDAL_TONES: Record<number, MedalTone> = {
+  1: { disc: '#FCD34D', ribbon: '#F59E0B', edge: '#D9930A' },
+  2: { disc: '#D5DAE1', ribbon: '#9AA4B2', edge: '#828C9B' },
+  3: { disc: '#E2A56E', ribbon: '#C07A3E', edge: '#A5682F' },
+};
+
+// 리본 + 원반 + 등수 숫자로 구성한 메달 아이콘.
+function MedalIcon({ rank }: { rank: number }): React.ReactElement {
+  const tone = MEDAL_TONES[rank];
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden className="h-full w-full">
+      <path d="M8.5 2 L11.5 2 L10.5 10 L7 9 Z" fill={tone.ribbon} />
+      <path d="M15.5 2 L12.5 2 L13.5 10 L17 9 Z" fill={tone.ribbon} />
+      <circle
+        cx="12"
+        cy="15"
+        r="6.5"
+        fill={tone.disc}
+        stroke={tone.edge}
+        strokeWidth="1"
+      />
+      <text
+        x="12"
+        y="15.5"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize="8"
+        fontWeight="800"
+        fill="#ffffff"
+      >
+        {rank}
+      </text>
+    </svg>
+  );
+}
+
 // 인라인 리스트와 "전체 보기" 모달이 공유하는 참여자 행.
 // 아바타 + 닉네임 + HOST/참여중 배지 + 목표 버튼.
 function MemberRow({
@@ -59,6 +110,11 @@ function MemberRow({
   onGoals,
 }: MemberRowProps): React.ReactElement {
   const hasGoals = (entry.goals?.length ?? 0) > 0;
+
+  const hasRank = typeof entry.rank === 'number' && entry.rank > 0;
+
+  // 상위 3등은 메달 아이콘, 그 외에는 등수 숫자로 표시한다.
+  const isMedal = hasRank && (entry.rank as number) <= 3;
 
   return (
     <div className="flex items-center gap-1">
@@ -71,37 +127,66 @@ function MemberRow({
           'hover:bg-gray-50'
         )}
       >
+        {hasRank ? (
+          isMedal ? (
+            <span className="h-5 w-5 shrink-0">
+              <MedalIcon rank={entry.rank as number} />
+            </span>
+          ) : (
+            <span
+              className={cn(
+                'flex h-5 w-5 shrink-0 items-center justify-center',
+                'text-[12px] font-extrabold text-gray-400 tabular-nums'
+              )}
+            >
+              {entry.rank}
+            </span>
+          )
+        ) : null}
         <CircleAvatar
           size="sm"
           imageUrl={entry.profileImg ?? undefined}
           tone="cream"
         />
-        <Text
-          size="caption1"
-          weight="bold"
-          className="flex-1 truncate text-gray-800"
-        >
-          {entry.nickname}
-        </Text>
-        {entry.isHost ? (
-          <span
-            className={cn(
-              'bg-main-200 text-main-800 rounded-full',
-              'px-2 py-0.5 text-[10px] font-extrabold'
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <Text
+              size="caption1"
+              weight="bold"
+              className="truncate text-gray-800"
+            >
+              {entry.nickname}
+            </Text>
+            {entry.isHost ? (
+              <span
+                className={cn(
+                  'bg-main-200 text-main-800 shrink-0 rounded-full',
+                  'px-2 py-0.5 text-[10px] font-extrabold'
+                )}
+              >
+                HOST
+              </span>
+            ) : (
+              <span
+                className={cn(
+                  'shrink-0 rounded-full bg-gray-100 px-2 py-0.5',
+                  'text-[10px] font-extrabold text-gray-600'
+                )}
+              >
+                참여 중
+              </span>
             )}
-          >
-            HOST
-          </span>
-        ) : (
-          <span
-            className={cn(
-              'rounded-full bg-gray-100 px-2 py-0.5',
-              'text-[10px] font-extrabold text-gray-600'
-            )}
-          >
-            참여 중
-          </span>
-        )}
+          </div>
+          {hasRank ? (
+            <Text
+              size="caption2"
+              weight="regular"
+              className="truncate text-gray-400"
+            >
+              {entry.streak ?? 0}일 연속 · 목표 {entry.completedGoalCount ?? 0}개
+            </Text>
+          ) : null}
+        </div>
       </button>
       {hasGoals ? (
         <button
@@ -126,6 +211,8 @@ export function ChallengeLeaderboardCard({
   entries,
   onMemberClick,
   maxRows = 5,
+  totalCount,
+  onShowAll,
   canPoke = false,
   currentMemberId = null,
   currentNickname = null,
@@ -136,9 +223,9 @@ export function ChallengeLeaderboardCard({
   const rows = entries.slice(0, maxRows);
   // 목표 보기 다이얼로그 — 선택된 참여자만 보관해 화면 상태와 분리한다.
   const [goalsOf, setGoalsOf] = useState<LeaderboardEntry | null>(null);
-  // 참여자 5명 이상이면 전체 목록을 모달로 펼친다.
-  const [showAll, setShowAll] = useState(false);
-  const canShowAll = entries.length >= 5;
+  const displayCount = totalCount ?? entries.length;
+  // "전체 보기"는 전체 참여자 목록 화면으로 이동한다(onShowAll 제공 시에만).
+  const canShowAll = Boolean(onShowAll) && displayCount > maxRows;
 
   return (
     <Card radius="lg" className="p-5">
@@ -147,15 +234,15 @@ export function ChallengeLeaderboardCard({
           참여자
         </Text>
         <div className="flex items-center gap-2">
-          {entries.length > 0 ? (
+          {displayCount > 0 ? (
             <Text size="caption2" weight="medium" className="text-gray-500">
-              {entries.length}명
+              {displayCount}명
             </Text>
           ) : null}
           {canShowAll ? (
             <button
               type="button"
-              onClick={() => setShowAll(true)}
+              onClick={onShowAll}
               className={cn(
                 'shrink-0 rounded-full bg-gray-100 px-2.5 py-1',
                 'text-[11px] font-bold text-gray-600',
@@ -237,45 +324,6 @@ export function ChallengeLeaderboardCard({
           })}
         </ul>
       )}
-
-      <Dialog
-        open={showAll}
-        onOpenChange={setShowAll}
-      >
-        <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[420px]">
-          <DialogHeader className="flex-col items-start gap-1.5 pb-2">
-            <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
-              참여자 {entries.length}명
-            </DialogTitle>
-          </DialogHeader>
-          <DialogBody>
-            <ul className="flex max-h-[60vh] flex-col overflow-y-auto">
-              {entries.map((entry, index) => {
-                const isLast = index === entries.length - 1;
-
-                return (
-                  <li
-                    key={entry.participantId}
-                    className={cn(!isLast && 'border-b border-gray-100')}
-                  >
-                    <MemberRow
-                      entry={entry}
-                      onSelect={() => {
-                        setShowAll(false);
-                        onMemberClick?.(entry.memberId);
-                      }}
-                      onGoals={() => {
-                        setShowAll(false);
-                        setGoalsOf(entry);
-                      }}
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-          </DialogBody>
-        </DialogContent>
-      </Dialog>
 
       <Dialog
         open={goalsOf !== null}

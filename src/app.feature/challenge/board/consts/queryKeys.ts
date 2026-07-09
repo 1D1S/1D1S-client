@@ -1,6 +1,7 @@
 import {
   ChallengeListParams,
   MemberChallengesParams,
+  ParticipantListParams,
   RandomChallengesParams,
 } from '../type/challenge';
 
@@ -29,4 +30,7 @@ export const CHALLENGE_QUERY_KEYS = {
       'infinite',
       params,
     ] as const,
+  participants: () => [...CHALLENGE_QUERY_KEYS.all, 'participants'] as const,
+  participantList: (challengeId: number, params?: ParticipantListParams) =>
+    [...CHALLENGE_QUERY_KEYS.participants(), challengeId, params] as const,
 };

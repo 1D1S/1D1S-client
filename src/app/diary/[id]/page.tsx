@@ -1,41 +1,24 @@
-import { DIARY_QUERY_KEYS } from '@feature/diary/board/consts/queryKeys';
 import { DiaryDetailScreen } from '@feature/diary/detail/screen/DiaryDetailScreen';
-import { getServerDiaryDetail } from '@module/api/serverApi';
-import {
-  hasServerSession,
-  resolveLoginRequiredRedirect,
-} from '@module/utils/serverAuth';
-import { redirect } from 'next/navigation';
 import React from 'react';
-
-import { Prefetch } from '@/app.lib/Prefetch';
 
 interface DiaryDetailProps {
   params: Promise<{ id: string }>;
 }
 
+/**
+ * 상세 데이터는 클라이언트 React Query(useDiaryDetail)로 이관했다.
+ * 인증 가드는 `src/app.module/middleware/auth.ts` 의 미들웨어가 동일 로직
+ * (access 토큰 또는 세션 힌트)으로 처리하므로 페이지 레벨 `hasServerSession`
+ * 게이트는 제거했다. 만료 힌트만 있는 경우는 DiaryDetailScreen 의
+ * useIsLoggedIn + LoginRequiredDialog 가 가린다.
+ *
+ * 서버에서 쿠키를 읽지 않으므로 route 가 dynamic 강제에서 풀려 `<Link>`
+ * prefetch 로 셸이 미리 채워지고, 목록↔상세 왕복 시 QueryClient 캐시가
+ * 즉시 서빙된다.
+ */
 export default async function DiaryDetailPage({
   params,
 }: DiaryDetailProps): Promise<React.ReactElement> {
   const { id } = await params;
-  const diaryId = Number(id);
-
-  const isAuthenticated = await hasServerSession();
-  if (!isAuthenticated) {
-    const target = await resolveLoginRequiredRedirect('/diary', `/diary/${id}`);
-    redirect(target);
-  }
-
-  return (
-    <Prefetch
-      queries={[
-        {
-          queryKey: DIARY_QUERY_KEYS.detail(diaryId),
-          queryFn: () => getServerDiaryDetail(diaryId),
-        },
-      ]}
-    >
-      <DiaryDetailScreen id={diaryId} />
-    </Prefetch>
-  );
+  return <DiaryDetailScreen id={Number(id)} />;
 }

@@ -91,6 +91,7 @@ export function MyPageActiveChallenges({
                   goalType={challenge.goalType as ChallengeCardGoalType}
                   isGroup={challenge.participationType === 'GROUP'}
                   isEnded={ended}
+                  isPhotoRequired={challenge.photoRequired}
                   participants={challenge.randomParticipants}
                   href={`/challenge/${challenge.challengeId}`}
                 />

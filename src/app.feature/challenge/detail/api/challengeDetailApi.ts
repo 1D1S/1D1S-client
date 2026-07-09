@@ -1,10 +1,16 @@
 import { apiClient } from '@module/api/client';
-import { requestBody, requestData } from '@module/api/request';
+import {
+  buildQueryString,
+  requestBody,
+  requestData,
+} from '@module/api/request';
 
 import {
   ChallengeDetailResponse,
   JoinChallengeRequest,
   JoinChallengeResponse,
+  ParticipantListParams,
+  ParticipantListResponse,
   PokeChallengeRequest,
   PokeChallengeResponse,
   VerifyChallengePasswordRequest,
@@ -21,6 +27,28 @@ export const challengeDetailApi = {
       url: `/challenges/${challengeId}`,
       method: 'GET',
     }),
+
+  // 챌린지 참여자 목록 조회 (오프셋 페이지네이션 + 정렬 + 상태 필터)
+  getParticipants: async (
+    challengeId: number,
+    params: ParticipantListParams = {}
+  ): Promise<ParticipantListResponse> => {
+    // buildQueryString 이 undefined 를 생략하고 배열(status)을 같은 키
+    // 반복(status=HOST&status=PARTICIPANT)으로 직렬화한다.
+    const query = buildQueryString({
+      sort: params.sort,
+      page: params.page,
+      size: params.size,
+      status: params.status,
+    });
+
+    return requestData<ParticipantListResponse>(apiClient, {
+      url: query
+        ? `/challenges/${challengeId}/participants?${query}`
+        : `/challenges/${challengeId}/participants`,
+      method: 'GET',
+    });
+  },
 
   // 챌린지 신청하기
   joinChallenge: async (

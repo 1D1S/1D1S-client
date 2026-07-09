@@ -59,6 +59,8 @@ export interface ChallengeListItem {
   goalType: GoalType;
   participationType: ParticipationType;
   participantCnt: number;
+  // 인증샷(사진) 필수 여부(서버 JSON 키: photoRequired).
+  photoRequired?: boolean;
   liked: boolean;
   likeCnt: number;
   // 공개 범위 — OFFICIAL 일 때 카드를 공식 챌린지로 강조한다.
@@ -70,6 +72,8 @@ export interface ChallengeListItem {
 export interface ChallengeDetail {
   description: string;
   allowMidJoin?: boolean;
+  // 인증샷(사진) 필수 여부(서버 JSON 키: photoRequired).
+  photoRequired?: boolean;
   myStatus: ParticipantStatus;
   participationRate: number;
   goalCompletionRate: number;
@@ -88,12 +92,43 @@ export interface Participant {
   status: ParticipantStatus;
   // 참여자별 목표 — FIXED 는 공통 목표, FLEXIBLE 는 본인이 설정한 목표.
   goals?: ChallengeGoal[];
+  // 등수 — 시작 전이거나 순위 산정 대상이 아니면 null.
+  rank: number | null;
+  // 연속 달성일수 / 완료한 목표 개수
+  streak: number;
+  completedGoalCount: number;
+}
+
+// 참여자 목록 정렬 — 참여순(기본) / 등수순
+export type ParticipantSort = 'PARTICIPATION' | 'RANK';
+
+export interface ParticipantListParams {
+  sort?: ParticipantSort;
+  page?: number;
+  size?: number;
+  // 상태 필터 (다중). 미지정 시 서버 기본(호스트: 전체 / 그 외: 승인자만).
+  status?: ParticipantStatus[];
+}
+
+// 오프셋 페이지네이션 공통 페이지 정보 (챌린지 일지 목록과 동일 형태)
+export interface OffsetPageInfo {
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNextPage: boolean;
+}
+
+export interface ParticipantListResponse {
+  items: Participant[];
+  pageInfo: OffsetPageInfo;
 }
 
 export interface ChallengeDetailResponse {
   challengeSummary: ChallengeSummary;
   challengeDetail: ChallengeDetail;
   challengeGoals: ChallengeGoal[];
+  // 챌린지 상세는 등수순 상위 5명만 내려준다(각 항목에 rank 포함).
   participants: Participant[];
 }
 
@@ -108,6 +143,8 @@ export interface CreateChallengeRequest {
   participationType: ParticipationType;
   goals: string[];
   allowMidJoin: boolean;
+  // 인증샷(사진) 필수 여부(서버 JSON 키: photoRequired, 기본 false).
+  photoRequired: boolean;
   thumbnailImage?: string;
   // 공개 범위. 생성 시 PUBLIC 또는 PRIVATE 를 보낸다.
   challengeType: ChallengeType;

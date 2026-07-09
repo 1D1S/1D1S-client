@@ -4,7 +4,7 @@ import { Card, CircleAvatar, Icon, Stripe } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
-import { CalendarDays, Target, Users } from 'lucide-react';
+import { CalendarDays, Camera, Target, Users } from 'lucide-react';
 import Link from 'next/link';
 import React, { useMemo } from 'react';
 
@@ -31,6 +31,8 @@ export interface ChallengeCardProps {
   goalType?: ChallengeCardGoalType;
   isGroup?: boolean;
   isEnded?: boolean;
+  // 인증샷 필수 챌린지 — 카메라 배지로 표시한다.
+  isPhotoRequired?: boolean;
   // 공식 챌린지 — 브랜드 링/글로우 + "공식" 배지로 강조한다.
   isOfficial?: boolean;
   participants?: ChallengeCardParticipant[];
@@ -127,6 +129,7 @@ function ChallengeCard({
   goalType,
   isGroup = true,
   isEnded = false,
+  isPhotoRequired = false,
   isOfficial = false,
   participants,
   href,
@@ -262,6 +265,19 @@ function ChallengeCard({
               'items-center gap-1'
             )}
           >
+            {isPhotoRequired ? (
+              <span
+                aria-label="인증샷 필수"
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-full',
+                  'bg-main-800 px-2 py-1 text-[10px] font-bold text-white',
+                  'shadow-sm'
+                )}
+              >
+                <Camera className="h-3 w-3" />
+                인증샷
+              </span>
+            ) : null}
             {goalLabel ? (
               <span
                 className={cn(

@@ -1,5 +1,6 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { startOfToday } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -33,6 +34,7 @@ export const challengeCreateFormSchema = z
     memberCountNumber: z.string().optional(),
     goalType: z.enum(['FIXED', 'FLEXIBLE']),
     allowMidJoin: z.boolean(),
+    isPhotoRequired: z.boolean(),
     // 공개 범위 — 생성 시에는 공개/비공개만 선택할 수 있다.
     challengeType: z.enum(['PUBLIC', 'PRIVATE']),
     password: z.string().optional(),
@@ -54,6 +56,12 @@ export const challengeCreateFormSchema = z
         code: z.ZodIssueCode.custom,
         message: '시작일이 선택되지 않았습니다.',
       });
+    } else if (data.startDate < startOfToday()) {
+      ctx.addIssue({
+        path: ['startDate'],
+        code: z.ZodIssueCode.custom,
+        message: '시작일은 오늘 이후로 선택해주세요.',
+      });
     }
     if (data.periodType === 'LIMITED') {
       if (!data.period) {
@@ -70,13 +78,13 @@ export const challengeCreateFormSchema = z
           !isWholeNumberString(data.periodNumber) ||
           isNaN(numberValue) ||
           !Number.isInteger(numberValue) ||
-          numberValue < 1 ||
+          numberValue < 7 ||
           numberValue > 730
         ) {
           ctx.addIssue({
             path: ['periodNumber'],
             code: z.ZodIssueCode.custom,
-            message: '1일부터 730일 사이의 숫자를 입력해주세요.',
+            message: '7일부터 730일 사이의 숫자를 입력해주세요.',
           });
         }
       }
@@ -150,6 +158,7 @@ export function useChallengeCreateForm(): ReturnType<
       // 챌린지 시작 후에도 다른 사용자들이 자유롭게 합류할 수 있도록 기본값을
       // 허용으로 둔다. 작성자는 필요 시 토글로 비허용으로 바꿀 수 있다.
       allowMidJoin: true,
+      isPhotoRequired: false,
       challengeType: 'PUBLIC',
       password: '',
       goals: [],
