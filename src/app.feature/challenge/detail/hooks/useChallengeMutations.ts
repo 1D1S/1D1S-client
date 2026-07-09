@@ -62,6 +62,7 @@ export function useJoinChallenge(): UseMutationResult<
       invalidateAll(queryClient, [
         CHALLENGE_QUERY_KEYS.detail(challengeId),
         CHALLENGE_QUERY_KEYS.lists(),
+        CHALLENGE_QUERY_KEYS.participants(),
       ]);
     },
   });
@@ -83,6 +84,7 @@ export function useVerifyChallengePassword(): UseMutationResult<
       invalidateAll(queryClient, [
         CHALLENGE_QUERY_KEYS.detail(challengeId),
         CHALLENGE_QUERY_KEYS.lists(),
+        CHALLENGE_QUERY_KEYS.participants(),
       ]);
     },
   });
@@ -110,9 +112,10 @@ export function useAcceptParticipant(): UseMutationResult<void, Error, number> {
     mutationFn: (participantId: number) =>
       challengeDetailApi.acceptParticipant(participantId),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.details(),
-      });
+      invalidateAll(queryClient, [
+        CHALLENGE_QUERY_KEYS.details(),
+        CHALLENGE_QUERY_KEYS.participants(),
+      ]);
     },
   });
 }
@@ -125,9 +128,10 @@ export function useRejectParticipant(): UseMutationResult<void, Error, number> {
     mutationFn: (participantId: number) =>
       challengeDetailApi.rejectParticipant(participantId),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: CHALLENGE_QUERY_KEYS.details(),
-      });
+      invalidateAll(queryClient, [
+        CHALLENGE_QUERY_KEYS.details(),
+        CHALLENGE_QUERY_KEYS.participants(),
+      ]);
     },
   });
 }
@@ -144,6 +148,7 @@ export function useLeaveChallenge(): UseMutationResult<void, Error, number> {
         CHALLENGE_QUERY_KEYS.detail(challengeId),
         CHALLENGE_QUERY_KEYS.lists(),
         CHALLENGE_QUERY_KEYS.members(),
+        CHALLENGE_QUERY_KEYS.participants(),
       ]);
     },
   });
