@@ -1,19 +1,7 @@
-import { CHALLENGE_QUERY_KEYS } from '@feature/challenge/board/consts/queryKeys';
-import { DIARY_QUERY_KEYS } from '@feature/diary/board/consts/queryKeys';
 import HomeMobileHeader from '@feature/home/components/HomeMobileHeader';
 import HomeScreen from '@feature/home/screen/HomeScreen';
 import StoryRingSkeleton from '@feature/stories/components/StoryRingSkeleton';
-import {
-  getServerRandomChallenges,
-  getServerRandomDiaries,
-} from '@module/api/serverApi';
-import { hasServerAccessToken } from '@module/utils/serverAuth';
 import React, { Suspense } from 'react';
-
-import { Prefetch } from '@/app.lib/Prefetch';
-
-const RANDOM_CHALLENGES_PARAMS = { size: 4 };
-const RANDOM_DIARIES_PARAMS = { size: 12 };
 
 function HomeLoadingSkeleton(): React.ReactElement {
   return (
@@ -30,43 +18,25 @@ function HomeLoadingSkeleton(): React.ReactElement {
   );
 }
 
-async function MainPageContent(): Promise<React.ReactElement> {
-  // SSR 시점에 인증 힌트를 미리 평가하여 클라이언트 hydration 직후
-  // 비로그인 → 로그인 UI 점프(레이아웃 시프트)를 막는다.
-  const initialHasAuthHint = await hasServerAccessToken();
-
-  return (
-    <Prefetch
-      queries={[
-        {
-          queryKey: CHALLENGE_QUERY_KEYS.random(RANDOM_CHALLENGES_PARAMS),
-          queryFn: () => getServerRandomChallenges(RANDOM_CHALLENGES_PARAMS),
-        },
-        {
-          queryKey: DIARY_QUERY_KEYS.random(RANDOM_DIARIES_PARAMS),
-          queryFn: () => getServerRandomDiaries(RANDOM_DIARIES_PARAMS),
-        },
-      ]}
-    >
-      {/* HomeScreen 내부에서 useSearchParams 사용 — prerender 시 CSR bailout
-          되지 않도록 Suspense 경계를 둔다 */}
-      <Suspense fallback={null}>
-        <HomeScreen initialHasAuthHint={initialHasAuthHint} />
-      </Suspense>
-    </Prefetch>
-  );
-}
-
 /**
- * page 자체를 async 로 두지 않고 내부 async 컴포넌트를 Suspense 로 감싸
- * 홈 전용 스켈레톤을 fallback 으로 사용한다.
+ * 홈의 랜덤 챌린지/일지 데이터는 클라이언트 React Query(useHomeRandomData)로
+ * 이관했다. 서버에서 쿠키를 읽지 않으므로 이 route 는 dynamic 강제에서 풀려
+ * `<Link>` prefetch 로 RSC 셸이 미리 채워지고, 로고 클릭 등으로 홈에 돌아올 때
+ * QueryClient 캐시가 즉시 서빙된다.
+ *
+ * 트레이드오프: 서버 인증 힌트(initialHasAuthHint) 프리페치를 제거해, 하드
+ * 로드(콜드) 첫 페인트에서 로그인 사용자가 한 프레임 비로그인 UI 를 볼 수
+ * 있다. 클라이언트 네비게이션(SPA)에서는 hasMounted=true 라 이 시프트가
+ * 없다. HomeScreen 은 mount 이후 useIsLoggedIn 으로 권위 있게 판정한다.
+ *
+ * Suspense 는 HomeScreen 의 useSearchParams CSR bailout 경계를 겸한다.
  */
 export default function MainPage(): React.ReactElement {
   return (
     <div className="flex min-h-screen w-full flex-col bg-white">
       <HomeMobileHeader />
       <Suspense fallback={<HomeLoadingSkeleton />}>
-        <MainPageContent />
+        <HomeScreen />
       </Suspense>
     </div>
   );

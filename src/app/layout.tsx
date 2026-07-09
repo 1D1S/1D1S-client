@@ -5,10 +5,8 @@ import AppLayoutShell from '@component/layout/AppLayoutShell';
 import ScrollToTop from '@component/layout/ScrollToTop';
 import { AppProviders } from '@module/providers';
 import { cn } from '@module/utils/cn';
-import { isNativeAppUserAgent } from '@module/utils/nativeApp';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata, Viewport } from 'next';
-import { headers } from 'next/headers';
 
 import { pretendard } from '@/app.lib/font';
 
@@ -85,21 +83,27 @@ export const viewport: Viewport = {
   themeColor: '#FF7043',
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}): Promise<React.ReactElement> {
-  const headerList = await headers();
-  const isNativeApp = isNativeAppUserAgent(headerList.get('user-agent'));
-
+}): React.ReactElement {
+  // 네이티브 앱 감지는 클라이언트 `useIsNativeApp`(AppLayoutShell) 이
+  // 단독으로 수행한다: window.__IS_NATIVE_APP__ / JS 채널 / navigator.userAgent
+  // (서버와 동일한 `1D1S-App` UA 토큰) 를 읽어 correctness 를 완결한다.
+  //
+  // 과거엔 SSR 에서 headers() 로 UA 를 읽어 `data-native-app` 을 미리 세팅했지만,
+  // headers() 는 Dynamic API 라 루트 레이아웃이 앱 전체 route 를 dynamic 렌더로
+  // 강제했다 → `<Link>` 가 데이터까지 prefetch 하지 못하고 이동마다 RSC 를
+  // 다시 받아오는 "매번 로딩" 의 근본 원인. 이를 제거해 route 를 정적
+  // prefetch 가능 상태로 되돌린다.
+  //
+  // 트레이드오프: `data-native-app` 초기값이 항상 "false" 라, 네이티브 쉘
+  // 사용자는 하드 로드(콜드) 첫 페인트에서 웹 chrome(sticky 헤더 등)을 한
+  // 프레임 볼 수 있다. 하이드레이션 직후 AppLayoutShell 의 useEffect 가
+  // 속성을 다시 세팅해 즉시 사라진다(SPA 이동에는 영향 없음).
   return (
-    // `data-native-app` 은 SSR UA 매칭 결과를 그대로 노출한다.
-    // globals.css 의 `[data-native-app="true"] .sticky.top-0.lg\:hidden` 규칙이
-    // 페이지별 모바일 sticky 헤더(HomeMobileHeader 등 19개) 를 일괄 숨긴다.
-    // SSR 가 false 로 내려와도 AppLayoutShell 의 useEffect 가 클라이언트
-    // 감지(useIsNativeApp) 결과로 같은 속성을 다시 세팅해 fail-safe 가 된다.
-    <html lang="ko" data-native-app={isNativeApp ? 'true' : 'false'}>
+    <html lang="ko" data-native-app="false">
       <body
         className={cn(
           pretendard.variable,
@@ -108,7 +112,7 @@ export default async function RootLayout({
       >
         <AppProviders>
           <ScrollToTop />
-          <AppLayoutShell isNativeApp={isNativeApp}>{children}</AppLayoutShell>
+          <AppLayoutShell>{children}</AppLayoutShell>
         </AppProviders>
         <SpeedInsights />
       </body>
