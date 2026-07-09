@@ -61,6 +61,7 @@ const MemberChallengeCardItem = React.memo(
         goalType={challenge.goalType}
         isGroup={challenge.participationType === 'GROUP'}
         isEnded={ended}
+        isPhotoRequired={challenge.photoRequired}
         isOfficial={challenge.challengeType === 'OFFICIAL'}
         participants={challenge.randomParticipants}
         href={`/challenge/${challenge.challengeId}`}

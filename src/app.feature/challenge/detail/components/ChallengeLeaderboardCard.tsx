@@ -59,6 +59,49 @@ interface MemberRowProps {
   onGoals(): void;
 }
 
+// 1/2/3등 메달 색상 (금 / 은 / 동).
+interface MedalTone {
+  disc: string;
+  ribbon: string;
+  edge: string;
+}
+
+const MEDAL_TONES: Record<number, MedalTone> = {
+  1: { disc: '#FCD34D', ribbon: '#F59E0B', edge: '#D9930A' },
+  2: { disc: '#D5DAE1', ribbon: '#9AA4B2', edge: '#828C9B' },
+  3: { disc: '#E2A56E', ribbon: '#C07A3E', edge: '#A5682F' },
+};
+
+// 리본 + 원반 + 등수 숫자로 구성한 메달 아이콘.
+function MedalIcon({ rank }: { rank: number }): React.ReactElement {
+  const tone = MEDAL_TONES[rank];
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden className="h-full w-full">
+      <path d="M8.5 2 L11.5 2 L10.5 10 L7 9 Z" fill={tone.ribbon} />
+      <path d="M15.5 2 L12.5 2 L13.5 10 L17 9 Z" fill={tone.ribbon} />
+      <circle
+        cx="12"
+        cy="15"
+        r="6.5"
+        fill={tone.disc}
+        stroke={tone.edge}
+        strokeWidth="1"
+      />
+      <text
+        x="12"
+        y="15.5"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize="8"
+        fontWeight="800"
+        fill="#ffffff"
+      >
+        {rank}
+      </text>
+    </svg>
+  );
+}
+
 // 인라인 리스트와 "전체 보기" 모달이 공유하는 참여자 행.
 // 아바타 + 닉네임 + HOST/참여중 배지 + 목표 버튼.
 function MemberRow({
@@ -69,6 +112,9 @@ function MemberRow({
   const hasGoals = (entry.goals?.length ?? 0) > 0;
 
   const hasRank = typeof entry.rank === 'number' && entry.rank > 0;
+
+  // 상위 3등은 메달 아이콘, 그 외에는 등수 숫자로 표시한다.
+  const isMedal = hasRank && (entry.rank as number) <= 3;
 
   return (
     <div className="flex items-center gap-1">
@@ -82,33 +128,55 @@ function MemberRow({
         )}
       >
         {hasRank ? (
-          <span
-            className={cn(
-              'flex h-5 w-5 shrink-0 items-center justify-center',
-              'text-[12px] font-extrabold tabular-nums',
-              entry.rank === 1
-                ? 'text-main-800'
-                : entry.rank && entry.rank <= 3
-                  ? 'text-gray-700'
-                  : 'text-gray-400'
-            )}
-          >
-            {entry.rank}
-          </span>
+          isMedal ? (
+            <span className="h-5 w-5 shrink-0">
+              <MedalIcon rank={entry.rank as number} />
+            </span>
+          ) : (
+            <span
+              className={cn(
+                'flex h-5 w-5 shrink-0 items-center justify-center',
+                'text-[12px] font-extrabold text-gray-400 tabular-nums'
+              )}
+            >
+              {entry.rank}
+            </span>
+          )
         ) : null}
         <CircleAvatar
           size="sm"
           imageUrl={entry.profileImg ?? undefined}
           tone="cream"
         />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Text
-            size="caption1"
-            weight="bold"
-            className="truncate text-gray-800"
-          >
-            {entry.nickname}
-          </Text>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <Text
+              size="caption1"
+              weight="bold"
+              className="truncate text-gray-800"
+            >
+              {entry.nickname}
+            </Text>
+            {entry.isHost ? (
+              <span
+                className={cn(
+                  'bg-main-200 text-main-800 shrink-0 rounded-full',
+                  'px-2 py-0.5 text-[10px] font-extrabold'
+                )}
+              >
+                HOST
+              </span>
+            ) : (
+              <span
+                className={cn(
+                  'shrink-0 rounded-full bg-gray-100 px-2 py-0.5',
+                  'text-[10px] font-extrabold text-gray-600'
+                )}
+              >
+                참여 중
+              </span>
+            )}
+          </div>
           {hasRank ? (
             <Text
               size="caption2"
@@ -119,25 +187,6 @@ function MemberRow({
             </Text>
           ) : null}
         </div>
-        {entry.isHost ? (
-          <span
-            className={cn(
-              'bg-main-200 text-main-800 rounded-full',
-              'px-2 py-0.5 text-[10px] font-extrabold'
-            )}
-          >
-            HOST
-          </span>
-        ) : (
-          <span
-            className={cn(
-              'rounded-full bg-gray-100 px-2 py-0.5',
-              'text-[10px] font-extrabold text-gray-600'
-            )}
-          >
-            참여 중
-          </span>
-        )}
       </button>
       {hasGoals ? (
         <button

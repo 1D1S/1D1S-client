@@ -59,6 +59,8 @@ export interface ChallengeListItem {
   goalType: GoalType;
   participationType: ParticipationType;
   participantCnt: number;
+  // 인증샷(사진) 필수 여부(서버 JSON 키: photoRequired).
+  photoRequired?: boolean;
   liked: boolean;
   likeCnt: number;
   // 공개 범위 — OFFICIAL 일 때 카드를 공식 챌린지로 강조한다.

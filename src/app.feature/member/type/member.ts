@@ -57,6 +57,8 @@ export interface MyPageChallenge {
   goalType: string;
   participationType: string;
   participantCnt: number;
+  // 인증샷(사진) 필수 여부(서버 JSON 키: photoRequired).
+  photoRequired?: boolean;
   likeInfo: {
     likedByMe: boolean;
     likeCnt: number;

@@ -1052,6 +1052,7 @@ export function ChallengeDetailScreen({
                     name={participant.nickname}
                     joinedAt={formatRelativeJoinedText(participant.status)}
                     profileImg={participant.profileImg}
+                    goals={isFreeChallenge ? participant.goals : undefined}
                     onProfileClick={() =>
                       router.push(`/member/${participant.memberId}`)
                     }
