@@ -98,6 +98,12 @@ export const isUnauthorizedError = (error: unknown): boolean =>
 export const isRedirectError = (error: unknown): boolean =>
   isAxiosErrorLike(error) && error.response?.status === 302;
 
+// 403. 리프레시/인증 요청이 서버에서 명시적으로 거부된(세션 복구 불가) 경우.
+// 회전형 refresh 재사용 감지로 family 가 무효화되면 401 대신 403 으로 응답할 수
+// 있어 401 과 동일하게 취급한다. 5xx·429·408·네트워크 오류(일시적)와는 구분한다.
+export const isForbiddenError = (error: unknown): boolean =>
+  isAxiosErrorLike(error) && error.response?.status === 403;
+
 export const isInvalidRefreshTokenError = (error: unknown): boolean => {
   if (!isAxiosErrorLike(error)) {
     return false;
