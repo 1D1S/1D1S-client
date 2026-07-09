@@ -15,5 +15,5 @@ export const PHOTO_REQUIRED_MESSAGE =
 export function isChallengePhotoRequired(
   detail: ChallengeDetailResponse | undefined
 ): boolean {
-  return detail?.challengeDetail?.isPhotoRequired === true;
+  return detail?.challengeDetail?.photoRequired === true;
 }

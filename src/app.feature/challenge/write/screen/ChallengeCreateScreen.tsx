@@ -94,7 +94,7 @@ function formatFormValues(
     goals: values.goals.map((goal) => goal.value),
     allowMidJoin:
       values.participationType === 'INDIVIDUAL' ? false : values.allowMidJoin,
-    isPhotoRequired: values.isPhotoRequired,
+    photoRequired: values.isPhotoRequired,
     thumbnailImage: values.thumbnailImageKey,
     challengeType: values.challengeType,
     // 비공개일 때만 비밀번호를 동봉한다.
