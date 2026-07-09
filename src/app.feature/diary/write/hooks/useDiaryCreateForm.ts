@@ -1,5 +1,6 @@
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challengePeriod';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
+import { getApiErrorCode } from '@module/api/error';
 import { uploadImagesViaPresigned } from '@module/api/presignedUpload';
 import { toast } from '@module/providers/toast';
 import { formatDateISO } from '@module/utils/date';
@@ -25,6 +26,11 @@ import {
   useUpdateDiary,
 } from '../../detail/hooks/useDiaryMutations';
 import { resolveDiaryImageUrl } from '../../shared/utils/diaryImageUrl';
+import {
+  isChallengePhotoRequired,
+  PHOTO_REQUIRED_ERROR_CODE,
+  PHOTO_REQUIRED_MESSAGE,
+} from '../consts/photoRequired';
 import type { DiaryImageItem } from '../utils/diaryFormHelpers';
 import {
   getDiaryImageUrls,
@@ -68,6 +74,8 @@ interface UseDiaryCreateFormResult {
   imagePreviewUrls: string[];
   /** imagePreviewUrls 중 대표 썸네일 인덱스(없으면 -1). */
   thumbnailIndex: number;
+  /** 선택한 챌린지가 인증샷(사진) 필수인지 여부. */
+  isPhotoRequired: boolean;
   submitButtonLabel: string;
   canSubmit: boolean;
   isSubmitting: boolean;
@@ -204,6 +212,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     isLoading: isChallengeCheckWriteDatesLoading,
   } = useChallengeCheckWriteDates(selectedChallenge?.challengeId ?? 0);
   const goals = challengeDetail?.challengeGoals ?? EMPTY_GOALS;
+  // 인증샷 필수 챌린지는 최종 이미지(유지+신규)가 0장이면 제출을 막는다.
+  const isPhotoRequired = isChallengePhotoRequired(challengeDetail);
 
   const editModeDateKey = useMemo(() => {
     if (!isEditMode || !existingDiary) {
@@ -277,6 +287,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       : false) &&
     !isChallengeCheckWriteDatesLoading &&
     !isSubmitting &&
+    (!isPhotoRequired || images.length > 0) &&
     (!isEditMode || !isExistingDiaryLoading);
   const isInitialChallengeLoading =
     requestedChallengeId !== null &&
@@ -569,6 +580,12 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       return;
     }
 
+    // 인증샷 필수 챌린지 선제 차단(버튼 비활성화가 우회된 경우 방어).
+    if (isPhotoRequired && images.length === 0) {
+      toast.error(PHOTO_REQUIRED_MESSAGE);
+      return;
+    }
+
     // mutation onSuccess 의 캐시 무효화가 마지막 작성 가능일을 사라지게 만들면
     // useEffect 가 'unavailable' 다이얼로그를 띄울 수 있다. 제출 시작 시점에
     // 가드를 올려, 제출-네비게이션 사이의 어떤 refetch 도 다이얼로그를
@@ -645,9 +662,14 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       });
 
       router.push('/diary');
-    } catch {
+    } catch (error) {
       submitSuccessRef.current = false;
-      toast.error('일지 저장 또는 이미지 업로드에 실패했습니다.');
+      // 프론트에서 이미 막지만, 백엔드 사진 필수 위반 응답도 방어적으로 처리.
+      toast.error(
+        getApiErrorCode(error) === PHOTO_REQUIRED_ERROR_CODE
+          ? PHOTO_REQUIRED_MESSAGE
+          : '일지 저장 또는 이미지 업로드에 실패했습니다.'
+      );
     }
   }, [
     achievedDate,
@@ -657,6 +679,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     disabledAchievedDateKeySet,
     images,
     isEditMode,
+    isPhotoRequired,
     isSubmitting,
     router,
     requestedDiaryId,
@@ -695,6 +718,7 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     disabledAchievedDateKeys,
     imagePreviewUrls,
     thumbnailIndex,
+    isPhotoRequired,
     submitButtonLabel,
     canSubmit,
     isSubmitting,

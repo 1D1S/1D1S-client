@@ -59,6 +59,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
     achievedGoalIds,
     imagePreviewUrls,
     thumbnailIndex,
+    isPhotoRequired,
     submitButtonLabel,
     canSubmit,
     isSubmitting,
@@ -102,6 +103,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
       <DiaryCreateThumbnailSection
         previews={imagePreviewUrls}
         thumbnailIndex={thumbnailIndex}
+        required={isPhotoRequired}
         onSelectFiles={handleAddImageFiles}
         onRemove={handleRemoveImageAt}
         onSelectThumbnail={handleSelectThumbnailAt}
@@ -110,6 +112,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
     [
       imagePreviewUrls,
       thumbnailIndex,
+      isPhotoRequired,
       handleAddImageFiles,
       handleRemoveImageAt,
       handleSelectThumbnailAt,

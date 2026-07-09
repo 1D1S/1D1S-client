@@ -70,6 +70,8 @@ export interface ChallengeListItem {
 export interface ChallengeDetail {
   description: string;
   allowMidJoin?: boolean;
+  // 인증샷(사진) 필수 여부. 백엔드 계약 확정 전 가정 필드명.
+  isPhotoRequired?: boolean;
   myStatus: ParticipantStatus;
   participationRate: number;
   goalCompletionRate: number;
@@ -108,6 +110,8 @@ export interface CreateChallengeRequest {
   participationType: ParticipationType;
   goals: string[];
   allowMidJoin: boolean;
+  // 인증샷(사진) 필수 여부. 백엔드 계약 확정 전 가정 필드명(기본 false).
+  isPhotoRequired: boolean;
   thumbnailImage?: string;
   // 공개 범위. 생성 시 PUBLIC 또는 PRIVATE 를 보낸다.
   challengeType: ChallengeType;
