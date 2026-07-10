@@ -16,6 +16,8 @@
     "lint": "eslint src",
     "knip": "knip",
     "knip:report": "knip --reporter=json",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prepare": "husky"
   },
   "dependencies": {
@@ -77,6 +79,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19.1.5",
+    "@vitejs/plugin-react": "^6.0.3",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.39.2",
     "eslint-config-next": "16.1.5",
@@ -96,7 +99,8 @@
     "tailwindcss": "^4.0.17",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2",
-    "typescript-eslint": "^8.54.0"
+    "typescript-eslint": "^8.54.0",
+    "vitest": "^4.1.10"
   },
   "packageManager": "pnpm@10.11.0",
   "pnpm": {
