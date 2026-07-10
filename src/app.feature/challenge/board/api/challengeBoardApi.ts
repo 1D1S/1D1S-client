@@ -45,9 +45,11 @@ export const challengeBoardApi = {
   },
 
   // 챌린지 리스트 불러오기
+  // 서버 envelope({message, data})를 requestData 로 언랩해 diary 목록과 동일하게
+  // { items, pageInfo } 를 반환한다(호출부·훅이 .data 를 다시 벗기지 않도록).
   getChallengeList: async (
     params: ChallengeListParams = {}
-  ): Promise<{ data: ChallengeListResponse; message: string }> => {
+  ): Promise<ChallengeListResponse> => {
     // 미선택 필터는 키 자체를 생략해야 한다(빈 값이면 서버 enum 변환 400).
     // buildQueryString 이 undefined 생략 + 배열을 같은 키 반복(repeat,
     // status=ONGOING&status=UPCOMING)으로 직렬화한다.
@@ -60,13 +62,10 @@ export const challengeBoardApi = {
       status: params.status,
     });
 
-    return requestBody<{ data: ChallengeListResponse; message: string }>(
-      apiClient,
-      {
-        url: query ? `/challenges?${query}` : '/challenges',
-        method: 'GET',
-      }
-    );
+    return requestData<ChallengeListResponse>(apiClient, {
+      url: query ? `/challenges?${query}` : '/challenges',
+      method: 'GET',
+    });
   },
 
   // 특정 멤버가 진행 중인 챌린지 보기

@@ -139,7 +139,6 @@ function DiaryCard({
 
   const tone = EMOTION_TONE[emotion];
   const hasImage = isValidNextImageSrc(imageUrl);
-  const hasProfileImage = isValidNextImageSrc(profileImageUrl);
   const excerpt = toPlainExcerpt(content);
   const visibleGoals = (goals ?? []).slice(0, MAX_GOALS);
 
@@ -295,9 +294,9 @@ function DiaryCard({
             )}
             aria-hidden
           >
-            {hasProfileImage ? (
+            {isValidNextImageSrc(profileImageUrl) ? (
               <FadeInImage
-                src={profileImageUrl as string}
+                src={profileImageUrl}
                 alt=""
                 fill
                 sizes="20px"

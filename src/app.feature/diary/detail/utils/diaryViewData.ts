@@ -19,7 +19,7 @@ import type {
 import type {
   AuthorInfo,
   DiaryDetail,
-  DiaryGoalStatus,
+  DiaryInfo,
   Feeling,
 } from '../../board/type/diary';
 import type { DiaryComment } from '../type/comment';
@@ -27,31 +27,6 @@ import type { DiaryComment } from '../type/comment';
 export interface ChecklistItem {
   id: string;
   label: string;
-}
-
-export interface DiaryInfoWithAliases {
-  createdAt?: string;
-  challengedDate?: string;
-  feeling?: Feeling;
-  achievement?: number[] | null;
-  diaryGoal?: DiaryGoalStatus[] | null;
-  achievementRate?: number;
-}
-
-export type DiaryDetailWithAliases = DiaryDetail & {
-  diaryInfoDto?: DiaryInfoWithAliases | null;
-  diaryInfo?: DiaryInfoWithAliases | null;
-  authorInfoDto?: AuthorInfo | null;
-  author?: AuthorInfo | null;
-};
-
-interface DiaryImageFields {
-  imgUrl?: unknown;
-  img?: unknown;
-  imageUrl?: unknown;
-  thumbnailUrl?: unknown;
-  images?: unknown;
-  thumbnail?: unknown;
 }
 
 export const FEELING_LABEL_MAP: Record<Feeling, string> = {
@@ -154,14 +129,12 @@ function resolveImageList(...rawSources: unknown[]): string[] {
   return urls;
 }
 
-export function getDiaryInfo(diary: DiaryDetail): DiaryInfoWithAliases | null {
-  const diaryWithAliases = diary as DiaryDetailWithAliases;
-  return diaryWithAliases.diaryInfoDto ?? diaryWithAliases.diaryInfo ?? null;
+export function getDiaryInfo(diary: DiaryDetail): DiaryInfo | null {
+  return diary.diaryInfo;
 }
 
 export function getAuthorInfo(diary: DiaryDetail): AuthorInfo | null {
-  const diaryWithAliases = diary as DiaryDetailWithAliases;
-  return diaryWithAliases.authorInfoDto ?? diaryWithAliases.author ?? null;
+  return diary.author;
 }
 
 export function parsePositiveInteger(value: unknown): number | null {
@@ -184,8 +157,11 @@ export function resolveSidebarMemberId(sidebarData: unknown): number | null {
     return null;
   }
 
+  // SidebarData 타입에는 회원 id 필드가 선언돼 있지 않다(닉네임 폴백이 실제
+  // 소유자 판별을 담당). 서버가 확정 계약상 존재하지 않는 member_id·userId·
+  // user_id 는 제거하고, 실 응답에서 나타날 수 있는 memberId·id 만 확인한다.
   const sidebar = sidebarData as Record<string, unknown>;
-  const candidateKeys = ['memberId', 'member_id', 'userId', 'user_id', 'id'];
+  const candidateKeys = ['memberId', 'id'];
 
   for (const key of candidateKeys) {
     const parsedValue = parsePositiveInteger(sidebar[key]);
@@ -312,22 +288,11 @@ export function mapDiaryToViewData(
   // 연동 챌린지 필은 프리페치된 일지 상세(diary.challenge)로 첫 페인트부터
   // 그리고, challengeDetailData 는 체크리스트 goals 용으로 계속 사용한다.
   const summary =
-    challengeDetailData?.challengeSummary ??
-    (diary.challenge as ChallengeSummary | null) ??
-    undefined;
-  const diaryWithImageAliases = diary as DiaryDetail & DiaryImageFields;
-  const contentImageUrls = resolveImageList(
-    diaryWithImageAliases.imgUrl,
-    diaryWithImageAliases.img,
-    diaryWithImageAliases.imageUrl,
-    diaryWithImageAliases.thumbnailUrl,
-    diaryWithImageAliases.images,
-    diaryWithImageAliases.thumbnail
-  );
+    challengeDetailData?.challengeSummary ?? diary.challenge ?? undefined;
+  const contentImageUrls = resolveImageList(diary.imgUrl, diary.thumbnailUrl);
 
   const feeling: Feeling = diaryInfo?.feeling ?? 'NONE';
-  const rawAchievementRate =
-    diary.achievementRate ?? diaryInfo?.achievementRate ?? 0;
+  const rawAchievementRate = diaryInfo?.achievementRate ?? 0;
   const achievementPercent = Math.min(
     100,
     Math.max(0, Math.round(rawAchievementRate))

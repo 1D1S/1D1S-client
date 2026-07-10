@@ -207,7 +207,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
   });
 
   const challenges = useMemo(
-    () => data?.pages?.flatMap((page) => page?.data?.items ?? []) ?? [],
+    () => data?.pages?.flatMap((page) => page?.items ?? []) ?? [],
     [data]
   );
 
