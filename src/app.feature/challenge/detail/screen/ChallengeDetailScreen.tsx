@@ -157,7 +157,7 @@ export function ChallengeDetailScreen({
   // 대기 승인 카드는 status=PENDING 목록을 호스트일 때만 별도 조회한다.
   const { data: pendingParticipants = EMPTY_PARTICIPANTS } =
     useChallengePendingParticipants(challengeId, isHost);
-  const isPending = myStatus === 'PENDING';
+  const isJoinRequestPending = myStatus === 'PENDING';
   const isParticipating = PARTICIPATING_STATUS.includes(myStatus);
   const canJoinByStatus = myStatus === 'NONE' || myStatus === 'REJECTED';
   const isFreeChallenge = summary?.goalType === 'FLEXIBLE';
@@ -424,7 +424,7 @@ export function ChallengeDetailScreen({
   const ctaConfig = buildChallengeCta({
     isHost,
     isParticipating,
-    isPending,
+    isJoinRequestPending,
     isChallengeCurrentlyOngoing,
     isCheckWriteDatesLoading,
     canJoinByStatus,

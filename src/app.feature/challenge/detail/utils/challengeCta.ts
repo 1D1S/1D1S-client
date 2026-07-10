@@ -18,7 +18,9 @@ export interface ChallengeCtaConfig {
 export interface BuildChallengeCtaParams {
   isHost: boolean;
   isParticipating: boolean;
-  isPending: boolean;
+  // 참여 신청 후 호스트 승인 대기 상태 (myStatus === 'PENDING').
+  // 뮤테이션의 isPending 과 혼동되지 않도록 명시적으로 명명한다.
+  isJoinRequestPending: boolean;
   isChallengeCurrentlyOngoing: boolean;
   isCheckWriteDatesLoading: boolean;
   canJoinByStatus: boolean;
@@ -56,7 +58,7 @@ export function buildChallengeCta(
   const {
     isHost,
     isParticipating,
-    isPending,
+    isJoinRequestPending,
     isChallengeCurrentlyOngoing,
     isCheckWriteDatesLoading,
     canJoinByStatus,
@@ -104,7 +106,7 @@ export function buildChallengeCta(
       show: true,
     };
   }
-  if (isPending) {
+  if (isJoinRequestPending) {
     return disabledCta('참여 승인 대기중');
   }
   if (canJoinByStatus && isChallengeAlreadyEnded) {

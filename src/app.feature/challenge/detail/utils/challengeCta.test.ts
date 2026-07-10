@@ -8,7 +8,7 @@ function makeParams(
   return {
     isHost: false,
     isParticipating: false,
-    isPending: false,
+    isJoinRequestPending: false,
     isChallengeCurrentlyOngoing: false,
     isCheckWriteDatesLoading: false,
     canJoinByStatus: false,
@@ -63,7 +63,7 @@ describe('buildChallengeCta', () => {
   });
 
   it('승인 대기: 비활성 안내', () => {
-    const cta = buildChallengeCta(makeParams({ isPending: true }));
+    const cta = buildChallengeCta(makeParams({ isJoinRequestPending: true }));
     expect(cta.label).toBe('참여 승인 대기중');
     expect(cta.disabled).toBe(true);
     expect(cta.show).toBe(true);
