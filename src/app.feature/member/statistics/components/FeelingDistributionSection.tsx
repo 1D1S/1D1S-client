@@ -57,6 +57,7 @@ export function FeelingDistributionSection(): React.ReactElement {
         <DonutChart
           segments={segments}
           size={160}
+          ariaLabel={`감정 분포 도넛 차트, 전체 ${total}건`}
           centerSlot={
             <>
               <Text size="heading2" weight="extrabold">

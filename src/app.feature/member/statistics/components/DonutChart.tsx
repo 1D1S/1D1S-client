@@ -16,6 +16,8 @@ interface DonutChartProps {
   thickness?: number;
   /** 가운데 노드 */
   centerSlot?: React.ReactNode;
+  /** 스크린리더용 차트 설명 */
+  ariaLabel?: string;
   className?: string;
 }
 
@@ -34,6 +36,7 @@ export function DonutChart({
   size = 160,
   thickness = 26,
   centerSlot,
+  ariaLabel,
   className,
 }: DonutChartProps): React.ReactElement {
   const total = segments.reduce((sum, seg) => sum + Math.max(0, seg.value), 0);
@@ -70,7 +73,13 @@ export function DonutChart({
       className={cn('relative shrink-0', className)}
       style={{ width: size, height: size }}
     >
-      <svg viewBox={`0 0 ${VIEW} ${VIEW}`} width={size} height={size} role="img">
+      <svg
+        viewBox={`0 0 ${VIEW} ${VIEW}`}
+        width={size}
+        height={size}
+        role="img"
+        aria-label={ariaLabel}
+      >
         <circle
           cx={CENTER}
           cy={CENTER}

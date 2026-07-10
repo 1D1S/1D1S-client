@@ -50,7 +50,10 @@ export function DiaryTrendSection(): React.ReactElement {
       emptyText="이 기간에 작성한 일지가 없어요."
       skeletonHeight={160}
     >
-      <TrendBars data={chartData} />
+      <TrendBars
+        data={chartData}
+        ariaLabel={`작성 추이 막대 차트, 총 ${totalCount}건`}
+      />
     </StatisticsCard>
   );
 }

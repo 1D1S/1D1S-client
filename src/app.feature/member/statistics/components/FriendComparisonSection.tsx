@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 
 import { useFriendComparison } from '../hooks/useStatisticsQueries';
 import type { FriendComparisonPeriod } from '../type/statistics';
+import { formatCount } from '../utils/statisticsView';
 import { StatisticsCard } from './StatisticsCard';
 
 const PERIOD_OPTIONS = [
@@ -36,8 +37,8 @@ function Bar({
           style={{ width: `${widthPct}%`, backgroundColor: color }}
         />
       </div>
-      <Text size="caption3" weight="bold" className="w-6 text-right">
-        {value}
+      <Text size="caption3" weight="bold" className="w-8 text-right">
+        {formatCount(value)}
       </Text>
     </div>
   );
@@ -62,7 +63,7 @@ function CompareRow({
           {label}
         </Text>
         <Text size="caption3" className="text-gray-400">
-          나 {mine} · 친구 평균 {average}
+          나 {formatCount(mine)} · 친구 평균 {formatCount(average)}
         </Text>
       </div>
       <div className="mt-2 space-y-1.5">

@@ -16,6 +16,8 @@ interface TrendBarsProps {
   color?: string;
   /** 미니 모드: 라벨/값 숨김, 높이 축소 */
   compact?: boolean;
+  /** 스크린리더용 차트 설명 */
+  ariaLabel?: string;
   className?: string;
 }
 
@@ -27,6 +29,7 @@ export function TrendBars({
   data,
   color = 'var(--main-500)',
   compact = false,
+  ariaLabel,
   className,
 }: TrendBarsProps): React.ReactElement {
   const max = data.reduce((m, d) => Math.max(m, d.count), 0);
@@ -38,6 +41,7 @@ export function TrendBars({
         className="flex items-end gap-1"
         style={{ height: areaHeight }}
         role="img"
+        aria-label={ariaLabel}
       >
         {data.map((d, i) => {
           const ratio = max > 0 ? d.count / max : 0;
