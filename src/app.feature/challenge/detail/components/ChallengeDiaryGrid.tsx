@@ -4,13 +4,13 @@ import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
-import {
-  resolveDiaryImageList,
-  resolveDiaryImageUrl,
-} from '@feature/diary/shared/utils/diaryImageUrl';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { cn } from '@module/utils/cn';
 import { formatMonthDayKR } from '@module/utils/date';
+import {
+  resolveDiaryImageList,
+  resolveDiaryImageUrl,
+} from '@module/utils/diaryImageUrl';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React from 'react';
 

@@ -11,10 +11,6 @@ import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
-import {
-  resolveDiaryImageList,
-  resolveDiaryImageUrl,
-} from '@feature/diary/shared/utils/diaryImageUrl';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
@@ -22,6 +18,10 @@ import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { formatMonthDayKR } from '@module/utils/date';
+import {
+  resolveDiaryImageList,
+  resolveDiaryImageUrl,
+} from '@module/utils/diaryImageUrl';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';

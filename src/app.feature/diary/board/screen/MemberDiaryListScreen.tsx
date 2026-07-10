@@ -11,10 +11,6 @@ import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { useLikeToggle } from '@feature/diary/board/hooks/useLikeToggle';
 import { DiaryItem } from '@feature/diary/board/type/diary';
-import {
-  resolveDiaryImageUrl,
-  resolveDiaryThumbnail,
-} from '@feature/diary/shared/utils/diaryImageUrl';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useMemberProfileDiariesInfinite } from '@feature/member/hooks/useMemberQueries';
@@ -22,6 +18,10 @@ import { normalizeApiError } from '@module/api/error';
 import { useDedupedInfinitePages } from '@module/hooks/useDedupedInfinitePages';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { formatMonthDayKR } from '@module/utils/date';
+import {
+  resolveDiaryImageUrl,
+  resolveDiaryThumbnail,
+} from '@module/utils/diaryImageUrl';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useState } from 'react';

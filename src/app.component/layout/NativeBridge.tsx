@@ -1,6 +1,6 @@
 'use client';
 
-import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
+import { resolveDiaryImageUrl } from '@module/utils/diaryImageUrl';
 import {
   onNativeNavigateRequest,
   postNativeMessage,

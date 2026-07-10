@@ -1,7 +1,7 @@
+import { resolveDiaryImageUrl } from '@module/utils/diaryImageUrl';
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { resolveDiaryImageUrl } from '../../shared/utils/diaryImageUrl';
 import type { DiaryImageItem } from '../utils/diaryFormHelpers';
 import { revokeObjectUrlIfNeeded } from '../utils/diaryFormHelpers';
 

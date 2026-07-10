@@ -4,10 +4,6 @@ import type {
   DiaryItem,
 } from '@feature/diary/board/type/diary';
 import {
-  resolveDiaryImageUrl,
-  resolveDiaryThumbnail,
-} from '@feature/diary/shared/utils/diaryImageUrl';
-import {
   type DiaryEmotion,
   mapFeelingToEmotion,
 } from '@feature/diary/shared/utils/feeling';
@@ -16,6 +12,10 @@ import type {
   StreakCalendarItem,
 } from '@feature/member/type/member';
 import { formatDateISO, getRelativeTimeLabel } from '@module/utils/date';
+import {
+  resolveDiaryImageUrl,
+  resolveDiaryThumbnail,
+} from '@module/utils/diaryImageUrl';
 
 export type { DiaryEmotion };
 

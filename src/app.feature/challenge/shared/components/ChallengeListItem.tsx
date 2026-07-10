@@ -8,7 +8,7 @@ import {
   Text,
 } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
-import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
+import { resolveDiaryImageUrl } from '@module/utils/diaryImageUrl';
 import { createActivationKeydownHandler } from '@module/utils/event';
 
 export interface ChallengeListItemProps {

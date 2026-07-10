@@ -3,8 +3,8 @@
 import { Icon, Text } from '@1d1s/design-system';
 import EmptyState from '@component/EmptyState';
 import FadeInImage from '@component/FadeInImage';
-import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { cn } from '@module/utils/cn';
+import { resolveDiaryImageUrl } from '@module/utils/diaryImageUrl';
 import Image from 'next/image';
 import React from 'react';
 

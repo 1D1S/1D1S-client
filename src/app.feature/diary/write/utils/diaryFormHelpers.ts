@@ -1,5 +1,6 @@
 import type { SidebarChallenge } from '@feature/member/type/member';
 import { formatDateISO, toStartOfDay } from '@module/utils/date';
+import { extractDiaryImageList } from '@module/utils/diaryImageUrl';
 
 import type {
   ChallengeCategory,
@@ -12,7 +13,6 @@ import type {
   DiaryDetail,
   DiaryInfo,
 } from '../../board/type/diary';
-import { extractDiaryImageList } from '../../shared/utils/diaryImageUrl';
 
 export function parsePositiveInteger(value: string | null): number | null {
   if (!value) {

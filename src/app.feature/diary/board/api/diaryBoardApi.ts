@@ -4,8 +4,8 @@ import {
   requestBody,
   requestData,
 } from '@module/api/request';
+import { resolveDiaryImageList } from '@module/utils/diaryImageUrl';
 
-import { resolveDiaryImageList } from '../../shared/utils/diaryImageUrl';
 import {
   DiaryItem,
   DiaryListParams,
