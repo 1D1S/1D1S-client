@@ -6,6 +6,7 @@ import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
 import { MyPageFriendsEntry } from '@feature/friend/components/MyPageFriendsEntry';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
+import { MyPageStatisticsEntry } from '@feature/member/statistics/components/MyPageStatisticsEntry';
 import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
@@ -81,8 +82,9 @@ export default function MyPageScreen(): React.ReactElement | null {
           challengeHref="/mypage/challenge"
         />
 
-        <div className="mt-6">
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <MyPageFriendsEntry />
+          <MyPageStatisticsEntry />
         </div>
 
         {/* Streak hero + Heatmap — 모바일은 활동 캘린더(잔디)만 노출.
