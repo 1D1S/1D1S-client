@@ -85,7 +85,6 @@ function StoryRing({
   const hasMyStory = groups.some((group) => group.isMyStory);
   const friendCount = hasMyStory ? groups.length - 1 : groups.length;
   const myImageUrl = resolveDiaryImageUrl(myProfileImage ?? null) ?? undefined;
-  const hasMyImage = isValidNextImageSrc(myImageUrl);
 
   return (
     <div
@@ -134,10 +133,10 @@ function StoryRing({
               )}
               aria-hidden
             >
-              {hasMyImage ? (
+              {isValidNextImageSrc(myImageUrl) ? (
                 <span className="relative h-full w-full">
                   <FadeInImage
-                    src={myImageUrl as string}
+                    src={myImageUrl}
                     alt=""
                     fill
                     sizes="36px"
@@ -159,7 +158,6 @@ function StoryRing({
         const [preview] = group.stories;
         const profileUrl =
           resolveDiaryImageUrl(group.profileImage) ?? undefined;
-        const hasProfile = isValidNextImageSrc(profileUrl);
         const name = group.userName?.trim() || `친구 ${group.userId}`;
         const title = preview?.diaryTitle ?? '';
         const time = preview ? formatStoryDate(preview.createdAt) : '';
@@ -234,9 +232,9 @@ function StoryRing({
                 )}
                 aria-hidden
               >
-                {hasProfile ? (
+                {isValidNextImageSrc(profileUrl) ? (
                   <FadeInImage
-                    src={profileUrl as string}
+                    src={profileUrl}
                     alt=""
                     fill
                     sizes="40px"

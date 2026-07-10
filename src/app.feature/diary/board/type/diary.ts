@@ -1,3 +1,4 @@
+import type { ChallengeSummary as ChallengeSummaryResponse } from '@feature/challenge/board/type/challenge';
 import type { LikeInfo } from '@module/api/types';
 
 export type { LikeInfo };
@@ -62,7 +63,22 @@ export interface DiaryItem {
   diaryInfo?: DiaryInfo | null;
 }
 
-export type DiaryDetail = DiaryItem;
+// 일지 상세 응답 (GET /diaries/{id} → DiaryResponse). 목록 아이템(DiaryItem)과
+// 달리 서버 원본 그대로 내려오므로 필드는 author/diaryInfo(Dto 접미사 없음),
+// challenge 는 ChallengeSummaryResponse(challengeId 키, enum 타입)다.
+export interface DiaryDetail {
+  id: number;
+  challenge: ChallengeSummaryResponse | null;
+  author: AuthorInfo | null;
+  title: string;
+  content: string;
+  imgUrl: string[] | null;
+  thumbnailUrl: string | null;
+  isPublic: boolean;
+  likeInfo: LikeInfo;
+  commentCount: number;
+  diaryInfo: DiaryInfo | null;
+}
 
 export interface CreateDiaryRequest {
   challengeId: number;

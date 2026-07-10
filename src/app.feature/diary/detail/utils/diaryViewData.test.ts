@@ -54,10 +54,16 @@ describe('parsePositiveInteger', () => {
 });
 
 describe('resolveSidebarMemberId', () => {
-  it('reads the first positive id-like key in order', () => {
+  it('reads memberId first, then id', () => {
     expect(resolveSidebarMemberId({ memberId: 5 })).toBe(5);
-    expect(resolveSidebarMemberId({ member_id: '8' })).toBe(8);
-    expect(resolveSidebarMemberId({ userId: 2, id: 9 })).toBe(2);
+    expect(resolveSidebarMemberId({ id: 9 })).toBe(9);
+    expect(resolveSidebarMemberId({ memberId: 5, id: 9 })).toBe(5);
+  });
+
+  it('ignores disproven keys (member_id, userId, user_id)', () => {
+    expect(resolveSidebarMemberId({ member_id: 8 })).toBeNull();
+    expect(resolveSidebarMemberId({ userId: 2 })).toBeNull();
+    expect(resolveSidebarMemberId({ user_id: 3 })).toBeNull();
   });
 
   it('returns null for non-objects and empty ids', () => {
@@ -99,15 +105,20 @@ describe('sortCommentsByOldest', () => {
 
 describe('mapDiaryToViewData', () => {
   it('maps a diary with no linked challenge', () => {
+    // 서버 확정 계약: 상세 응답은 diaryInfo(Dto 접미사 없음)로 내려온다.
     const diary = {
       id: 42,
+      challenge: null,
+      author: null,
       title: '',
       content: '<p>오늘의 일지</p>',
-      achievementRate: 150,
+      imgUrl: null,
+      thumbnailUrl: null,
       likeInfo: { likedByMe: true, likeCnt: 7 },
-      diaryInfoDto: {
+      diaryInfo: {
         createdAt: '2026-07-10',
         feeling: 'HAPPY',
+        achievementRate: 150,
       },
     } as unknown as DiaryDetail;
 
@@ -125,5 +136,28 @@ describe('mapDiaryToViewData', () => {
     expect(view.connectedChallengeId).toBeNull();
     expect(view.connectedChallengeTitle).toBe('연동된 챌린지가 없습니다.');
     expect(view.contentImageUrls).toEqual([]);
+  });
+
+  it('reads author and challenge.challengeId from the confirmed shape', () => {
+    const diary = {
+      id: 7,
+      challenge: { challengeId: 99, title: '아침 러닝' },
+      author: { id: 3, nickname: '러너', profileImage: null },
+      title: '일지',
+      content: '<p>내용</p>',
+      imgUrl: ['https://cdn.example.com/a.jpg'],
+      thumbnailUrl: null,
+      likeInfo: { likedByMe: false, likeCnt: 0 },
+      diaryInfo: { feeling: 'NONE', achievementRate: 40 },
+    } as unknown as DiaryDetail;
+
+    const view = mapDiaryToViewData(diary);
+
+    expect(view.authorId).toBe(3);
+    expect(view.authorName).toBe('러너');
+    expect(view.connectedChallengeId).toBe(99);
+    expect(view.connectedChallengeTitle).toBe('아침 러닝');
+    expect(view.achievementPercent).toBe(40);
+    expect(view.contentImageUrls).toEqual(['https://cdn.example.com/a.jpg']);
   });
 });

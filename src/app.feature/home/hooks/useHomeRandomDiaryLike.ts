@@ -2,6 +2,7 @@ import { DIARY_QUERY_KEYS } from '@feature/diary/board/consts/queryKeys';
 import {
   type DiaryDetail,
   type DiaryItem,
+  type LikeInfo,
 } from '@feature/diary/board/type/diary';
 import { diaryDetailApi } from '@feature/diary/detail/api/diaryDetailApi';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
@@ -17,7 +18,7 @@ interface UseHomeRandomDiaryLikeResult {
 }
 
 function resolveNextLikeCount(
-  diary: DiaryItem,
+  likeInfo: LikeInfo,
   likedByMe: boolean,
   likeCountFromServer?: number
 ): number {
@@ -28,24 +29,30 @@ function resolveNextLikeCount(
     return Math.max(0, likeCountFromServer);
   }
 
-  if (diary.likeInfo.likedByMe === likedByMe) {
-    return diary.likeInfo.likeCnt;
+  if (likeInfo.likedByMe === likedByMe) {
+    return likeInfo.likeCnt;
   }
 
-  return Math.max(0, diary.likeInfo.likeCnt + (likedByMe ? 1 : -1));
+  return Math.max(0, likeInfo.likeCnt + (likedByMe ? 1 : -1));
 }
 
-function updateDiaryLikeInfo(
-  diary: DiaryItem,
+// 목록 아이템(DiaryItem)과 상세(DiaryDetail) 모두 likeInfo 만 갱신하므로
+// likeInfo 를 가진 어떤 형태든 받도록 제네릭으로 둔다.
+function updateDiaryLikeInfo<T extends { likeInfo: LikeInfo }>(
+  diary: T,
   likedByMe: boolean,
   likeCountFromServer?: number
-): DiaryItem {
+): T {
   return {
     ...diary,
     likeInfo: {
       ...diary.likeInfo,
       likedByMe,
-      likeCnt: resolveNextLikeCount(diary, likedByMe, likeCountFromServer),
+      likeCnt: resolveNextLikeCount(
+        diary.likeInfo,
+        likedByMe,
+        likeCountFromServer
+      ),
     },
   };
 }
