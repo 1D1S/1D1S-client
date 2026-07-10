@@ -4,7 +4,7 @@ import { Text } from '@1d1s/design-system';
 import ChallengeCard from '@component/cards/ChallengeCard';
 import EmptyState from '@component/EmptyState';
 import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
-import { MobileStickyHeader } from '@component/layout/MobileStickyHeader';
+import { MobileHeader } from '@component/layout/MobileHeader';
 import { ChallengeCardSkeletonGrid } from '@component/skeletons/ChallengeCardSkeleton';
 import {
   CategoryIcon,
@@ -92,7 +92,7 @@ export function MemberChallengeListScreen({
       title="챌린지 전체 보기"
       description="참여 중인 챌린지 전체 목록입니다."
       mobileHeader={
-        <MobileStickyHeader
+        <MobileHeader
           title="챌린지 전체 보기"
           onBack={() => router.push(`/member/${memberId}`)}
         />

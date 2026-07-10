@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Text } from '@1d1s/design-system';
+import { MobileHeader } from '@component/layout/MobileHeader';
 import LikeBurst from '@component/LikeBurst';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
@@ -9,7 +10,6 @@ import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import {
-  ArrowLeft,
   Edit3,
   Flag,
   Heart,
@@ -295,34 +295,7 @@ function DiaryDetailView({
         'pb-mobile-action-bar-tall sm:pb-0'
       )}
     >
-      {/* 모바일 sticky 헤더 — ← + 일지 */}
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={handleBack}
-          className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
-          )}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <Text
-          size="body1"
-          weight="extrabold"
-          className="flex-1 tracking-[-0.3px] text-gray-900"
-        >
-          일지
-        </Text>
-      </div>
+      <MobileHeader title="일지" onBack={handleBack} />
 
       <div
         className={cn(

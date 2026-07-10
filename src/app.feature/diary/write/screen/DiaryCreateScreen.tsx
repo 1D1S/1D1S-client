@@ -3,10 +3,10 @@
 import { Button, DatePicker, Text } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
+import { MobileHeader } from '@component/layout/MobileHeader';
 import { cn } from '@module/utils/cn';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo } from 'react';
 
 import type { ChallengeGoal } from '../../../challenge/board/type/challenge';
@@ -37,7 +37,6 @@ const DiaryContentEditor = dynamic(
 );
 
 export default function DiaryCreateScreen(): React.ReactElement {
-  const router = useRouter();
   const {
     isEditMode,
     title,
@@ -121,57 +120,27 @@ export default function DiaryCreateScreen(): React.ReactElement {
 
   return (
     <div className="pb-mobile-action-bar min-h-screen w-full">
-      {/* 모바일 sticky 헤더 — ← + 제목 + % 뱃지 */}
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={() => router.back()}
-          className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
-          )}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div className="min-w-0 flex-1">
-          <Text
-            size="body1"
-            weight="extrabold"
-            className="block tracking-[-0.3px] text-gray-900"
-          >
-            {isEditMode ? '일지 수정' : '일지 작성'}
-          </Text>
-          {/* 태블릿(sm~lg)에서만 서브타이틀 노출 — 디자인 시안 기준 */}
-          <Text
-            size="caption2"
-            weight="regular"
-            className="hidden truncate text-gray-500 sm:block"
-          >
-            {isEditMode
-              ? '기록을 최신 상태로 업데이트해보세요.'
-              : '오늘 챌린지를 어떻게 실천하셨나요?'}
-          </Text>
-        </div>
-        {totalGoalCount > 0 ? (
-          <span
-            className={cn(
-              'inline-flex items-center rounded-full px-2.5 py-1',
-              'text-[10px] font-extrabold text-white',
-              isHundredPercent ? 'bg-green-500' : 'bg-main-800'
-            )}
-          >
-            {percent}%
-          </span>
-        ) : null}
-      </div>
+      <MobileHeader
+        title={isEditMode ? '일지 수정' : '일지 작성'}
+        subtitle={
+          isEditMode
+            ? '기록을 최신 상태로 업데이트해보세요.'
+            : '오늘 챌린지를 어떻게 실천하셨나요?'
+        }
+        right={
+          totalGoalCount > 0 ? (
+            <span
+              className={cn(
+                'inline-flex items-center rounded-full px-2.5 py-1',
+                'text-[10px] font-extrabold text-white',
+                isHundredPercent ? 'bg-green-500' : 'bg-main-800'
+              )}
+            >
+              {percent}%
+            </span>
+          ) : null
+        }
+      />
 
       <div
         className={cn(

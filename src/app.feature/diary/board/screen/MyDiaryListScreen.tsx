@@ -4,7 +4,7 @@ import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
-import { MobileStickyHeader } from '@component/layout/MobileStickyHeader';
+import { MobileHeader } from '@component/layout/MobileHeader';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
@@ -110,7 +110,7 @@ export function MyDiaryListScreen(): React.ReactElement {
       title="내 일지"
       description="내가 작성한 일지 전체 목록입니다."
       mobileHeader={
-        <MobileStickyHeader title="내 일지" onBack={() => router.back()} />
+        <MobileHeader title="내 일지" onBack={() => router.back()} />
       }
     >
       <LoginRequiredDialog

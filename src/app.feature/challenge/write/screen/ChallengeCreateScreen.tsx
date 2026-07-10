@@ -11,6 +11,7 @@ import {
   Text,
 } from '@1d1s/design-system';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
+import { MobileHeader } from '@component/layout/MobileHeader';
 import { Form } from '@component/ui/Form';
 import { useCreateChallenge } from '@feature/challenge/detail/hooks/useChallengeMutations';
 import { ChallengeCreateBannerSection } from '@feature/challenge/write/components/ChallengeCreateBannerSection';
@@ -28,12 +29,10 @@ import {
 } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { formatFormValues } from '@feature/challenge/write/utils/challengeCreatePayload';
 import { cn } from '@module/utils/cn';
-import { ArrowLeft, Check, Lightbulb, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Check, Lightbulb, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 export default function ChallengeCreateScreen(): React.ReactElement {
-  const router = useRouter();
   const form = useChallengeCreateForm();
   const createChallenge = useCreateChallenge();
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
@@ -62,34 +61,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
 
   return (
     <div className={cn('pb-mobile-action-bar min-h-screen w-full')}>
-      {/* 모바일 sticky 헤더 — ← + 챌린지 만들기 */}
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={() => router.back()}
-          className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
-          )}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <Text
-          size="body1"
-          weight="extrabold"
-          className="flex-1 tracking-[-0.3px] text-gray-900"
-        >
-          챌린지 만들기
-        </Text>
-      </div>
+      <MobileHeader title="챌린지 만들기" />
 
       <Form {...form}>
         <div

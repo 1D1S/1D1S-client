@@ -4,7 +4,7 @@ import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
-import { MobileStickyHeader } from '@component/layout/MobileStickyHeader';
+import { MobileHeader } from '@component/layout/MobileHeader';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
@@ -135,7 +135,7 @@ export function MemberDiaryListScreen({
       title="일지 전체 보기"
       description="작성한 일지 전체 목록입니다."
       mobileHeader={
-        <MobileStickyHeader
+        <MobileHeader
           title="일지 전체 보기"
           onBack={() => router.push(`/member/${memberId}`)}
         />
