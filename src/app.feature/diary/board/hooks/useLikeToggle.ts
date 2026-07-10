@@ -14,7 +14,6 @@ interface UseLikeToggleParams {
 }
 
 interface UseLikeToggleResult {
-  isLikePending: boolean;
   toggleLike(id: number, likedByMe: boolean): void;
 }
 
@@ -50,5 +49,5 @@ export function useLikeToggle({
     [isLoggedIn, isLikePending, likeDiary, unlikeDiary, onRequireLogin]
   );
 
-  return { isLikePending, toggleLike };
+  return { toggleLike };
 }
