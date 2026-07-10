@@ -1,10 +1,9 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { MobileHeader, Text } from '@1d1s/design-system';
 import ChallengeCard from '@component/cards/ChallengeCard';
 import EmptyState from '@component/EmptyState';
 import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
-import { MobileHeader } from '@component/layout/MobileHeader';
 import { ChallengeCardSkeletonGrid } from '@component/skeletons/ChallengeCardSkeleton';
 import {
   CategoryIcon,

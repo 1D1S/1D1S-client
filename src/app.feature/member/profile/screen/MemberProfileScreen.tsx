@@ -1,7 +1,6 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
-import { MobileHeader } from '@component/layout/MobileHeader';
+import { MobileHeader, Text } from '@1d1s/design-system';
 import { MemberFriendActionButton } from '@feature/friend/components/MemberFriendActionButton';
 import { useMemberProfile } from '@feature/member/hooks/useMemberQueries';
 import { MyPageActiveChallenges } from '@feature/member/mypage/components/MyPageActiveChallenges';

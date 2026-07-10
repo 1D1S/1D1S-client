@@ -1,6 +1,8 @@
-import { Text } from '@1d1s/design-system';
-import { MobileHeader } from '@component/layout/MobileHeader';
+'use client';
+
+import { MobileHeader, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 interface LegalSection {
@@ -28,9 +30,10 @@ export function LegalPageShell({
   sections,
   footer,
 }: LegalPageShellProps): React.ReactElement {
+  const router = useRouter();
   return (
     <div className="min-h-screen w-full bg-white">
-      <MobileHeader title={title} />
+      <MobileHeader title={title} onBack={() => router.back()} />
 
       <section
         className={cn(

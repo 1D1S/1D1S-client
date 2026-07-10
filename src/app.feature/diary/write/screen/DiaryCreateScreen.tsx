@@ -1,12 +1,17 @@
 'use client';
 
-import { Button, DatePicker, Text } from '@1d1s/design-system';
+import {
+  Button,
+  DatePicker,
+  MobileHeader,
+  Text,
+} from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
-import { MobileHeader } from '@component/layout/MobileHeader';
 import { cn } from '@module/utils/cn';
 import { Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo } from 'react';
 
 import type { ChallengeGoal } from '../../../challenge/board/type/challenge';
@@ -37,6 +42,7 @@ const DiaryContentEditor = dynamic(
 );
 
 export default function DiaryCreateScreen(): React.ReactElement {
+  const router = useRouter();
   const {
     isEditMode,
     title,
@@ -122,6 +128,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
     <div className="pb-mobile-action-bar min-h-screen w-full">
       <MobileHeader
         title={isEditMode ? '일지 수정' : '일지 작성'}
+        onBack={() => router.back()}
         subtitle={
           isEditMode
             ? '기록을 최신 상태로 업데이트해보세요.'

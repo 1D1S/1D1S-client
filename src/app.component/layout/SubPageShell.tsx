@@ -1,10 +1,9 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { MobileHeader, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import { useRouter } from 'next/navigation';
 import React from 'react';
-
-import { MobileHeader } from './MobileHeader';
 
 interface SubPageShellProps {
   /** 페이지 타이틀 (모바일 헤더 / 데스크탑 헤더 공통) */
@@ -34,9 +33,12 @@ export function SubPageShell({
   onBack,
   children,
 }: SubPageShellProps): React.ReactElement {
+  const router = useRouter();
+  // 기존 MobileHeader 기본 동작(onBack 미지정 시 router.back)을 보존한다.
+  const handleBack = onBack ?? ((): void => router.back());
   return (
     <div className="min-h-screen w-full">
-      <MobileHeader title={title} onBack={onBack} right={headerAction} />
+      <MobileHeader title={title} onBack={handleBack} right={headerAction} />
 
       <section className="mx-auto w-full max-w-[980px] p-4 lg:p-6">
         {/* 데스크탑 헤더 */}
