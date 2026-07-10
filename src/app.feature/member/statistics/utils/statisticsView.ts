@@ -57,6 +57,27 @@ export function formatDelta(delta: number): string {
   return '±0';
 }
 
+// 막대 픽셀 높이 계산.
+// 퍼센트 높이는 부모(flex 컬럼)의 높이가 확정돼 있어야 해석되는데, 컬럼이
+// content 높이라 % 가 0 으로 무너져 막대가 안 보였다. px 로 직접 계산해
+// 부모 높이와 무관하게 항상 그려지도록 한다.
+// - count <= 0: 얇은 흔적(2px)만.
+// - count > 0: 최대값 대비 비율, 최소 6px 로 보장.
+export function computeBarHeightPx(
+  count: number,
+  max: number,
+  areaHeight: number,
+): number {
+  if (areaHeight <= 0) {
+    return 0;
+  }
+  if (count <= 0) {
+    return 2;
+  }
+  const ratio = max > 0 ? count / max : 0;
+  return Math.max(6, Math.round(ratio * areaHeight));
+}
+
 // bucket 문자열을 사람이 읽는 짧은 라벨로. 서버 포맷을 방어적으로 처리한다.
 export function formatBucketLabel(bucket: string): string {
   if (!bucket) {

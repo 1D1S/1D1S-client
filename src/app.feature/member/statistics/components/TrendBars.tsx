@@ -2,6 +2,8 @@ import { Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 
+import { computeBarHeightPx } from '../utils/statisticsView';
+
 export interface TrendDatum {
   bucket: string;
   count: number;
@@ -32,6 +34,9 @@ export function TrendBars({
 }: TrendBarsProps): React.ReactElement {
   const max = data.reduce((m, d) => Math.max(m, d.count), 0);
   const areaHeight = compact ? 56 : 128;
+  // 최댓값 막대 위 count 라벨이 고정 높이 영역을 넘지 않도록 여백 확보.
+  const labelReserve = compact ? 0 : 18;
+  const barArea = Math.max(0, areaHeight - labelReserve);
 
   return (
     <div className={cn('w-full', className)}>
@@ -42,10 +47,7 @@ export function TrendBars({
         aria-label={ariaLabel}
       >
         {data.map((d, i) => {
-          const ratio = max > 0 ? d.count / max : 0;
-          // 값이 있으면 최소 6% 높이로 보이게, 0이면 얇은 흔적만.
-          const heightPct =
-            d.count > 0 ? Math.max(6, ratio * 100) : 2;
+          const heightPx = computeBarHeightPx(d.count, max, barArea);
           return (
             <div
               key={`${d.bucket}-${i}`}
@@ -63,7 +65,7 @@ export function TrendBars({
               <div
                 className="w-full rounded-[3px] transition-[height]"
                 style={{
-                  height: `${heightPct}%`,
+                  height: heightPx,
                   backgroundColor: d.count > 0 ? color : 'var(--gray-200)',
                 }}
               />
