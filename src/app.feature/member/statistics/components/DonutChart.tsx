@@ -25,7 +25,24 @@ interface DonutChartProps {
 const VIEW = 100;
 const CENTER = VIEW / 2;
 const RADIUS = 40;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+// 12시 방향 기준 각도(deg) → 원 위의 좌표.
+function pointAt(angleDeg: number): [number, number] {
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  return [
+    CENTER + RADIUS * Math.cos(rad),
+    CENTER + RADIUS * Math.sin(rad),
+  ];
+}
+
+// 시계 방향 아크 패스. dasharray 원 트릭 대신 명시적 패스로 그려
+// 브라우저별 dash 렌더링 아티팩트를 피한다.
+function arcPath(startDeg: number, endDeg: number): string {
+  const [sx, sy] = pointAt(startDeg);
+  const [ex, ey] = pointAt(endDeg);
+  const largeArc = endDeg - startDeg > 180 ? 1 : 0;
+  return `M ${sx} ${sy} A ${RADIUS} ${RADIUS} 0 ${largeArc} 1 ${ex} ${ey}`;
+}
 
 /**
  * 순수 SVG 도넛 차트 (외부 의존성 없음).
@@ -43,14 +60,17 @@ export function DonutChart({
   // px 두께를 viewBox 단위로 환산 (scale = size/VIEW).
   const strokeWidth = (thickness / size) * VIEW;
 
-  let offset = 0;
+  const visible = segments.filter((seg) => seg.value > 0);
+  let accDeg = 0;
   const arcs =
     total > 0
-      ? segments
-          .filter((seg) => seg.value > 0)
-          .map((seg) => {
-            const dash = (seg.value / total) * CIRCUMFERENCE;
-            const arc = (
+      ? visible.map((seg) => {
+          const startDeg = accDeg;
+          const sweep = (seg.value / total) * 360;
+          accDeg += sweep;
+          // 단일 세그먼트 100% 는 아크로 못 그리므로 원으로 대체.
+          if (visible.length === 1) {
+            return (
               <circle
                 key={seg.key}
                 cx={CENTER}
@@ -59,13 +79,19 @@ export function DonutChart({
                 fill="none"
                 stroke={seg.color}
                 strokeWidth={strokeWidth}
-                strokeDasharray={`${dash} ${CIRCUMFERENCE - dash}`}
-                strokeDashoffset={-offset}
               />
             );
-            offset += dash;
-            return arc;
-          })
+          }
+          return (
+            <path
+              key={seg.key}
+              d={arcPath(startDeg, accDeg)}
+              fill="none"
+              stroke={seg.color}
+              strokeWidth={strokeWidth}
+            />
+          );
+        })
       : [];
 
   return (
@@ -88,8 +114,7 @@ export function DonutChart({
           stroke="var(--gray-100)"
           strokeWidth={strokeWidth}
         />
-        {/* -90deg 회전으로 12시 방향에서 시작 */}
-        <g transform={`rotate(-90 ${CENTER} ${CENTER})`}>{arcs}</g>
+        {arcs}
       </svg>
       {centerSlot ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center">

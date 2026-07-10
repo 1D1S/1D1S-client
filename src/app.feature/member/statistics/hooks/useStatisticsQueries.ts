@@ -1,5 +1,9 @@
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useQuery,
+  type UseQueryResult,
+} from '@tanstack/react-query';
 
 import { statisticsApi } from '../api/statisticsApi';
 import { STATISTICS_QUERY_KEYS } from '../consts/queryKeys';
@@ -40,6 +44,8 @@ export function useDiaryTrend(
     queryFn: () => statisticsApi.getDiaryTrend(params),
     enabled: isLoggedIn,
     staleTime: STATISTICS_STALE_TIME,
+    // 단위 전환 시 이전 데이터 유지 — 스켈레톤 레이아웃 쉬프트 방지.
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -66,6 +72,8 @@ export function useStatisticsSummary(
     // 않아 "필수 파라미터 누락" 400 을 방지한다.
     enabled: isLoggedIn && Boolean(params.periodKey),
     staleTime: STATISTICS_STALE_TIME,
+    // 기간 이동 시 이전 데이터 유지 — 스켈레톤 레이아웃 쉬프트 방지.
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -78,5 +86,7 @@ export function useFriendComparison(
     queryFn: () => statisticsApi.getFriendComparison(period),
     enabled: isLoggedIn,
     staleTime: STATISTICS_STALE_TIME,
+    // 기간 전환 시 이전 데이터 유지 — 스켈레톤 레이아웃 쉬프트 방지.
+    placeholderData: keepPreviousData,
   });
 }
