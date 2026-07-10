@@ -18,15 +18,12 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
-  useLikeDiary,
-  useUnlikeDiary,
-} from '../../detail/hooks/useDiaryMutations';
-import {
   resolveDiaryImageUrl,
   resolveDiaryThumbnail,
 } from '../../shared/utils/diaryImageUrl';
 import { mapFeelingToEmotion } from '../../shared/utils/feeling';
 import { useDiaryList } from '../hooks/useDiaryQueries';
+import { useLikeToggle } from '../hooks/useLikeToggle';
 import { type DiaryItem } from '../type/diary';
 
 type SortMode = 'latest' | 'likes';
@@ -171,8 +168,14 @@ export default function DiaryListScreen(): React.ReactElement {
     });
   }, [isLoginRequired, pathname, router, searchParams]);
 
-  const likeDiary = useLikeDiary();
-  const unlikeDiary = useUnlikeDiary();
+  const handleLikeRequireLogin = useCallback((): void => {
+    setLoginDialogDescription('좋아요 기능은 로그인 후 이용할 수 있습니다.');
+    setShowLoginDialog(true);
+  }, []);
+  const { toggleLike } = useLikeToggle({
+    isLoggedIn,
+    onRequireLogin: handleLikeRequireLogin,
+  });
   const {
     data,
     isLoading,
@@ -188,7 +191,6 @@ export default function DiaryListScreen(): React.ReactElement {
     isFetchingNextPage,
     fetchNextPage,
   });
-  const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
   const diaries = useMemo(() => {
     const flattenedDiaries =
       data?.pages?.flatMap((page) => page?.items ?? []) ?? [];
@@ -216,27 +218,9 @@ export default function DiaryListScreen(): React.ReactElement {
   }, []);
 
   const handleLikeToggle = useCallback(
-    (diary: DiaryItem): void => {
-      if (!isLoggedIn) {
-        setLoginDialogDescription(
-          '좋아요 기능은 로그인 후 이용할 수 있습니다.'
-        );
-        setShowLoginDialog(true);
-        return;
-      }
-
-      if (isLikePending) {
-        return;
-      }
-
-      if (diary.likeInfo.likedByMe) {
-        unlikeDiary.mutate(diary.id);
-        return;
-      }
-
-      likeDiary.mutate(diary.id);
-    },
-    [isLoggedIn, isLikePending, likeDiary, unlikeDiary]
+    (diary: DiaryItem): void =>
+      toggleLike(diary.id, diary.likeInfo.likedByMe),
+    [toggleLike]
   );
 
   return (

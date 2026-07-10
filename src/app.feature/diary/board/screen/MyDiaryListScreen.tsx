@@ -7,10 +7,6 @@ import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { DiaryItem } from '@feature/diary/board/type/diary';
-import {
-  useLikeDiary,
-  useUnlikeDiary,
-} from '@feature/diary/detail/hooks/useDiaryMutations';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { normalizeApiError } from '@module/api/error';
@@ -26,6 +22,7 @@ import {
   DiaryCardViewModel,
 } from '../../../member/mypage/utils/mypageUtils';
 import { useMyDiariesInfinite } from '../hooks/useDiaryQueries';
+import { useLikeToggle } from '../hooks/useLikeToggle';
 
 const MY_DIARY_PAGE_SIZE = 12;
 
@@ -71,8 +68,13 @@ export function MyDiaryListScreen(): React.ReactElement {
   const { data: sidebar } = useSidebar();
   const nickname = sidebar?.nickname ?? '나';
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const likeDiary = useLikeDiary();
-  const unlikeDiary = useUnlikeDiary();
+  const openLoginDialog = useCallback((): void => {
+    setShowLoginDialog(true);
+  }, []);
+  const { toggleLike: handleLikeToggle } = useLikeToggle({
+    isLoggedIn,
+    onRequireLogin: openLoginDialog,
+  });
   const {
     data,
     isLoading,
@@ -104,25 +106,6 @@ export function MyDiaryListScreen(): React.ReactElement {
   );
 
   const hasDiaries = diaryCards.length > 0;
-  const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
-
-  const handleLikeToggle = useCallback(
-    (id: number, isLiked: boolean): void => {
-      if (!isLoggedIn) {
-        setShowLoginDialog(true);
-        return;
-      }
-      if (isLikePending) {
-        return;
-      }
-      if (isLiked) {
-        unlikeDiary.mutate(id);
-      } else {
-        likeDiary.mutate(id);
-      }
-    },
-    [isLoggedIn, isLikePending, likeDiary, unlikeDiary]
-  );
 
   return (
     <div className="min-h-screen w-full">
