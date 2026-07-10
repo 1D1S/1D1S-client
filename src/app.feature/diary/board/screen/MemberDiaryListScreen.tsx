@@ -7,11 +7,8 @@ import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
+import { useLikeToggle } from '@feature/diary/board/hooks/useLikeToggle';
 import { DiaryItem } from '@feature/diary/board/type/diary';
-import {
-  useLikeDiary,
-  useUnlikeDiary,
-} from '@feature/diary/detail/hooks/useDiaryMutations';
 import {
   resolveDiaryImageUrl,
   resolveDiaryThumbnail,
@@ -93,8 +90,13 @@ export function MemberDiaryListScreen({
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const likeDiary = useLikeDiary();
-  const unlikeDiary = useUnlikeDiary();
+  const openLoginDialog = useCallback((): void => {
+    setShowLoginDialog(true);
+  }, []);
+  const { toggleLike } = useLikeToggle({
+    isLoggedIn,
+    onRequireLogin: openLoginDialog,
+  });
   const {
     data,
     isLoading,
@@ -122,24 +124,11 @@ export function MemberDiaryListScreen({
   }, [data]);
 
   const hasDiaries = diaryItems.length > 0;
-  const isLikePending = likeDiary.isPending || unlikeDiary.isPending;
 
   const handleLikeToggle = useCallback(
-    (diary: DiaryItem): void => {
-      if (!isLoggedIn) {
-        setShowLoginDialog(true);
-        return;
-      }
-      if (isLikePending) {
-        return;
-      }
-      if (diary.likeInfo.likedByMe) {
-        unlikeDiary.mutate(diary.id);
-      } else {
-        likeDiary.mutate(diary.id);
-      }
-    },
-    [isLoggedIn, isLikePending, likeDiary, unlikeDiary]
+    (diary: DiaryItem): void =>
+      toggleLike(diary.id, diary.likeInfo.likedByMe),
+    [toggleLike]
   );
 
   return (
