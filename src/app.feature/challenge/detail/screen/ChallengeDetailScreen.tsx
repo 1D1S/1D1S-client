@@ -1,21 +1,6 @@
 'use client';
 
-import {
-  Button,
-  Card,
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  GoalAddList,
-  Stripe,
-  Tag,
-  Text,
-  TextField,
-} from '@1d1s/design-system';
+import { Button, Card, Stripe, Tag, Text } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import LikeBurst from '@component/LikeBurst';
@@ -35,7 +20,7 @@ import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { formatDateISO } from '@module/utils/date';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import { ArrowLeft, CircleAlert, Heart, Trash2 } from 'lucide-react';
+import { ArrowLeft, CircleAlert, Heart } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -52,8 +37,10 @@ import {
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
 } from '../../board/utils/challengePeriod';
+import { ChallengeDetailCompactHeader } from '../components/ChallengeDetailCompactHeader';
 import { ChallengeDetailHero } from '../components/ChallengeDetailHero';
 import { ChallengeDiaryGrid } from '../components/ChallengeDiaryGrid';
+import { ChallengeGoalModals } from '../components/ChallengeGoalModals';
 import { ChallengeLeaderboardCard } from '../components/ChallengeLeaderboardCard';
 import { ChallengePasswordDialog } from '../components/ChallengePasswordDialog';
 import { ChallengeProgressCard } from '../components/ChallengeProgressCard';
@@ -61,21 +48,21 @@ import { ChallengeRulesCard } from '../components/ChallengeRulesCard';
 import { ExpandableText } from '../components/ExpandableText';
 import { PendingMemberItem } from '../components/PendingMemberItem';
 import { useChallengeDiaryList } from '../hooks/useChallengeDiaryQueries';
+import { useChallengeGoalEditors } from '../hooks/useChallengeGoalEditors';
 import {
   useAcceptParticipant,
   useJoinChallenge,
   useLeaveChallenge,
   useLikeChallenge,
-  usePokeChallengeMembers,
   useRejectParticipant,
   useUnlikeChallenge,
-  useUpdateChallenge,
-  useUpdateParticipantGoal,
   useVerifyChallengePassword,
 } from '../hooks/useChallengeMutations';
 import { useChallengePendingParticipants } from '../hooks/useChallengeParticipantQueries';
+import { usePokeMembers } from '../hooks/usePokeMembers';
 import { ChallengeDiaryItem } from '../type/challengeDiary';
 import { buildHeroGradient, getCategoryAccent } from '../utils/challengeAccent';
+import { buildChallengeCta } from '../utils/challengeCta';
 import {
   EMPTY_GOALS,
   EMPTY_PARTICIPANTS,
@@ -94,76 +81,6 @@ interface ChallengeDetailScreenProps {
 // 이 신호를 받으면 비밀번호 다이얼로그를 목표 입력 단계로 전환한다.
 const FREE_GOAL_REQUIRED_CODE = 'CHALLENGE_022';
 
-interface GoalAddListModalProps {
-  open: boolean;
-  onOpenChange(open: boolean): void;
-  title: string;
-  description: string;
-  goals: string[];
-  onGoalsChange(goals: string[]): void;
-  submitLabel: string;
-  submitDisabled: boolean;
-  submitMinWidthClass: string;
-  onSubmit(): void;
-}
-
-// 목표 입력/수정 모달의 공통 chrome. 본문은 GoalAddList 로 동일하고
-// 제목·설명·제출 버튼(라벨/너비/핸들러)만 다르다.
-function GoalAddListModal({
-  open,
-  onOpenChange,
-  title,
-  description,
-  goals,
-  onGoalsChange,
-  submitLabel,
-  submitDisabled,
-  submitMinWidthClass,
-  onSubmit,
-}: GoalAddListModalProps): React.ReactElement {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[460px]">
-        <DialogHeader className="flex-col items-start gap-1.5 pb-2">
-          <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
-            {title}
-          </DialogTitle>
-          <DialogDescription className="text-[13px] leading-relaxed text-gray-500">
-            {description}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogBody>
-          <GoalAddList
-            goals={goals}
-            onGoalsChange={onGoalsChange}
-            placeholder="목표를 입력하고 Enter를 눌러 추가하세요"
-            inputAriaLabel="목표 입력"
-            maxGoals={5}
-          />
-        </DialogBody>
-        <DialogFooter>
-          <Button
-            size="md"
-            variant="secondary"
-            className="min-w-[80px]"
-            onClick={() => onOpenChange(false)}
-          >
-            취소
-          </Button>
-          <Button
-            size="md"
-            className={submitMinWidthClass}
-            disabled={submitDisabled}
-            onClick={onSubmit}
-          >
-            {submitLabel}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 export function ChallengeDetailScreen({
   id,
 }: ChallengeDetailScreenProps): React.ReactElement {
@@ -181,9 +98,6 @@ export function ChallengeDetailScreen({
   const unlikeChallenge = useUnlikeChallenge();
   const acceptParticipant = useAcceptParticipant();
   const rejectParticipant = useRejectParticipant();
-  const updateChallenge = useUpdateChallenge();
-  const updateParticipantGoal = useUpdateParticipantGoal();
-  const pokeChallengeMembers = usePokeChallengeMembers();
   const verifyChallengePassword = useVerifyChallengePassword();
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
@@ -196,9 +110,8 @@ export function ChallengeDetailScreen({
   );
   // memberId 해석 실패 시 닉네임(유일값)으로 내 행을 판별하기 위한 폴백
   const currentNickname = sidebarData?.nickname ?? null;
-  // 이번 세션에서 이미 찌른 챌린지원과 현재 요청 중인 대상 추적
-  const [pokedMemberIds, setPokedMemberIds] = useState<number[]>([]);
-  const [pokingMemberId, setPokingMemberId] = useState<number | null>(null);
+  const { pokedMemberIds, pokingMemberId, handlePokeMember } =
+    usePokeMembers(challengeId);
   // 히어로 위 floating 뒤로가기(top-3.5)가 스크롤로 가려지기 시작하는
   // 시점에 맞춰 sticky 헤더가 즉시 등장하도록 임계값을 8px로 둔다.
   const [isCompactHeaderVisible, setIsCompactHeaderVisible] = useState(false);
@@ -214,25 +127,8 @@ export function ChallengeDetailScreen({
 
   const [showCreateUnavailableDialog, setShowCreateUnavailableDialog] =
     useState(false);
-  const [showFreeGoalModal, setShowFreeGoalModal] = useState(false);
-  const [freeGoalInputs, setFreeGoalInputs] = useState<string[]>(['']);
   // 비공개 챌린지가 자유 목표로 확인돼 목표 입력이 필요한지.
   const [passwordNeedsGoals, setPasswordNeedsGoals] = useState(false);
-  const [showEditGoalModal, setShowEditGoalModal] = useState(false);
-  const [editGoalInputs, setEditGoalInputs] = useState<string[]>(['']);
-  const [showEditChallengeGoalsModal, setShowEditChallengeGoalsModal] =
-    useState(false);
-  interface ChallengeGoalEntry {
-    id: string;
-    value: string;
-  }
-  const createGoalEntry = (value = ''): ChallengeGoalEntry => ({
-    id: crypto.randomUUID(),
-    value,
-  });
-  const [challengeGoalInputs, setChallengeGoalInputs] = useState<
-    ChallengeGoalEntry[]
-  >(() => [createGoalEntry()]);
 
   const { data: challengeDiariesData, isLoading: isDiariesLoading } =
     useChallengeDiaryList(challengeId, 5);
@@ -324,6 +220,13 @@ export function ChallengeDetailScreen({
     likeChallenge.isPending ||
     unlikeChallenge.isPending;
 
+  const goalEditors = useChallengeGoalEditors({
+    challengeId,
+    goals,
+    isChallengeAlreadyEnded,
+    joinChallenge,
+  });
+
   const handleJoinChallenge = (): void => {
     if (isChallengeAlreadyEnded) {
       toast.error('종료된 챌린지는 참여 신청을 보낼 수 없습니다.');
@@ -336,8 +239,7 @@ export function ChallengeDetailScreen({
     }
 
     if (isFreeChallenge) {
-      setFreeGoalInputs([]);
-      setShowFreeGoalModal(true);
+      goalEditors.openFreeGoalModal();
       return;
     }
 
@@ -346,33 +248,6 @@ export function ChallengeDetailScreen({
       { challengeId, data: goalContents },
       {
         onSuccess: () => {
-          toast.success('챌린지 참여 신청이 완료되었습니다.');
-        },
-        onError: (mutationError) => {
-          notifyApiError(mutationError);
-        },
-      }
-    );
-  };
-
-  const handleFreeGoalSubmit = (): void => {
-    if (isChallengeAlreadyEnded) {
-      toast.error('종료된 챌린지는 참여 신청을 보낼 수 없습니다.');
-      setShowFreeGoalModal(false);
-      return;
-    }
-    const validGoals = freeGoalInputs
-      .map((goal) => goal.trim())
-      .filter(Boolean);
-    if (validGoals.length === 0) {
-      toast.error('목표를 최소 1개 이상 입력해 주세요.');
-      return;
-    }
-    joinChallenge.mutate(
-      { challengeId, data: validGoals },
-      {
-        onSuccess: () => {
-          setShowFreeGoalModal(false);
           toast.success('챌린지 참여 신청이 완료되었습니다.');
         },
         onError: (mutationError) => {
@@ -447,93 +322,6 @@ export function ChallengeDetailScreen({
         notifyApiError(mutationError);
       },
     });
-  };
-
-  const handlePokeMember = (memberId: number): void => {
-    if (pokeChallengeMembers.isPending) {
-      return;
-    }
-    setPokingMemberId(memberId);
-    pokeChallengeMembers.mutate(
-      { challengeId, receiverMemberIds: [memberId] },
-      {
-        onSuccess: (result) => {
-          const pokedIds = result?.pokedMemberIds ?? [];
-          if (pokedIds.includes(memberId)) {
-            setPokedMemberIds((prev) =>
-              Array.from(new Set([...prev, ...pokedIds]))
-            );
-            toast.success('콕 찔렀어요!');
-          } else {
-            // 오늘 이미 일지를 썼거나 오늘 이미 찔러 대상에서 제외된 경우
-            toast('오늘은 찌를 수 없는 챌린지원이에요.');
-          }
-        },
-        onError: (mutationError) => {
-          notifyApiError(mutationError);
-        },
-        onSettled: () => {
-          setPokingMemberId(null);
-        },
-      }
-    );
-  };
-
-  const handleOpenEditGoalModal = (): void => {
-    setEditGoalInputs(['']);
-    setShowEditGoalModal(true);
-  };
-
-  const handleEditGoalSubmit = (): void => {
-    const validGoals = editGoalInputs
-      .map((goalInput) => goalInput.trim())
-      .filter(Boolean);
-    if (validGoals.length === 0) {
-      toast.error('목표를 최소 1개 이상 입력해 주세요.');
-      return;
-    }
-    updateParticipantGoal.mutate(
-      { challengeId, goals: validGoals },
-      {
-        onSuccess: () => {
-          setShowEditGoalModal(false);
-          toast.success('목표가 수정되었습니다.');
-        },
-        onError: (mutationError) => {
-          notifyApiError(mutationError);
-        },
-      }
-    );
-  };
-
-  const handleOpenEditChallengeGoalsModal = (): void => {
-    const currentGoals = goals.map((goal) => createGoalEntry(goal.content));
-    setChallengeGoalInputs(
-      currentGoals.length > 0 ? currentGoals : [createGoalEntry()]
-    );
-    setShowEditChallengeGoalsModal(true);
-  };
-
-  const handleEditChallengeGoalsSubmit = (): void => {
-    const validGoals = challengeGoalInputs
-      .map((goalInput) => goalInput.value.trim())
-      .filter(Boolean);
-    if (validGoals.length === 0) {
-      toast.error('목표를 최소 1개 이상 입력해 주세요.');
-      return;
-    }
-    updateChallenge.mutate(
-      { challengeId, data: { goals: validGoals } },
-      {
-        onSuccess: () => {
-          setShowEditChallengeGoalsModal(false);
-          toast.success('챌린지 목표가 수정되었습니다.');
-        },
-        onError: (mutationError) => {
-          notifyApiError(mutationError);
-        },
-      }
-    );
   };
 
   const handleDiaryLikeToggle = (diary: ChallengeDiaryItem): void => {
@@ -633,251 +421,29 @@ export function ChallengeDetailScreen({
       : `${summaryParticipantCnt}명 참여 · 제한없음`;
   const heroMetaLabel = `${participantsLabel} · ${remainingLabel}`;
 
-  // CTA 결정 로직: 호스트 / 참여 중 / 대기 / 신청 가능 / 신청 불가
-  interface ChallengeCtaConfig {
-    label: string;
-    onClick(): void;
-    disabled: boolean;
-    variant: 'primary' | 'secondary';
-    show: boolean;
-    hint?: string;
-    secondary?: {
-      label: string;
-      onClick(): void;
-      variant: 'primary' | 'secondary';
-    };
-  }
-  // 클릭 불가 안내 버튼(대기/종료/중도참여불가)의 공통 형태.
-  const disabledCta = (label: string, hint?: string): ChallengeCtaConfig => ({
-    label,
-    onClick: () => undefined,
-    disabled: true,
-    variant: 'secondary',
-    show: true,
-    hint,
+  const ctaConfig = buildChallengeCta({
+    isHost,
+    isParticipating,
+    isPending,
+    isChallengeCurrentlyOngoing,
+    isCheckWriteDatesLoading,
+    canJoinByStatus,
+    isChallengeAlreadyEnded,
+    isMidJoinBlocked,
+    canJoin,
+    isJoinPending: joinChallenge.isPending,
+    onEditChallenge: () => router.push(`/challenge/${id}/edit`),
+    onDiaryCreate: handleDiaryCreateClick,
+    onJoin: handleJoinChallenge,
   });
-
-  const ctaConfig = ((): ChallengeCtaConfig => {
-    if (isHost) {
-      const editChallenge = {
-        label: '챌린지 수정',
-        onClick: () => router.push(`/challenge/${id}/edit`),
-        variant: 'secondary' as const,
-      };
-      // 호스트도 참여자이므로 진행 중에는 일지 작성을 우선 CTA 로 노출하고
-      // 챌린지 수정은 보조 버튼으로 함께 제공한다.
-      if (isChallengeCurrentlyOngoing) {
-        return {
-          label: '일지 작성하기',
-          onClick: handleDiaryCreateClick,
-          disabled: isCheckWriteDatesLoading,
-          variant: 'primary',
-          show: true,
-          secondary: editChallenge,
-        };
-      }
-      return {
-        ...editChallenge,
-        disabled: false,
-        show: true,
-      };
-    }
-    if (isParticipating) {
-      return {
-        label: isChallengeCurrentlyOngoing
-          ? '일지 작성하기'
-          : '진행 중이 아닙니다',
-        onClick: handleDiaryCreateClick,
-        disabled: !isChallengeCurrentlyOngoing || isCheckWriteDatesLoading,
-        variant: 'primary',
-        show: true,
-      };
-    }
-    if (isPending) {
-      return disabledCta('참여 승인 대기중');
-    }
-    if (canJoinByStatus && isChallengeAlreadyEnded) {
-      return disabledCta('종료된 챌린지');
-    }
-    if (canJoinByStatus && isMidJoinBlocked) {
-      return disabledCta(
-        '중도 참여 불가',
-        '이미 시작된 챌린지는 중도 참여가 불가능합니다'
-      );
-    }
-    if (canJoin) {
-      return {
-        label: '챌린지 참여하기',
-        onClick: handleJoinChallenge,
-        disabled: joinChallenge.isPending,
-        variant: 'primary',
-        show: true,
-      };
-    }
-    return {
-      label: '참여 불가',
-      onClick: () => undefined,
-      disabled: true,
-      variant: 'secondary',
-      show: false,
-    };
-  })();
-
-  const freeGoalModal = (
-    <GoalAddListModal
-      open={showFreeGoalModal}
-      onOpenChange={setShowFreeGoalModal}
-      title="내 목표 입력"
-      description="챌린지에서 달성할 목표를 입력하고 Enter 를 눌러 추가해 주세요. (최대 5개)"
-      goals={freeGoalInputs}
-      onGoalsChange={setFreeGoalInputs}
-      submitLabel={joinChallenge.isPending ? '처리 중...' : '참여 신청'}
-      submitDisabled={joinChallenge.isPending}
-      submitMinWidthClass="min-w-[112px]"
-      onSubmit={handleFreeGoalSubmit}
-    />
-  );
-
-  const editGoalModal = (
-    <GoalAddListModal
-      open={showEditGoalModal}
-      onOpenChange={setShowEditGoalModal}
-      title="내 목표 수정"
-      description="새 목표를 입력하고 Enter 를 눌러 추가해 주세요. (최대 5개)"
-      goals={editGoalInputs}
-      onGoalsChange={setEditGoalInputs}
-      submitLabel={updateParticipantGoal.isPending ? '저장 중...' : '저장'}
-      submitDisabled={updateParticipantGoal.isPending}
-      submitMinWidthClass="min-w-[96px]"
-      onSubmit={handleEditGoalSubmit}
-    />
-  );
-
-  const editChallengeGoalsModal = (
-    <Dialog
-      open={showEditChallengeGoalsModal}
-      onOpenChange={setShowEditChallengeGoalsModal}
-    >
-      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[460px]">
-        <DialogHeader className="flex-col items-start gap-1.5 pb-2">
-          <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
-            챌린지 목표 수정
-          </DialogTitle>
-          <DialogDescription className="text-[13px] leading-relaxed text-gray-500">
-            챌린지 시작 전에만 목표를 수정할 수 있습니다.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogBody className="flex flex-col gap-3">
-          <div className="flex flex-col gap-2">
-            {challengeGoalInputs.map((goal) => (
-              <div key={goal.id} className="flex items-center gap-2">
-                <TextField
-                  value={goal.value}
-                  onChange={(event) => {
-                    setChallengeGoalInputs((prev) =>
-                      prev.map((entry) =>
-                        entry.id === goal.id
-                          ? { ...entry, value: event.target.value }
-                          : entry
-                      )
-                    );
-                  }}
-                  placeholder="목표를 입력하세요"
-                  className="flex-1"
-                  maxLength={100}
-                />
-                <button
-                  type="button"
-                  aria-label="목표 삭제"
-                  className={cn(
-                    'flex h-10 w-10 shrink-0 cursor-pointer',
-                    'items-center justify-center rounded-lg text-gray-500',
-                    'transition-colors hover:bg-gray-100 hover:text-red-600'
-                  )}
-                  onClick={() => {
-                    setChallengeGoalInputs((prev) =>
-                      prev.filter((entry) => entry.id !== goal.id)
-                    );
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            type="button"
-            disabled={challengeGoalInputs.length >= 10}
-            onClick={() =>
-              setChallengeGoalInputs((prev) => [...prev, createGoalEntry()])
-            }
-          >
-            + 목표 추가
-          </Button>
-        </DialogBody>
-        <DialogFooter>
-          <Button
-            size="md"
-            variant="secondary"
-            className="min-w-[80px]"
-            onClick={() => setShowEditChallengeGoalsModal(false)}
-          >
-            취소
-          </Button>
-          <Button
-            size="md"
-            className="min-w-[96px]"
-            disabled={updateChallenge.isPending}
-            onClick={handleEditChallengeGoalsSubmit}
-          >
-            {updateChallenge.isPending ? '저장 중...' : '저장'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
 
   return (
     <>
-      {/* 모바일 sliver-style sticky 헤더 — 스크롤 시 페이드인.
-          data-fade-in 래퍼 밖에 둔다: 래퍼의 transform 이 containing block 을
-          만들어 position: fixed 가 뷰포트 대신 래퍼 기준이 되는 문제를 피한다.
-          네이티브 쉘에선 AppBackBar 가 같은 역할을 하므로 data-native-hide
-          로 가린다. globals.css 의 sticky 일괄 룰은 fixed 는 안 잡는다. */}
-      <div
-        data-native-hide
-        className={cn(
-          'fixed top-0 right-0 left-0 z-30 flex h-14 items-center',
-          'gap-3 border-b border-gray-100 bg-white/95 px-4',
-          'backdrop-blur transition-all duration-200 lg:hidden',
-          isCompactHeaderVisible
-            ? 'translate-y-0 opacity-100'
-            : 'pointer-events-none -translate-y-full opacity-0'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={handleBack}
-          className={cn(
-            'flex h-8 w-8 shrink-0 items-center justify-center',
-            'rounded-lg text-gray-700 transition-colors hover:bg-gray-100'
-          )}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <Text
-          size="body1"
-          weight="extrabold"
-          className={cn(
-            'line-clamp-1 min-w-0 flex-1 tracking-[-0.3px] text-gray-900'
-          )}
-        >
-          {summary.title}
-        </Text>
-      </div>
+      <ChallengeDetailCompactHeader
+        visible={isCompactHeaderVisible}
+        title={summary.title}
+        onBack={handleBack}
+      />
 
       <div
         className={cn(
@@ -886,9 +452,7 @@ export function ChallengeDetailScreen({
           ctaConfig.show ? 'pb-mobile-action-bar lg:pb-12' : 'pb-12'
         )}
       >
-        {freeGoalModal}
-        {editGoalModal}
-        {editChallengeGoalsModal}
+        <ChallengeGoalModals editors={goalEditors} />
         <AlertDialog
           open={showCreateUnavailableDialog}
           onOpenChange={setShowCreateUnavailableDialog}
@@ -1121,12 +685,12 @@ export function ChallengeDetailScreen({
                 }
                 onEdit={
                   isHost && !isChallengeStarted && !isFreeChallenge
-                    ? handleOpenEditChallengeGoalsModal
+                    ? goalEditors.openEditChallengeGoalsModal
                     : !isHost &&
                         isFreeChallenge &&
                         isParticipating &&
                         !isChallengeStarted
-                      ? handleOpenEditGoalModal
+                      ? goalEditors.openEditGoalModal
                       : undefined
                 }
               />
@@ -1221,9 +785,7 @@ export function ChallengeDetailScreen({
                   completedGoalCount: participant.completedGoalCount,
                 }))}
                 totalCount={summaryParticipantCnt}
-                onShowAll={() =>
-                  router.push(`/challenge/${id}/participants`)
-                }
+                onShowAll={() => router.push(`/challenge/${id}/participants`)}
                 onMemberClick={(memberId) => router.push(`/member/${memberId}`)}
                 canPoke={canPokeMembers}
                 currentMemberId={currentMemberId}
