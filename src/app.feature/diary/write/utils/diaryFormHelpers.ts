@@ -1,5 +1,6 @@
 import type { SidebarChallenge } from '@feature/member/type/member';
 import { formatDateISO, toStartOfDay } from '@module/utils/date';
+import { extractDiaryImageList } from '@module/utils/diaryImageUrl';
 
 import type {
   ChallengeCategory,
@@ -12,7 +13,6 @@ import type {
   DiaryDetail,
   DiaryInfo,
 } from '../../board/type/diary';
-import { extractDiaryImageList } from '../../shared/utils/diaryImageUrl';
 
 export function parsePositiveInteger(value: string | null): number | null {
   if (!value) {
@@ -184,16 +184,15 @@ export function mapSidebarChallengeToChallengeListItem(
   };
 }
 
+// DiaryDetail 에 없는 레거시/방어용 이미지 별칭 필드만 얹는다.
+// (imgUrl·thumbnailUrl·diaryInfo 는 이미 DiaryDetail 확정 타입에 있다.)
 export type DiaryDetailWithAliases = DiaryDetail & {
-  diaryInfo?: DiaryInfo | null;
   img?:
     | Array<{ url?: string | null; imageUrl?: string | null }>
     | string[]
     | string
     | null;
-  imgUrl?: string[] | string | null;
   imageUrl?: string | null;
-  thumbnailUrl?: string | null;
   thumbnail?: string | null;
   images?:
     | Array<{ url?: string | null; imageUrl?: string | null } | string>
@@ -211,8 +210,7 @@ export function revokeObjectUrlIfNeeded(url: string): void {
 export function getDiaryInfo(
   diary: DiaryDetail | null | undefined
 ): DiaryInfo | null {
-  const diaryWithAliases = diary as DiaryDetailWithAliases | null | undefined;
-  return diaryWithAliases?.diaryInfoDto ?? diaryWithAliases?.diaryInfo ?? null;
+  return diary?.diaryInfo ?? null;
 }
 
 // 폼에서 다루는 이미지 한 장.

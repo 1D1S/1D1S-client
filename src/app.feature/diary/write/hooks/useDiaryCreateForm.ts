@@ -1,10 +1,7 @@
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challengePeriod';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
-import { getApiErrorCode } from '@module/api/error';
-import { uploadImagesViaPresigned } from '@module/api/presignedUpload';
-import { toast } from '@module/providers/toast';
 import { formatDateISO } from '@module/utils/date';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -21,35 +18,20 @@ import {
   useDiaryDetail,
 } from '../../board/hooks/useDiaryQueries';
 import type { Feeling } from '../../board/type/diary';
+import { isChallengePhotoRequired } from '../consts/photoRequired';
 import {
-  useCreateDiary,
-  useUpdateDiary,
-} from '../../detail/hooks/useDiaryMutations';
-import { resolveDiaryImageUrl } from '../../shared/utils/diaryImageUrl';
-import {
-  isChallengePhotoRequired,
-  PHOTO_REQUIRED_ERROR_CODE,
-  PHOTO_REQUIRED_MESSAGE,
-} from '../consts/photoRequired';
-import type { DiaryImageItem } from '../utils/diaryFormHelpers';
-import {
-  getDiaryImageUrls,
   getDiaryInfo,
-  getFirstSelectableAchievedDate,
-  getSubmitButtonLabel,
   hasSelectableAchievedDate,
-  isSelectableAchievedDate,
   mapDiaryChallengeToChallengeListItem,
   mapSidebarChallengeToChallengeListItem,
   parsePositiveInteger,
-  revokeObjectUrlIfNeeded,
 } from '../utils/diaryFormHelpers';
+import { useAchievedDateGuard } from './useAchievedDateGuard';
+import { useDiaryEditInitializer } from './useDiaryEditInitializer';
+import { useDiaryImagePicker } from './useDiaryImagePicker';
+import { useDiarySubmit } from './useDiarySubmit';
 
 const EMPTY_GOALS: ChallengeGoal[] = [];
-
-// 일지 이미지 최대 등록 장수. DiaryCreateThumbnailSection 의
-// ThumbnailPicker max 와 일치시킨다.
-export const MAX_DIARY_IMAGES = 5;
 
 interface UseDiaryCreateFormResult {
   isEditMode: boolean;
@@ -94,15 +76,16 @@ interface UseDiaryCreateFormResult {
   handleSubmit(): Promise<void>;
 }
 
+/**
+ * 일지 작성/수정 폼의 조립 훅. 이미지 선택·챌린지 선택·달성 날짜 가드·
+ * 수정 모드 초기화·제출을 각각의 전용 훅으로 분리하고 여기서 조합한다.
+ */
 export function useDiaryCreateForm(): UseDiaryCreateFormResult {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [requestedDiaryId] = useState<number | null>(() =>
     parsePositiveInteger(searchParams.get('diaryId'))
   );
   const isEditMode = requestedDiaryId !== null;
-  const createDiary = useCreateDiary();
-  const updateDiary = useUpdateDiary();
   const [requestedChallengeId] = useState<number | null>(() =>
     parsePositiveInteger(searchParams.get('challengeId'))
   );
@@ -110,9 +93,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [selectedMood, setSelectedMood] = useState<Feeling>('NORMAL');
-  const [achievedDate, setAchievedDate] = useState<Date | undefined>(
-    new Date()
-  );
   const [selectedChallengeId, setSelectedChallengeId] = useState<number | null>(
     requestedChallengeId
   );
@@ -122,19 +102,12 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
   ] = useState(false);
   const [isCreateUnavailableDialogOpen, setIsCreateUnavailableDialogOpen] =
     useState(false);
-  const [isEditFormInitialized, setIsEditFormInitialized] = useState(false);
   const [achievedGoalIds, setAchievedGoalIds] = useState<number[]>([]);
-  const [images, setImages] = useState<DiaryImageItem[]>([]);
-  // 대표 썸네일로 지정된 이미지의 url(existing=raw, new=objectURL).
-  const [thumbnailImageUrl, setThumbnailImageUrl] = useState<string | null>(
-    null
-  );
-  const [isUploadingImages, setIsUploadingImages] = useState(false);
-  // 언마운트 시 신규 이미지 objectURL 정리를 위한 최신 참조.
-  const imagesRef = useRef(images);
-  imagesRef.current = images;
+
   const submitSuccessRef = useRef(false);
   const unavailableDialogShownForChallengeIdRef = useRef<number | null>(null);
+
+  const imagePicker = useDiaryImagePicker();
 
   const { data: existingDiary, isLoading: isExistingDiaryLoading } =
     useDiaryDetail(requestedDiaryId ?? 0);
@@ -249,6 +222,18 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     () => new Set(disabledAchievedDateKeys),
     [disabledAchievedDateKeys]
   );
+
+  const {
+    achievedDate,
+    setAchievedDate,
+    handleAchievedDateChange,
+    isAchievedDateDisabled,
+  } = useAchievedDateGuard({
+    isEditMode,
+    selectedChallenge,
+    disabledAchievedDateKeySet,
+  });
+
   const hasWritableRecentDate = hasSelectableAchievedDate(
     disabledAchievedDateKeySet,
     selectedChallenge?.startDate
@@ -263,8 +248,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     !isChallengeCheckWriteDatesLoading &&
     (isEditMode || hasWritableRecentDate);
 
-  const isSubmitting =
-    createDiary.isPending || updateDiary.isPending || isUploadingImages;
   const trimmedTitle = title.trim();
   // 참여자가 0명이면 아카이브된 챌린지로 간주해 종료 처리한다.
   const isSelectedChallengeArchived = selectedChallenge
@@ -276,18 +259,34 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
         selectedChallenge.endDate
       ) && !isSelectedChallengeArchived
     : false;
+
+  const { handleSubmit, isSubmitting, submitButtonLabel } = useDiarySubmit({
+    isEditMode,
+    requestedDiaryId,
+    selectedChallenge,
+    trimmedTitle,
+    content,
+    selectedMood,
+    achievedDate,
+    achievedGoalIds,
+    disabledAchievedDateKeySet,
+    isPhotoRequired,
+    images: imagePicker.images,
+    thumbnailImageUrl: imagePicker.thumbnailImageUrl,
+    isUploadingImages: imagePicker.isUploadingImages,
+    setIsUploadingImages: imagePicker.setIsUploadingImages,
+    submitSuccessRef,
+  });
+
   const canSubmit =
     Boolean(selectedChallenge) &&
     isSelectedChallengeOngoing &&
     trimmedTitle.length > 0 &&
     Boolean(achievedDate) &&
-    (achievedDate
-      ? isSelectableAchievedDate(achievedDate, selectedChallenge?.startDate) &&
-        !disabledAchievedDateKeySet.has(formatDateISO(achievedDate))
-      : false) &&
+    (achievedDate ? !isAchievedDateDisabled(achievedDate) : false) &&
     !isChallengeCheckWriteDatesLoading &&
     !isSubmitting &&
-    (!isPhotoRequired || images.length > 0) &&
+    (!isPhotoRequired || imagePicker.images.length > 0) &&
     (!isEditMode || !isExistingDiaryLoading);
   const isInitialChallengeLoading =
     requestedChallengeId !== null &&
@@ -302,61 +301,18 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     ) &&
     !isMissingChallengeDialogDismissed;
 
-  useEffect(
-    () => () => {
-      imagesRef.current.forEach((image) => {
-        if (image.kind === 'new') {
-          revokeObjectUrlIfNeeded(image.url);
-        }
-      });
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (!isEditMode || isEditFormInitialized || !existingDiary) {
-      return;
-    }
-
-    const diaryInfo = getDiaryInfo(existingDiary);
-    const baseDate = diaryInfo?.challengedDate ?? diaryInfo?.createdAt ?? '';
-    const parsedDate = baseDate ? new Date(baseDate) : null;
-    const nextAchievedDate =
-      parsedDate && !Number.isNaN(parsedDate.getTime())
-        ? parsedDate
-        : new Date();
-    const nextImageUrls = getDiaryImageUrls(existingDiary);
-    // 기존 대표 썸네일(raw). 목록에 있으면 그 값을, 서버가 미지정(null)
-    // 이거나 목록에 없으면 미선택(null) — 자동으로 첫 장을 삼지 않는다.
-    const existingThumbnail = existingDiary.thumbnailUrl ?? null;
-    const nextThumbnail =
-      existingThumbnail && nextImageUrls.includes(existingThumbnail)
-        ? existingThumbnail
-        : null;
-    const timerId = window.setTimeout(() => {
-      setTitle(existingDiary.title ?? '');
-      setContent(existingDiary.content ?? '');
-      setSelectedMood(diaryInfo?.feeling ?? 'NORMAL');
-      setAchievedDate(nextAchievedDate);
-      setSelectedChallengeId(existingDiary.challenge?.challengeId ?? null);
-      const nextAchievedGoalIds =
-        diaryInfo?.diaryGoal
-          ?.filter((goal) => goal.isAchieved)
-          ?.map((goal) => goal.challengeGoalId) ??
-        diaryInfo?.achievement ??
-        [];
-      setAchievedGoalIds(nextAchievedGoalIds);
-      setImages(
-        nextImageUrls.map((url) => ({ kind: 'existing' as const, url }))
-      );
-      setThumbnailImageUrl(nextThumbnail);
-      setIsEditFormInitialized(true);
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timerId);
-    };
-  }, [existingDiary, isEditFormInitialized, isEditMode]);
+  useDiaryEditInitializer({
+    isEditMode,
+    existingDiary,
+    setTitle,
+    setContent,
+    setSelectedMood,
+    setAchievedDate,
+    setSelectedChallengeId,
+    setAchievedGoalIds,
+    setImages: imagePicker.setImages,
+    setThumbnailImageUrl: imagePicker.setThumbnailImageUrl,
+  });
 
   useEffect(() => {
     if (
@@ -402,41 +358,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     selectedChallenge,
   ]);
 
-  useEffect(() => {
-    if (isEditMode || !selectedChallenge) {
-      return;
-    }
-
-    const timerId = window.setTimeout(() => {
-      if (!achievedDate) {
-        const firstSelectableDate = getFirstSelectableAchievedDate(
-          disabledAchievedDateKeySet,
-          selectedChallenge.startDate
-        );
-        if (firstSelectableDate) {
-          setAchievedDate(firstSelectableDate);
-        }
-        return;
-      }
-
-      if (
-        !isSelectableAchievedDate(achievedDate, selectedChallenge.startDate) ||
-        disabledAchievedDateKeySet.has(formatDateISO(achievedDate))
-      ) {
-        setAchievedDate(
-          getFirstSelectableAchievedDate(
-            disabledAchievedDateKeySet,
-            selectedChallenge.startDate
-          )
-        );
-      }
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timerId);
-    };
-  }, [achievedDate, disabledAchievedDateKeySet, isEditMode, selectedChallenge]);
-
   const handleSelectChallenge = useCallback((challenge: ChallengeListItem) => {
     unavailableDialogShownForChallengeIdRef.current = null;
     setSelectedChallengeId(challenge.challengeId);
@@ -453,109 +374,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     setAchievedGoalIds(goalIds);
   }, []);
 
-  const handleAchievedDateChange = useCallback(
-    (date: Date | undefined) => {
-      if (!date) {
-        setAchievedDate(undefined);
-        return;
-      }
-
-      if (!isSelectableAchievedDate(date, selectedChallenge?.startDate)) {
-        return;
-      }
-
-      if (disabledAchievedDateKeySet.has(formatDateISO(date))) {
-        return;
-      }
-
-      setAchievedDate(date);
-    },
-    [disabledAchievedDateKeySet, selectedChallenge?.startDate]
-  );
-
-  const isAchievedDateDisabled = useCallback(
-    (date: Date) =>
-      !isSelectableAchievedDate(date, selectedChallenge?.startDate) ||
-      disabledAchievedDateKeySet.has(formatDateISO(date)),
-    [disabledAchievedDateKeySet, selectedChallenge?.startDate]
-  );
-
-  const handleAddImageFiles = useCallback(
-    (files: File[]) => {
-      if (files.length === 0) {
-        return;
-      }
-
-      // 최대 장수까지만 받는다(초과분은 애초에 objectURL 을 만들지 않음).
-      const remaining = MAX_DIARY_IMAGES - images.length;
-      if (remaining <= 0) {
-        return;
-      }
-
-      const addedImages = files.slice(0, remaining).map((file) => ({
-        kind: 'new' as const,
-        url: URL.createObjectURL(file),
-        file,
-      }));
-
-      setImages([...images, ...addedImages]);
-
-      // 첫 등록 이미지는 자동으로 대표 지정(빈 목록일 때만). 이후 변경·해제는
-      // 사용자 몫이라 여기서 다시 건드리지 않는다.
-      if (images.length === 0 && addedImages.length > 0) {
-        setThumbnailImageUrl(addedImages[0].url);
-      }
-    },
-    [images]
-  );
-
-  const handleRemoveImageAt = useCallback(
-    (index: number) => {
-      const target = images[index];
-      if (target?.kind === 'new') {
-        revokeObjectUrlIfNeeded(target.url);
-      }
-
-      const nextImages = images.filter((_, itemIndex) => itemIndex !== index);
-      setImages(nextImages);
-
-      // 대표 이미지를 삭제하면 남은 첫 이미지로 재지정(첫 이미지가 기본
-      // 대표). 목록이 비면 null. 사용자가 직접 해제한 null 은 유지된다
-      // (지운 대상이 대표와 다르면 건드리지 않음).
-      if (target && thumbnailImageUrl === target.url) {
-        setThumbnailImageUrl(nextImages[0]?.url ?? null);
-      }
-    },
-    [images, thumbnailImageUrl]
-  );
-
-  const handleSelectThumbnailAt = useCallback(
-    (index: number) => {
-      // 이미 대표면 해제(null) — 미선택도 유효 상태(저장 시 thumbnailUrl
-      // 생략 → 서버 null). 아니면 그 이미지를 대표로 지정.
-      const nextUrl = images[index]?.url ?? null;
-      setThumbnailImageUrl((prev) => (prev === nextUrl ? null : nextUrl));
-    },
-    [images]
-  );
-
-  const thumbnailIndex = useMemo(
-    () => images.findIndex((image) => image.url === thumbnailImageUrl),
-    [images, thumbnailImageUrl]
-  );
-
-  // existing 의 url 은 재전송용 raw 값이라, 표시할 때만 resolve 한다.
-  // new 의 url 은 objectURL(blob:) 이라 그대로 쓴다.
-  const imagePreviewUrls = useMemo(
-    () =>
-      images.map((image) =>
-        image.kind === 'existing'
-          ? resolveDiaryImageUrl(image.url) ?? image.url
-          : image.url
-      ),
-    [images]
-  );
-
   const closeMissingChallengeDialog = useCallback(() => {
     setIsMissingChallengeDialogDismissed(true);
   }, []);
@@ -566,136 +384,6 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     setSelectedChallengeId(null);
     setAchievedGoalIds([]);
   }, []);
-
-  const handleSubmit = useCallback(async (): Promise<void> => {
-    if (!selectedChallenge || !trimmedTitle || isSubmitting) {
-      return;
-    }
-
-    if (
-      achievedDate &&
-      (!isSelectableAchievedDate(achievedDate, selectedChallenge.startDate) ||
-        disabledAchievedDateKeySet.has(formatDateISO(achievedDate)))
-    ) {
-      return;
-    }
-
-    // 인증샷 필수 챌린지 선제 차단(버튼 비활성화가 우회된 경우 방어).
-    if (isPhotoRequired && images.length === 0) {
-      toast.error(PHOTO_REQUIRED_MESSAGE);
-      return;
-    }
-
-    // mutation onSuccess 의 캐시 무효화가 마지막 작성 가능일을 사라지게 만들면
-    // useEffect 가 'unavailable' 다이얼로그를 띄울 수 있다. 제출 시작 시점에
-    // 가드를 올려, 제출-네비게이션 사이의 어떤 refetch 도 다이얼로그를
-    // 트리거하지 못하게 한다. 실패 시에만 가드를 해제한다.
-    submitSuccessRef.current = true;
-
-    try {
-      // 신규 파일만 presigned 업로드 → fileUrl 수집. 실패 시 diary 요청
-      // 자체를 보내지 않는다(아래 catch 로 낙하).
-      const newFiles = images
-        .filter((image): image is DiaryImageItem & { file: File } =>
-          image.kind === 'new' && Boolean(image.file)
-        )
-        .map((image) => image.file);
-
-      let uploadedFileUrls: string[] = [];
-      if (newFiles.length > 0) {
-        setIsUploadingImages(true);
-        try {
-          uploadedFileUrls = await uploadImagesViaPresigned(newFiles);
-        } finally {
-          setIsUploadingImages(false);
-        }
-      }
-
-      // 화면 순서 그대로 최종 imageUrls 구성 — 기존 URL 은 유지, 신규는
-      // 업로드된 fileUrl 로 치환. 수정 시 전체 덮어쓰기라 유지분도 포함한다.
-      let nextUploadedIndex = 0;
-      const imageUrls = images.map((image) =>
-        image.kind === 'existing'
-          ? image.url
-          : uploadedFileUrls[nextUploadedIndex++]
-      );
-
-      // 대표 미선택(null)이면 thumbnailUrl 을 보내지 않는다(undefined → JSON
-      // 에서 생략 → 서버가 null 저장). 자동 첫 장 지정 없음. 선택했으면 그
-      // 이미지의 최종 URL(imageUrls 안의 값)만 전송 — 아니면 DIARY-009.
-      const thumbnailImageIndex = thumbnailImageUrl
-        ? images.findIndex((image) => image.url === thumbnailImageUrl)
-        : -1;
-      const thumbnailUrl =
-        thumbnailImageIndex >= 0 ? imageUrls[thumbnailImageIndex] : undefined;
-
-      if (isEditMode && requestedDiaryId) {
-        await updateDiary.mutateAsync({
-          id: requestedDiaryId,
-          data: {
-            challengeId: selectedChallenge.challengeId,
-            title: trimmedTitle,
-            content,
-            feeling: selectedMood,
-            isPublic: true,
-            achievedDate: achievedDate ? formatDateISO(achievedDate) : '',
-            achievedGoalIds,
-            imageUrls,
-            thumbnailUrl,
-          },
-        });
-
-        router.push(`/diary/${requestedDiaryId}`);
-        return;
-      }
-
-      await createDiary.mutateAsync({
-        challengeId: selectedChallenge.challengeId,
-        title: trimmedTitle,
-        content,
-        feeling: selectedMood,
-        isPublic: true,
-        achievedDate: achievedDate ? formatDateISO(achievedDate) : '',
-        achievedGoalIds,
-        imageUrls,
-        thumbnailUrl,
-      });
-
-      router.push('/diary');
-    } catch (error) {
-      submitSuccessRef.current = false;
-      // 프론트에서 이미 막지만, 백엔드 사진 필수 위반 응답도 방어적으로 처리.
-      toast.error(
-        getApiErrorCode(error) === PHOTO_REQUIRED_ERROR_CODE
-          ? PHOTO_REQUIRED_MESSAGE
-          : '일지 저장 또는 이미지 업로드에 실패했습니다.'
-      );
-    }
-  }, [
-    achievedDate,
-    achievedGoalIds,
-    content,
-    createDiary,
-    disabledAchievedDateKeySet,
-    images,
-    isEditMode,
-    isPhotoRequired,
-    isSubmitting,
-    router,
-    requestedDiaryId,
-    selectedChallenge,
-    selectedMood,
-    thumbnailImageUrl,
-    trimmedTitle,
-    updateDiary,
-  ]);
-
-  const submitButtonLabel = getSubmitButtonLabel({
-    isCreating: createDiary.isPending,
-    isUpdating: updateDiary.isPending,
-    isUploadingImage: isUploadingImages,
-    isEditMode,
-  });
 
   return {
     isEditMode,
@@ -716,8 +404,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     goals,
     achievedGoalIds,
     disabledAchievedDateKeys,
-    imagePreviewUrls,
-    thumbnailIndex,
+    imagePreviewUrls: imagePicker.imagePreviewUrls,
+    thumbnailIndex: imagePicker.thumbnailIndex,
     isPhotoRequired,
     submitButtonLabel,
     canSubmit,
@@ -729,9 +417,9 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     handleGoalIdsChange,
     handleAchievedDateChange,
     isAchievedDateDisabled,
-    handleAddImageFiles,
-    handleRemoveImageAt,
-    handleSelectThumbnailAt,
+    handleAddImageFiles: imagePicker.handleAddImageFiles,
+    handleRemoveImageAt: imagePicker.handleRemoveImageAt,
+    handleSelectThumbnailAt: imagePicker.handleSelectThumbnailAt,
     closeMissingChallengeDialog,
     closeCreateUnavailableDialog,
     handleSubmit,

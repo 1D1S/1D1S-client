@@ -8,6 +8,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogTitle,
+  MobileHeader,
   Text,
 } from '@1d1s/design-system';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
@@ -26,85 +27,11 @@ import {
   ChallengeCreateFormValues,
   useChallengeCreateForm,
 } from '@feature/challenge/write/hooks/useChallengeCreateForm';
+import { formatFormValues } from '@feature/challenge/write/utils/challengeCreatePayload';
 import { cn } from '@module/utils/cn';
-import { add, format } from 'date-fns';
-import { ArrowLeft, Check, Lightbulb, Loader2 } from 'lucide-react';
+import { Check, Lightbulb, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-
-import { CreateChallengeRequest } from '../../board/type/challenge';
-
-const ENDLESS_CHALLENGE_END_DATE = '9999-12-31';
-
-function resolveChallengeDurationDays(
-  values: ChallengeCreateFormValues
-): number {
-  if (values.periodType !== 'LIMITED') {
-    return 0;
-  }
-  const raw = values.period === 'etc' ? values.periodNumber : values.period;
-  const parsed = Number(raw);
-  if (Number.isNaN(parsed)) {
-    return 7;
-  }
-  return Math.max(1, parsed);
-}
-
-function resolveMaxParticipantCnt(
-  values: ChallengeCreateFormValues
-): number | null {
-  if (values.participationType !== 'GROUP') {
-    return null;
-  }
-  if (values.memberCount === 'unlimited') {
-    return null;
-  }
-  const raw =
-    values.memberCount === 'etc'
-      ? values.memberCountNumber
-      : values.memberCount;
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-}
-
-function formatFormValues(
-  values: ChallengeCreateFormValues
-): CreateChallengeRequest {
-  const safeStartDate = values.startDate ?? new Date();
-  const challengeDurationDays = resolveChallengeDurationDays(values);
-  const endDate =
-    values.periodType === 'ENDLESS'
-      ? ENDLESS_CHALLENGE_END_DATE
-      : format(
-          add(safeStartDate, {
-            days: Math.max(0, challengeDurationDays - 1),
-          }),
-          'yyyy-MM-dd'
-        );
-
-  return {
-    title: values.title,
-    category: values.category,
-    description: values.description ?? '',
-    startDate: format(safeStartDate, 'yyyy-MM-dd'),
-    endDate,
-    maxParticipantCnt: resolveMaxParticipantCnt(values),
-    goalType: values.goalType,
-    participationType: values.participationType,
-    goals: values.goals.map((goal) => goal.value),
-    allowMidJoin:
-      values.participationType === 'INDIVIDUAL' ? false : values.allowMidJoin,
-    // 와이어(서버) 키는 photoRequired, 폼 내부 필드명은 isPhotoRequired.
-    photoRequired: values.isPhotoRequired,
-    thumbnailImage: values.thumbnailImageKey,
-    challengeType: values.challengeType,
-    // 비공개일 때만 비밀번호를 동봉한다.
-    password:
-      values.challengeType === 'PRIVATE'
-        ? values.password?.trim()
-        : undefined,
-  };
-}
 
 export default function ChallengeCreateScreen(): React.ReactElement {
   const router = useRouter();
@@ -136,34 +63,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
 
   return (
     <div className={cn('pb-mobile-action-bar min-h-screen w-full')}>
-      {/* 모바일 sticky 헤더 — ← + 챌린지 만들기 */}
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={() => router.back()}
-          className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
-          )}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <Text
-          size="body1"
-          weight="extrabold"
-          className="flex-1 tracking-[-0.3px] text-gray-900"
-        >
-          챌린지 만들기
-        </Text>
-      </div>
+      <MobileHeader title="챌린지 만들기" onBack={() => router.back()} />
 
       <Form {...form}>
         <div

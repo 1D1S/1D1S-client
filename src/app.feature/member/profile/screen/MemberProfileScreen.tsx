@@ -1,6 +1,6 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { MobileHeader, Text } from '@1d1s/design-system';
 import { MemberFriendActionButton } from '@feature/friend/components/MemberFriendActionButton';
 import { useMemberProfile } from '@feature/member/hooks/useMemberQueries';
 import { MyPageActiveChallenges } from '@feature/member/mypage/components/MyPageActiveChallenges';
@@ -14,7 +14,6 @@ import { MyPageStreakHeroCard } from '@feature/member/mypage/components/MyPageSt
 import { normalizeApiError } from '@module/api/error';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
-import { ArrowLeft } from 'lucide-react';
 import React from 'react';
 
 interface MemberProfileScreenProps {
@@ -24,35 +23,7 @@ interface MemberProfileScreenProps {
 function MobileBackHeader({ title }: { title: string }): React.ReactElement {
   // 알림 딥링크/콜드 스타트로 진입해 history 가 없을 때 홈으로 보낸다.
   const handleBack = useSafeBack('/');
-  return (
-    <div
-      className={cn(
-        'sticky top-0 z-30 flex items-center gap-3',
-        'h-14-safe pt-safe-top',
-        'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-        'lg:hidden'
-      )}
-    >
-      <button
-        type="button"
-        aria-label="뒤로가기"
-        onClick={handleBack}
-        className={cn(
-          'flex h-8 w-8 items-center justify-center rounded-lg',
-          'text-gray-700 transition-colors hover:bg-gray-100'
-        )}
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </button>
-      <Text
-        size="body1"
-        weight="extrabold"
-        className="flex-1 truncate tracking-[-0.3px] text-gray-900"
-      >
-        {title}
-      </Text>
-    </div>
-  );
+  return <MobileHeader title={title} onBack={handleBack} />;
 }
 
 export default function MemberProfileScreen({

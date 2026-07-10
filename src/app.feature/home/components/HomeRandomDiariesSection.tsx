@@ -5,12 +5,12 @@ import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
+import { cn } from '@module/utils/cn';
+import { formatMonthDayKR } from '@module/utils/date';
 import {
   resolveDiaryImageUrl,
   resolveDiaryThumbnail,
-} from '@feature/diary/shared/utils/diaryImageUrl';
-import { cn } from '@module/utils/cn';
-import { formatMonthDayKR } from '@module/utils/date';
+} from '@module/utils/diaryImageUrl';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React, { useCallback } from 'react';
 

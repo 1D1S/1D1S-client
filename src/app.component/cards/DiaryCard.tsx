@@ -1,10 +1,10 @@
 'use client';
 
 import { Card, Icon, Text } from '@1d1s/design-system';
+import { ChallengeChip } from '@component/cards/ChallengeChip';
 import FadeInImage from '@component/FadeInImage';
 import LikeBurst from '@component/LikeBurst';
 import { Skeleton } from '@component/Skeleton';
-import { ChallengeChip } from '@feature/challenge/shared/components/ChallengeChip';
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
 import Image from 'next/image';
@@ -139,7 +139,6 @@ function DiaryCard({
 
   const tone = EMOTION_TONE[emotion];
   const hasImage = isValidNextImageSrc(imageUrl);
-  const hasProfileImage = isValidNextImageSrc(profileImageUrl);
   const excerpt = toPlainExcerpt(content);
   const visibleGoals = (goals ?? []).slice(0, MAX_GOALS);
 
@@ -295,9 +294,9 @@ function DiaryCard({
             )}
             aria-hidden
           >
-            {hasProfileImage ? (
+            {isValidNextImageSrc(profileImageUrl) ? (
               <FadeInImage
-                src={profileImageUrl as string}
+                src={profileImageUrl}
                 alt=""
                 fill
                 sizes="20px"

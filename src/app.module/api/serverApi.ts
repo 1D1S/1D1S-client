@@ -14,11 +14,11 @@
  */
 
 import type { DiaryItem } from '@feature/diary/board/type/diary';
-import { resolveDiaryImageList } from '@feature/diary/shared/utils/diaryImageUrl';
 import type {
   MemberDiaryPageInfo,
   MemberProfileData,
 } from '@feature/member/type/member';
+import { resolveDiaryImageList } from '@module/utils/diaryImageUrl';
 
 import { buildQueryString } from './request';
 import { serverRequestData } from './serverClient';

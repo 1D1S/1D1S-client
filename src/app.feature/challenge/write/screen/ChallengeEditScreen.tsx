@@ -8,6 +8,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogTitle,
+  MobileHeader,
   Text,
 } from '@1d1s/design-system';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
@@ -32,7 +33,7 @@ import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
-import { ArrowLeft, Check, Lightbulb } from 'lucide-react';
+import { Check, Lightbulb } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, {
   useEffect,
@@ -210,33 +211,7 @@ function ChallengeEditScreenContent({
 
   return (
     <div className="pb-mobile-action-bar min-h-screen w-full">
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={() => router.back()}
-          className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
-          )}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <Text
-          size="body1"
-          weight="extrabold"
-          className="flex-1 tracking-[-0.3px] text-gray-900"
-        >
-          챌린지 수정하기
-        </Text>
-      </div>
+      <MobileHeader title="챌린지 수정하기" onBack={() => router.back()} />
 
       <Form {...form}>
         <div

@@ -55,10 +55,7 @@ export function useRandomChallenges(
 // 챌린지 리스트 불러오기 (무한 스크롤)
 export function useChallengeList(
   params: ChallengeListParams = {}
-): UseInfiniteQueryResult<
-  InfiniteData<{ data: ChallengeListResponse; message: string }>,
-  Error
-> {
+): UseInfiniteQueryResult<InfiniteData<ChallengeListResponse>, Error> {
   return useInfiniteQuery({
     queryKey: CHALLENGE_QUERY_KEYS.list(params),
     queryFn: ({ pageParam }) =>
@@ -68,7 +65,7 @@ export function useChallengeList(
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => {
-      const pageInfo = lastPage?.data?.pageInfo;
+      const pageInfo = lastPage?.pageInfo;
       return pageInfo?.hasNextPage ? pageInfo.nextCursor : undefined;
     },
     ...FRESH_ON_RETURN,

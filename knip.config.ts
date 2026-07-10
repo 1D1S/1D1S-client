@@ -20,9 +20,6 @@ const config: KnipConfig = {
     'src/app.module/middleware/middleware.ts',
     'next.config.{js,ts,mjs}',
     'postcss.config.{js,cjs,mjs}',
-    // next.config images.loaderFile 로 지정되는 커스텀 이미지 로더.
-    // 문자열 경로라 정적 분석으로 추적되지 않아 entry 로 명시한다.
-    'src/app.lib/imageLoader.ts',
   ],
   project: ['src/**/*.{ts,tsx}'],
 
@@ -50,11 +47,7 @@ const config: KnipConfig = {
     'postcss',
     // 디자인 시스템 내부에서 사용되는 보조 라이브러리
     'class-variance-authority',
-    'cmdk',
     'react-day-picker',
-    'react-intersection-observer',
-    'react-resizable-panels',
-    'vaul',
     // 훅/커밋/테스트 체인 (husky, jest 등)
     '@commitlint/cli',
     '@eslint/eslintrc',

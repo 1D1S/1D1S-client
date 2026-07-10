@@ -1,8 +1,7 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { MobileHeader, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
-import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
@@ -70,40 +69,17 @@ const TABS: Array<{ id: GuideTab; label: string }> = [
 ];
 
 export default function InstallGuideScreen(): React.ReactElement {
-  const router = useRouter();
   const [tab, setTab] = useState<GuideTab>('ios');
+  const router = useRouter();
 
   const steps = tab === 'ios' ? IOS_STEPS : ANDROID_STEPS;
 
   return (
     <div className="min-h-screen w-full bg-white">
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={() => router.back()}
-          className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
-          )}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <Text
-          size="body1"
-          weight="extrabold"
-          className="flex-1 truncate tracking-[-0.3px] text-gray-900"
-        >
-          홈 화면에 추가하기
-        </Text>
-      </div>
+      <MobileHeader
+        title="홈 화면에 추가하기"
+        onBack={() => router.back()}
+      />
 
       <section
         className={cn(

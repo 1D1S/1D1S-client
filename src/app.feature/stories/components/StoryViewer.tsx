@@ -2,8 +2,8 @@
 
 import { CircleAvatar, Icon, Stripe, Text } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
-import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { cn } from '@module/utils/cn';
+import { resolveDiaryImageUrl } from '@module/utils/diaryImageUrl';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 

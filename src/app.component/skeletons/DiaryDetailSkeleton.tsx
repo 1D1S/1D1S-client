@@ -1,16 +1,14 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { MobileHeader } from '@1d1s/design-system';
 import { Skeleton } from '@component/Skeleton';
 import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleton';
 import { cn } from '@module/utils/cn';
-import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
 export function DiaryDetailSkeleton(): React.ReactElement {
   const router = useRouter();
-
   return (
     <div
       className={cn(
@@ -18,34 +16,7 @@ export function DiaryDetailSkeleton(): React.ReactElement {
         'pb-mobile-action-bar-tall lg:pb-0'
       )}
     >
-      {/* 모바일 sticky 헤더 — ← + 일지 */}
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={() => router.back()}
-          className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
-          )}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <Text
-          size="body1"
-          weight="extrabold"
-          className="flex-1 tracking-[-0.3px] text-gray-900"
-        >
-          일지
-        </Text>
-      </div>
+      <MobileHeader title="일지" onBack={() => router.back()} />
 
       <div
         className={cn(

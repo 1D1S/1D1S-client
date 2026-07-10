@@ -1,6 +1,11 @@
 'use client';
 
-import { Card, CircleAvatar, Text } from '@1d1s/design-system';
+import {
+  Card,
+  CircleAvatar,
+  MobileHeader,
+  Text,
+} from '@1d1s/design-system';
 import EmptyState from '@component/EmptyState';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
@@ -9,7 +14,6 @@ import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 
@@ -152,34 +156,7 @@ export function ChallengeParticipantListScreen({
 
   return (
     <div className="min-h-screen w-full">
-      {/* 모바일 sticky 헤더 */}
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={handleBack}
-          className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
-          )}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <Text
-          size="body1"
-          weight="extrabold"
-          className="flex-1 tracking-[-0.3px] text-gray-900"
-        >
-          참여자
-        </Text>
-      </div>
+      <MobileHeader title="참여자" onBack={handleBack} />
 
       <div className={cn('mx-auto w-full max-w-[640px]', 'px-5 py-5 lg:py-10')}>
         <header className="hidden flex-col gap-1.5 lg:flex">

@@ -38,23 +38,9 @@ const RIGHT_RAIL_HIDDEN_ROUTES = [
   '/install',
 ];
 
-const BOTTOM_NAV_HIDDEN_ROUTES = [
-  '/auth/login',
-  '/login',
-  '/auth/signup',
-  '/signup',
-  '/diary/create',
-  '/challenge/create',
-  '/onboarding',
-  '/notification',
-  '/notice',
-  '/inquiry',
-  '/mypage/settings',
-  '/mypage/friend',
-  '/terms',
-  '/privacy',
-  '/install',
-];
+// 바텀 네비는 최상위 4개 탭에서만 노출한다. 그 외 서브/상세 화면은
+// 각자 모바일 sticky 헤더(뒤로가기)를 사용하므로 바텀 네비를 숨긴다.
+const BOTTOM_NAV_VISIBLE_ROUTES = ['/', '/challenge', '/diary', '/mypage'];
 
 function matchesRoute(pathname: string, routes: readonly string[]): boolean {
   return routes.some(
@@ -62,22 +48,13 @@ function matchesRoute(pathname: string, routes: readonly string[]): boolean {
   );
 }
 
-function isBottomNavHidden(pathname: string): boolean {
-  if (matchesRoute(pathname, BOTTOM_NAV_HIDDEN_ROUTES)) {
-    return true;
-  }
-  // 챌린지/일지 상세는 자체 sticky CTA를 사용하므로 바텀 네비를 숨긴다.
-  if (/^\/challenge\/\d+/.test(pathname)) {
-    return true;
-  }
-  if (/^\/diary\/\d+/.test(pathname)) {
-    return true;
-  }
-  // 다른 회원 프로필 페이지는 자체 sticky 백 헤더를 사용한다.
-  if (/^\/member\/\d+\/?$/.test(pathname)) {
-    return true;
-  }
-  return false;
+function isBottomNavVisible(pathname: string): boolean {
+  // 정확히 최상위 탭 경로일 때만 노출(하위 경로는 서브 화면으로 간주).
+  const normalized =
+    pathname.length > 1 && pathname.endsWith('/')
+      ? pathname.slice(0, -1)
+      : pathname;
+  return BOTTOM_NAV_VISIBLE_ROUTES.includes(normalized);
 }
 
 function resolveActiveNavId(pathname: string): string {
@@ -183,7 +160,7 @@ export default function AppLayoutShell({
     RIGHT_RAIL_HIDDEN_ROUTES
   );
   const showRightRail = isContentRouteForRail;
-  const showBottomNav = !isBottomNavHidden(pathname) && !isNativeApp;
+  const showBottomNav = isBottomNavVisible(pathname) && !isNativeApp;
   const bottomNavRespClass = 'lg:hidden';
   const activeNavId = resolveActiveNavId(pathname);
 
