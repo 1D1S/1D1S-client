@@ -2,10 +2,10 @@
 
 import { BottomNav } from '@1d1s/design-system';
 import { ChallengeTrophyIcon } from '@component/ChallengeTrophyIcon';
-import { resolveDiaryImageUrl } from '@feature/diary/shared/utils/diaryImageUrl';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
+import { resolveDiaryImageUrl } from '@module/utils/diaryImageUrl';
 import { buildLoginUrl } from '@module/utils/returnTo';
 import { BookOpen, Home, User } from 'lucide-react';
 import Image from 'next/image';

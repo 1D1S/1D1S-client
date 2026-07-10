@@ -15,14 +15,14 @@ import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { useLoginRequiredParam } from '@module/hooks/useLoginRequiredParam';
 import { cn } from '@module/utils/cn';
 import { formatMonthDayKR, getDateTimestamp } from '@module/utils/date';
+import {
+  resolveDiaryImageUrl,
+  resolveDiaryThumbnail,
+} from '@module/utils/diaryImageUrl';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useMemo, useState } from 'react';
 
-import {
-  resolveDiaryImageUrl,
-  resolveDiaryThumbnail,
-} from '../../shared/utils/diaryImageUrl';
 import { mapFeelingToEmotion } from '../../shared/utils/feeling';
 import { DiaryInfiniteFooter } from '../components/DiaryInfiniteFooter';
 import { useDiaryList } from '../hooks/useDiaryQueries';

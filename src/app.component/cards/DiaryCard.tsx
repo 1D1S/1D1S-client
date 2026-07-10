@@ -1,10 +1,10 @@
 'use client';
 
 import { Card, Icon, Text } from '@1d1s/design-system';
+import { ChallengeChip } from '@component/cards/ChallengeChip';
 import FadeInImage from '@component/FadeInImage';
 import LikeBurst from '@component/LikeBurst';
 import { Skeleton } from '@component/Skeleton';
-import { ChallengeChip } from '@feature/challenge/shared/components/ChallengeChip';
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
 import Image from 'next/image';

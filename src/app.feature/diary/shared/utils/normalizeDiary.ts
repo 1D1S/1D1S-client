@@ -1,6 +1,5 @@
 import type { DiaryItem } from '@feature/diary/board/type/diary';
-
-import { resolveDiaryImageList } from './diaryImageUrl';
+import { resolveDiaryImageList } from '@module/utils/diaryImageUrl';
 
 export type DiaryItemApi = Omit<DiaryItem, 'authorInfoDto' | 'diaryInfoDto'> & {
   authorInfoDto?: DiaryItem['authorInfoDto'] | null;

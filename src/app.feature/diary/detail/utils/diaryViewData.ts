@@ -6,6 +6,10 @@ import {
 } from '@feature/challenge/board/utils/challengePeriod';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { getRelativeTimeLabel } from '@module/utils/date';
+import {
+  resolveDiaryImageList,
+  resolveDiaryImageUrl,
+} from '@module/utils/diaryImageUrl';
 
 import type {
   ChallengeDetailResponse,
@@ -18,10 +22,6 @@ import type {
   DiaryGoalStatus,
   Feeling,
 } from '../../board/type/diary';
-import {
-  resolveDiaryImageList,
-  resolveDiaryImageUrl,
-} from '../../shared/utils/diaryImageUrl';
 import type { DiaryComment } from '../type/comment';
 
 export interface ChecklistItem {

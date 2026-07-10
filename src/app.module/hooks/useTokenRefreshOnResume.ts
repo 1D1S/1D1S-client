@@ -1,6 +1,6 @@
 'use client';
 
-import { authApi } from '@feature/auth/api/authApi';
+import { refreshAccessTokenOnce } from '@module/api/tokenRefresh';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 
@@ -42,7 +42,7 @@ export function useTokenRefreshOnResume(): void {
 
       isRefreshingRef.current = true;
       try {
-        await authApi.refreshToken();
+        await refreshAccessTokenOnce();
         // 새 토큰으로 재요청되도록 모든 쿼리를 stale 처리. activeOnly: 화면에
         // 마운트된 쿼리만 즉시 refetch 되고, 백그라운드 쿼리는 다음 사용 때
         // 갱신된다.
