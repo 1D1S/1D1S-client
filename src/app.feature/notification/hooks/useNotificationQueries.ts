@@ -6,6 +6,8 @@ import {
   UseQueryResult,
 } from '@tanstack/react-query';
 
+import { FRESH_ON_RETURN } from '@/app.lib/refetchPolicy';
+
 import { notificationApi } from '../api/notificationApi';
 import { NOTIFICATION_QUERY_KEYS } from '../consts/queryKeys';
 import {
@@ -31,6 +33,7 @@ export function useNotificationsInfinite(): UseInfiniteQueryResult<
     initialPageParam: 0,
     getNextPageParam: (lastPage) =>
       lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.page + 1 : undefined,
+    ...FRESH_ON_RETURN,
   });
 }
 
