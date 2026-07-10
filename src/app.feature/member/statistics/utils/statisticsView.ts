@@ -1,6 +1,6 @@
 import type { Feeling } from '@feature/diary/board/type/diary';
 
-// 감정 표시 메타 — 라벨/이모지/차트 색(colors.css 변수).
+// 감정 표시 메타 — 라벨/아이콘/차트 색(colors.css 변수).
 export const FEELING_ORDER: Feeling[] = ['HAPPY', 'NORMAL', 'SAD', 'NONE'];
 
 export const FEELING_LABEL: Record<Feeling, string> = {
@@ -10,11 +10,16 @@ export const FEELING_LABEL: Record<Feeling, string> = {
   NONE: '미선택',
 };
 
-export const FEELING_EMOJI: Record<Feeling, string> = {
-  HAPPY: '😊',
-  NORMAL: '😌',
-  SAD: '🥲',
-  NONE: '⚪',
+// 감정 아이콘 — 일지 화면과 동일한 무드 SVG(/images/mood-*.svg).
+// NONE(미선택)은 대응 아이콘이 없어 null.
+export const FEELING_MOOD_IMAGE: Record<
+  Feeling,
+  { src: string; alt: string } | null
+> = {
+  HAPPY: { src: '/images/mood-happy.svg', alt: '좋음' },
+  NORMAL: { src: '/images/mood-soso.svg', alt: '보통' },
+  SAD: { src: '/images/mood-sad.svg', alt: '아쉬움' },
+  NONE: null,
 };
 
 // SVG/inline 스타일용 색상 (colors.css 토큰 참조).

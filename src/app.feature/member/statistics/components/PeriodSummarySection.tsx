@@ -13,6 +13,7 @@ import {
 } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 import React, { useMemo, useState } from 'react';
 
 import {
@@ -21,8 +22,8 @@ import {
 } from '../hooks/useStatisticsQueries';
 import type { StatisticsPeriodUnit } from '../type/statistics';
 import {
-  FEELING_EMOJI,
   FEELING_LABEL,
+  FEELING_MOOD_IMAGE,
   FEELING_ORDER,
   formatBucketLabel,
   formatDelta,
@@ -248,13 +249,30 @@ export function PeriodSummarySection(): React.ReactElement {
             </Text>
             <div className="flex flex-wrap gap-1.5">
               {FEELING_ORDER.map((feeling) => {
-                const item = (summary.feelingBreakdown ?? []).find(
-                  (entry) => entry.feeling === feeling
-                );
+                const count =
+                  (summary.feelingBreakdown ?? []).find(
+                    (entry) => entry.feeling === feeling
+                  )?.count ?? 0;
+                // count 0 감정(특히 미선택 NONE)은 칩에서 제외.
+                if (count === 0) {
+                  return null;
+                }
+                const mood = FEELING_MOOD_IMAGE[feeling];
                 return (
                   <Tag key={feeling} tone="gray" size="sm">
-                    {FEELING_EMOJI[feeling]} {FEELING_LABEL[feeling]}{' '}
-                    {item?.count ?? 0}
+                    <span className="inline-flex items-center gap-1">
+                      {mood ? (
+                        <Image
+                          src={mood.src}
+                          alt=""
+                          width={16}
+                          height={16}
+                          aria-hidden
+                          unoptimized
+                        />
+                      ) : null}
+                      {FEELING_LABEL[feeling]} {count}
+                    </span>
                   </Tag>
                 );
               })}
