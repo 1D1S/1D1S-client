@@ -20,7 +20,9 @@ const UNIT_OPTIONS = [
  */
 export function DiaryTrendSection(): React.ReactElement {
   const [unit, setUnit] = useState<DiaryTrendUnit>('DAY');
-  const { data, isLoading, isError, error } = useDiaryTrend({ unit });
+  const { data, isPending, isSuccess, isError, error } = useDiaryTrend({
+    unit,
+  });
 
   const points = data?.points ?? [];
   const chartData: TrendDatum[] = points.map((p) => ({
@@ -43,10 +45,10 @@ export function DiaryTrendSection(): React.ReactElement {
           aria-label="작성 추이 단위"
         />
       }
-      isLoading={isLoading}
+      isLoading={isPending}
       isError={isError}
       error={error}
-      isEmpty={chartData.length === 0 || totalCount === 0}
+      isEmpty={isSuccess && (chartData.length === 0 || totalCount === 0)}
       emptyText="이 기간에 작성한 일지가 없어요."
       skeletonHeight={160}
     >

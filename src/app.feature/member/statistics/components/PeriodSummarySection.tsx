@@ -168,7 +168,9 @@ export function PeriodSummarySection(): React.ReactElement {
     label: formatBucketLabel(point.bucket),
   }));
 
-  const isLoading = summaryQuery.isLoading || periodsQuery.isLoading;
+  // 로그인 확정 전(enabled: false)에는 isLoading 이 false 라서 빈상태로
+  // 새는 문제가 있어, settled 전까지는 isPending 으로 스켈레톤을 유지한다.
+  const isPending = summaryQuery.isPending || periodsQuery.isPending;
 
   return (
     <StatisticsCard
@@ -183,10 +185,10 @@ export function PeriodSummarySection(): React.ReactElement {
           aria-label="요약 기간 단위"
         />
       }
-      isLoading={isLoading}
+      isLoading={isPending}
       isError={summaryQuery.isError}
       error={summaryQuery.error}
-      isEmpty={!isLoading && !summary}
+      isEmpty={summaryQuery.isSuccess && !summary}
       emptyText="아직 요약할 활동이 없어요."
       skeletonHeight={320}
     >

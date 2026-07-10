@@ -1,5 +1,3 @@
-'use client';
-
 import { Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import React from 'react';

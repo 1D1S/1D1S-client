@@ -20,7 +20,8 @@ import { StatisticsCard } from './StatisticsCard';
  * 감정 분포 — 도넛 + 감정별 비율 범례.
  */
 export function FeelingDistributionSection(): React.ReactElement {
-  const { data, isLoading, isError, error } = useFeelingStatistics();
+  const { data, isPending, isSuccess, isError, error } =
+    useFeelingStatistics();
 
   const total = data?.total ?? 0;
   const countByFeeling = new Map<Feeling, number>();
@@ -41,10 +42,10 @@ export function FeelingDistributionSection(): React.ReactElement {
     <StatisticsCard
       title="감정 분포"
       subtitle="일지에 기록한 감정 비율"
-      isLoading={isLoading}
+      isLoading={isPending}
       isError={isError}
       error={error}
-      isEmpty={total === 0}
+      isEmpty={isSuccess && total === 0}
       emptyText="아직 기록된 감정이 없어요."
       skeletonHeight={180}
     >

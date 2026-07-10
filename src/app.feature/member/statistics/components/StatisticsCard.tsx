@@ -1,5 +1,3 @@
-'use client';
-
 import { Text } from '@1d1s/design-system';
 import { Skeleton } from '@component/Skeleton';
 import { normalizeApiError } from '@module/api/error';

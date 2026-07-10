@@ -84,7 +84,8 @@ function CompareRow({
  */
 export function FriendComparisonSection(): React.ReactElement {
   const [period, setPeriod] = useState<FriendComparisonPeriod>('WEEK');
-  const { data, isLoading, isError, error } = useFriendComparison(period);
+  const { data, isPending, isSuccess, isError, error } =
+    useFriendComparison(period);
 
   const friendCount = data?.friendCount ?? 0;
   const me = data?.me;
@@ -104,10 +105,10 @@ export function FriendComparisonSection(): React.ReactElement {
           aria-label="친구 비교 기간"
         />
       }
-      isLoading={isLoading}
+      isLoading={isPending}
       isError={isError}
       error={error}
-      isEmpty={!isLoading && !isError && friendCount === 0}
+      isEmpty={isSuccess && friendCount === 0}
       emptyText="친구를 추가하면 평균과 순위를 비교할 수 있어요."
       skeletonHeight={200}
     >
