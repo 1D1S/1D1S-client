@@ -24,36 +24,9 @@ export default function HomeWarmGreeting(): React.ReactElement {
     <div className="min-h-[64px] w-full">
       <div className="flex items-end justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <Text size="heading2" weight="extrabold" className="text-gray-900">
-              {greetingTitle}
-            </Text>
-            <span aria-hidden className="animate-wave inline-block">
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 40 40"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g fill="#F2A65C">
-                  <rect x="10.5" y="15" width="21" height="21" rx="9.5" />
-                  <rect x="12.2" y="6" width="4.4" height="19" rx="2.2" />
-                  <rect x="17.3" y="3" width="4.4" height="22" rx="2.2" />
-                  <rect x="22.4" y="4" width="4.4" height="21" rx="2.2" />
-                  <rect x="27.3" y="7" width="4.4" height="18" rx="2.2" />
-                  <rect
-                    x="5.5"
-                    y="18.5"
-                    width="4.4"
-                    height="13"
-                    rx="2.2"
-                    transform="rotate(-34 7.7 25)"
-                  />
-                </g>
-              </svg>
-            </span>
-          </div>
+          <Text size="heading2" weight="extrabold" className="text-gray-900">
+            {greetingTitle}
+          </Text>
           <Text size="caption2" weight="medium" className="mt-1 text-gray-600">
             오늘도 작은 한 걸음을 응원해요.
           </Text>
