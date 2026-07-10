@@ -3,25 +3,28 @@
 import { Icon, Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
+import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
+import { useDedupedInfinitePages } from '@module/hooks/useDedupedInfinitePages';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
+import { useLoginRequiredParam } from '@module/hooks/useLoginRequiredParam';
 import { cn } from '@module/utils/cn';
 import { formatMonthDayKR, getDateTimestamp } from '@module/utils/date';
-import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import {
   resolveDiaryImageUrl,
   resolveDiaryThumbnail,
 } from '../../shared/utils/diaryImageUrl';
 import { mapFeelingToEmotion } from '../../shared/utils/feeling';
+import { DiaryInfiniteFooter } from '../components/DiaryInfiniteFooter';
 import { useDiaryList } from '../hooks/useDiaryQueries';
 import { useLikeToggle } from '../hooks/useLikeToggle';
 import { type DiaryItem } from '../type/diary';
@@ -133,9 +136,7 @@ DiaryListItem.displayName = 'DiaryListItem';
 
 export default function DiaryListScreen(): React.ReactElement {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const isLoginRequired = searchParams.get('loginRequired') === 'true';
+  const { isLoginRequired, returnTo } = useLoginRequiredParam();
   const isLoggedIn = useIsLoggedIn();
   const [sortMode] = useState<SortMode>('latest');
   // isLoginRequired는 URL 파라미터로 첫 렌더에만 true가 되고 즉시 삭제된다.
@@ -145,28 +146,13 @@ export default function DiaryListScreen(): React.ReactElement {
   );
   // 상세 → 목록 바운스 시 원래 가려던 상세 경로. 로그인 후 그리로 복귀한다.
   const [loginReturnTo, setLoginReturnTo] = useState<string | null>(() =>
-    isLoginRequired && !isLoggedIn
-      ? sanitizeReturnTo(searchParams.get(RETURN_TO_PARAM))
-      : null
+    isLoginRequired && !isLoggedIn ? returnTo : null
   );
   const [loginDialogDescription, setLoginDialogDescription] = useState(() =>
     isLoginRequired && !isLoggedIn
       ? '일지 상세는 로그인 후 이용할 수 있습니다.'
       : '로그인 후 이용할 수 있습니다.'
   );
-
-  useEffect(() => {
-    if (!isLoginRequired) {
-      return;
-    }
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('loginRequired');
-    params.delete(RETURN_TO_PARAM);
-    const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
-    });
-  }, [isLoginRequired, pathname, router, searchParams]);
 
   const handleLikeRequireLogin = useCallback((): void => {
     setLoginDialogDescription('좋아요 기능은 로그인 후 이용할 수 있습니다.');
@@ -191,17 +177,11 @@ export default function DiaryListScreen(): React.ReactElement {
     isFetchingNextPage,
     fetchNextPage,
   });
-  const diaries = useMemo(() => {
-    const flattenedDiaries =
-      data?.pages?.flatMap((page) => page?.items ?? []) ?? [];
-    const diaryMap = new Map<number, DiaryItem>();
-
-    flattenedDiaries.forEach((diary) => {
-      diaryMap.set(diary.id, diary);
-    });
-
-    return Array.from(diaryMap.values());
-  }, [data]);
+  const diaries = useDedupedInfinitePages(
+    data,
+    (page) => page?.items,
+    (diary) => diary.id
+  );
 
   const sortedDiaries = useMemo(
     () => sortDiaries(diaries, sortMode),
@@ -224,7 +204,50 @@ export default function DiaryListScreen(): React.ReactElement {
   );
 
   return (
-    <div className="min-h-screen w-full">
+    <BoardScreenLayout
+      title="일지 보드"
+      description="다른 챌린저의 일지를 보며 동기부여를 얻어보세요."
+      mobileHeader={
+        // 모바일 sticky 헤더 — 일지.
+        // 네이티브 쉘은 AppTopNav 가 같은 영역을 차지하고 FAB 가
+        // "일지 추가" 를 제공하므로, 이 헤더는 글로벌 sticky 차단 룰로
+        // 함께 가린다 (data-native-keep 제거).
+        <div
+          className={cn(
+            'sticky top-0 z-20 flex items-center justify-between',
+            'gap-3 border-b border-gray-100',
+            'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
+            'backdrop-blur lg:hidden'
+          )}
+        >
+          <Text
+            as="h1"
+            size="heading1"
+            weight="extrabold"
+            className="tracking-[-0.5px] text-gray-900"
+          >
+            일지
+          </Text>
+          {isLoggedIn ? (
+            <button
+              type="button"
+              onClick={() => router.push('/diary/create')}
+              aria-label="일지 쓰기"
+              data-native-hide
+              className={cn(
+                // 챌린지 보드의 "새 챌린지" 버튼과 동일한 모바일 CTA 스타일
+                'bg-brand inline-flex shrink-0 items-center gap-1 rounded-full',
+                'px-3 py-1.5 text-[11px] font-extrabold text-white',
+                'transition hover:brightness-105'
+              )}
+            >
+              <Icon name="Plus" size={12} aria-hidden />
+              일지 쓰기
+            </button>
+          ) : null}
+        </div>
+      }
+    >
       <LoginRequiredDialog
         open={showLoginDialog}
         onOpenChange={(open) => {
@@ -237,131 +260,51 @@ export default function DiaryListScreen(): React.ReactElement {
         returnTo={loginReturnTo}
       />
 
-      {/* 모바일 sticky 헤더 — 일지.
-          네이티브 쉘은 AppTopNav 가 같은 영역을 차지하고 FAB 가
-          "일지 추가" 를 제공하므로, 이 헤더는 글로벌 sticky 차단 룰로
-          함께 가린다 (data-native-keep 제거). */}
-      <div
-        className={cn(
-          'sticky top-0 z-20 flex items-center justify-between',
-          'gap-3 border-b border-gray-100',
-          'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
-          'backdrop-blur lg:hidden'
-        )}
-      >
-        <Text
-          as="h1"
-          size="heading1"
-          weight="extrabold"
-          className="tracking-[-0.5px] text-gray-900"
-        >
-          일지
-        </Text>
-        {isLoggedIn ? (
-          <button
-            type="button"
-            onClick={() => router.push('/diary/create')}
-            aria-label="일지 쓰기"
-            data-native-hide
-            className={cn(
-              // 챌린지 보드의 "새 챌린지" 버튼과 동일한 모바일 헤더 CTA 스타일
-              'bg-brand inline-flex shrink-0 items-center gap-1 rounded-full',
-              'px-3 py-1.5 text-[11px] font-extrabold text-white',
-              'transition hover:brightness-105'
-            )}
-          >
-            <Icon name="Plus" size={12} aria-hidden />
-            일지 쓰기
-          </button>
-        ) : null}
-      </div>
+      {showSkeleton ? (
+        <DiaryCardSkeletonGrid count={12} className="data-fade-in mt-6" />
+      ) : null}
 
-      <div
-        className={cn(
-          'mx-auto w-full max-w-[1200px]',
-          'px-5 py-5 lg:px-8 lg:py-10'
-        )}
-      >
-        <header
-          className={cn(
-            'hidden flex-col gap-4 border-b border-gray-100 pb-5',
-            'lg:flex lg:flex-row lg:items-end lg:justify-between'
-          )}
-        >
-          <div className="flex flex-col gap-1.5">
-            <Text
-              size="pageTitle"
-              weight="extrabold"
-              className="tracking-tight text-gray-900"
-            >
-              일지 보드
-            </Text>
-            <Text size="body2" weight="regular" className="text-gray-500">
-              다른 챌린저의 일지를 보며 동기부여를 얻어보세요.
-            </Text>
-          </div>
-        </header>
-
-        {showSkeleton ? (
-          <DiaryCardSkeletonGrid count={12} className="data-fade-in mt-6" />
-        ) : null}
-
-        {isError && !hasLoadedDiaries ? (
-          <div className="mt-10 flex w-full justify-center py-10">
-            <Text size="body1" weight="medium" className="text-red-600">
-              {error
-                ? normalizeApiError(error).message
-                : '일지를 불러오지 못했습니다.'}
-            </Text>
-          </div>
-        ) : null}
-
-        {!showSkeleton && hasLoadedDiaries ? (
-          <MasonryColumns className="data-fade-in mt-6">
-            {sortedDiaries.map((item) => (
-              <DiaryListItem
-                key={item.id}
-                item={item}
-                href={isLoggedIn ? `/diary/${item.id}` : undefined}
-                onRequireLogin={handleRequireLogin}
-                onLikeToggle={handleLikeToggle}
-              />
-            ))}
-          </MasonryColumns>
-        ) : null}
-
-        {!showSkeleton && !isError && !hasLoadedDiaries ? (
-          <EmptyState
-            variant="diary"
-            title="아직 등록된 일지가 없어요"
-            description="첫 일지를 남기고 스트릭을 시작해 보세요"
-            className="mt-10"
-          />
-        ) : null}
-
-        {isFetchingNextPage ? (
-          <DiaryCardSkeletonGrid count={4} className="mt-4" />
-        ) : null}
-
-        <div
-          ref={ref}
-          className="mt-6 flex h-10 w-full items-center justify-center"
-        >
-          {isFetchingNextPage ? null : isError && hasLoadedDiaries ? (
-            <Text size="body2" className="text-red-500">
-              {error
-                ? normalizeApiError(error).message
-                : '추가 일지를 불러오지 못했습니다.'}
-            </Text>
-          ) : hasNextPage ? (
-            <div />
-          ) : hasLoadedDiaries ? (
-            <Text size="body2" className="text-gray-400">
-              마지막 일지입니다.
-            </Text>
-          ) : null}
+      {isError && !hasLoadedDiaries ? (
+        <div className="mt-10 flex w-full justify-center py-10">
+          <Text size="body1" weight="medium" className="text-red-600">
+            {error
+              ? normalizeApiError(error).message
+              : '일지를 불러오지 못했습니다.'}
+          </Text>
         </div>
-      </div>
-    </div>
+      ) : null}
+
+      {!showSkeleton && hasLoadedDiaries ? (
+        <MasonryColumns className="data-fade-in mt-6">
+          {sortedDiaries.map((item) => (
+            <DiaryListItem
+              key={item.id}
+              item={item}
+              href={isLoggedIn ? `/diary/${item.id}` : undefined}
+              onRequireLogin={handleRequireLogin}
+              onLikeToggle={handleLikeToggle}
+            />
+          ))}
+        </MasonryColumns>
+      ) : null}
+
+      {!showSkeleton && !isError && !hasLoadedDiaries ? (
+        <EmptyState
+          variant="diary"
+          title="아직 등록된 일지가 없어요"
+          description="첫 일지를 남기고 스트릭을 시작해 보세요"
+          className="mt-10"
+        />
+      ) : null}
+
+      <DiaryInfiniteFooter
+        sentinelRef={ref}
+        isFetchingNextPage={isFetchingNextPage}
+        isError={isError}
+        error={error}
+        hasItems={hasLoadedDiaries}
+        hasNextPage={hasNextPage ?? false}
+      />
+    </BoardScreenLayout>
   );
 }

@@ -1,10 +1,11 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
 import ChallengeCard, {
   type ChallengeCardGoalType,
 } from '@component/cards/ChallengeCard';
 import EmptyState from '@component/EmptyState';
+import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
+import { MobileStickyHeader } from '@component/layout/MobileStickyHeader';
 import { ChallengeCardSkeletonGrid } from '@component/skeletons/ChallengeCardSkeleton';
 import {
   CategoryIcon,
@@ -15,7 +16,6 @@ import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import type { MyPageChallenge } from '@feature/member/type/member';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -83,93 +83,46 @@ export function MyChallengeListScreen(): React.ReactElement {
   const hasChallenges = challenges.length > 0;
 
   return (
-    <div className="min-h-screen w-full">
-      {/* 모바일 sticky 헤더 — ← + 내 챌린지 전체 보기 */}
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={() => router.push('/mypage')}
+    <BoardScreenLayout
+      title="내 챌린지 전체 보기"
+      description="참여 중인 챌린지 전체 목록입니다."
+      mobileHeader={
+        <MobileStickyHeader
+          title="내 챌린지 전체 보기"
+          onBack={() => router.push('/mypage')}
+        />
+      }
+    >
+      {showSkeleton ? (
+        <ChallengeCardSkeletonGrid
+          count={8}
+          className="data-fade-in mt-6 gap-4"
+        />
+      ) : null}
+
+      {!showSkeleton && hasChallenges ? (
+        <div
           className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
+            'data-fade-in mt-6 grid gap-4',
+            'xs:grid-cols-2 grid-cols-1 sm:grid-cols-3'
           )}
         >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <Text
-          size="heading2"
-          weight="extrabold"
-          className="flex-1 tracking-[-0.3px] text-gray-900"
-        >
-          내 챌린지 전체 보기
-        </Text>
-      </div>
+          {challenges.map((challenge) => (
+            <MyChallengeCardItem
+              key={challenge.challengeId}
+              challenge={challenge}
+            />
+          ))}
+        </div>
+      ) : null}
 
-      <div
-        className={cn(
-          'mx-auto w-full max-w-[1200px]',
-          'px-5 py-5 lg:px-8 lg:py-10'
-        )}
-      >
-        <header
-          className={cn(
-            'hidden flex-col gap-4 border-b border-gray-100 pb-5',
-            'lg:flex lg:flex-row lg:items-end lg:justify-between'
-          )}
-        >
-          <div className="flex flex-col gap-1.5">
-            <Text
-              size="pageTitle"
-              weight="extrabold"
-              className="tracking-tight text-gray-900"
-            >
-              내 챌린지 전체 보기
-            </Text>
-            <Text size="body2" weight="regular" className="text-gray-500">
-              참여 중인 챌린지 전체 목록입니다.
-            </Text>
-          </div>
-        </header>
-
-        {showSkeleton ? (
-          <ChallengeCardSkeletonGrid
-            count={8}
-            className="data-fade-in mt-6 gap-4"
-          />
-        ) : null}
-
-        {!showSkeleton && hasChallenges ? (
-          <div
-            className={cn(
-              'data-fade-in mt-6 grid gap-4',
-              'xs:grid-cols-2 grid-cols-1 sm:grid-cols-3'
-            )}
-          >
-            {challenges.map((challenge) => (
-              <MyChallengeCardItem
-                key={challenge.challengeId}
-                challenge={challenge}
-              />
-            ))}
-          </div>
-        ) : null}
-
-        {!showSkeleton && !hasChallenges ? (
-          <EmptyState
-            variant="challenge"
-            title="참여 중인 챌린지가 없어요"
-            className="mt-10"
-          />
-        ) : null}
-      </div>
-    </div>
+      {!showSkeleton && !hasChallenges ? (
+        <EmptyState
+          variant="challenge"
+          title="참여 중인 챌린지가 없어요"
+          className="mt-10"
+        />
+      ) : null}
+    </BoardScreenLayout>
   );
 }
