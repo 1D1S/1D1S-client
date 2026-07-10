@@ -1,6 +1,12 @@
 'use client';
 
-import { SegmentedControl, Tag, Text } from '@1d1s/design-system';
+import {
+  Icon,
+  ProgressBar,
+  SegmentedControl,
+  Tag,
+  Text,
+} from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import React, { useState } from 'react';
 
@@ -31,12 +37,15 @@ function Bar({
       <Text size="caption4" className="w-14 shrink-0 text-gray-400">
         {caption}
       </Text>
-      <div className="h-3 flex-1 overflow-hidden rounded-full bg-gray-100">
-        <div
-          className="h-full rounded-full"
-          style={{ width: `${widthPct}%`, backgroundColor: color }}
-        />
-      </div>
+      <ProgressBar
+        value={widthPct}
+        size="lg"
+        showValueText={false}
+        fillColor={color}
+        trackColor="var(--white)"
+        className="flex-1"
+        trackClassName="mt-0"
+      />
       <Text size="caption3" weight="bold" className="w-8 text-right">
         {formatCount(value)}
       </Text>
@@ -57,21 +66,21 @@ function CompareRow({
 }: CompareRowProps): React.ReactElement {
   const max = Math.max(mine, average, 1);
   return (
-    <div>
+    <div className="rounded-[14px] bg-gray-50 p-4">
       <div className="flex items-center justify-between">
-        <Text size="caption1" weight="medium" className="text-gray-700">
+        <Text size="caption1" weight="bold" className="text-gray-900">
           {label}
         </Text>
         <Text size="caption3" className="text-gray-400">
           나 {formatCount(mine)} · 친구 평균 {formatCount(average)}
         </Text>
       </div>
-      <div className="mt-2 space-y-1.5">
-        <Bar value={mine} max={max} color="var(--main-500)" caption="나" />
+      <div className="mt-3 space-y-2">
+        <Bar value={mine} max={max} color="var(--main-700)" caption="나" />
         <Bar
           value={average}
           max={max}
-          color="var(--gray-300)"
+          color="var(--gray-200)"
           caption="친구 평균"
         />
       </div>
@@ -84,7 +93,7 @@ function CompareRow({
  */
 export function FriendComparisonSection(): React.ReactElement {
   const [period, setPeriod] = useState<FriendComparisonPeriod>('WEEK');
-  const { data, isPending, isSuccess, isError, error } =
+  const { data, isPending, isPlaceholderData, isSuccess, isError, error } =
     useFriendComparison(period);
 
   const friendCount = data?.friendCount ?? 0;
@@ -94,42 +103,52 @@ export function FriendComparisonSection(): React.ReactElement {
 
   return (
     <StatisticsCard
-      title="친구 비교"
-      subtitle="친구 평균과 나의 활동 비교"
+      title="친구들과 나"
+      subtitle="친구 평균과 나의 활동을 나란히"
       action={
         <SegmentedControl
           size="sm"
           options={PERIOD_OPTIONS}
           value={period}
           onValueChange={(v) => setPeriod(v as FriendComparisonPeriod)}
-          aria-label="친구 비교 기간"
+          aria-label="친구 통계 기간"
         />
       }
       isLoading={isPending}
       isError={isError}
       error={error}
       isEmpty={isSuccess && friendCount === 0}
-      emptyText="친구를 추가하면 평균과 순위를 비교할 수 있어요."
+      emptyText="친구를 추가하면 평균과 순위를 함께 볼 수 있어요."
       skeletonHeight={200}
     >
-      <div className="space-y-4">
+      {/* 기간 전환 중(placeholder)에는 dim, 새 데이터가 오면
+          opacity 만 부드럽게 복귀 — remount 없는 크로스페이드. */}
+      <div
+        className={cn(
+          'space-y-4 transition-opacity duration-300 ease-out',
+          isPlaceholderData && 'opacity-40'
+        )}
+      >
         <div className="flex flex-wrap items-center gap-2">
-          <Tag tone="gray" size="sm">
+          <Tag
+            tone="gray"
+            size="sm"
+            icon={<Icon name="People" size={12} aria-hidden />}
+          >
             친구 {friendCount}명
           </Tag>
           {rank && rank.outOf > 0 ? (
-            <Tag tone="brand" size="sm" icon="🏆">
+            <Tag
+              tone="brand"
+              size="sm"
+              icon={<Icon name="Trophy" size={12} aria-hidden />}
+            >
               일지 순위 {rank.byDiaryCount}/{rank.outOf}
             </Tag>
           ) : null}
         </div>
 
-        <div
-          className={cn(
-            'space-y-4 rounded-[12px] border border-gray-100',
-            'bg-gray-50 p-4'
-          )}
-        >
+        <div className="grid gap-3 lg:grid-cols-2">
           <CompareRow
             label="작성한 일지"
             mine={me?.diaryCount ?? 0}

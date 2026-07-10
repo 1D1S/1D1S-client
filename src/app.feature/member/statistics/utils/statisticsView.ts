@@ -23,11 +23,29 @@ export const FEELING_MOOD_IMAGE: Record<
 };
 
 // SVG/inline 스타일용 색상 (colors.css 토큰 참조).
+// 무드 SVG 아이콘의 실제 색과 맞춘다 —
+// 좋음=피치(main), 보통=민트(mint), 아쉬움=블루(blue).
 export const FEELING_COLOR: Record<Feeling, string> = {
   HAPPY: 'var(--main-500)',
-  NORMAL: 'var(--blue-400)',
-  SAD: 'var(--red-400)',
+  NORMAL: 'var(--mint-500)',
+  SAD: 'var(--blue-400)',
   NONE: 'var(--gray-300)',
+};
+
+// 감정별 soft 배경 / 강조 텍스트색 — 레전드·칩 무드 컬러 시스템.
+// 팔레트에 파스텔 단계가 없어 color-mix 로 흰색과 섞어 연하게 만든다.
+export const FEELING_SOFT_BG: Record<Feeling, string> = {
+  HAPPY: 'color-mix(in srgb, var(--main-500) 22%, white)',
+  NORMAL: 'color-mix(in srgb, var(--mint-500) 20%, white)',
+  SAD: 'color-mix(in srgb, var(--blue-400) 14%, white)',
+  NONE: 'var(--gray-50)',
+};
+
+export const FEELING_FG: Record<Feeling, string> = {
+  HAPPY: 'var(--main-700)',
+  NORMAL: 'var(--mint-900)',
+  SAD: 'var(--blue-500)',
+  NONE: 'var(--gray-500)',
 };
 
 export function formatPercent(ratio: number): string {

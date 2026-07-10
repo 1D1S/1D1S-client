@@ -1,4 +1,4 @@
-import { Text } from '@1d1s/design-system';
+import { Card, SectionHeader, Text } from '@1d1s/design-system';
 import { Skeleton } from '@component/Skeleton';
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
@@ -17,6 +17,8 @@ interface StatisticsCardProps {
   emptyText?: string;
   /** 로딩 스켈레톤 높이(px) */
   skeletonHeight?: number;
+  /** 레이아웃과 동일한 형태의 커스텀 스켈레톤 (지정 시 기본 블록 대체) */
+  skeleton?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -57,36 +59,34 @@ export function StatisticsCard({
   isEmpty,
   emptyText = '데이터가 아직 없어요.',
   skeletonHeight = 160,
+  skeleton,
   children,
 }: StatisticsCardProps): React.ReactElement {
   return (
-    <section
-      className={cn(
-        'rounded-[16px] border border-gray-200 bg-white',
-        'p-5 lg:p-6'
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <Text as="h2" size="body1" weight="bold" className="text-gray-900">
+    <Card radius="lg" className="p-5 lg:p-6">
+      {/* SectionHeader 자체 스케일(max text-lg)로는 마이페이지 헤더
+          (heading2)와 급이 안 맞아 title/subtitle 을 Text 로 직접 지정. */}
+      <SectionHeader
+        title={
+          <Text size="heading2" weight="bold" className="text-gray-900">
             {title}
           </Text>
-          {subtitle ? (
-            <Text
-              as="p"
-              size="caption2"
-              className="mt-0.5 block text-gray-500"
-            >
+        }
+        subtitle={
+          subtitle ? (
+            <Text size="caption1" weight="regular" className="text-gray-500">
               {subtitle}
             </Text>
-          ) : null}
-        </div>
-        {action ? <div className="shrink-0">{action}</div> : null}
-      </div>
+          ) : undefined
+        }
+        action={action}
+      />
 
       <div className="mt-4">
         {isLoading ? (
-          <Skeleton style={{ height: skeletonHeight }} className="w-full" />
+          (skeleton ?? (
+            <Skeleton style={{ height: skeletonHeight }} className="w-full" />
+          ))
         ) : isError ? (
           <StatisticsMessage tone="error">
             {normalizeApiError(error).message}
@@ -94,9 +94,10 @@ export function StatisticsCard({
         ) : isEmpty ? (
           <StatisticsMessage tone="empty">{emptyText}</StatisticsMessage>
         ) : (
-          children
+          // 스켈레톤 → 실데이터 전환 시 mount 되며 페이드 인.
+          <div className="data-fade-in">{children}</div>
         )}
       </div>
-    </section>
+    </Card>
   );
 }

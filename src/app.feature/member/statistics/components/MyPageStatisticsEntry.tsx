@@ -1,8 +1,9 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { Icon, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
-import { BarChart3, ChevronRight } from 'lucide-react';
+// BarChart3 는 DS Icon 에 대응 아이콘이 없어 lucide 유지.
+import { BarChart3 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -36,10 +37,15 @@ export function MyPageStatisticsEntry(): React.ReactElement {
           통계
         </Text>
         <Text as="div" size="caption2" className="text-gray-500">
-          감정 분포·작성 추이·친구 비교
+          감정 분포·작성 추이·친구들과 나
         </Text>
       </div>
-      <ChevronRight className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
+      <Icon
+        name="ChevronRight"
+        size={16}
+        className="shrink-0 text-gray-400"
+        aria-hidden
+      />
     </button>
   );
 }

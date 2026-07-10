@@ -1,6 +1,7 @@
 import { CountUp } from '@component/CountUp';
 import type { MyPageStreak } from '@feature/member/type/member';
 import { cn } from '@module/utils/cn';
+import Link from 'next/link';
 import React from 'react';
 
 import { getLongestGoalStreakSummary } from '../utils/mypageUtils';
@@ -26,6 +27,17 @@ export function MyPageStatSection({
       <MyPageSectionHeader
         title="활동 통계"
         subtitle="나의 활동 기록과 성장 지표"
+        action={
+          <Link
+            href="/mypage/statistics"
+            className={cn(
+              'text-main-700 text-xs font-bold',
+              'transition-opacity hover:opacity-80'
+            )}
+          >
+            더보기 →
+          </Link>
+        }
       />
       <div className={cn('mt-4 grid grid-cols-2 gap-2.5', 'sm:grid-cols-4')}>
         <MyPageStatTile

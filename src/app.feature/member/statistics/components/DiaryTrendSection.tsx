@@ -1,6 +1,7 @@
 'use client';
 
 import { SegmentedControl } from '@1d1s/design-system';
+import { cn } from '@module/utils/cn';
 import React, { useState } from 'react';
 
 import { useDiaryTrend } from '../hooks/useStatisticsQueries';
@@ -20,9 +21,8 @@ const UNIT_OPTIONS = [
  */
 export function DiaryTrendSection(): React.ReactElement {
   const [unit, setUnit] = useState<DiaryTrendUnit>('DAY');
-  const { data, isPending, isSuccess, isError, error } = useDiaryTrend({
-    unit,
-  });
+  const { data, isPending, isPlaceholderData, isSuccess, isError, error } =
+    useDiaryTrend({ unit });
 
   const points = data?.points ?? [];
   const chartData: TrendDatum[] = points.map((p) => ({
@@ -52,10 +52,19 @@ export function DiaryTrendSection(): React.ReactElement {
       emptyText="이 기간에 작성한 일지가 없어요."
       skeletonHeight={160}
     >
-      <TrendBars
-        data={chartData}
-        ariaLabel={`작성 추이 막대 차트, 총 ${totalCount}건`}
-      />
+      {/* 단위 전환 중(placeholder)에는 dim, 새 데이터가 오면
+          opacity 만 부드럽게 복귀 — remount 없는 크로스페이드. */}
+      <div
+        className={cn(
+          'transition-opacity duration-300 ease-out',
+          isPlaceholderData && 'opacity-40'
+        )}
+      >
+        <TrendBars
+          data={chartData}
+          ariaLabel={`작성 추이 막대 차트, 총 ${totalCount}건`}
+        />
+      </div>
     </StatisticsCard>
   );
 }
