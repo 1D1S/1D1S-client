@@ -5,7 +5,7 @@ import ChallengeCard, {
 } from '@component/cards/ChallengeCard';
 import EmptyState from '@component/EmptyState';
 import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
-import { MobileStickyHeader } from '@component/layout/MobileStickyHeader';
+import { MobileHeader } from '@component/layout/MobileHeader';
 import { ChallengeCardSkeletonGrid } from '@component/skeletons/ChallengeCardSkeleton';
 import {
   CategoryIcon,
@@ -87,7 +87,7 @@ export function MyChallengeListScreen(): React.ReactElement {
       title="내 챌린지 전체 보기"
       description="참여 중인 챌린지 전체 목록입니다."
       mobileHeader={
-        <MobileStickyHeader
+        <MobileHeader
           title="내 챌린지 전체 보기"
           onBack={() => router.push('/mypage')}
         />

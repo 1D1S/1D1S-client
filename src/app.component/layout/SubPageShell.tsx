@@ -2,9 +2,9 @@
 
 import { Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
-import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import React from 'react';
+
+import { MobileHeader } from './MobileHeader';
 
 interface SubPageShellProps {
   /** 페이지 타이틀 (모바일 헤더 / 데스크탑 헤더 공통) */
@@ -34,40 +34,9 @@ export function SubPageShell({
   onBack,
   children,
 }: SubPageShellProps): React.ReactElement {
-  const router = useRouter();
-  const handleBack = onBack ?? ((): void => router.back());
-
   return (
     <div className="min-h-screen w-full">
-      {/* 모바일 sticky 헤더 */}
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={handleBack}
-          className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
-          )}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <Text
-          size="body1"
-          weight="extrabold"
-          className="flex-1 tracking-[-0.3px] text-gray-900"
-        >
-          {title}
-        </Text>
-        {headerAction}
-      </div>
+      <MobileHeader title={title} onBack={onBack} right={headerAction} />
 
       <section className="mx-auto w-full max-w-[980px] p-4 lg:p-6">
         {/* 데스크탑 헤더 */}

@@ -1,8 +1,7 @@
 import { Text } from '@1d1s/design-system';
+import { MobileHeader } from '@component/layout/MobileHeader';
 import { cn } from '@module/utils/cn';
 import React from 'react';
-
-import { LegalBackButton } from './LegalBackButton';
 
 interface LegalSection {
   heading: string;
@@ -31,23 +30,7 @@ export function LegalPageShell({
 }: LegalPageShellProps): React.ReactElement {
   return (
     <div className="min-h-screen w-full bg-white">
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <LegalBackButton />
-        <Text
-          size="body1"
-          weight="extrabold"
-          className="flex-1 truncate tracking-[-0.3px] text-gray-900"
-        >
-          {title}
-        </Text>
-      </div>
+      <MobileHeader title={title} />
 
       <section
         className={cn(

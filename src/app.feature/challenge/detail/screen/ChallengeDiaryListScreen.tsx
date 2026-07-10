@@ -3,6 +3,7 @@
 import { Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
+import { MobileHeader } from '@component/layout/MobileHeader';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
@@ -23,7 +24,6 @@ import {
   resolveDiaryImageUrl,
 } from '@module/utils/diaryImageUrl';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import { ArrowLeft } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { useChallengeDiaryListInfinite } from '../hooks/useChallengeDiaryQueries';
@@ -151,34 +151,7 @@ export function ChallengeDiaryListScreen({
         onOpenChange={setShowLoginDialog}
       />
 
-      {/* 모바일 sticky 헤더 — ← + 챌린지 일지 */}
-      <div
-        className={cn(
-          'sticky top-0 z-30 flex items-center gap-3',
-          'h-14-safe pt-safe-top',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
-          'lg:hidden'
-        )}
-      >
-        <button
-          type="button"
-          aria-label="뒤로가기"
-          onClick={handleBack}
-          className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg',
-            'text-gray-700 transition-colors hover:bg-gray-100'
-          )}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <Text
-          size="body1"
-          weight="extrabold"
-          className="flex-1 tracking-[-0.3px] text-gray-900"
-        >
-          챌린지 일지
-        </Text>
-      </div>
+      <MobileHeader title="챌린지 일지" onBack={handleBack} />
 
       <div
         className={cn(
