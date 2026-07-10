@@ -1,12 +1,14 @@
 'use client';
 
-import { MobileHeader } from '@component/layout/MobileHeader';
+import { MobileHeader } from '@1d1s/design-system';
 import { Skeleton } from '@component/Skeleton';
 import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleton';
 import { cn } from '@module/utils/cn';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 export function DiaryDetailSkeleton(): React.ReactElement {
+  const router = useRouter();
   return (
     <div
       className={cn(
@@ -14,7 +16,7 @@ export function DiaryDetailSkeleton(): React.ReactElement {
         'pb-mobile-action-bar-tall lg:pb-0'
       )}
     >
-      <MobileHeader title="일지" />
+      <MobileHeader title="일지" onBack={() => router.back()} />
 
       <div
         className={cn(

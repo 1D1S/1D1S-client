@@ -8,10 +8,10 @@ import {
   DialogDescription,
   DialogFooter,
   DialogTitle,
+  MobileHeader,
   Text,
 } from '@1d1s/design-system';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
-import { MobileHeader } from '@component/layout/MobileHeader';
 import { Form } from '@component/ui/Form';
 import { useChallengeDetail } from '@feature/challenge/board/hooks/useChallengeQueries';
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challengePeriod';
@@ -185,6 +185,7 @@ function ChallengeEditScreenContent({
   onSuccessOpenChange,
   onErrorOpenChange,
 }: ChallengeEditScreenContentProps): React.ReactElement {
+  const router = useRouter();
   const form = useChallengeEditForm(defaults);
 
   const onSubmit = (values: ChallengeEditFormValues): void => {
@@ -210,7 +211,7 @@ function ChallengeEditScreenContent({
 
   return (
     <div className="pb-mobile-action-bar min-h-screen w-full">
-      <MobileHeader title="챌린지 수정하기" />
+      <MobileHeader title="챌린지 수정하기" onBack={() => router.back()} />
 
       <Form {...form}>
         <div

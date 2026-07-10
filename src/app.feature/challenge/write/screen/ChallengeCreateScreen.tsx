@@ -8,10 +8,10 @@ import {
   DialogDescription,
   DialogFooter,
   DialogTitle,
+  MobileHeader,
   Text,
 } from '@1d1s/design-system';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
-import { MobileHeader } from '@component/layout/MobileHeader';
 import { Form } from '@component/ui/Form';
 import { useCreateChallenge } from '@feature/challenge/detail/hooks/useChallengeMutations';
 import { ChallengeCreateBannerSection } from '@feature/challenge/write/components/ChallengeCreateBannerSection';
@@ -30,9 +30,11 @@ import {
 import { formatFormValues } from '@feature/challenge/write/utils/challengeCreatePayload';
 import { cn } from '@module/utils/cn';
 import { Check, Lightbulb, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function ChallengeCreateScreen(): React.ReactElement {
+  const router = useRouter();
   const form = useChallengeCreateForm();
   const createChallenge = useCreateChallenge();
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
@@ -61,7 +63,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
 
   return (
     <div className={cn('pb-mobile-action-bar min-h-screen w-full')}>
-      <MobileHeader title="챌린지 만들기" />
+      <MobileHeader title="챌린지 만들기" onBack={() => router.back()} />
 
       <Form {...form}>
         <div

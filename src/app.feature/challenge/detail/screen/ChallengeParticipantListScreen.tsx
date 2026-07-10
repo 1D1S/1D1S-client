@@ -1,8 +1,12 @@
 'use client';
 
-import { Card, CircleAvatar, Text } from '@1d1s/design-system';
+import {
+  Card,
+  CircleAvatar,
+  MobileHeader,
+  Text,
+} from '@1d1s/design-system';
 import EmptyState from '@component/EmptyState';
-import { MobileHeader } from '@component/layout/MobileHeader';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';

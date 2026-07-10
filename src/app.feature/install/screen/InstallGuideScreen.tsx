@@ -1,8 +1,8 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
-import { MobileHeader } from '@component/layout/MobileHeader';
+import { MobileHeader, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 import { InstallStepCard } from '../components/InstallStepCard';
@@ -70,12 +70,16 @@ const TABS: Array<{ id: GuideTab; label: string }> = [
 
 export default function InstallGuideScreen(): React.ReactElement {
   const [tab, setTab] = useState<GuideTab>('ios');
+  const router = useRouter();
 
   const steps = tab === 'ios' ? IOS_STEPS : ANDROID_STEPS;
 
   return (
     <div className="min-h-screen w-full bg-white">
-      <MobileHeader title="홈 화면에 추가하기" />
+      <MobileHeader
+        title="홈 화면에 추가하기"
+        onBack={() => router.back()}
+      />
 
       <section
         className={cn(

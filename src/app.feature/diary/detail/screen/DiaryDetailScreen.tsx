@@ -1,7 +1,6 @@
 'use client';
 
-import { Button, Text } from '@1d1s/design-system';
-import { MobileHeader } from '@component/layout/MobileHeader';
+import { Button, MobileHeader, Text } from '@1d1s/design-system';
 import LikeBurst from '@component/LikeBurst';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';

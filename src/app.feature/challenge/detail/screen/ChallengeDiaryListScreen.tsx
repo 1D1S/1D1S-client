@@ -1,9 +1,8 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { MobileHeader, Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
-import { MobileHeader } from '@component/layout/MobileHeader';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
