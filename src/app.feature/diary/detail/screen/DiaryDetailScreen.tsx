@@ -1,16 +1,8 @@
 'use client';
 
-import {
-  Button,
-  type CommentNode,
-  CommentThread,
-  Text,
-  TextField,
-} from '@1d1s/design-system';
-import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
+import { Button, Text } from '@1d1s/design-system';
 import LikeBurst from '@component/LikeBurst';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
-import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleton';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { useSafeBack } from '@module/hooks/useSafeBack';
@@ -28,21 +20,18 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useChallengeDetail } from '../../../challenge/board/hooks/useChallengeQueries';
 import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
 import { useSidebar } from '../../../member/hooks/useMemberQueries';
 import { useDiaryDetail } from '../../board/hooks/useDiaryQueries';
 import { DiaryContentRenderer } from '../../shared/components/DiaryContentRenderer';
-import { CommentReportDialog } from '../components/CommentReportDialog';
 import { DiaryAuthorRow } from '../components/DiaryAuthorRow';
+import {
+  DiaryCommentSection,
+  DiaryMobileCommentBar,
+} from '../components/DiaryCommentSection';
 import {
   DiaryConnectedChallengeCard,
   DiaryConnectedChallengeFallback,
@@ -51,10 +40,9 @@ import { DiaryGoalsCard } from '../components/DiaryGoalsCard';
 import { DiaryImageGallery } from '../components/DiaryImageGallery';
 import { DiaryReportDialog } from '../components/DiaryReportDialog';
 import {
-  useCreateCommentReply,
-  useCreateDiaryComment,
-  useDeleteComment,
-} from '../hooks/useDiaryCommentMutations';
+  COMMENT_LIST_PARAMS,
+  REPLIES_MAP_PARAMS,
+} from '../hooks/useCommentTree';
 import {
   useCommentRepliesMap,
   useDiaryComments,
@@ -64,22 +52,15 @@ import {
   useLikeDiary,
   useUnlikeDiary,
 } from '../hooks/useDiaryMutations';
-import { DiaryComment } from '../type/comment';
+import { getDiaryCommentTotal } from '../utils/commentCount';
 import {
   type DiaryDetailViewData,
-  formatCommentDateTime,
   getAuthorInfo,
   mapDiaryToViewData,
   resolveSidebarMemberId,
-  sortCommentsByOldest,
 } from '../utils/diaryViewData';
 
-const COMMENT_LIST_PARAMS = { page: 0, size: 10 } as const;
-const REPLIES_MAP_PARAMS = { page: 0, size: 10 } as const;
-
-function getFeelingTextClass(
-  feeling: DiaryDetailViewData['feeling']
-): string {
+function getFeelingTextClass(feeling: DiaryDetailViewData['feeling']): string {
   if (feeling === 'HAPPY') {
     return 'text-main-800';
   }
@@ -227,465 +208,6 @@ function DiaryOwnerMenu({
   );
 }
 
-interface DiaryCommentSectionProps {
-  diaryId: number;
-  currentMemberId: number | null;
-  currentUserNickname: string | null;
-  isLoggedIn: boolean;
-  onRequireLogin(): void;
-}
-
-function DiaryCommentSection({
-  diaryId,
-  currentMemberId,
-  currentUserNickname,
-  isLoggedIn,
-  onRequireLogin,
-}: DiaryCommentSectionProps): React.ReactElement {
-  const router = useRouter();
-  const commentWrapperRef = useRef<HTMLDivElement>(null);
-  const [commentContent, setCommentContent] = useState('');
-  const [reportTargetCommentId, setReportTargetCommentId] = useState<
-    number | null
-  >(null);
-  const {
-    data: commentsData,
-    isLoading: isCommentsLoading,
-    isError: isCommentsError,
-  } = useDiaryComments(diaryId, COMMENT_LIST_PARAMS);
-  const commentItems = useMemo(
-    () => sortCommentsByOldest(commentsData?.items ?? []),
-    [commentsData?.items]
-  );
-  const commentIds = useMemo(
-    () => commentItems.map((comment) => comment.id),
-    [commentItems]
-  );
-  const repliesMapParams = useMemo(
-    () => ({ ...REPLIES_MAP_PARAMS, enabled: commentIds.length > 0 }),
-    [commentIds.length]
-  );
-  const { data: commentRepliesMap = {} } = useCommentRepliesMap(
-    commentIds,
-    repliesMapParams
-  );
-  const createComment = useCreateDiaryComment(diaryId);
-  const createReply = useCreateCommentReply(diaryId);
-  const deleteComment = useDeleteComment(diaryId);
-  const isCommentPending =
-    createComment.isPending || createReply.isPending || deleteComment.isPending;
-  const isCommentSubmittingRef = useRef(false);
-
-  const mapCommentNode = useCallback(
-    (comment: DiaryComment): CommentNode => {
-      const authorNickname = comment.author.nickname?.trim();
-
-      return {
-        id: String(comment.id),
-        content: comment.content || '삭제된 댓글입니다.',
-        createdAt: formatCommentDateTime(comment.createdAt),
-        author: {
-          id: String(comment.author.id),
-          nickname: comment.author.nickname || '익명',
-          profileImageUrl: comment.author.profileImage ?? undefined,
-        },
-        isAuthor:
-          (currentMemberId !== null && comment.author.id === currentMemberId) ||
-          (currentMemberId === null &&
-            Boolean(authorNickname) &&
-            Boolean(currentUserNickname) &&
-            authorNickname === currentUserNickname),
-      };
-    },
-    [currentUserNickname, currentMemberId]
-  );
-
-  const sortedRepliesMap = useMemo<Map<number, DiaryComment[]>>(() => {
-    const map = new Map<number, DiaryComment[]>();
-    for (const comment of commentItems) {
-      map.set(
-        comment.id,
-        sortCommentsByOldest(commentRepliesMap[comment.id] ?? [])
-      );
-    }
-    return map;
-  }, [commentItems, commentRepliesMap]);
-
-  const threadComments = useMemo<CommentNode[]>(
-    () =>
-      commentItems.map((comment) => ({
-        ...mapCommentNode(comment),
-        replies: (sortedRepliesMap.get(comment.id) ?? []).map(mapCommentNode),
-      })),
-    [commentItems, sortedRepliesMap, mapCommentNode]
-  );
-
-  // DS CommentThread는 onAvatarClick 같은 prop을 노출하지 않아 이벤트 위임으로
-  // 처리. CommentThread 내부 아바타에 붙어 있는 `data-slot="circle-avatar"`
-  // 속성을 후크로 사용하고, 클릭된 아바타의 인덱스(DFS 순서) → flatCommentAuthors
-  // 매핑으로 멤버 ID 를 결정한다. DS 의 data-slot 또는 렌더 순서가 바뀌면 함께
-  // 업데이트해야 한다.
-  const flatCommentAuthors = useMemo<Array<{ id: string }>>(() => {
-    const out: Array<{ id: string }> = [];
-    const walk = (nodes: CommentNode[]): void => {
-      for (const node of nodes) {
-        out.push({ id: node.author.id });
-        if (node.replies && node.replies.length > 0) {
-          walk(node.replies);
-        }
-      }
-    };
-    walk(threadComments);
-    return out;
-  }, [threadComments]);
-
-  // threadComments 와 동일한 DFS 순서로 원본 comment 메타(id, isDeleted)를
-  // 평탄화. DS 가 comment 당 <li> 하나를 렌더하므로 querySelectorAll('li') 의
-  // 문서 순서와 일치한다.
-  const flatCommentMeta = useMemo<
-    Array<{ id: number; isDeleted: boolean }>
-  >(() => {
-    const out: Array<{ id: number; isDeleted: boolean }> = [];
-    for (const comment of commentItems) {
-      out.push({ id: comment.id, isDeleted: comment.isDeleted });
-      const replies = sortedRepliesMap.get(comment.id) ?? [];
-      for (const reply of replies) {
-        out.push({ id: reply.id, isDeleted: reply.isDeleted });
-      }
-    }
-    return out;
-  }, [commentItems, sortedRepliesMap]);
-
-  const deletedCommentIds = useMemo<Set<number>>(() => {
-    const ids = new Set<number>();
-    for (const meta of flatCommentMeta) {
-      if (meta.isDeleted) {
-        ids.add(meta.id);
-      }
-    }
-    return ids;
-  }, [flatCommentMeta]);
-
-  // 대댓글의 대댓글은 허용하지 않으므로, 답글 대상 id 를 항상 원본(루트)
-  // 댓글 id 로 정규화한다. 리프 노드(대댓글) 클릭 시에도 부모(원본) 댓글에
-  // 답글이 달리도록 한다.
-  const replyTargetRootIdMap = useMemo<Map<number, number>>(() => {
-    const map = new Map<number, number>();
-    for (const comment of commentItems) {
-      map.set(comment.id, comment.id);
-      const replies = commentRepliesMap[comment.id] ?? [];
-      for (const reply of replies) {
-        map.set(reply.id, comment.id);
-      }
-    }
-    return map;
-  }, [commentItems, commentRepliesMap]);
-
-  const handleCommentWrapperClickCapture = (
-    event: React.MouseEvent<HTMLDivElement>
-  ): void => {
-    const target = event.target as Element | null;
-    if (!target || !commentWrapperRef.current) {
-      return;
-    }
-
-    const avatar = target.closest('[data-slot="circle-avatar"]');
-    if (avatar) {
-      const avatars = commentWrapperRef.current.querySelectorAll(
-        '[data-slot="circle-avatar"]'
-      );
-      const index = Array.from(avatars).indexOf(avatar);
-      if (index < 0) {
-        return;
-      }
-      const author = flatCommentAuthors[index];
-      if (!author) {
-        return;
-      }
-      const memberId = Number(author.id);
-      if (!Number.isFinite(memberId) || memberId <= 0) {
-        return;
-      }
-      event.stopPropagation();
-      event.preventDefault();
-      router.push(`/member/${memberId}`);
-      return;
-    }
-
-    // 삭제된 댓글 행 클릭은 DS 의 답글 입력 오픈 핸들러로 전달되지 않게 차단.
-    const li = target.closest('li');
-    if (!li || !commentWrapperRef.current.contains(li)) {
-      return;
-    }
-    const allLis = Array.from(commentWrapperRef.current.querySelectorAll('li'));
-    const liIndex = allLis.indexOf(li);
-    if (liIndex < 0) {
-      return;
-    }
-    const meta = flatCommentMeta[liIndex];
-    if (meta?.isDeleted) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-  };
-  const totalCommentCount = useMemo(() => {
-    const baseCommentCount = commentsData?.pageInfo.totalElements ?? 0;
-    const totalReplyCount = commentItems.reduce(
-      (accumulator, comment) =>
-        accumulator +
-        (comment.replyCount > 0
-          ? comment.replyCount
-          : (commentRepliesMap[comment.id]?.length ?? 0)),
-      0
-    );
-
-    return baseCommentCount + totalReplyCount;
-  }, [commentItems, commentRepliesMap, commentsData?.pageInfo.totalElements]);
-
-  const requireAuthAction = (action: () => void): void => {
-    if (!isLoggedIn) {
-      onRequireLogin();
-      return;
-    }
-    action();
-  };
-
-  const handleCreateComment = (): void => {
-    const content = commentContent.trim();
-    if (!content || isCommentPending || isCommentSubmittingRef.current) {
-      return;
-    }
-
-    requireAuthAction(() => {
-      isCommentSubmittingRef.current = true;
-      createComment.mutate(
-        { content },
-        {
-          onSuccess: () => setCommentContent(''),
-          onSettled: () => {
-            isCommentSubmittingRef.current = false;
-          },
-        }
-      );
-    });
-  };
-
-  const handleReplySubmit = (comment: CommentNode, content: string): void => {
-    const clickedCommentId = Number(comment.id);
-    const trimmedContent = content.trim();
-
-    if (!Number.isFinite(clickedCommentId) || clickedCommentId <= 0) {
-      return;
-    }
-
-    if (deletedCommentIds.has(clickedCommentId)) {
-      return;
-    }
-
-    if (!trimmedContent || isCommentPending) {
-      return;
-    }
-
-    const rootCommentId =
-      replyTargetRootIdMap.get(clickedCommentId) ?? clickedCommentId;
-
-    requireAuthAction(() => {
-      createReply.mutate({
-        commentId: rootCommentId,
-        content: trimmedContent,
-      });
-    });
-  };
-
-  const handleDeleteComment = (comment: CommentNode): void => {
-    const targetCommentId = Number(comment.id);
-
-    if (!Number.isFinite(targetCommentId) || targetCommentId <= 0) {
-      return;
-    }
-
-    if (!window.confirm('댓글을 삭제하시겠습니까?')) {
-      return;
-    }
-
-    requireAuthAction(() => {
-      deleteComment.mutate(targetCommentId);
-    });
-  };
-
-  const handleReportComment = (comment: CommentNode): void => {
-    const targetCommentId = Number(comment.id);
-
-    if (!Number.isFinite(targetCommentId) || targetCommentId <= 0) {
-      return;
-    }
-
-    if (deletedCommentIds.has(targetCommentId)) {
-      return;
-    }
-
-    requireAuthAction(() => {
-      setReportTargetCommentId(targetCommentId);
-    });
-  };
-
-  return (
-    <div
-      className={cn(
-        'lg:rounded-[14px] lg:border lg:border-gray-200 lg:bg-white',
-        'lg:sticky lg:top-[78px]'
-      )}
-    >
-      <div className="comment-readable lg:p-5">
-        <Text size="body1" weight="bold" className="mb-3 block text-gray-900">
-          응원 댓글 {totalCommentCount}개
-        </Text>
-
-        {isCommentsLoading ? (
-          <DiaryCommentsSkeleton />
-        ) : isCommentsError ? (
-          <Text size="caption1" weight="regular" className="text-red-600">
-            댓글을 불러오지 못했습니다.
-          </Text>
-        ) : threadComments.length === 0 ? (
-          <Text size="caption1" weight="regular" className="text-gray-500">
-            첫 댓글을 남겨보세요.
-          </Text>
-        ) : (
-          <div
-            ref={commentWrapperRef}
-            onClickCapture={handleCommentWrapperClickCapture}
-            className={cn(
-              'data-fade-in',
-              "[&_[data-slot='circle-avatar']]:cursor-pointer"
-            )}
-          >
-            <CommentThread
-              comments={threadComments}
-              currentUserId={
-                currentMemberId !== null ? String(currentMemberId) : undefined
-              }
-              onReplySubmit={handleReplySubmit}
-              onDelete={handleDeleteComment}
-              onReport={handleReportComment}
-              className={cn(
-                '[&_button]:shrink-0 [&_button]:whitespace-nowrap',
-                '[&_ul]:!pl-1.5'
-              )}
-            />
-          </div>
-        )}
-
-        <CommentReportDialog
-          commentId={reportTargetCommentId}
-          open={reportTargetCommentId !== null}
-          onOpenChange={(isOpen) => {
-            if (!isOpen) {
-              setReportTargetCommentId(null);
-            }
-          }}
-        />
-
-        <div className="mt-3 hidden items-end gap-1.5 sm:flex">
-          <TextField
-            id="diary-comment-content"
-            size="sm"
-            multiline
-            rows={2}
-            className="flex-1"
-            value={commentContent}
-            onChange={(event) => setCommentContent(event.target.value)}
-            placeholder="응원의 말을 남겨주세요"
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                handleCreateComment();
-              }
-            }}
-          />
-          <Button
-            size="sm"
-            className="shrink-0 whitespace-nowrap"
-            onClick={handleCreateComment}
-            disabled={isCommentPending || !commentContent.trim()}
-          >
-            등록
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DiaryMobileCommentBar({
-  diaryId,
-  isLoggedIn,
-  onRequireLogin,
-}: {
-  diaryId: number;
-  isLoggedIn: boolean;
-  onRequireLogin(): void;
-}): React.ReactElement {
-  const [content, setContent] = useState('');
-  const createComment = useCreateDiaryComment(diaryId);
-  const disabled = createComment.isPending || !content.trim();
-  const isSubmittingRef = useRef(false);
-
-  const handleSubmit = (): void => {
-    if (!isLoggedIn) {
-      onRequireLogin();
-      return;
-    }
-    if (disabled || isSubmittingRef.current) {
-      return;
-    }
-    isSubmittingRef.current = true;
-    createComment.mutate(
-      { content: content.trim() },
-      {
-        onSuccess: () => setContent(''),
-        onSettled: () => {
-          isSubmittingRef.current = false;
-        },
-      }
-    );
-  };
-
-  return (
-    <MobileBottomActionBar
-      className={cn(
-        'comment-readable flex items-end gap-2 bg-white px-4 pt-2.5',
-        'sm:hidden'
-      )}
-    >
-      <TextField
-        id="diary-comment-content-mobile"
-        size="sm"
-        multiline
-        rows={2}
-        className="flex-1"
-        value={content}
-        onChange={(event) => setContent(event.target.value)}
-        placeholder="응원의 말을 남겨주세요"
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            handleSubmit();
-          }
-        }}
-      />
-      <Button
-        size="sm"
-        className="shrink-0 whitespace-nowrap"
-        onClick={handleSubmit}
-        disabled={disabled}
-      >
-        등록
-      </Button>
-    </MobileBottomActionBar>
-  );
-}
-
 function DiaryDetailView({
   diaryData,
   onLikeToggle,
@@ -734,22 +256,19 @@ function DiaryDetailView({
     previewCommentIds,
     previewRepliesMapParams
   );
-  const totalCommentCount = useMemo(() => {
-    const baseCommentCount = commentsData?.pageInfo.totalElements ?? 0;
-    const totalReplyCount = (commentsData?.items ?? []).reduce(
-      (accumulator, comment) =>
-        accumulator +
-        (comment.replyCount > 0
-          ? comment.replyCount
-          : (commentRepliesMap[comment.id]?.length ?? 0)),
-      0
-    );
-    return baseCommentCount + totalReplyCount;
-  }, [
-    commentsData?.items,
-    commentsData?.pageInfo.totalElements,
-    commentRepliesMap,
-  ]);
+  const totalCommentCount = useMemo(
+    () =>
+      getDiaryCommentTotal({
+        totalElements: commentsData?.pageInfo.totalElements ?? 0,
+        items: commentsData?.items ?? [],
+        repliesMap: commentRepliesMap,
+      }),
+    [
+      commentsData?.items,
+      commentsData?.pageInfo.totalElements,
+      commentRepliesMap,
+    ]
+  );
 
   const handleShare = async (): Promise<void> => {
     const shareUrl = window.location.href;
@@ -967,9 +486,7 @@ function DiaryDetailView({
                     아래 일정 간격(lg:mt-3.5)을 준다. */}
                 {diaryData.contentImageUrls.length > 0 ? (
                   <div className="lg:mt-3.5">
-                    <DiaryImageGallery
-                      imageUrls={diaryData.contentImageUrls}
-                    />
+                    <DiaryImageGallery imageUrls={diaryData.contentImageUrls} />
                   </div>
                 ) : null}
 
