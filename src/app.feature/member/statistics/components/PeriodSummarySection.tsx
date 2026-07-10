@@ -13,6 +13,7 @@ import {
 } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 import React, { useMemo, useState } from 'react';
 
 import {
@@ -21,8 +22,8 @@ import {
 } from '../hooks/useStatisticsQueries';
 import type { StatisticsPeriodUnit } from '../type/statistics';
 import {
-  FEELING_EMOJI,
   FEELING_LABEL,
+  FEELING_MOOD_IMAGE,
   FEELING_ORDER,
   formatBucketLabel,
   formatDelta,
@@ -121,9 +122,6 @@ export function PeriodSummarySection(): React.ReactElement {
   const [periodKey, setPeriodKey] = useState<string | undefined>(undefined);
 
   const periodsQuery = useStatisticsPeriods(unit);
-  const summaryQuery = useStatisticsSummary({ unit, periodKey });
-
-  const summary = summaryQuery.data;
 
   // start 기준 오름차순 정렬 → 서버 배열 순서와 무관하게 이전/다음 결정.
   const sortedPeriods = useMemo(() => {
@@ -133,8 +131,20 @@ export function PeriodSummarySection(): React.ReactElement {
     );
   }, [periodsQuery.data]);
 
-  // 실제 로드된 기간 키를 우선 사용 (초기 undefined → 서버가 최신 반환).
-  const activeKey = summary?.periodKey ?? periodKey;
+  // periodKey 는 서버 필수 파라미터. 사용자가 특정 기간을 고르기 전에는
+  // 가장 최근 기간(정렬 마지막)을 기본값으로 사용해 요청에 반드시 담는다.
+  const resolvedPeriodKey =
+    periodKey ?? sortedPeriods[sortedPeriods.length - 1]?.key;
+
+  const summaryQuery = useStatisticsSummary({
+    unit,
+    periodKey: resolvedPeriodKey,
+  });
+
+  const summary = summaryQuery.data;
+
+  // 실제 로드된 기간 키를 우선 사용 (없으면 기본 최근 기간).
+  const activeKey = summary?.periodKey ?? resolvedPeriodKey;
   const activeIndex = sortedPeriods.findIndex((item) => item.key === activeKey);
 
   // 버튼 활성은 서버 신호(hasPrev/hasNext)와 실제 목록 내 이동 가능 여부를
@@ -248,13 +258,30 @@ export function PeriodSummarySection(): React.ReactElement {
             </Text>
             <div className="flex flex-wrap gap-1.5">
               {FEELING_ORDER.map((feeling) => {
-                const item = (summary.feelingBreakdown ?? []).find(
-                  (entry) => entry.feeling === feeling
-                );
+                const count =
+                  (summary.feelingBreakdown ?? []).find(
+                    (entry) => entry.feeling === feeling
+                  )?.count ?? 0;
+                // count 0 감정(특히 미선택 NONE)은 칩에서 제외.
+                if (count === 0) {
+                  return null;
+                }
+                const mood = FEELING_MOOD_IMAGE[feeling];
                 return (
                   <Tag key={feeling} tone="gray" size="sm">
-                    {FEELING_EMOJI[feeling]} {FEELING_LABEL[feeling]}{' '}
-                    {item?.count ?? 0}
+                    <span className="inline-flex items-center gap-1">
+                      {mood ? (
+                        <Image
+                          src={mood.src}
+                          alt=""
+                          width={16}
+                          height={16}
+                          aria-hidden
+                          unoptimized
+                        />
+                      ) : null}
+                      {FEELING_LABEL[feeling]} {count}
+                    </span>
                   </Tag>
                 );
               })}

@@ -62,7 +62,9 @@ export function useStatisticsSummary(
   return useQuery({
     queryKey: STATISTICS_QUERY_KEYS.summary(params),
     queryFn: () => statisticsApi.getSummary(params),
-    enabled: isLoggedIn,
+    // periodKey 는 서버 필수 파라미터 — 확정 전(초기 렌더)에는 요청하지
+    // 않아 "필수 파라미터 누락" 400 을 방지한다.
+    enabled: isLoggedIn && Boolean(params.periodKey),
     staleTime: STATISTICS_STALE_TIME,
   });
 }
