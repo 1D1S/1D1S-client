@@ -3,8 +3,8 @@ import { Compass } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
-// 홈(나의 오늘) → 탐색(/explore) 유도 진입점. 바텀 네비에 5번째 탭을 넣지 않고
-// 홈 본문의 카드로 탐색을 연다.
+// 홈(나의 오늘) → 탐색(/explore) 유도 진입점. 상단/바텀 네비의 탐색 탭과
+// 별개로, 홈 본문에서도 카드로 탐색을 바로 열 수 있게 한다.
 export default function HomeExploreEntry(): React.ReactElement {
   return (
     <Link
