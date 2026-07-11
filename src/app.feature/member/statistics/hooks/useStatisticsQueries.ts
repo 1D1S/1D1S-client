@@ -78,15 +78,25 @@ export function useStatisticsSummary(
 }
 
 export function useFriendComparison(
+  friendId: number | null,
   period: FriendComparisonPeriod
 ): UseQueryResult<FriendComparison, Error> {
   const isLoggedIn = useIsLoggedIn();
   return useQuery({
-    queryKey: STATISTICS_QUERY_KEYS.friendComparison(period),
-    queryFn: () => statisticsApi.getFriendComparison(period),
-    enabled: isLoggedIn,
+    queryKey: STATISTICS_QUERY_KEYS.friendComparison({
+      period,
+      friendId: friendId ?? 0,
+    }),
+    queryFn: () =>
+      statisticsApi.getFriendComparison({
+        period,
+        // enabled 가드로 friendId 확정 후에만 호출된다.
+        friendId: friendId as number,
+      }),
+    // 친구가 선택돼야(그리고 로그인돼야) 조회 — friendId 미지정 400 방지.
+    enabled: isLoggedIn && friendId != null && friendId > 0,
     staleTime: STATISTICS_STALE_TIME,
-    // 기간 전환 시 이전 데이터 유지 — 스켈레톤 레이아웃 쉬프트 방지.
+    // 기간/친구 전환 시 이전 데이터 유지 — 스켈레톤 레이아웃 쉬프트 방지.
     placeholderData: keepPreviousData,
   });
 }
