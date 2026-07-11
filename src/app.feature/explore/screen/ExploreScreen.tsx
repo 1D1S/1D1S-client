@@ -1,6 +1,6 @@
 'use client';
 
-import { MobileHeader } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import HomeNoticeStrip from '@feature/home/components/HomeNoticeStrip';
@@ -10,6 +10,7 @@ import HomeRandomDiariesSection from '@feature/home/components/HomeRandomDiaries
 import { useHomeRandomData } from '@feature/home/hooks/useHomeRandomData';
 import { useHomeRandomDiaryLike } from '@feature/home/hooks/useHomeRandomDiaryLike';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { cn } from '@module/utils/cn';
 import { useRouter } from 'next/navigation';
 import React, { useCallback } from 'react';
 
@@ -62,7 +63,25 @@ export default function ExploreScreen(): React.ReactElement {
         title="탐색"
         description="오늘 시작해볼 챌린지와 다른 사람들의 기록을 만나보세요."
         mobileHeader={
-          <MobileHeader title="탐색" onBack={() => router.push('/')} />
+          // 모바일 sticky 헤더 — 탐색. 탐색은 네비 탭이 있는 최상위 화면이므로
+          // 홈/챌린지/일지처럼 뒤로가기 없이 타이틀만 노출한다. 네이티브 쉘은
+          // AppTopNav 가 같은 영역을 차지하므로 글로벌 sticky 차단 룰로 가린다.
+          <div
+            className={cn(
+              'sticky top-0 z-20 flex items-center border-b border-gray-100',
+              'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
+              'backdrop-blur lg:hidden'
+            )}
+          >
+            <Text
+              as="h1"
+              size="heading1"
+              weight="extrabold"
+              className="tracking-[-0.5px] text-gray-900"
+            >
+              탐색
+            </Text>
+          </div>
         }
       >
         <div className="flex flex-col gap-7 pt-2 lg:pt-6">
