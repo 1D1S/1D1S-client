@@ -46,6 +46,8 @@ export interface ChallengeSummary {
   likeInfo: LikeInfo;
   thumbnailImage?: string | null;
   deleted?: boolean;
+  // 종료 후 2일 유예 동안 일지 작성 허용 여부(생성 시 지정).
+  postEndWriteAllowed?: boolean;
   randomParticipants?: RandomParticipant[];
 }
 
@@ -61,6 +63,8 @@ export interface ChallengeListItem {
   participantCnt: number;
   // 인증샷(사진) 필수 여부(서버 JSON 키: photoRequired).
   photoRequired?: boolean;
+  // 종료 후 2일 유예 동안 일지 작성 허용 여부.
+  postEndWriteAllowed?: boolean;
   liked: boolean;
   likeCnt: number;
   // 공개 범위 — OFFICIAL 일 때 카드를 공식 챌린지로 강조한다.
@@ -74,6 +78,8 @@ export interface ChallengeDetail {
   allowMidJoin?: boolean;
   // 인증샷(사진) 필수 여부(서버 JSON 키: photoRequired).
   photoRequired?: boolean;
+  // 종료 후 2일 유예 동안 일지 작성 허용 여부.
+  postEndWriteAllowed?: boolean;
   myStatus: ParticipantStatus;
   participationRate: number;
   goalCompletionRate: number;
@@ -145,6 +151,8 @@ export interface CreateChallengeRequest {
   allowMidJoin: boolean;
   // 인증샷(사진) 필수 여부(서버 JSON 키: photoRequired, 기본 false).
   photoRequired: boolean;
+  // 종료 후 2일 유예 동안 일지 작성 허용 여부(기본 false).
+  postEndWriteAllowed: boolean;
   thumbnailImage?: string;
   // 공개 범위. 생성 시 PUBLIC 또는 PRIVATE 를 보낸다.
   challengeType: ChallengeType;

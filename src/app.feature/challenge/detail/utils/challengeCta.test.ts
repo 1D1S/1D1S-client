@@ -9,7 +9,7 @@ function makeParams(
     isHost: false,
     isParticipating: false,
     isJoinRequestPending: false,
-    isChallengeCurrentlyOngoing: false,
+    canWriteDiary: false,
     isCheckWriteDatesLoading: false,
     canJoinByStatus: false,
     isChallengeAlreadyEnded: false,
@@ -26,7 +26,7 @@ function makeParams(
 describe('buildChallengeCta', () => {
   it('호스트 + 진행 중: 일지 작성 primary + 수정 secondary', () => {
     const cta = buildChallengeCta(
-      makeParams({ isHost: true, isChallengeCurrentlyOngoing: true })
+      makeParams({ isHost: true, canWriteDiary: true })
     );
     expect(cta.label).toBe('일지 작성하기');
     expect(cta.variant).toBe('primary');
@@ -35,7 +35,7 @@ describe('buildChallengeCta', () => {
 
   it('호스트 + 종료: 챌린지 수정 단독 노출', () => {
     const cta = buildChallengeCta(
-      makeParams({ isHost: true, isChallengeCurrentlyOngoing: false })
+      makeParams({ isHost: true, canWriteDiary: false })
     );
     expect(cta.label).toBe('챌린지 수정');
     expect(cta.disabled).toBe(false);
@@ -44,7 +44,7 @@ describe('buildChallengeCta', () => {
 
   it('참여 중 + 진행 아님: 비활성 "진행 중이 아닙니다"', () => {
     const cta = buildChallengeCta(
-      makeParams({ isParticipating: true, isChallengeCurrentlyOngoing: false })
+      makeParams({ isParticipating: true, canWriteDiary: false })
     );
     expect(cta.label).toBe('진행 중이 아닙니다');
     expect(cta.disabled).toBe(true);
@@ -54,7 +54,7 @@ describe('buildChallengeCta', () => {
     const cta = buildChallengeCta(
       makeParams({
         isParticipating: true,
-        isChallengeCurrentlyOngoing: true,
+        canWriteDiary: true,
         isCheckWriteDatesLoading: true,
       })
     );

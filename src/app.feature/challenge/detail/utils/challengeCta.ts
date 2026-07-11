@@ -21,7 +21,8 @@ export interface BuildChallengeCtaParams {
   // 참여 신청 후 호스트 승인 대기 상태 (myStatus === 'PENDING').
   // 뮤테이션의 isPending 과 혼동되지 않도록 명시적으로 명명한다.
   isJoinRequestPending: boolean;
-  isChallengeCurrentlyOngoing: boolean;
+  // 일지 작성 가능 여부(진행 중 또는 종료 후 유예 이내). 작성 CTA 노출 기준.
+  canWriteDiary: boolean;
   isCheckWriteDatesLoading: boolean;
   canJoinByStatus: boolean;
   isChallengeAlreadyEnded: boolean;
@@ -59,7 +60,7 @@ export function buildChallengeCta(
     isHost,
     isParticipating,
     isJoinRequestPending,
-    isChallengeCurrentlyOngoing,
+    canWriteDiary,
     isCheckWriteDatesLoading,
     canJoinByStatus,
     isChallengeAlreadyEnded,
@@ -77,9 +78,9 @@ export function buildChallengeCta(
       onClick: onEditChallenge,
       variant: 'secondary' as const,
     };
-    // 호스트도 참여자이므로 진행 중에는 일지 작성을 우선 CTA 로 노출하고
+    // 호스트도 참여자이므로 작성 가능 기간에는 일지 작성을 우선 CTA 로 노출하고
     // 챌린지 수정은 보조 버튼으로 함께 제공한다.
-    if (isChallengeCurrentlyOngoing) {
+    if (canWriteDiary) {
       return {
         label: '일지 작성하기',
         onClick: onDiaryCreate,
@@ -97,11 +98,9 @@ export function buildChallengeCta(
   }
   if (isParticipating) {
     return {
-      label: isChallengeCurrentlyOngoing
-        ? '일지 작성하기'
-        : '진행 중이 아닙니다',
+      label: canWriteDiary ? '일지 작성하기' : '진행 중이 아닙니다',
       onClick: onDiaryCreate,
-      disabled: !isChallengeCurrentlyOngoing || isCheckWriteDatesLoading,
+      disabled: !canWriteDiary || isCheckWriteDatesLoading,
       variant: 'primary',
       show: true,
     };

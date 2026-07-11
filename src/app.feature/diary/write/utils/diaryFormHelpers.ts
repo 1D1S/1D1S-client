@@ -181,6 +181,7 @@ export function mapSidebarChallengeToChallengeListItem(
     liked: challenge.likeInfo.likedByMe,
     likeCnt: challenge.likeInfo.likeCnt,
     thumbnailImage: challenge.thumbnailImage ?? undefined,
+    postEndWriteAllowed: challenge.postEndWriteAllowed,
   };
 }
 
