@@ -11,6 +11,7 @@ import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useState } from 'react';
 
+import HomeMyChallengesSection from '../components/HomeMyChallengesSection';
 import HomeNoticeStrip from '../components/HomeNoticeStrip';
 import HomePopup from '../components/HomePopup';
 import HomeQuickActions from '../components/HomeQuickActions';
@@ -182,6 +183,15 @@ export default function HomeScreen({
           <HomeNoticeStrip />
           <HomeQuickActions />
         </div>
+
+        {/* 내가 참여한 챌린지 바로가기 — 비로그인 시 로그인 유도 CTA.
+            sidebar 로딩 판정은 스트릭 슬롯과 동일한 신호(isStreakLoading)를
+            재사용해 인증 확정 전에도 동일 높이를 예약한다. */}
+        <HomeMyChallengesSection
+          challenges={sidebar?.challengeList ?? []}
+          isLoggedIn={isLoggedIn}
+          isLoading={isStreakLoading}
+        />
 
         <HomeRandomChallengesSection
           challenges={randomChallenges}
