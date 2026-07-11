@@ -182,8 +182,9 @@ export function ChallengeStatisticsSection({
                   onCellClick={({ index }) => {
                     const point = trend[index];
                     if (point) {
+                      // 상세 탭 뷰의 일지 탭으로 이동해 그 날짜만 필터한다.
                       router.push(
-                        `/challenge/${challengeId}/diary?date=${point.date}`
+                        `/challenge/${challengeId}?tab=diary&date=${point.date}`
                       );
                     }
                   }}

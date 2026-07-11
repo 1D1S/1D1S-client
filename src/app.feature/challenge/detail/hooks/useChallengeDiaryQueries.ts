@@ -14,18 +14,6 @@ import { ChallengeStatistics } from '../type/challengeStatistics';
 // 통계는 자주 바뀌지 않으므로 5분간 stale 유지.
 const CHALLENGE_STATISTICS_STALE_TIME = 5 * 60 * 1000;
 
-export function useChallengeDiaryList(
-  challengeId: number,
-  size?: number
-): UseQueryResult<ChallengeDiaryListResponse, Error> {
-  return useQuery({
-    queryKey: CHALLENGE_QUERY_KEYS.diaries(challengeId, { size }),
-    queryFn: () =>
-      challengeDetailApi.getChallengeDiaries(challengeId, { size }),
-    enabled: Boolean(challengeId),
-  });
-}
-
 // 챌린지 일지 목록 조회 (무한 스크롤). date 지정 시 그 날짜 일지만.
 export function useChallengeDiaryListInfinite(
   challengeId: number,

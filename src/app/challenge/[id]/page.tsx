@@ -1,5 +1,6 @@
+import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSkeleton';
 import { ChallengeDetailScreen } from '@feature/challenge/detail/screen/ChallengeDetailScreen';
-import React from 'react';
+import React, { Suspense } from 'react';
 
 interface ChallengeDetailProps {
   params: Promise<{ id: string }>;
@@ -20,5 +21,10 @@ export default async function ChallengeDetail({
   params,
 }: ChallengeDetailProps): Promise<React.ReactElement> {
   const { id } = await params;
-  return <ChallengeDetailScreen id={id} />;
+  // ChallengeDetailScreen 의 useSearchParams(?tab) CSR bailout 경계.
+  return (
+    <Suspense fallback={<ChallengeDetailSkeleton />}>
+      <ChallengeDetailScreen id={id} />
+    </Suspense>
+  );
 }
