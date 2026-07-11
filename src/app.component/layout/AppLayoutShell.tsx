@@ -45,7 +45,13 @@ const RIGHT_RAIL_HIDDEN_ROUTES = [
 
 // 바텀 네비는 최상위 4개 탭에서만 노출한다. 그 외 서브/상세 화면은
 // 각자 모바일 sticky 헤더(뒤로가기)를 사용하므로 바텀 네비를 숨긴다.
-const BOTTOM_NAV_VISIBLE_ROUTES = ['/', '/challenge', '/diary', '/mypage'];
+const BOTTOM_NAV_VISIBLE_ROUTES = [
+  '/',
+  '/explore',
+  '/challenge',
+  '/diary',
+  '/mypage',
+];
 
 function matchesRoute(pathname: string, routes: readonly string[]): boolean {
   return routes.some(
@@ -63,6 +69,9 @@ function isBottomNavVisible(pathname: string): boolean {
 }
 
 function resolveActiveNavId(pathname: string): string {
+  if (pathname.startsWith('/explore')) {
+    return 'explore';
+  }
   if (pathname.startsWith('/challenge')) {
     return 'challenge';
   }

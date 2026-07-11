@@ -5,7 +5,7 @@ import { ChallengeTrophyIcon } from '@component/ChallengeTrophyIcon';
 import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
-import { BookOpen, User } from 'lucide-react';
+import { BookOpen, Compass, User } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -20,6 +20,7 @@ const NAV_ITEMS: ReadonlyArray<{
   NavIcon?: React.ComponentType<{ className?: string }>;
 }> = [
   { id: 'home', label: '홈', href: '/' },
+  { id: 'explore', label: '탐색', href: '/explore', NavIcon: Compass },
   {
     id: 'challenge',
     label: '챌린지',
