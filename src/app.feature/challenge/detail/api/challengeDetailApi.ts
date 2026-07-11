@@ -17,6 +17,7 @@ import {
   VerifyChallengePasswordResponse,
 } from '../../board/type/challenge';
 import { ChallengeDiaryListResponse } from '../type/challengeDiary';
+import { ChallengeStatistics } from '../type/challengeStatistics';
 
 export const challengeDetailApi = {
   // 챌린지 상세 조회
@@ -138,17 +139,20 @@ export const challengeDetailApi = {
     });
   },
 
-  // 챌린지 일지 목록 조회
+  // 챌린지 일지 목록 조회 (date 지정 시 그 날짜 completedDate 일지만)
   getChallengeDiaries: async (
     challengeId: number,
-    params: { page?: number; size?: number } = {}
+    params: { page?: number; size?: number; date?: string } = {}
   ): Promise<ChallengeDiaryListResponse> => {
-    const requestParams: Record<string, number> = {};
+    const requestParams: Record<string, number | string> = {};
     if (params.page !== undefined) {
       requestParams.page = params.page;
     }
     if (params.size !== undefined) {
       requestParams.size = params.size;
+    }
+    if (params.date) {
+      requestParams.date = params.date;
     }
 
     return requestData<ChallengeDiaryListResponse>(apiClient, {
@@ -157,4 +161,13 @@ export const challengeDetailApi = {
       params: Object.keys(requestParams).length > 0 ? requestParams : undefined,
     });
   },
+
+  // 챌린지 통계 조회 (참여율/완료 목표수/일자별 일지 추이)
+  getChallengeStatistics: async (
+    challengeId: number
+  ): Promise<ChallengeStatistics> =>
+    requestData<ChallengeStatistics>(apiClient, {
+      url: `/challenges/${challengeId}/statistics`,
+      method: 'GET',
+    }),
 };
