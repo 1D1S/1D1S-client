@@ -53,7 +53,9 @@ export function LineTrend({
   const polyline = points.map((p) => `${p.xPct},${p.yPct}`).join(' ');
 
   return (
-    <div className={cn('w-full', className)}>
+    // 좌우 px 인셋 — 끝점(0%/100%) 점·라벨의 절반이 밖으로 잘리지 않게
+    // 선 영역과 라벨 영역에 동일하게 적용한다.
+    <div className={cn('w-full px-3', className)}>
       <div
         className="relative w-full"
         style={{ height: areaHeight }}
@@ -120,16 +122,20 @@ export function LineTrend({
         })}
       </div>
 
-      <div className="mt-2 flex gap-1.5">
-        {data.map((d, i) => (
-          <div
-            key={`${d.bucket}-label-${i}`}
-            className="min-w-0 flex-1 text-center"
+      {/* 날짜 라벨 — 점과 동일한 xPct 에 중앙 정렬로 배치해 정렬을 맞춘다. */}
+      <div className="relative mt-2 h-4">
+        {points.map((p, i) => (
+          <Text
+            key={`${data[i].bucket}-label-${i}`}
+            size="caption5"
+            className={cn(
+              'absolute -translate-x-1/2 whitespace-nowrap',
+              'text-center text-gray-400'
+            )}
+            style={{ left: `${p.xPct}%` }}
           >
-            <Text size="caption5" className="block truncate text-gray-400">
-              {d.label}
-            </Text>
-          </div>
+            {data[i].label}
+          </Text>
         ))}
       </div>
     </div>
