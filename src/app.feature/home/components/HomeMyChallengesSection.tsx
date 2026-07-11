@@ -13,7 +13,6 @@ import {
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challengePeriod';
 import type { SidebarChallenge } from '@feature/member/type/member';
 import { cn } from '@module/utils/cn';
-import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -24,7 +23,6 @@ import {
 
 interface HomeMyChallengesSectionProps {
   challenges: SidebarChallenge[];
-  isLoggedIn: boolean;
   /** sidebar 인증/데이터가 아직 확정되지 않은 구간 — 스켈레톤을 노출한다. */
   isLoading: boolean;
 }
@@ -49,7 +47,6 @@ const SCROLL_ROW = cn(
 
 export default function HomeMyChallengesSection({
   challenges,
-  isLoggedIn,
   isLoading,
 }: HomeMyChallengesSectionProps): React.ReactElement {
   const router = useRouter();
@@ -60,7 +57,7 @@ export default function HomeMyChallengesSection({
       !isChallengeEndedOrArchived(challenge.endDate, challenge.participantCnt)
   );
 
-  const showList = isLoggedIn && !isLoading && ongoing.length > 0;
+  const showList = !isLoading && ongoing.length > 0;
 
   return (
     <section className="w-full">
@@ -71,39 +68,8 @@ export default function HomeMyChallengesSection({
         onActionClick={showList ? () => router.push('/challenge') : undefined}
       />
 
-      {/* 비로그인 CTA — 리스트와 동일 높이 */}
-      {!isLoggedIn ? (
-        <button
-          type="button"
-          onClick={() => router.push(loginUrlFromCurrentLocation())}
-          aria-label="로그인하고 내 챌린지 확인하기"
-          className={cn(
-            'rounded-3 mt-4 flex w-full flex-col justify-center gap-2',
-            ROW_MIN,
-            'from-main-100 via-main-200/40 to-main-200 bg-gradient-to-br',
-            'group cursor-pointer p-6 text-left transition',
-            'hover:brightness-105'
-          )}
-        >
-          <span className="text-[17px] font-extrabold tracking-tight text-gray-900">
-            로그인하고 내 챌린지 확인하기
-          </span>
-          <span className="text-[13px] text-gray-600">
-            참여 중인 챌린지를 홈에서 바로 이어가세요.
-          </span>
-          <span
-            className={cn(
-              'mt-1 inline-flex items-center self-start rounded-full',
-              'bg-brand px-3.5 py-1.5 text-[12px] font-bold text-white'
-            )}
-          >
-            로그인하기 →
-          </span>
-        </button>
-      ) : null}
-
       {/* 로딩 스켈레톤 — 카드와 동일 크기/높이 */}
-      {isLoggedIn && isLoading ? (
+      {isLoading ? (
         <div className={SCROLL_ROW}>
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className={CARD_ITEM}>
@@ -154,8 +120,8 @@ export default function HomeMyChallengesSection({
         </div>
       ) : null}
 
-      {/* 로그인 + 진행 중 0개 빈 상태 — 리스트와 동일 높이 */}
-      {isLoggedIn && !isLoading && ongoing.length === 0 ? (
+      {/* 진행 중 0개 빈 상태 — 리스트와 동일 높이 */}
+      {!isLoading && ongoing.length === 0 ? (
         <div
           className={cn(
             'mt-4 flex w-full flex-col items-center justify-center gap-3',

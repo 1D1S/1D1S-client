@@ -2,12 +2,10 @@
 
 import { CountUp } from '@component/CountUp';
 import { cn } from '@module/utils/cn';
-import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
 interface HomeStreakSlotProps {
-  isLoggedIn: boolean;
   streakDays: number;
   isStreakLoading?: boolean;
 }
@@ -61,164 +59,118 @@ const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 export default function HomeStreakSlot({
-  isLoggedIn,
   streakDays,
   isStreakLoading = false,
 }: HomeStreakSlotProps): React.ReactElement {
   const router = useRouter();
 
-  if (isLoggedIn) {
-    const goal = getStreakGoal(streakDays);
-    const goalLabel = getGoalLabel(goal);
-    const remaining = Math.max(0, goal - streakDays);
-    const progress = goal > 0 ? Math.min(1, streakDays / goal) : 0;
-    const dashOffset = RING_CIRCUMFERENCE * (1 - progress);
-
-    return (
-      <div
-        className={cn(
-          SLOT_BASE,
-          'bg-[linear-gradient(135deg,#fff8f5,#ffe9e0)]',
-          'flex-row items-center gap-3 sm:gap-4'
-        )}
-      >
-        <div
-          className="relative shrink-0"
-          style={{ width: RING_SIZE, height: RING_SIZE }}
-          aria-hidden
-        >
-          <svg
-            width={RING_SIZE}
-            height={RING_SIZE}
-            viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
-            className="-rotate-90"
-          >
-            <circle
-              cx={RING_SIZE / 2}
-              cy={RING_SIZE / 2}
-              r={RING_RADIUS}
-              stroke="#ffd9c8"
-              strokeWidth={RING_STROKE}
-              fill="none"
-            />
-            <circle
-              cx={RING_SIZE / 2}
-              cy={RING_SIZE / 2}
-              r={RING_RADIUS}
-              stroke="var(--main-800)"
-              strokeWidth={RING_STROKE}
-              strokeLinecap="round"
-              fill="none"
-              strokeDasharray={RING_CIRCUMFERENCE}
-              strokeDashoffset={
-                isStreakLoading ? RING_CIRCUMFERENCE : dashOffset
-              }
-              style={{ transition: 'stroke-dashoffset 600ms ease-out' }}
-            />
-          </svg>
-          <span
-            className={cn(
-              'absolute inset-0 flex items-center justify-center',
-              'animate-flame-flicker text-[28px] leading-none'
-            )}
-          >
-            🔥
-          </span>
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="text-[12px] font-bold text-gray-600">
-            현재 스트릭
-          </span>
-          {isStreakLoading ? (
-            <span
-              aria-hidden
-              className={cn(
-                // 실제 숫자 줄(mt-0.5 + text-[26px] leading-none)과 높이를
-                // 맞춰 로드 시 아래 문구가 위로 당겨지지 않게 한다.
-                'skeleton-pulse mt-0.5 inline-block h-[26px] w-32 rounded',
-                'bg-white/70'
-              )}
-            />
-          ) : (
-            <div className="data-fade-in mt-0.5 flex items-baseline gap-1">
-              <span
-                className={cn(
-                  'text-main-800 text-[26px] leading-none font-extrabold',
-                  'tracking-[-0.6px] tabular-nums'
-                )}
-              >
-                <CountUp value={streakDays} />
-              </span>
-              <span className="text-[14px] font-bold text-gray-800">
-                일째 도전 중
-              </span>
-            </div>
-          )}
-          <span
-            className={cn(
-              'mt-1.5 text-[11px] text-gray-500',
-              !isStreakLoading && 'data-fade-in'
-            )}
-          >
-            {isStreakLoading
-              ? ' '
-              : remaining === 0
-                ? `${goalLabel} 달성! 🎉`
-                : `${remaining}일 후 ${goalLabel} 달성! 🎉`}
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => router.push('/diary/create')}
-          aria-label="오늘 일지 기록하기"
-          className={cn(
-            'bg-main-700 hover:bg-main-800 shrink-0 cursor-pointer',
-            'rounded-full px-4 py-2.5 text-[13px] font-bold text-white',
-            'animate-cta-pulse transition'
-          )}
-        >
-          오늘 기록 +
-        </button>
-      </div>
-    );
-  }
+  const goal = getStreakGoal(streakDays);
+  const goalLabel = getGoalLabel(goal);
+  const remaining = Math.max(0, goal - streakDays);
+  const progress = goal > 0 ? Math.min(1, streakDays / goal) : 0;
+  const dashOffset = RING_CIRCUMFERENCE * (1 - progress);
 
   return (
-    <button
-      type="button"
-      onClick={() => router.push(loginUrlFromCurrentLocation())}
-      aria-label="로그인하고 스트릭 시작하기"
+    <div
       className={cn(
         SLOT_BASE,
-        'from-main-100 via-main-200/40 to-main-200 bg-gradient-to-br',
-        'group cursor-pointer flex-col text-left transition',
-        'hover:brightness-105'
+        'bg-[linear-gradient(135deg,#fff8f5,#ffe9e0)]',
+        'flex-row items-center gap-3 sm:gap-4'
       )}
     >
-      <div className="mb-2 flex w-full items-center justify-between">
-        <span className="text-[11px] font-bold text-gray-600">현재 스트릭</span>
-        <span aria-hidden className="animate-flame-flicker text-[18px]">
+      <div
+        className="relative shrink-0"
+        style={{ width: RING_SIZE, height: RING_SIZE }}
+        aria-hidden
+      >
+        <svg
+          width={RING_SIZE}
+          height={RING_SIZE}
+          viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
+          className="-rotate-90"
+        >
+          <circle
+            cx={RING_SIZE / 2}
+            cy={RING_SIZE / 2}
+            r={RING_RADIUS}
+            stroke="#ffd9c8"
+            strokeWidth={RING_STROKE}
+            fill="none"
+          />
+          <circle
+            cx={RING_SIZE / 2}
+            cy={RING_SIZE / 2}
+            r={RING_RADIUS}
+            stroke="var(--main-800)"
+            strokeWidth={RING_STROKE}
+            strokeLinecap="round"
+            fill="none"
+            strokeDasharray={RING_CIRCUMFERENCE}
+            strokeDashoffset={isStreakLoading ? RING_CIRCUMFERENCE : dashOffset}
+            style={{ transition: 'stroke-dashoffset 600ms ease-out' }}
+          />
+        </svg>
+        <span
+          className={cn(
+            'absolute inset-0 flex items-center justify-center',
+            'animate-flame-flicker text-[28px] leading-none'
+          )}
+        >
           🔥
         </span>
       </div>
-      <span
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="text-[12px] font-bold text-gray-600">현재 스트릭</span>
+        {isStreakLoading ? (
+          <span
+            aria-hidden
+            className={cn(
+              // 실제 숫자 줄(mt-0.5 + text-[26px] leading-none)과 높이를
+              // 맞춰 로드 시 아래 문구가 위로 당겨지지 않게 한다.
+              'skeleton-pulse mt-0.5 inline-block h-[26px] w-32 rounded',
+              'bg-white/70'
+            )}
+          />
+        ) : (
+          <div className="data-fade-in mt-0.5 flex items-baseline gap-1">
+            <span
+              className={cn(
+                'text-main-800 text-[26px] leading-none font-extrabold',
+                'tracking-[-0.6px] tabular-nums'
+              )}
+            >
+              <CountUp value={streakDays} />
+            </span>
+            <span className="text-[14px] font-bold text-gray-800">
+              일째 도전 중
+            </span>
+          </div>
+        )}
+        <span
+          className={cn(
+            'mt-1.5 text-[11px] text-gray-500',
+            !isStreakLoading && 'data-fade-in'
+          )}
+        >
+          {isStreakLoading
+            ? ' '
+            : remaining === 0
+              ? `${goalLabel} 달성! 🎉`
+              : `${remaining}일 후 ${goalLabel} 달성! 🎉`}
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={() => router.push('/diary/create')}
+        aria-label="오늘 일지 기록하기"
         className={cn(
-          'text-[15px] leading-tight font-extrabold tracking-tight',
-          'text-gray-900'
+          'bg-main-700 hover:bg-main-800 shrink-0 cursor-pointer',
+          'rounded-full px-4 py-2.5 text-[13px] font-bold text-white',
+          'animate-cta-pulse transition'
         )}
       >
-        로그인하고
-        <br />
-        스트릭 시작하기
-      </span>
-      <span
-        className={cn(
-          'mt-auto inline-flex items-center self-start rounded-full',
-          'bg-brand px-3 py-1 text-[11px] font-bold text-white'
-        )}
-      >
-        로그인하기 →
-      </span>
-    </button>
+        오늘 기록 +
+      </button>
+    </div>
   );
 }
