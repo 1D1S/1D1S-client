@@ -95,6 +95,14 @@ export default function HomeScreen({
     isSidebarFetching ||
     (!hasMounted && initialHasAuthHint);
 
+  // 공지·의견 — 모바일 세로 스택, lg 이상 2열 나란히. 여러 위치에서 재사용.
+  const noticeRow = (
+    <div className="grid gap-3 lg:grid-cols-2">
+      <HomeNoticeStrip />
+      <HomeQuickActions />
+    </div>
+  );
+
   return (
     <>
       <HomePopup enabled={isLoggedIn} />
@@ -104,8 +112,9 @@ export default function HomeScreen({
           'px-5 py-7 lg:px-8 lg:py-10'
         )}
       >
-        {/* 모바일 인사 hero — 데스크탑/태블릿은 시안에 따라 생략 */}
-        <div className="lg:hidden">
+        {/* 모바일 인사 hero — 데스크탑/태블릿은 시안에 따라 생략.
+            인사~스토리 간격이 과해 보여 모바일에서만 gap 을 좁힌다. */}
+        <div className="-mb-3 lg:mb-0 lg:hidden">
           <HomeWarmGreeting />
         </div>
 
@@ -122,6 +131,9 @@ export default function HomeScreen({
               />
             </div>
 
+            {/* 공지·문의는 오늘의 기록 위로 노출한다. */}
+            {noticeRow}
+
             <HomeTodayRecordSection
               challenges={sidebar?.challengeList ?? []}
               isAuthLoading={isStreakLoading}
@@ -131,14 +143,9 @@ export default function HomeScreen({
           <>
             <HomeLoginCta />
             <HomeWarmBanner />
+            {noticeRow}
           </>
         )}
-
-        {/* 공지·의견 — 모바일 세로 스택, lg 이상 2열 나란히 */}
-        <div className="grid gap-3 lg:grid-cols-2">
-          <HomeNoticeStrip />
-          <HomeQuickActions />
-        </div>
 
         {/* 탐색 유도 진입점 — 홈 하단 */}
         <HomeExploreEntry />

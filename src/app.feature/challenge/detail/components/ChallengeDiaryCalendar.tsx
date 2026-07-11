@@ -14,6 +14,8 @@ import { parseLocalDate } from '../utils/challengeStatisticsView';
 interface ChallengeDiaryCalendarProps {
   trend: ChallengeDiaryTrendPoint[];
   onSelectDate(date: string): void;
+  // 선택된 날짜(YYYY-MM-DD). 지정 시 해당 셀을 강조한다.
+  selectedDate?: string;
 }
 
 /**
@@ -24,6 +26,7 @@ interface ChallengeDiaryCalendarProps {
 export function ChallengeDiaryCalendar({
   trend,
   onSelectDate,
+  selectedDate,
 }: ChallengeDiaryCalendarProps): React.ReactElement {
   const days = useMemo<MonthCalendarDay[]>(
     () => trend.map((point) => ({ date: point.date, count: point.count })),
@@ -57,6 +60,7 @@ export function ChallengeDiaryCalendar({
       minDate={trend[0].date}
       maxDate={trend[trend.length - 1].date}
       defaultMonth={defaultMonth}
+      selectedDate={selectedDate}
       onSelectDate={onSelectDate}
     />
   );

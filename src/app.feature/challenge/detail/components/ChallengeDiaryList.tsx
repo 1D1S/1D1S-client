@@ -36,6 +36,8 @@ interface ChallengeDiaryListProps {
   date?: string;
   // "필터 해제" 링크 목적지 — 라우트/탭에 따라 다르다.
   clearHref: string;
+  // 기본 날짜 필터 칩 노출 여부. 상세 탭은 별도 필터 UI 를 쓰므로 끈다.
+  showDefaultFilter?: boolean;
 }
 
 interface ChallengeDiaryListItemProps {
@@ -97,6 +99,7 @@ export function ChallengeDiaryList({
   id,
   date,
   clearHref,
+  showDefaultFilter = true,
 }: ChallengeDiaryListProps): React.ReactElement {
   const challengeId = Number(id);
   // 잘못된 형식은 무시해 쿼리키/요청에 오염이 들어가지 않게 한다.
@@ -167,7 +170,7 @@ export function ChallengeDiaryList({
         onOpenChange={setShowLoginDialog}
       />
 
-      {activeDate ? (
+      {showDefaultFilter && activeDate ? (
         <div className="flex items-center gap-2">
           <Tag tone="brand" size="sm">
             {filterLabel} 일지만 보기

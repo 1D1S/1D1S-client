@@ -3,6 +3,8 @@
 import { MobileHeader } from '@1d1s/design-system';
 import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import HomeNoticeStrip from '@feature/home/components/HomeNoticeStrip';
+import HomeQuickActions from '@feature/home/components/HomeQuickActions';
 import HomeRandomChallengesSection from '@feature/home/components/HomeRandomChallengesSection';
 import HomeRandomDiariesSection from '@feature/home/components/HomeRandomDiariesSection';
 import { useHomeRandomData } from '@feature/home/hooks/useHomeRandomData';
@@ -64,6 +66,12 @@ export default function ExploreScreen(): React.ReactElement {
         }
       >
         <div className="flex flex-col gap-7 pt-2 lg:pt-6">
+          {/* 공지·문의 배너 — 탐색 페이지에서는 맨 위에 노출 */}
+          <div className="grid gap-3 lg:grid-cols-2">
+            <HomeNoticeStrip />
+            <HomeQuickActions />
+          </div>
+
           <HomeRandomChallengesSection
             challenges={officialChallenges}
             isLoading={isOfficialLoading}
