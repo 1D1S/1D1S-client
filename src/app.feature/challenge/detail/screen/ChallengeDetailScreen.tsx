@@ -16,7 +16,17 @@ import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { formatDateISO } from '@module/utils/date';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import { ArrowLeft, CircleAlert, Heart } from 'lucide-react';
+import {
+  ArrowLeft,
+  Calendar,
+  Camera,
+  CircleAlert,
+  Heart,
+  type LucideIcon,
+  PenLine,
+  Target,
+  Users,
+} from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 
@@ -512,19 +522,25 @@ export function ChallengeDetailScreen({
   ];
 
   // 소개 탭 하단 "챌린지 정보" — 히어로/진행률과 겹치지 않는 규칙·옵션 위주.
-  const infoRows: Array<{ label: string; value: string }> = [
-    { label: '기간', value: dateRangeText },
-    { label: '인원', value: participantsLabel },
+  const infoRows: Array<{ label: string; value: string; icon: LucideIcon }> = [
+    { label: '기간', value: dateRangeText, icon: Calendar },
+    { label: '인원', value: participantsLabel, icon: Users },
     {
       label: '방식',
       value: `${formatChallengeTypeLabel(summary.goalType)} 목표 · ${
         isGroupChallenge ? '단체' : '개인'
       }`,
+      icon: Target,
     },
-    { label: '인증샷', value: detail.photoRequired ? '필수' : '자유' },
+    {
+      label: '인증샷',
+      value: detail.photoRequired ? '필수' : '자유',
+      icon: Camera,
+    },
     {
       label: '종료 후 작성',
       value: summary.postEndWriteAllowed ? '허용' : '미허용',
+      icon: PenLine,
     },
   ];
 
@@ -751,15 +767,24 @@ export function ChallengeDetailScreen({
                       >
                         챌린지 정보
                       </Text>
-                      <div className="flex flex-col gap-1.5">
+                      <div
+                        className={cn(
+                          'grid grid-cols-1 gap-1.5 sm:grid-cols-2'
+                        )}
+                      >
                         {infoRows.map((row) => (
                           <div
                             key={row.label}
                             className={cn(
-                              'flex items-center gap-3 rounded-[10px]',
+                              'flex items-center gap-2.5 rounded-[10px]',
                               'bg-gray-50 px-3.5 py-2.5'
                             )}
                           >
+                            <row.icon
+                              className="size-4 shrink-0 text-gray-400"
+                              strokeWidth={2}
+                              aria-hidden
+                            />
                             <Text
                               size="caption1"
                               weight="regular"
@@ -771,10 +796,10 @@ export function ChallengeDetailScreen({
                             </Text>
                             <Text
                               size="caption1"
-                              weight="medium"
+                              weight="semibold"
                               className={cn(
                                 'min-w-0 flex-1 truncate text-right',
-                                'text-gray-700'
+                                'text-gray-900'
                               )}
                             >
                               {row.value}
