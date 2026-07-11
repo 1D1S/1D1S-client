@@ -20,6 +20,7 @@ import { ChallengeCreateGoalSection } from '@feature/challenge/write/components/
 import { ChallengeCreateParticipationSection } from '@feature/challenge/write/components/ChallengeCreateParticipationSection';
 import { ChallengeCreatePeriodSection } from '@feature/challenge/write/components/ChallengeCreatePeriodSection';
 import { ChallengeCreatePhotoSection } from '@feature/challenge/write/components/ChallengeCreatePhotoSection';
+import { ChallengeCreatePostEndWriteSection } from '@feature/challenge/write/components/ChallengeCreatePostEndWriteSection';
 import { ChallengeCreatePreviewCard } from '@feature/challenge/write/components/ChallengeCreatePreviewCard';
 import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/components/ChallengeCreateSuccessDialog';
 import { ChallengeCreateVisibilitySection } from '@feature/challenge/write/components/ChallengeCreateVisibilitySection';
@@ -99,6 +100,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
               <ChallengeCreatePeriodSection />
               <ChallengeCreateVisibilitySection />
               <ChallengeCreatePhotoSection />
+              <ChallengeCreatePostEndWriteSection />
             </div>
 
             <aside className="hidden lg:block">

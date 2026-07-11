@@ -33,6 +33,7 @@ import {
   useChallengeDetail,
 } from '../../board/hooks/useChallengeQueries';
 import {
+  canWriteDiaryForChallenge,
   isChallengeEndedOrArchived,
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
@@ -178,6 +179,12 @@ export function ChallengeDetailScreen({
     summaryEndDate,
     summaryParticipantCnt
   );
+  // 종료됐어도 종료 후 작성 허용 옵션 + 2일 유예 이내면 일지 작성을 살린다.
+  const canWriteDiary = canWriteDiaryForChallenge(
+    summaryStartDate,
+    summaryEndDate,
+    summary?.postEndWriteAllowed
+  );
   const isEndless = isInfiniteChallengeEndDate(summaryEndDate);
   // 챌린지 시작 여부 (시작일이 오늘 이전이면 시작된 것으로 간주)
   const isChallengeStarted =
@@ -188,7 +195,7 @@ export function ChallengeDetailScreen({
     isLoading: isCheckWriteDatesLoading,
   } = useChallengeCheckWriteDates(
     challengeId,
-    isParticipating && isChallengeCurrentlyOngoing
+    isParticipating && canWriteDiary
   );
   const hasWritableRecentDiaryDate = useMemo(
     () => hasSelectableDiaryDate(challengeCheckWriteDateKeys),
@@ -290,7 +297,7 @@ export function ChallengeDetailScreen({
   };
 
   const handleDiaryCreateClick = (): void => {
-    if (!isChallengeCurrentlyOngoing || isCheckWriteDatesLoading) {
+    if (!canWriteDiary || isCheckWriteDatesLoading) {
       return;
     }
 
@@ -425,7 +432,7 @@ export function ChallengeDetailScreen({
     isHost,
     isParticipating,
     isJoinRequestPending,
-    isChallengeCurrentlyOngoing,
+    canWriteDiary,
     isCheckWriteDatesLoading,
     canJoinByStatus,
     isChallengeAlreadyEnded,

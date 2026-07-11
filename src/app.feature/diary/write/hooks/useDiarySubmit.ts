@@ -16,6 +16,10 @@ import {
   PHOTO_REQUIRED_ERROR_CODE,
   PHOTO_REQUIRED_MESSAGE,
 } from '../consts/photoRequired';
+import {
+  POST_END_WRITE_EXPIRED_ERROR_CODE,
+  POST_END_WRITE_EXPIRED_MESSAGE,
+} from '../consts/postEndWrite';
 import type { DiaryImageItem } from '../utils/diaryFormHelpers';
 import {
   getSubmitButtonLabel,
@@ -173,11 +177,14 @@ export function useDiarySubmit({
       router.push('/diary');
     } catch (error) {
       submitSuccessRef.current = false;
-      // 프론트에서 이미 막지만, 백엔드 사진 필수 위반 응답도 방어적으로 처리.
+      // 프론트에서 이미 막지만, 백엔드 도메인 위반 응답도 방어적으로 처리한다.
+      const errorCode = getApiErrorCode(error);
       toast.error(
-        getApiErrorCode(error) === PHOTO_REQUIRED_ERROR_CODE
+        errorCode === PHOTO_REQUIRED_ERROR_CODE
           ? PHOTO_REQUIRED_MESSAGE
-          : '일지 저장 또는 이미지 업로드에 실패했습니다.'
+          : errorCode === POST_END_WRITE_EXPIRED_ERROR_CODE
+            ? POST_END_WRITE_EXPIRED_MESSAGE
+            : '일지 저장 또는 이미지 업로드에 실패했습니다.'
       );
     }
   }, [

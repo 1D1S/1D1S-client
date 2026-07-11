@@ -65,6 +65,7 @@ export function formatFormValues(
       values.participationType === 'INDIVIDUAL' ? false : values.allowMidJoin,
     // 와이어(서버) 키는 photoRequired, 폼 내부 필드명은 isPhotoRequired.
     photoRequired: values.isPhotoRequired,
+    postEndWriteAllowed: values.postEndWriteAllowed,
     thumbnailImage: values.thumbnailImageKey,
     challengeType: values.challengeType,
     // 비공개일 때만 비밀번호를 동봉한다.
