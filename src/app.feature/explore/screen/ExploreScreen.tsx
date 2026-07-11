@@ -11,6 +11,8 @@ import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useRouter } from 'next/navigation';
 import React, { useCallback } from 'react';
 
+import { useExploreOfficialChallenges } from '../hooks/useExploreOfficialChallenges';
+
 // 탐색(/explore): 홈에서 분리한 "둘러보기" 콘텐츠. 배너는 제외하고 오늘 시작해볼
 // 챌린지·오늘의 응원(추천 일지)만 노출한다. 비로그인도 열람 가능하며, 카드
 // 클릭 시 로그인 유도 다이얼로그를 띄운다.
@@ -41,6 +43,13 @@ export default function ExploreScreen(): React.ReactElement {
     diariesErrorMessage,
   } = useHomeRandomData();
 
+  const {
+    officialChallenges,
+    isLoading: isOfficialLoading,
+    isError: isOfficialError,
+    errorMessage: officialErrorMessage,
+  } = useExploreOfficialChallenges();
+
   return (
     <>
       <LoginRequiredDialog
@@ -55,6 +64,19 @@ export default function ExploreScreen(): React.ReactElement {
         }
       >
         <div className="flex flex-col gap-7 pt-2 lg:pt-6">
+          <HomeRandomChallengesSection
+            challenges={officialChallenges}
+            isLoading={isOfficialLoading}
+            isError={isOfficialError}
+            errorMessage={officialErrorMessage}
+            isLoggedIn={isLoggedIn}
+            onMoreClick={handleMoreChallenges}
+            onRequireLogin={handleRequireLogin}
+            title="공식 챌린지"
+            subtitle="1D1S가 엄선한 챌린지에 참여해보세요"
+            emptyTitle="아직 공식 챌린지가 없어요!"
+          />
+
           <HomeRandomChallengesSection
             challenges={randomChallenges}
             isLoading={isChallengesLoading}

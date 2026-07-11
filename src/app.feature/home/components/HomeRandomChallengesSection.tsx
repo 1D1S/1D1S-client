@@ -27,6 +27,10 @@ interface HomeRandomChallengesSectionProps {
   isLoggedIn: boolean;
   onMoreClick(): void;
   onRequireLogin(): void;
+  // 아래는 탐색(/explore)에서 공식 챌린지 섹션으로 재사용하기 위한 표시 옵션.
+  title?: string;
+  subtitle?: string;
+  emptyTitle?: string;
 }
 
 export default function HomeRandomChallengesSection({
@@ -37,13 +41,16 @@ export default function HomeRandomChallengesSection({
   isLoggedIn,
   onMoreClick,
   onRequireLogin,
+  title = '오늘 시작해볼 챌린지',
+  subtitle = '함께 도전할 친구를 찾아보세요',
+  emptyTitle = '표시할 챌린지가 없어요',
 }: HomeRandomChallengesSectionProps): React.ReactElement {
   const showSkeleton = useMinimumLoading(isLoading);
   return (
     <section className="w-full">
       <SectionHeader
-        title="오늘 시작해볼 챌린지"
-        subtitle="함께 도전할 친구를 찾아보세요"
+        title={title}
+        subtitle={subtitle}
         actionLabel="전체보기 →"
         onActionClick={onMoreClick}
         className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
@@ -116,6 +123,7 @@ export default function HomeRandomChallengesSection({
                   isInfinite={isInfinite}
                   goalType={challenge.goalType}
                   isGroup={challenge.participationType === 'GROUP'}
+                  isOfficial={challenge.challengeType === 'OFFICIAL'}
                   isEnded={ended}
                   isPhotoRequired={challenge.photoRequired}
                   participants={challenge.randomParticipants}
@@ -132,11 +140,7 @@ export default function HomeRandomChallengesSection({
         </div>
       ) : null}
       {!showSkeleton && !isError && challenges.length === 0 ? (
-        <EmptyState
-          variant="challenge"
-          title="표시할 챌린지가 없어요"
-          className="py-8"
-        />
+        <EmptyState variant="challenge" title={emptyTitle} className="py-8" />
       ) : null}
     </section>
   );
