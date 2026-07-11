@@ -12,6 +12,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useState } from 'react';
 
 import HomeNoticeStrip from '../components/HomeNoticeStrip';
+import HomePopup from '../components/HomePopup';
 import HomeQuickActions from '../components/HomeQuickActions';
 import HomeRandomChallengesSection from '../components/HomeRandomChallengesSection';
 import HomeRandomDiariesSection from '../components/HomeRandomDiariesSection';
@@ -135,6 +136,7 @@ export default function HomeScreen({
         description={loginDialogDescription}
         returnTo={loginReturnTo}
       />
+      <HomePopup enabled={isLoggedIn} />
       <div
         className={cn(
           'mx-auto flex w-full max-w-[1200px] flex-col gap-7',
