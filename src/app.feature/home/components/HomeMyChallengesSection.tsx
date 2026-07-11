@@ -1,14 +1,19 @@
 'use client';
 
 import { Button, SectionHeader } from '@1d1s/design-system';
-import FadeInImage from '@component/FadeInImage';
-import { Skeleton } from '@component/Skeleton';
-import { CategoryIcon, getCategoryStripeTone } from '@constants/categories';
+import ChallengeCard, {
+  type ChallengeCardGoalType,
+} from '@component/cards/ChallengeCard';
+import { ChallengeCardSkeleton } from '@component/skeletons/ChallengeCardSkeleton';
+import {
+  CategoryIcon,
+  getCategoryLabel,
+  getCategoryStripeTone,
+} from '@constants/categories';
 import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challengePeriod';
 import type { SidebarChallenge } from '@feature/member/type/member';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -24,42 +29,20 @@ interface HomeMyChallengesSectionProps {
   isLoading: boolean;
 }
 
-// 로그인/로딩/빈 상태/CTA 가 모두 같은 높이를 차지하도록 body 영역 높이를
-// 예약해, 인증 상태가 확정되며 콘텐츠가 바뀌어도 레이아웃 시프트가 없게 한다.
-const BODY_MIN = 'min-h-[168px]';
+// 리스트/스켈레톤/빈 상태/비로그인 CTA 4개 상태가 모두 같은 높이를 차지하도록
+// ChallengeCard 실제 높이(썸네일 21/9 + 제목 2줄 클램프 + 고정 메타 ≈ 280px)에
+// 맞춰 영역 높이를 예약한다. 카드보다 살짝 크게 잡아 CTA 가 카드보다 낮아지며
+// 생기는 시프트를 막는다(넉넉한 쪽은 중앙 정렬이라 눈에 띄지 않는다).
+const ROW_MIN = 'min-h-[288px]';
 
-const CARD_ITEM = 'w-[128px] shrink-0';
+// 모바일에서 다음 카드가 살짝 보이도록(peek) 카드 폭을 고정한다.
+const CARD_ITEM = 'w-[260px] shrink-0 snap-start';
 
-function CompactCardThumb({
-  challenge,
-}: {
-  challenge: SidebarChallenge;
-}): React.ReactElement {
-  return (
-    <div className="bg-main-100 relative aspect-[4/3] overflow-hidden rounded-lg">
-      {challenge.thumbnailImage ? (
-        <FadeInImage
-          src={challenge.thumbnailImage}
-          alt={challenge.title}
-          fill
-          sizes="128px"
-          className="object-cover"
-        />
-      ) : (
-        <span
-          className={cn(
-            'absolute inset-0 flex items-center justify-center text-white',
-            '[&_svg]:!h-6 [&_svg]:!w-6'
-          )}
-          style={{ backgroundColor: getCategoryStripeTone(challenge.category) }}
-          aria-hidden
-        >
-          <CategoryIcon category={challenge.category} className="h-6 w-6" />
-        </span>
-      )}
-    </div>
-  );
-}
+const SCROLL_ROW = cn(
+  '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-2',
+  'scrollbar-hide snap-x snap-mandatory',
+  ROW_MIN
+);
 
 export default function HomeMyChallengesSection({
   challenges,
@@ -86,7 +69,7 @@ export default function HomeMyChallengesSection({
         className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
       />
 
-      {/* 비로그인 CTA */}
+      {/* 비로그인 CTA — 리스트와 동일 높이 */}
       {!isLoggedIn ? (
         <button
           type="button"
@@ -94,22 +77,22 @@ export default function HomeMyChallengesSection({
           aria-label="로그인하고 내 챌린지 확인하기"
           className={cn(
             'rounded-3 mt-4 flex w-full flex-col justify-center gap-2',
-            BODY_MIN,
+            ROW_MIN,
             'from-main-100 via-main-200/40 to-main-200 bg-gradient-to-br',
-            'group cursor-pointer p-5 text-left transition',
+            'group cursor-pointer p-6 text-left transition',
             'hover:brightness-105'
           )}
         >
-          <span className="text-[15px] font-extrabold tracking-tight text-gray-900">
+          <span className="text-[17px] font-extrabold tracking-tight text-gray-900">
             로그인하고 내 챌린지 확인하기
           </span>
-          <span className="text-[12px] text-gray-600">
+          <span className="text-[13px] text-gray-600">
             참여 중인 챌린지를 홈에서 바로 이어가세요.
           </span>
           <span
             className={cn(
               'mt-1 inline-flex items-center self-start rounded-full',
-              'bg-brand px-3 py-1 text-[11px] font-bold text-white'
+              'bg-brand px-3.5 py-1.5 text-[12px] font-bold text-white'
             )}
           >
             로그인하기 →
@@ -117,20 +100,12 @@ export default function HomeMyChallengesSection({
         </button>
       ) : null}
 
-      {/* 로딩 스켈레톤 — 리스트와 동일 높이 */}
+      {/* 로딩 스켈레톤 — 카드와 동일 크기/높이 */}
       {isLoggedIn && isLoading ? (
-        <div
-          className={cn(
-            '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-2',
-            'scrollbar-hide',
-            BODY_MIN
-          )}
-        >
+        <div className={SCROLL_ROW}>
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className={CARD_ITEM}>
-              <Skeleton shape="rounded" className="aspect-[4/3] w-full" />
-              <Skeleton shape="text" className="mt-2 h-4 w-4/5" />
-              <Skeleton shape="text" className="mt-1.5 h-3 w-1/2" />
+              <ChallengeCardSkeleton />
             </div>
           ))}
         </div>
@@ -138,13 +113,7 @@ export default function HomeMyChallengesSection({
 
       {/* 로그인 + 진행 중 챌린지 리스트 */}
       {showList ? (
-        <div
-          className={cn(
-            '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-2',
-            'scrollbar-hide data-fade-in',
-            BODY_MIN
-          )}
-        >
+        <div className={cn(SCROLL_ROW, 'data-fade-in')}>
           {ongoing.map((challenge) => {
             const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
             const remainingLabel = formatChallengeRemainingLabel(
@@ -154,41 +123,45 @@ export default function HomeMyChallengesSection({
             );
 
             return (
-              <Link
-                key={challenge.challengeId}
-                href={`/challenge/${challenge.challengeId}`}
-                aria-label={`${challenge.title} 챌린지 보기`}
-                className={cn(CARD_ITEM, 'group')}
-              >
-                <CompactCardThumb challenge={challenge} />
-                <p
-                  className={cn(
-                    'mt-2 line-clamp-2 min-h-[2.4em] text-[13px]',
-                    'leading-tight font-semibold text-gray-800',
-                    'group-hover:text-main-800 transition-colors'
-                  )}
-                >
-                  {challenge.title}
-                </p>
-                <span className="text-brand mt-0.5 block text-[11px] font-bold">
-                  {remainingLabel}
-                </span>
-              </Link>
+              <div key={challenge.challengeId} className={CARD_ITEM}>
+                <ChallengeCard
+                  title={challenge.title}
+                  category={getCategoryLabel(challenge.category)}
+                  categoryIcon={
+                    <CategoryIcon
+                      category={challenge.category}
+                      className="h-3 w-3"
+                    />
+                  }
+                  stripeTone={getCategoryStripeTone(challenge.category)}
+                  imageUrl={challenge.thumbnailImage ?? undefined}
+                  currentParticipantCount={challenge.participantCnt}
+                  maxParticipantCount={challenge.maxParticipantCnt}
+                  remainingLabel={remainingLabel}
+                  startDate={challenge.startDate}
+                  endDate={challenge.endDate}
+                  isInfinite={isInfinite}
+                  goalType={challenge.goalType as ChallengeCardGoalType}
+                  isGroup={challenge.participationType === 'GROUP'}
+                  isEnded={false}
+                  href={`/challenge/${challenge.challengeId}`}
+                />
+              </div>
             );
           })}
         </div>
       ) : null}
 
-      {/* 로그인 + 진행 중 0개 빈 상태 */}
+      {/* 로그인 + 진행 중 0개 빈 상태 — 리스트와 동일 높이 */}
       {isLoggedIn && !isLoading && ongoing.length === 0 ? (
         <div
           className={cn(
             'mt-4 flex w-full flex-col items-center justify-center gap-3',
-            BODY_MIN,
-            'rounded-3 border-main-200 border border-dashed p-5 text-center'
+            ROW_MIN,
+            'rounded-3 border-main-200 border border-dashed p-6 text-center'
           )}
         >
-          <p className="text-[13px] text-gray-600">
+          <p className="text-[14px] text-gray-600">
             아직 참여 중인 챌린지가 없어요.
           </p>
           <Button size="sm" onClick={() => router.push('/challenge')}>
