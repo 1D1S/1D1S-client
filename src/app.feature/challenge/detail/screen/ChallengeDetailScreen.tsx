@@ -93,8 +93,9 @@ function renderTabCountBadge(
   return (
     <span
       className={cn(
-        'inline-flex min-w-[1.125rem] items-center justify-center',
-        'rounded-full px-1 text-[11px] leading-none font-bold',
+        'inline-flex aspect-square h-[1.125rem] min-w-[1.125rem]',
+        'items-center justify-center rounded-full px-1',
+        'text-[11px] leading-none font-bold',
         active ? 'bg-main-100 text-main-800' : 'bg-gray-100 text-gray-500'
       )}
     >

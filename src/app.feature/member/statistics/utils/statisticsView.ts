@@ -129,12 +129,6 @@ function pad2(value: number): string {
   return String(value).padStart(2, '0');
 }
 
-// 로컬 Date → ISO 주차 키(YYYY-Www). 주단위 버킷 집계에 사용한다.
-export function toIsoWeekKey(date: Date): string {
-  const { year, week } = isoWeekParts(date);
-  return `${year}-W${pad2(week)}`;
-}
-
 // buckets 중 "오늘(현재 구간)"이 속한 버킷의 인덱스. 없으면 -1(과거 기간 조회 등).
 // 버킷 포맷을 첫 항목으로 판별한다:
 //   YYYY-MM-DD(일) · YYYY-MM(월) · YYYY-Www(ISO 주).
