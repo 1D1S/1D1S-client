@@ -43,6 +43,7 @@ import { ChallengeRulesCard } from '../components/ChallengeRulesCard';
 import { ChallengeStatisticsSection } from '../components/ChallengeStatisticsSection';
 import { ExpandableText } from '../components/ExpandableText';
 import { PendingMemberItem } from '../components/PendingMemberItem';
+import { useChallengeStatistics } from '../hooks/useChallengeDiaryQueries';
 import { useChallengeGoalEditors } from '../hooks/useChallengeGoalEditors';
 import {
   useAcceptParticipant,
@@ -84,6 +85,24 @@ function isChallengeTab(value: string | null): value is ChallengeTabId {
   return value !== null && ids.includes(value);
 }
 
+// 탭 라벨 옆 카운트 배지 — 원형 배경. 활성 탭은 브랜드 톤.
+function renderTabCountBadge(
+  value: number,
+  active: boolean
+): React.ReactElement {
+  return (
+    <span
+      className={cn(
+        'inline-flex min-w-[1.125rem] items-center justify-center',
+        'rounded-full px-1 text-[11px] leading-none font-bold',
+        active ? 'bg-main-100 text-main-800' : 'bg-gray-100 text-gray-500'
+      )}
+    >
+      {value}
+    </span>
+  );
+}
+
 export function ChallengeDetailScreen({
   id,
 }: ChallengeDetailScreenProps): React.ReactElement {
@@ -112,6 +131,12 @@ export function ChallengeDetailScreen({
 
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
   const showSkeleton = useMinimumLoading(isLoading);
+
+  // 일지 탭 배지용 총 일지 수. 통계 쿼리(소개 탭과 공유·캐시)의 일자별 합계다.
+  const { data: statsData } = useChallengeStatistics(challengeId);
+  const diaryCount = statsData
+    ? statsData.diaryTrend.reduce((sum, point) => sum + point.count, 0)
+    : undefined;
 
   const joinChallenge = useJoinChallenge();
   const leaveChallenge = useLeaveChallenge();
@@ -464,11 +489,24 @@ export function ChallengeDetailScreen({
 
   const tabItems = [
     { id: 'overview', label: '소개' },
-    { id: 'diary', label: '일지' },
+    {
+      id: 'diary',
+      label: '일지',
+      badge:
+        diaryCount !== undefined
+          ? renderTabCountBadge(diaryCount, activeTab === 'diary')
+          : undefined,
+    },
     {
       id: 'participants',
       label: '참여자',
-      badge: summaryParticipantCnt > 0 ? summaryParticipantCnt : undefined,
+      badge:
+        summaryParticipantCnt > 0
+          ? renderTabCountBadge(
+              summaryParticipantCnt,
+              activeTab === 'participants'
+            )
+          : undefined,
     },
   ];
 
@@ -712,7 +750,7 @@ export function ChallengeDetailScreen({
                       >
                         챌린지 정보
                       </Text>
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      <div className="flex flex-col gap-1.5">
                         {infoRows.map((row) => (
                           <div
                             key={row.label}
@@ -723,15 +761,20 @@ export function ChallengeDetailScreen({
                           >
                             <Text
                               size="caption1"
-                              weight="medium"
-                              className="w-16 shrink-0 text-gray-400"
+                              weight="regular"
+                              className={cn(
+                                'shrink-0 whitespace-nowrap text-gray-400'
+                              )}
                             >
                               {row.label}
                             </Text>
                             <Text
                               size="caption1"
-                              weight="bold"
-                              className="min-w-0 flex-1 break-keep text-gray-800"
+                              weight="medium"
+                              className={cn(
+                                'min-w-0 flex-1 truncate text-right',
+                                'text-gray-700'
+                              )}
                             >
                               {row.value}
                             </Text>
