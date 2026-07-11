@@ -3,8 +3,8 @@
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
 import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
-import { authStorage } from '@module/utils/auth';
-import { useEffect, useMemo, useReducer, useSyncExternalStore } from 'react';
+import { useHasSessionHint } from '@module/hooks/useHasSessionHint';
+import { useMemo, useSyncExternalStore } from 'react';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 const ENDLESS_MIN_YEAR = 2090;
@@ -108,61 +108,12 @@ export function useAuthLayoutState(): AuthLayoutState {
   );
   const now = useSyncExternalStore(NOOP_SUBSCRIBE, getMountTimestamp, () => 0);
 
-  // 콜드 PWA(사파리 홈화면 앱) 런치에서 cookie/localStorage 복원이 한 박자
-  // 늦으면 첫 렌더의 authStorage.hasTokens() 가 false 로 굳어 useSidebar 쿼리가
-  // 비활성 상태로 멈춘다 → 로그인 사용자가 게스트로 보이고, 앱을 재실행하면
-  // 정상화된다. mount 직후 짧게(최대 ~0.9s) 재확인해 토큰이 보이면 re-render 를
-  // 유발, 아래 useSidebar 의 enabled(=hasTokens()) 를 다시 평가시킨다.
-  // (데이터 페칭은 그대로 TanStack Query 가 담당한다.)
-  const [, revalidateAuth] = useReducer((count: number) => count + 1, 0);
-  useEffect(() => {
-    let attempts = 0;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const recheck = (): void => {
-      attempts += 1;
-      if (authStorage.hasTokens()) {
-        revalidateAuth();
-        return;
-      }
-      if (attempts < 6) {
-        timer = setTimeout(recheck, 150);
-      }
-    };
-    if (!authStorage.hasTokens()) {
-      timer = setTimeout(recheck, 150);
-    }
-
-    // 재접속(PWA 백그라운드 복귀 / BFCache 복원 / 탭 재포커스) 시 토큰 힌트를
-    // 다시 평가한다. 레이아웃은 soft navigation 으로 재마운트되지 않으므로 이
-    // 이벤트가 없으면, 최초 폴링이 끝난 뒤 게스트 오인이 새로고침 전까지
-    // 고착된다(= "다시 접속하면 로그아웃처럼 보이는" 문제). hasTokens() 가
-    // 다시 true 로 보이면 re-render 를 유발해 useSidebar 의 enabled(=hasTokens)
-    // 를 재평가시켜 비활성 상태의 쿼리를 되살린다.
-    const revalidateIfAuthed = (): void => {
-      if (authStorage.hasTokens()) {
-        revalidateAuth();
-      }
-    };
-    const onVisibilityChange = (): void => {
-      if (document.visibilityState === 'visible') {
-        revalidateIfAuthed();
-      }
-    };
-    window.addEventListener('focus', revalidateIfAuthed);
-    window.addEventListener('pageshow', revalidateIfAuthed);
-    document.addEventListener('visibilitychange', onVisibilityChange);
-
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-      window.removeEventListener('focus', revalidateIfAuthed);
-      window.removeEventListener('pageshow', revalidateIfAuthed);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-    };
-  }, []);
-
-  const hasTokenHint = hasMounted && authStorage.hasTokens();
+  // 로그인 힌트 변화를 구독한다. 재발급/미들웨어가 세션을 복구해 힌트가
+  // 나타나면(콜드 PWA 런치의 지연 복원, BFCache 복귀, 탭 재포커스, SPA 이동 중
+  // 재발급 성공 포함) 즉시 재렌더돼 useSidebar 의 enabled(=hasTokens) 가
+  // 재평가된다. 예전엔 폴링 reducer 로 흉내냈으나, 이벤트 기반 구독으로 대체해
+  // 전체 새로고침(=미들웨어 재실행) 없이도 로그인 상태를 스스로 복구한다.
+  const hasTokenHint = useHasSessionHint();
 
   const {
     data: sidebarData,

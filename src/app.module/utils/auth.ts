@@ -22,7 +22,26 @@ function hasReadableAccessTokenCookie(): boolean {
   );
 }
 
+// 로그인 힌트(쿠키/localStorage) 변화를 구독자에게 알린다. 힌트 값은 JS 에서
+// 반응형이 아니라, markAuthenticated/clearTokens 로 바뀌어도 이를 읽는
+// 컴포넌트가 저절로 re-render 되지 않는다. 그 결과 미들웨어/재발급이 세션을
+// 복구해도(=힌트 set) useSidebar 의 enabled(=hasTokens) 가 재평가되지 않아
+// 전체 새로고침 전까지 로그아웃처럼 보였다. useSyncExternalStore 구독으로
+// 힌트 변화를 즉시 UI 에 반영한다. (useHasSessionHint 참조)
+type AuthListener = () => void;
+const authListeners = new Set<AuthListener>();
+const notifyAuthChange = (): void => {
+  authListeners.forEach((listener) => listener());
+};
+
 export const authStorage = {
+  subscribe: (listener: AuthListener): (() => void) => {
+    authListeners.add(listener);
+    return () => {
+      authListeners.delete(listener);
+    };
+  },
+
   markAuthenticated: (): void => {
     if (typeof window === 'undefined') {
       return;
@@ -37,6 +56,7 @@ export const authStorage = {
       sameSite: 'lax',
       secure: window.location.protocol === 'https:',
     });
+    notifyAuthChange();
   },
 
   // 인증 상태 플래그 제거 (실제 토큰은 백엔드 Set-Cookie/HTTP-only로 관리)
@@ -48,6 +68,7 @@ export const authStorage = {
     // 저장되지 않은 잔존 쿠키를 완전히 정리하기 위함)
     Cookies.remove(AUTH_HINT_COOKIE);
     Cookies.remove(AUTH_HINT_COOKIE, { domain: AUTH_HINT_COOKIE_DOMAIN });
+    notifyAuthChange();
   },
 
   /**
