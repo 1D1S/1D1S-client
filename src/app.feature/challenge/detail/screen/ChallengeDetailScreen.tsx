@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, Stripe, Tag, Text } from '@1d1s/design-system';
+import { Button, Card, Stripe, Tabs, Tag, Text } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import LikeBurst from '@component/LikeBurst';
@@ -8,10 +8,6 @@ import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
-import {
-  useLikeDiary,
-  useUnlikeDiary,
-} from '@feature/diary/detail/hooks/useDiaryMutations';
 import { resolveSidebarMemberId } from '@feature/diary/detail/utils/diaryViewData';
 import { getApiErrorCode, normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
@@ -22,8 +18,7 @@ import { formatDateISO } from '@module/utils/date';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft, CircleAlert, Heart } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
@@ -40,7 +35,7 @@ import {
 } from '../../board/utils/challengePeriod';
 import { ChallengeDetailCompactHeader } from '../components/ChallengeDetailCompactHeader';
 import { ChallengeDetailHero } from '../components/ChallengeDetailHero';
-import { ChallengeDiaryGrid } from '../components/ChallengeDiaryGrid';
+import { ChallengeDiaryList } from '../components/ChallengeDiaryList';
 import { ChallengeGoalModals } from '../components/ChallengeGoalModals';
 import { ChallengeLeaderboardCard } from '../components/ChallengeLeaderboardCard';
 import { ChallengePasswordDialog } from '../components/ChallengePasswordDialog';
@@ -49,7 +44,6 @@ import { ChallengeRulesCard } from '../components/ChallengeRulesCard';
 import { ChallengeStatisticsSection } from '../components/ChallengeStatisticsSection';
 import { ExpandableText } from '../components/ExpandableText';
 import { PendingMemberItem } from '../components/PendingMemberItem';
-import { useChallengeDiaryList } from '../hooks/useChallengeDiaryQueries';
 import { useChallengeGoalEditors } from '../hooks/useChallengeGoalEditors';
 import {
   useAcceptParticipant,
@@ -62,7 +56,6 @@ import {
 } from '../hooks/useChallengeMutations';
 import { useChallengePendingParticipants } from '../hooks/useChallengeParticipantQueries';
 import { usePokeMembers } from '../hooks/usePokeMembers';
-import { ChallengeDiaryItem } from '../type/challengeDiary';
 import { buildHeroGradient, getCategoryAccent } from '../utils/challengeAccent';
 import { buildChallengeCta } from '../utils/challengeCta';
 import {
@@ -83,13 +76,40 @@ interface ChallengeDetailScreenProps {
 // 이 신호를 받으면 비밀번호 다이얼로그를 목표 입력 단계로 전환한다.
 const FREE_GOAL_REQUIRED_CODE = 'CHALLENGE_022';
 
+// 상세 탭 뷰 — URL ?tab= 으로 보존. 기본은 개요.
+const CHALLENGE_TAB_IDS = ['overview', 'diary', 'stats', 'participants'] as const;
+type ChallengeTabId = (typeof CHALLENGE_TAB_IDS)[number];
+
+function isChallengeTab(value: string | null): value is ChallengeTabId {
+  const ids: readonly string[] = CHALLENGE_TAB_IDS;
+  return value !== null && ids.includes(value);
+}
+
 export function ChallengeDetailScreen({
   id,
 }: ChallengeDetailScreenProps): React.ReactElement {
   const challengeId = Number(id);
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   // 알림 딥링크/콜드 스타트로 진입해 history 가 없을 때 챌린지 목록으로 보낸다.
   const handleBack = useSafeBack('/challenge');
+
+  const tabParam = searchParams.get('tab');
+  const activeTab: ChallengeTabId = isChallengeTab(tabParam)
+    ? tabParam
+    : 'overview';
+  const diaryDate = searchParams.get('date') ?? undefined;
+
+  const handleTabChange = (nextId: string): void => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', nextId);
+    // 일지 탭을 떠나면 날짜 필터를 흘려보내지 않는다.
+    if (nextId !== 'diary') {
+      params.delete('date');
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
   const showSkeleton = useMinimumLoading(isLoading);
@@ -101,8 +121,6 @@ export function ChallengeDetailScreen({
   const acceptParticipant = useAcceptParticipant();
   const rejectParticipant = useRejectParticipant();
   const verifyChallengePassword = useVerifyChallengePassword();
-  const likeDiary = useLikeDiary();
-  const unlikeDiary = useUnlikeDiary();
 
   const isLoggedIn = useIsLoggedIn();
   const { data: sidebarData } = useSidebar();
@@ -131,9 +149,6 @@ export function ChallengeDetailScreen({
     useState(false);
   // 비공개 챌린지가 자유 목표로 확인돼 목표 입력이 필요한지.
   const [passwordNeedsGoals, setPasswordNeedsGoals] = useState(false);
-
-  const { data: challengeDiariesData, isLoading: isDiariesLoading } =
-    useChallengeDiaryList(challengeId, 5);
 
   const summary = data?.challengeSummary;
   const detail = data?.challengeDetail;
@@ -219,8 +234,6 @@ export function ChallengeDetailScreen({
     isGroupChallenge &&
     !isChallengeAlreadyEnded &&
     !isMidJoinBlocked;
-  const previewDiaries = challengeDiariesData?.items ?? [];
-  const hasMoreDiaries = challengeDiariesData?.pageInfo.hasNextPage ?? false;
 
   const isActionLoading =
     joinChallenge.isPending ||
@@ -332,17 +345,6 @@ export function ChallengeDetailScreen({
     });
   };
 
-  const handleDiaryLikeToggle = (diary: ChallengeDiaryItem): void => {
-    if (likeDiary.isPending || unlikeDiary.isPending) {
-      return;
-    }
-    if (diary.likeInfo.likedByMe) {
-      unlikeDiary.mutate(diary.id);
-    } else {
-      likeDiary.mutate(diary.id);
-    }
-  };
-
   const handleVerifyPassword = (password: string, goals: string[]): void => {
     const data = goals.length > 0 ? { password, goals } : { password };
     verifyChallengePassword.mutate(
@@ -445,6 +447,30 @@ export function ChallengeDetailScreen({
     onJoin: handleJoinChallenge,
   });
 
+  const rulesEditLabel =
+    isHost && !isChallengeStarted && !isFreeChallenge
+      ? '수정'
+      : !isHost && isFreeChallenge && isParticipating && !isChallengeStarted
+        ? '내 목표 수정'
+        : undefined;
+  const rulesOnEdit =
+    isHost && !isChallengeStarted && !isFreeChallenge
+      ? goalEditors.openEditChallengeGoalsModal
+      : !isHost && isFreeChallenge && isParticipating && !isChallengeStarted
+        ? goalEditors.openEditGoalModal
+        : undefined;
+
+  const tabItems = [
+    { id: 'overview', label: '개요' },
+    { id: 'diary', label: '일지' },
+    { id: 'stats', label: '통계' },
+    {
+      id: 'participants',
+      label: '참여자',
+      badge: summaryParticipantCnt > 0 ? summaryParticipantCnt : undefined,
+    },
+  ];
+
   return (
     <>
       <ChallengeDetailCompactHeader
@@ -468,7 +494,7 @@ export function ChallengeDetailScreen({
           description="최근 3일 동안 작성 가능한 날짜를 모두 사용했습니다."
         />
 
-        {/* 히어로 + 모바일 floating 뒤로가기 */}
+        {/* 히어로 + 모바일 floating 뒤로가기 — 탭 위에 항상 고정 노출 */}
         <div className="relative">
           <ChallengeDetailHero
             title={summary.title}
@@ -501,7 +527,7 @@ export function ChallengeDetailScreen({
           </button>
         </div>
 
-        {/* 모바일 컨텐츠 헤더 — 히어로 위로 오버레이 */}
+        {/* 모바일 컨텐츠 헤더 — 히어로 위로 오버레이. 탭 위 고정 노출. */}
         <div
           className={cn(
             'relative z-10 -mt-5 rounded-t-[20px] bg-white px-5 pt-5 pb-1',
@@ -649,110 +675,100 @@ export function ChallengeDetailScreen({
               'lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-7'
             )}
           >
-            {/* 메인 콘텐츠: 소개 → 목표 → 참여자 일지 */}
-            <div className="flex min-w-0 flex-col gap-3.5 lg:gap-4">
-              {detail.description?.trim() ? (
-                <section
-                  className={cn(
-                    'rounded-[14px] border border-gray-200 bg-white',
-                    'p-4 sm:p-5 lg:p-6'
-                  )}
-                >
-                  <Text
-                    as="h2"
-                    size="heading2"
-                    weight="extrabold"
-                    className="mb-3 block tracking-[-0.3px] text-gray-900"
-                  >
-                    챌린지 소개
-                  </Text>
-                  <ExpandableText>{detail.description}</ExpandableText>
-                  <div className="mt-3 hidden flex-wrap items-center gap-1.5 lg:flex">
-                    <Tag tone="brand" size="sm">
-                      {getCategoryLabel(summary.category)}
-                    </Tag>
-                    <Tag tone="gray" size="sm">
-                      {formatChallengeTypeLabel(summary.goalType)}
-                    </Tag>
-                  </div>
-                </section>
-              ) : null}
-
-              <ChallengeRulesCard
-                goals={goals.map((goal) => goal.content)}
-                isFreeChallenge={isFreeChallenge}
-                editLabel={
-                  isHost && !isChallengeStarted && !isFreeChallenge
-                    ? '수정'
-                    : !isHost &&
-                        isFreeChallenge &&
-                        isParticipating &&
-                        !isChallengeStarted
-                      ? '내 목표 수정'
-                      : undefined
-                }
-                onEdit={
-                  isHost && !isChallengeStarted && !isFreeChallenge
-                    ? goalEditors.openEditChallengeGoalsModal
-                    : !isHost &&
-                        isFreeChallenge &&
-                        isParticipating &&
-                        !isChallengeStarted
-                      ? goalEditors.openEditGoalModal
-                      : undefined
-                }
-              />
-
-              <section
-                className={cn(
-                  'rounded-[14px] border border-gray-200 bg-white',
-                  'p-4 sm:p-5 lg:p-6'
-                )}
-              >
-                <div className="mb-3 flex items-baseline justify-between gap-2">
-                  <Text
-                    as="h2"
-                    size="heading2"
-                    weight="extrabold"
-                    className="tracking-[-0.3px] text-gray-900"
-                  >
-                    참여자 일지{' '}
-                    <Text
-                      size="caption1"
-                      weight="regular"
-                      className="ml-1 text-gray-500"
-                    >
-                      · 최근 {Math.min(previewDiaries.length, 4)}개
-                    </Text>
-                  </Text>
-                  {hasMoreDiaries ? (
-                    <Link
-                      href={`/challenge/${id}/diary`}
-                      className={cn(
-                        'text-main-800 text-[12px] font-semibold',
-                        'hover:underline'
-                      )}
-                    >
-                      전체 보기 →
-                    </Link>
-                  ) : null}
-                </div>
-                <ChallengeDiaryGrid
-                  diaries={previewDiaries.slice(0, 4)}
-                  isLoading={isDiariesLoading}
-                  onLikeToggle={handleDiaryLikeToggle}
-                  gridClassName={cn(
-                    'scrollbar-hide flex gap-3 overflow-x-auto',
-                    'py-2 sm:gap-2.5'
-                  )}
-                  itemClassName="w-[240px] shrink-0 sm:w-[260px]"
+            {/* 메인 콘텐츠: 탭(개요 / 일지 / 통계 / 참여자) */}
+            <div className="flex min-w-0 flex-col">
+              <div className="scrollbar-hide -mx-1 overflow-x-auto px-1">
+                <Tabs
+                  activeId={activeTab}
+                  onChange={handleTabChange}
+                  items={tabItems}
                 />
-              </section>
+              </div>
 
-              <ChallengeStatisticsSection challengeId={challengeId} />
+              <div className="mt-4 flex min-w-0 flex-col gap-3.5 lg:gap-4">
+                {activeTab === 'overview' ? (
+                  <>
+                    {detail.description?.trim() ? (
+                      <section
+                        className={cn(
+                          'rounded-[14px] border border-gray-200 bg-white',
+                          'p-4 sm:p-5 lg:p-6'
+                        )}
+                      >
+                        <Text
+                          as="h2"
+                          size="heading2"
+                          weight="extrabold"
+                          className="mb-3 block tracking-[-0.3px] text-gray-900"
+                        >
+                          챌린지 소개
+                        </Text>
+                        <ExpandableText>{detail.description}</ExpandableText>
+                        <div className="mt-3 hidden flex-wrap items-center gap-1.5 lg:flex">
+                          <Tag tone="brand" size="sm">
+                            {getCategoryLabel(summary.category)}
+                          </Tag>
+                          <Tag tone="gray" size="sm">
+                            {formatChallengeTypeLabel(summary.goalType)}
+                          </Tag>
+                        </div>
+                      </section>
+                    ) : null}
+
+                    <ChallengeRulesCard
+                      goals={goals.map((goal) => goal.content)}
+                      isFreeChallenge={isFreeChallenge}
+                      editLabel={rulesEditLabel}
+                      onEdit={rulesOnEdit}
+                    />
+                  </>
+                ) : null}
+
+                {activeTab === 'diary' ? (
+                  <ChallengeDiaryList
+                    id={id}
+                    date={diaryDate}
+                    clearHref={`/challenge/${id}?tab=diary`}
+                  />
+                ) : null}
+
+                {activeTab === 'stats' ? (
+                  <ChallengeStatisticsSection challengeId={challengeId} />
+                ) : null}
+
+                {activeTab === 'participants' ? (
+                  <ChallengeLeaderboardCard
+                    entries={activeParticipants.map((participant) => ({
+                      participantId: participant.participantId,
+                      memberId: participant.memberId,
+                      nickname: participant.nickname,
+                      profileImg: participant.profileImg,
+                      isHost: participant.status === 'HOST',
+                      // 고정 목표는 전원 공통이라 참여자별로 볼 의미가 없다.
+                      goals: isFreeChallenge ? participant.goals : undefined,
+                      rank: participant.rank,
+                      streak: participant.streak,
+                      completedGoalCount: participant.completedGoalCount,
+                    }))}
+                    totalCount={summaryParticipantCnt}
+                    onShowAll={() =>
+                      router.push(`/challenge/${id}/participants`)
+                    }
+                    onMemberClick={(memberId) =>
+                      router.push(`/member/${memberId}`)
+                    }
+                    canPoke={canPokeMembers}
+                    currentMemberId={currentMemberId}
+                    currentNickname={currentNickname}
+                    onPoke={handlePokeMember}
+                    pokingMemberId={pokingMemberId}
+                    pokedMemberIds={pokedMemberIds}
+                  />
+                ) : null}
+              </div>
             </div>
 
-            {/* 우측 sticky rail: 진행률 + 리더보드 */}
+            {/* 우측 sticky rail: 진행률 CTA + 나가기 (탭과 무관하게 유지) */}
             <aside
               className={cn(
                 'flex min-w-0 flex-col gap-3.5',
@@ -780,30 +796,6 @@ export function ChallengeDetailScreen({
                   isLikePending={isActionLoading}
                 />
               </div>
-
-              <ChallengeLeaderboardCard
-                entries={activeParticipants.map((participant) => ({
-                  participantId: participant.participantId,
-                  memberId: participant.memberId,
-                  nickname: participant.nickname,
-                  profileImg: participant.profileImg,
-                  isHost: participant.status === 'HOST',
-                  // 고정 목표는 전원 공통이라 참여자별로 볼 의미가 없다.
-                  goals: isFreeChallenge ? participant.goals : undefined,
-                  rank: participant.rank,
-                  streak: participant.streak,
-                  completedGoalCount: participant.completedGoalCount,
-                }))}
-                totalCount={summaryParticipantCnt}
-                onShowAll={() => router.push(`/challenge/${id}/participants`)}
-                onMemberClick={(memberId) => router.push(`/member/${memberId}`)}
-                canPoke={canPokeMembers}
-                currentMemberId={currentMemberId}
-                currentNickname={currentNickname}
-                onPoke={handlePokeMember}
-                pokingMemberId={pokingMemberId}
-                pokedMemberIds={pokedMemberIds}
-              />
 
               {isParticipating ? (
                 <button
