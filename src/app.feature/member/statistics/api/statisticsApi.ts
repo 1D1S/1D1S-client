@@ -7,7 +7,7 @@ import type {
   FeelingStatistics,
   FeelingStatisticsParams,
   FriendComparison,
-  FriendComparisonPeriod,
+  FriendComparisonParams,
   StatisticsPeriods,
   StatisticsPeriodUnit,
   StatisticsSummary,
@@ -74,12 +74,15 @@ export const statisticsApi = {
     }),
 
   getFriendComparison: async (
-    period: FriendComparisonPeriod
+    params: FriendComparisonParams
   ): Promise<FriendComparison> =>
     requestData<FriendComparison>(apiClient, {
       url: withQuery(
         '/member/statistics/friend-comparison',
-        buildQueryString({ period })
+        buildQueryString({
+          period: params.period,
+          friendId: params.friendId,
+        })
       ),
       method: 'GET',
     }),

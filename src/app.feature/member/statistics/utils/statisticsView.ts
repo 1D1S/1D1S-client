@@ -55,8 +55,8 @@ export function formatPercent(ratio: number): string {
   return `${Math.round(ratio * 100)}%`;
 }
 
-// 평균 등 소수가 섞일 수 있는 값 표시 — 최대 1자리, 정수는 소수점 제거.
-// friendsAverage 처럼 서버가 실수를 내려줄 수 있는 값에 사용한다.
+// 소수가 섞일 수 있는 값 표시 — 최대 1자리, 정수는 소수점 제거.
+// (NaN 방어 포함) 통계 카운트 표시에 사용한다.
 export function formatCount(value: number): string {
   if (!Number.isFinite(value)) {
     return '0';

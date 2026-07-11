@@ -1,7 +1,7 @@
 import type {
   DiaryTrendParams,
   FeelingStatisticsParams,
-  FriendComparisonPeriod,
+  FriendComparisonParams,
   StatisticsPeriodUnit,
   StatisticsSummaryParams,
 } from '../type/statistics';
@@ -16,6 +16,6 @@ export const STATISTICS_QUERY_KEYS = {
     [...STATISTICS_QUERY_KEYS.all, 'periods', unit] as const,
   summary: (params: StatisticsSummaryParams) =>
     [...STATISTICS_QUERY_KEYS.all, 'summary', params] as const,
-  friendComparison: (period: FriendComparisonPeriod) =>
-    [...STATISTICS_QUERY_KEYS.all, 'friend-comparison', period] as const,
+  friendComparison: (params: FriendComparisonParams) =>
+    [...STATISTICS_QUERY_KEYS.all, 'friend-comparison', params] as const,
 };
