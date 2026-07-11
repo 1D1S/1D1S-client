@@ -38,12 +38,11 @@ const ROW_MIN = 'min-h-[288px]';
 // 모바일에서 다음 카드가 살짝 보이도록(peek) 카드 폭을 고정한다.
 const CARD_ITEM = 'w-[260px] shrink-0 snap-start';
 
-// 스크롤 컨테이너는 화면 끝까지 흐르되, 내부 좌우 패딩을 홈 콘텐츠 라인
-// (모바일 px-5 / lg px-8)과 동일하게 줘 첫 카드 좌측·마지막 카드 우측 정렬을
-// 다른 홈 섹션과 맞춘다.
+// "나의 활동" 패널 내부에 놓이므로 화면 끝까지 breakout 하지 않는다. 스크롤
+// 컨테이너는 패널 내부 패딩 라인에서 시작해(첫 카드 좌측 = 헤더·배너와 동일
+// 세로선) 우측으로만 흐른다. py-2 는 카드 그림자 세로 여백 확보용.
 const SCROLL_ROW = cn(
-  '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-2',
-  'lg:-mx-8 lg:px-8',
+  'mt-4 flex gap-3 overflow-x-auto py-2',
   'scrollbar-hide snap-x snap-mandatory',
   ROW_MIN
 );
