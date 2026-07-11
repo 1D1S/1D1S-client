@@ -38,8 +38,12 @@ const ROW_MIN = 'min-h-[288px]';
 // 모바일에서 다음 카드가 살짝 보이도록(peek) 카드 폭을 고정한다.
 const CARD_ITEM = 'w-[260px] shrink-0 snap-start';
 
+// 스크롤 컨테이너는 화면 끝까지 흐르되, 내부 좌우 패딩을 홈 콘텐츠 라인
+// (모바일 px-5 / lg px-8)과 동일하게 줘 첫 카드 좌측·마지막 카드 우측 정렬을
+// 다른 홈 섹션과 맞춘다.
 const SCROLL_ROW = cn(
   '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 py-2',
+  'lg:-mx-8 lg:px-8',
   'scrollbar-hide snap-x snap-mandatory',
   ROW_MIN
 );
@@ -62,11 +66,10 @@ export default function HomeMyChallengesSection({
   return (
     <section className="w-full">
       <SectionHeader
-        title="내가 참여한 챌린지"
-        subtitle="바로 이어서 도전해보세요"
+        size="sm"
+        title="참여 중인 챌린지"
         actionLabel={showList ? '전체보기 →' : undefined}
         onActionClick={showList ? () => router.push('/challenge') : undefined}
-        className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
       />
 
       {/* 비로그인 CTA — 리스트와 동일 높이 */}

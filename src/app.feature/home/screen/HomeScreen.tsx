@@ -11,14 +11,12 @@ import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useState } from 'react';
 
-import HomeMyChallengesSection from '../components/HomeMyChallengesSection';
+import HomeMineSection from '../components/HomeMineSection';
 import HomeNoticeStrip from '../components/HomeNoticeStrip';
 import HomePopup from '../components/HomePopup';
 import HomeQuickActions from '../components/HomeQuickActions';
 import HomeRandomChallengesSection from '../components/HomeRandomChallengesSection';
 import HomeRandomDiariesSection from '../components/HomeRandomDiariesSection';
-import HomeStreakSlot from '../components/HomeStreakSlot';
-import HomeWarmBanner from '../components/HomeWarmBanner';
 import HomeWarmGreeting from '../components/HomeWarmGreeting';
 import { useHomeRandomData } from '../hooks/useHomeRandomData';
 import { useHomeRandomDiaryLike } from '../hooks/useHomeRandomDiaryLike';
@@ -158,40 +156,20 @@ export default function HomeScreen({
           <HomeWarmGreeting />
         </div>
 
-        {/* 모바일/태블릿: 스트릭 슬롯을 배너 위로 올림 */}
-        <div className="lg:hidden">
-          <HomeStreakSlot
-            isLoggedIn={isLoggedIn}
-            streakDays={streakDays}
-            isStreakLoading={isStreakLoading}
-          />
-        </div>
-
-        {/* Banner + StreakHero row (lg부터 1:1 좌우, 그 이하에선 위쪽 슬롯 사용) */}
-        <div className="grid gap-3 lg:grid-cols-2 lg:gap-5">
-          <HomeWarmBanner />
-          <div className="hidden lg:block">
-            <HomeStreakSlot
-              isLoggedIn={isLoggedIn}
-              streakDays={streakDays}
-              isStreakLoading={isStreakLoading}
-            />
-          </div>
-        </div>
+        {/* 나와 관련된 블록(배너·현재 스트릭·내 참여 챌린지)을 하나의 그룹으로.
+            sidebar 로딩 판정은 스트릭·챌린지 블록이 공유(isStreakLoading)해
+            인증 확정 전에도 동일 높이를 예약, 레이아웃 시프트를 막는다. */}
+        <HomeMineSection
+          isLoggedIn={isLoggedIn}
+          streakDays={streakDays}
+          isStreakLoading={isStreakLoading}
+          challenges={sidebar?.challengeList ?? []}
+        />
 
         <div className="flex flex-col gap-3">
           <HomeNoticeStrip />
           <HomeQuickActions />
         </div>
-
-        {/* 내가 참여한 챌린지 바로가기 — 비로그인 시 로그인 유도 CTA.
-            sidebar 로딩 판정은 스트릭 슬롯과 동일한 신호(isStreakLoading)를
-            재사용해 인증 확정 전에도 동일 높이를 예약한다. */}
-        <HomeMyChallengesSection
-          challenges={sidebar?.challengeList ?? []}
-          isLoggedIn={isLoggedIn}
-          isLoading={isStreakLoading}
-        />
 
         <HomeRandomChallengesSection
           challenges={randomChallenges}
