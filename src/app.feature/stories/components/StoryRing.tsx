@@ -90,7 +90,9 @@ function StoryRing({
     <div
       className={cn(
         'scrollbar-hide flex w-full overflow-x-auto',
-        compact ? 'gap-2.5 px-4 py-3' : 'gap-3 px-5 py-3.5 lg:px-8'
+        // "나의 활동" 패널 내부에 놓이므로 좌우 패딩 없이 패널 내부 라인에서
+        // 시작한다(첫 카드 좌측 = 헤더·배너와 동일 세로선).
+        compact ? 'gap-2.5 px-4 py-3' : 'gap-3 py-3.5'
       )}
     >
       {showMySlot && !hasMyStory ? (

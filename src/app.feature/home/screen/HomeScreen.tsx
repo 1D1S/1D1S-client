@@ -4,7 +4,6 @@ import { PageWatermark } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
-import Stories from '@feature/stories/components/Stories';
 import { useHasMounted } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
 import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
@@ -151,16 +150,9 @@ export default function HomeScreen({
           streakDays={streakDays}
           isStreakLoading={isStreakLoading}
           challenges={sidebar?.challengeList ?? []}
+          storiesFetchEnabled={isStoriesEnabled}
+          onRequireLogin={handleRequireLogin}
         />
-
-        {/* 친구들의 일지 스토리 — 비로그인 시 로그인 유도 슬롯 노출 */}
-        <div className="-mx-5 lg:-mx-8">
-          <Stories
-            isLoggedIn={isLoggedIn}
-            fetchEnabled={isStoriesEnabled}
-            onRequireLogin={() => setShowLoginDialog(true)}
-          />
-        </div>
 
         {/* 모바일 인사 hero — 데스크탑/태블릿은 시안에 따라 생략 */}
         <div className="lg:hidden">

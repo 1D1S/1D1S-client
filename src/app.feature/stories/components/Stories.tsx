@@ -51,7 +51,7 @@ function StoryLoginPrompt({
     <div
       className={cn(
         'scrollbar-hide flex w-full overflow-x-auto',
-        'gap-3 px-5 py-3.5 lg:px-8'
+        'gap-3 py-3.5'
       )}
     >
       {lockedCards.map((card, index) => (
