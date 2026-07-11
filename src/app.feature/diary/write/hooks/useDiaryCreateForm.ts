@@ -1,4 +1,4 @@
-import { isChallengeOngoing } from '@feature/challenge/board/utils/challengePeriod';
+import { canWriteDiaryForChallenge } from '@feature/challenge/board/utils/challengePeriod';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { formatDateISO } from '@module/utils/date';
 import { useSearchParams } from 'next/navigation';
@@ -138,10 +138,15 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       ),
     [sidebarData]
   );
+  // 진행 중 + 종료 후 작성 유예 이내 챌린지를 작성 대상으로 노출한다.
   const ongoingMemberChallenges = useMemo(
     () =>
       memberChallenges.filter((challenge) =>
-        isChallengeOngoing(challenge.startDate, challenge.endDate)
+        canWriteDiaryForChallenge(
+          challenge.startDate,
+          challenge.endDate,
+          challenge.postEndWriteAllowed
+        )
       ),
     [memberChallenges]
   );
@@ -254,9 +259,10 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     ? selectedChallenge.participantCnt === 0
     : false;
   const isSelectedChallengeOngoing = selectedChallenge
-    ? isChallengeOngoing(
+    ? canWriteDiaryForChallenge(
         selectedChallenge.startDate,
-        selectedChallenge.endDate
+        selectedChallenge.endDate,
+        selectedChallenge.postEndWriteAllowed
       ) && !isSelectedChallengeArchived
     : false;
 

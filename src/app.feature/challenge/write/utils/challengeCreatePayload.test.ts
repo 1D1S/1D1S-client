@@ -19,6 +19,7 @@ function makeValues(
     goalType: 'FIXED',
     allowMidJoin: true,
     isPhotoRequired: false,
+    postEndWriteAllowed: false,
     challengeType: 'PUBLIC',
     startDate: new Date(2026, 6, 10),
     goals: [{ value: '매일 커밋' }],
@@ -114,8 +115,16 @@ describe('formatFormValues', () => {
       participationType: 'INDIVIDUAL',
       goals: ['매일 커밋'],
       photoRequired: false,
+      postEndWriteAllowed: false,
       challengeType: 'PUBLIC',
     });
+  });
+
+  it('passes postEndWriteAllowed through to the payload', () => {
+    const payload = formatFormValues(
+      makeValues({ postEndWriteAllowed: true })
+    );
+    expect(payload.postEndWriteAllowed).toBe(true);
   });
 
   it('forces allowMidJoin to false for an individual challenge', () => {

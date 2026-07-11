@@ -1,6 +1,10 @@
 import { toStartOfDay } from '@module/utils/date';
+import { add } from 'date-fns';
 
 const ENDLESS_MIN_YEAR = 2090;
+
+// 종료 후 일지 작성 유예 기간(일). 서버 규칙과 동일하게 종료일 +2일까지 허용.
+const POST_END_WRITE_GRACE_DAYS = 2;
 
 export function isInfiniteChallengeEndDate(endDate?: string | null): boolean {
   const normalizedEndDate = endDate?.trim();
@@ -58,6 +62,32 @@ export function isChallengeEnded(
   }
 
   return toStartOfDay(referenceDate) > end;
+}
+
+/**
+ * 일지 작성 가능 여부. 서버 규칙과 동일하게 판정한다:
+ *   진행 중(무기한 포함) OR (postEndWriteAllowed 이고 종료일 +2일 유예 이내).
+ * 챌린지 상세/카드 등 작성 진입 동선 여러 곳에서 재사용한다.
+ */
+export function canWriteDiaryForChallenge(
+  startDate: string | null | undefined,
+  endDate: string | null | undefined,
+  postEndWriteAllowed?: boolean | null,
+  referenceDate: Date = new Date()
+): boolean {
+  if (isChallengeOngoing(startDate, endDate, referenceDate)) {
+    return true;
+  }
+  if (!postEndWriteAllowed || !endDate || isInfiniteChallengeEndDate(endDate)) {
+    return false;
+  }
+  const end = toStartOfDay(new Date(endDate));
+  if (Number.isNaN(end.getTime())) {
+    return false;
+  }
+  const target = toStartOfDay(referenceDate);
+  const graceEnd = add(end, { days: POST_END_WRITE_GRACE_DAYS });
+  return target > end && target <= graceEnd;
 }
 
 // 참여자가 0명이면 아카이브된 챌린지로 간주해 종료 처리한다.

@@ -14,6 +14,8 @@ export interface SidebarChallenge {
   participationType: string;
   participantCnt: number;
   thumbnailImage?: string | null;
+  // 종료 후 2일 유예 동안 일지 작성 허용 여부.
+  postEndWriteAllowed?: boolean;
   likeInfo: {
     likedByMe: boolean;
     likeCnt: number;

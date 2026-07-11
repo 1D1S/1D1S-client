@@ -35,6 +35,8 @@ export const challengeCreateFormSchema = z
     goalType: z.enum(['FIXED', 'FLEXIBLE']),
     allowMidJoin: z.boolean(),
     isPhotoRequired: z.boolean(),
+    // 종료 후 2일 유예 동안 일지 작성 허용 여부.
+    postEndWriteAllowed: z.boolean(),
     // 공개 범위 — 생성 시에는 공개/비공개만 선택할 수 있다.
     challengeType: z.enum(['PUBLIC', 'PRIVATE']),
     password: z.string().optional(),
@@ -159,6 +161,7 @@ export function useChallengeCreateForm(): ReturnType<
       // 허용으로 둔다. 작성자는 필요 시 토글로 비허용으로 바꿀 수 있다.
       allowMidJoin: true,
       isPhotoRequired: false,
+      postEndWriteAllowed: false,
       challengeType: 'PUBLIC',
       password: '',
       goals: [],
