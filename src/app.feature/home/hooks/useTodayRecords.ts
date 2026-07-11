@@ -2,6 +2,7 @@
 
 import { challengeBoardApi } from '@feature/challenge/board/api/challengeBoardApi';
 import { CHALLENGE_QUERY_KEYS } from '@feature/challenge/board/consts/queryKeys';
+import { challengeDetailApi } from '@feature/challenge/detail/api/challengeDetailApi';
 import type { SidebarChallenge } from '@feature/member/type/member';
 import { formatDateISO } from '@module/utils/date';
 import { useQueries } from '@tanstack/react-query';
@@ -13,6 +14,10 @@ export interface TodayRecordItem {
   writtenToday: boolean;
   /** 이 챌린지의 check-write 쿼리가 아직 로딩 중인지 */
   isLoading: boolean;
+  /** 이 챌린지의 목표 목록 (FIXED=공통, FLEXIBLE=내 목표) */
+  goals: string[];
+  /** 목표(상세) 쿼리가 아직 로딩 중인지 — 스켈레톤 유지용 */
+  goalsLoading: boolean;
 }
 
 export interface TodayRecordsResult {
@@ -28,11 +33,14 @@ export interface TodayRecordsResult {
   allResolved: boolean;
 }
 
-// 진행 중 챌린지별로 "오늘 일지 작성 여부"를 판정한다. 사이드바 데이터에는
-// per-challenge 작성 플래그가 없어, 챌린지 상세와 동일한 check-write 엔드포인트
-// (3일 내 작성 날짜 목록)를 챌린지 수만큼 병렬 조회해 오늘 날짜 포함 여부로
-// 미작성/완료를 가른다. 쿼리 키는 상세 화면과 동일 팩토리를 공유하므로 캐시가
-// 겹친다(상세 진입 시 재요청 없음).
+// 진행 중 챌린지별로 "오늘 일지 작성 여부"와 "목표 목록"을 판정한다.
+// 사이드바 데이터에는 per-challenge 작성 플래그도 목표도 없어 두 벌의
+// 병렬 쿼리를 챌린지 수만큼 돌린다.
+//  - check-write(3일 내 작성 날짜 목록): 오늘 날짜 포함 여부로 미작성/완료.
+//  - detail(챌린지 상세): challengeGoals 로 목표 목록. FIXED 는 공통 목표,
+//    FLEXIBLE 은 서버가 내 목표를 내려준다(일지 작성 체크리스트와 동일 필드).
+// 두 쿼리 모두 상세 화면과 동일 키 팩토리를 공유하므로 캐시가 겹친다
+// (상세/일지 작성 진입 시 재요청 없음).
 export function useTodayRecords(
   challenges: SidebarChallenge[]
 ): TodayRecordsResult {
@@ -44,16 +52,29 @@ export function useTodayRecords(
       enabled: Boolean(challenge.challengeId),
     })),
   });
+  const detailResults = useQueries({
+    queries: challenges.map((challenge) => ({
+      queryKey: CHALLENGE_QUERY_KEYS.detail(challenge.challengeId),
+      queryFn: () =>
+        challengeDetailApi.getChallengeDetail(challenge.challengeId),
+      enabled: Boolean(challenge.challengeId),
+    })),
+  });
 
   return useMemo(() => {
     const today = formatDateISO(new Date());
     const items: TodayRecordItem[] = challenges.map((challenge, index) => {
       const result = results[index];
+      const detailResult = detailResults[index];
       const dates = result?.data ?? [];
+      const goals =
+        detailResult?.data?.challengeGoals.map((goal) => goal.content) ?? [];
       return {
         challenge,
         writtenToday: dates.includes(today),
         isLoading: result?.isLoading ?? false,
+        goals,
+        goalsLoading: detailResult?.isLoading ?? false,
       };
     });
     const resolved = items.filter((item) => !item.isLoading);
@@ -64,5 +85,5 @@ export function useTodayRecords(
       isLoading: results.some((result) => result.isLoading),
       allResolved: results.every((result) => !result.isLoading),
     };
-  }, [challenges, results]);
+  }, [challenges, results, detailResults]);
 }
