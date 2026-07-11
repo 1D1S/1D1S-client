@@ -102,7 +102,11 @@ export function ChallengeStatisticsSection({
             <ChallengeDiaryCalendar
               trend={trend}
               onSelectDate={(date) =>
-                router.push(`/challenge/${challengeId}?tab=diary&date=${date}`)
+                // 탭/필터 변경은 history 를 오염시키지 않도록 replace 로 처리.
+                router.replace(
+                  `/challenge/${challengeId}?tab=diary&date=${date}`,
+                  { scroll: false }
+                )
               }
             />
           </div>

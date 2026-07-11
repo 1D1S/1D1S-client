@@ -44,6 +44,7 @@ import {
 } from '../../board/utils/challengePeriod';
 import { ChallengeDetailCompactHeader } from '../components/ChallengeDetailCompactHeader';
 import { ChallengeDetailHero } from '../components/ChallengeDetailHero';
+import { ChallengeDiaryDateFilter } from '../components/ChallengeDiaryDateFilter';
 import { ChallengeDiaryList } from '../components/ChallengeDiaryList';
 import { ChallengeGoalModals } from '../components/ChallengeGoalModals';
 import { ChallengeLeaderboardCard } from '../components/ChallengeLeaderboardCard';
@@ -135,6 +136,19 @@ export function ChallengeDetailScreen({
     params.set('tab', nextId);
     // 일지 탭을 떠나면 날짜 필터를 흘려보내지 않는다.
     if (nextId !== 'diary') {
+      params.delete('date');
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  // 일지 탭 날짜 필터 변경 — 탭 유지 + date 만 갱신. 탭 전환과 마찬가지로
+  // history 를 쌓지 않도록 replace 로 처리한다(뒤로가기는 챌린지 목록으로).
+  const setDiaryDateFilter = (date?: string): void => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', 'diary');
+    if (date) {
+      params.set('date', date);
+    } else {
       params.delete('date');
     }
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
@@ -814,11 +828,20 @@ export function ChallengeDetailScreen({
                 ) : null}
 
                 {activeTab === 'diary' ? (
-                  <ChallengeDiaryList
-                    id={id}
-                    date={diaryDate}
-                    clearHref={`/challenge/${id}?tab=diary`}
-                  />
+                  <>
+                    <ChallengeDiaryDateFilter
+                      challengeId={challengeId}
+                      activeDate={diaryDate}
+                      onSelectDate={(date) => setDiaryDateFilter(date)}
+                      onClear={() => setDiaryDateFilter(undefined)}
+                    />
+                    <ChallengeDiaryList
+                      id={id}
+                      date={diaryDate}
+                      clearHref={`/challenge/${id}?tab=diary`}
+                      showDefaultFilter={false}
+                    />
+                  </>
                 ) : null}
 
                 {activeTab === 'participants' ? (
