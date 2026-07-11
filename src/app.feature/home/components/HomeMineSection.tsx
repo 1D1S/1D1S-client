@@ -2,6 +2,7 @@
 
 import { SectionHeader } from '@1d1s/design-system';
 import type { SidebarChallenge } from '@feature/member/type/member';
+import Stories from '@feature/stories/components/Stories';
 import React from 'react';
 
 import HomeMyChallengesSection from './HomeMyChallengesSection';
@@ -13,6 +14,10 @@ interface HomeMineSectionProps {
   streakDays: number;
   isStreakLoading: boolean;
   challenges: SidebarChallenge[];
+  /** 스토리 조회 쿼리 활성화 여부 */
+  storiesFetchEnabled: boolean;
+  /** 비로그인 상태에서 스토리 클릭 시 로그인 유도 */
+  onRequireLogin(): void;
 }
 
 // 배너·현재 스트릭·내 참여 챌린지를 "나와 관련된" 하나의 그룹으로 묶는다.
@@ -24,6 +29,8 @@ export default function HomeMineSection({
   streakDays,
   isStreakLoading,
   challenges,
+  storiesFetchEnabled,
+  onRequireLogin,
 }: HomeMineSectionProps): React.ReactElement {
   return (
     // "나의 활동"을 테두리+연회색 배경 패널로 묶어 하나의 섹션임을 드러낸다.
@@ -38,6 +45,15 @@ export default function HomeMineSection({
         />
 
         <div className="mt-4 flex flex-col gap-4">
+          {/* 친구들의 일지 스토리 — 패널 최상단. 비로그인 시 로그인 유도 슬롯.
+              좌우 패딩 없이 패널 내부 라인에서 시작해 배너·챌린지 카드와
+              좌측 세로선을 맞춘다. */}
+          <Stories
+            isLoggedIn={isLoggedIn}
+            fetchEnabled={storiesFetchEnabled}
+            onRequireLogin={onRequireLogin}
+          />
+
           {/* 모바일/태블릿: 스트릭 슬롯을 배너 위로 올림 */}
           <div className="lg:hidden">
             <HomeStreakSlot

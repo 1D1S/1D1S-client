@@ -22,7 +22,7 @@ export default function StoryRingSkeleton({
     <div
       className={cn(
         'scrollbar-hide flex w-full overflow-x-auto',
-        'gap-3 px-5 py-3.5 lg:px-8'
+        'gap-3 py-3.5'
       )}
       aria-busy
       aria-label="스토리 불러오는 중"
