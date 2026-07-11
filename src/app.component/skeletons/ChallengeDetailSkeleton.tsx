@@ -113,7 +113,7 @@ export function ChallengeDetailSkeleton(): React.ReactElement {
             <div className="flex min-w-0 flex-col">
               {/* 탭 바 */}
               <div className="flex gap-5 border-b border-gray-100 pb-2.5">
-                {Array.from({ length: 4 }).map((_, index) => (
+                {Array.from({ length: 3 }).map((_, index) => (
                   <Skeleton key={index} shape="text" className="h-5 w-10" />
                 ))}
               </div>
