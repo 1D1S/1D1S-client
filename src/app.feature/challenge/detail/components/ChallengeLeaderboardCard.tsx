@@ -55,6 +55,7 @@ interface ChallengeLeaderboardCardProps {
 
 interface MemberRowProps {
   entry: LeaderboardEntry;
+  isMe: boolean;
   onSelect(): void;
   onGoals(): void;
 }
@@ -106,6 +107,7 @@ function MedalIcon({ rank }: { rank: number }): React.ReactElement {
 // 아바타 + 닉네임 + HOST/참여중 배지 + 목표 버튼.
 function MemberRow({
   entry,
+  isMe,
   onSelect,
   onGoals,
 }: MemberRowProps): React.ReactElement {
@@ -173,7 +175,7 @@ function MemberRow({
                   'text-[10px] font-extrabold text-gray-600'
                 )}
               >
-                참여 중
+                {isMe ? '나' : '참여 중'}
               </span>
             )}
           </div>
@@ -289,6 +291,7 @@ export function ChallengeLeaderboardCard({
               >
                 <MemberRow
                   entry={entry}
+                  isMe={isMe}
                   onSelect={() => onMemberClick?.(entry.memberId)}
                   onGoals={() => setGoalsOf(entry)}
                 />
