@@ -1,6 +1,4 @@
-import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
-import { authStorage } from '@module/utils/auth';
-import { useSyncExternalStore } from 'react';
+import { useHasSessionHint } from '@module/hooks/useHasSessionHint';
 
 import { useSidebar } from './useMemberQueries';
 
@@ -17,15 +15,11 @@ import { useSidebar } from './useMemberQueries';
  * 반드시 이 훅을 사용할 것.
  */
 export function useIsLoggedIn(): boolean {
-  const hasMounted = useSyncExternalStore(
-    NOOP_SUBSCRIBE,
-    () => true,
-    () => false
-  );
+  // 힌트 변화를 구독한다. 재발급/미들웨어가 세션을 복구해 힌트가 나타나면
+  // 즉시 재렌더돼 useSidebar 가 활성화되고, 서버 라운드트립으로 로그인이
+  // 확정된다. (하이드레이션 중에는 false → 서버 결과와 일치)
+  const hasSessionHint = useHasSessionHint();
   const { data, isLoading, isFetching } = useSidebar();
-  const hasTokenHint = hasMounted && authStorage.hasTokens();
 
-  return (
-    hasMounted && hasTokenHint && (Boolean(data) || isLoading || isFetching)
-  );
+  return hasSessionHint && (Boolean(data) || isLoading || isFetching);
 }
