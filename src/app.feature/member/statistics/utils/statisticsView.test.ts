@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { computeTrendPoints } from './statisticsView';
+import {
+  computeTrendPoints,
+  findCurrentBucketIndex,
+} from './statisticsView';
 
 describe('computeTrendPoints', () => {
   it('spaces points evenly across the width', () => {
@@ -32,5 +35,35 @@ describe('computeTrendPoints', () => {
 
   it('returns an empty array for no data', () => {
     expect(computeTrendPoints([], 0)).toEqual([]);
+  });
+});
+
+describe('findCurrentBucketIndex', () => {
+  // 2026-07-11(토) — ISO 주차는 2026-W28.
+  const now = new Date(2026, 6, 11, 15, 0, 0);
+
+  it('finds today among day buckets regardless of the peak', () => {
+    const buckets = ['2026-07-09', '2026-07-10', '2026-07-11', '2026-07-12'];
+    expect(findCurrentBucketIndex(buckets, now)).toBe(2);
+  });
+
+  it('finds the current month among month buckets', () => {
+    expect(
+      findCurrentBucketIndex(['2026-05', '2026-06', '2026-07'], now)
+    ).toBe(2);
+  });
+
+  it('finds the current ISO week among week buckets (zero-pad agnostic)', () => {
+    expect(
+      findCurrentBucketIndex(['2026-W27', '2026-W28', '2026-W29'], now)
+    ).toBe(1);
+    expect(findCurrentBucketIndex(['2026-W28'], now)).toBe(0);
+  });
+
+  it('returns -1 when today falls outside the range (past period)', () => {
+    expect(
+      findCurrentBucketIndex(['2026-06-01', '2026-06-02'], now)
+    ).toBe(-1);
+    expect(findCurrentBucketIndex([], now)).toBe(-1);
   });
 });

@@ -105,6 +105,66 @@ export function computeTrendPoints(
   });
 }
 
+// ISO 주차 키(YYYY-Www) — 서버가 IsoFields/WeekFields.ISO 로 주 버킷을
+// 만든다고 가정한다. 목요일 기준으로 주를 결정하는 표준 ISO-8601 규칙.
+// ponytail: 서버 주차 스킴이 ISO 가 아니면 WEEK 강조만 조용히 빠진다(오강조는
+// 없음). 어긋나면 서버 스킴에 맞춰 이 함수만 교체.
+function isoWeekParts(date: Date): { year: number; week: number } {
+  // 로컬 날짜를 UTC 자정으로 정규화해 DST/시간 성분 영향을 제거한다.
+  const utc = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  );
+  // ISO 요일: 월=0 … 일=6. 해당 주의 목요일로 이동해 주-소속 연도를 정한다.
+  const isoDay = (utc.getUTCDay() + 6) % 7;
+  utc.setUTCDate(utc.getUTCDate() - isoDay + 3);
+  const firstThursday = new Date(Date.UTC(utc.getUTCFullYear(), 0, 4));
+  const firstIsoDay = (firstThursday.getUTCDay() + 6) % 7;
+  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstIsoDay + 3);
+  const week =
+    1 + Math.round((utc.getTime() - firstThursday.getTime()) / (7 * 86400000));
+  return { year: utc.getUTCFullYear(), week };
+}
+
+function pad2(value: number): string {
+  return String(value).padStart(2, '0');
+}
+
+// buckets 중 "오늘(현재 구간)"이 속한 버킷의 인덱스. 없으면 -1(과거 기간 조회 등).
+// 버킷 포맷을 첫 항목으로 판별한다:
+//   YYYY-MM-DD(일) · YYYY-MM(월) · YYYY-Www(ISO 주).
+// 최댓값 버킷이 아니라 "지금 위치"를 강조하기 위한 매핑이라 순수 함수로 분리해
+// now 를 주입받는다(테스트 결정성 확보).
+export function findCurrentBucketIndex(buckets: string[], now: Date): number {
+  const [sample] = buckets;
+  if (!sample) {
+    return -1;
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(sample)) {
+    const key = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(
+      now.getDate()
+    )}`;
+    return buckets.indexOf(key);
+  }
+  if (/^\d{4}-\d{2}$/.test(sample)) {
+    const key = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`;
+    return buckets.indexOf(key);
+  }
+  const isoWeek = /^(\d{4})-W(\d{1,2})$/.exec(sample);
+  if (isoWeek) {
+    const { year, week } = isoWeekParts(now);
+    // 서버가 zero-pad 를 하든 안 하든 숫자로 비교한다.
+    return buckets.findIndex((bucket) => {
+      const parsed = /^(\d{4})-W(\d{1,2})$/.exec(bucket);
+      return (
+        parsed !== null &&
+        Number(parsed[1]) === year &&
+        Number(parsed[2]) === week
+      );
+    });
+  }
+  return -1;
+}
+
 // bucket 문자열을 사람이 읽는 짧은 라벨로. 서버 포맷을 방어적으로 처리한다.
 export function formatBucketLabel(bucket: string): string {
   if (!bucket) {
