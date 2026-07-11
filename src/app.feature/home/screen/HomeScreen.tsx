@@ -142,6 +142,17 @@ export default function HomeScreen({
           'px-5 py-7 lg:px-8 lg:py-10'
         )}
       >
+        {/* 나와 관련된 블록(배너·현재 스트릭·내 참여 챌린지)을 하나의 그룹으로
+            묶어 홈 최상단에 노출한다. sidebar 로딩 판정은 스트릭·챌린지 블록이
+            공유(isStreakLoading)해 인증 확정 전에도 동일 높이를 예약,
+            레이아웃 시프트를 막는다. */}
+        <HomeMineSection
+          isLoggedIn={isLoggedIn}
+          streakDays={streakDays}
+          isStreakLoading={isStreakLoading}
+          challenges={sidebar?.challengeList ?? []}
+        />
+
         {/* 친구들의 일지 스토리 — 비로그인 시 로그인 유도 슬롯 노출 */}
         <div className="-mx-5 lg:-mx-8">
           <Stories
@@ -155,16 +166,6 @@ export default function HomeScreen({
         <div className="lg:hidden">
           <HomeWarmGreeting />
         </div>
-
-        {/* 나와 관련된 블록(배너·현재 스트릭·내 참여 챌린지)을 하나의 그룹으로.
-            sidebar 로딩 판정은 스트릭·챌린지 블록이 공유(isStreakLoading)해
-            인증 확정 전에도 동일 높이를 예약, 레이아웃 시프트를 막는다. */}
-        <HomeMineSection
-          isLoggedIn={isLoggedIn}
-          streakDays={streakDays}
-          isStreakLoading={isStreakLoading}
-          challenges={sidebar?.challengeList ?? []}
-        />
 
         <div className="flex flex-col gap-3">
           <HomeNoticeStrip />

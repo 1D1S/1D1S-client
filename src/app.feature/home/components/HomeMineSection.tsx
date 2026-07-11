@@ -26,43 +26,45 @@ export default function HomeMineSection({
   challenges,
 }: HomeMineSectionProps): React.ReactElement {
   return (
-    // 가로 스크롤(내 챌린지)이 화면 끝까지 흐르며 홈 콘텐츠 라인에 맞도록,
-    // 그룹 컨테이너에는 좌우 패딩을 주지 않는다. 그룹감은 공통 헤더 + 하위
-    // 블록보다 좁은 내부 간격(gap-4 < 페이지 gap-7)으로 표현한다.
+    // "나의 활동"을 테두리+연회색 배경 패널로 묶어 하나의 섹션임을 드러낸다.
+    // 하위 블록(배너·스트릭·내 챌린지)은 모두 패널 내부 패딩 기준으로 정렬되고,
+    // 내 챌린지 가로 스크롤도 패널 안에서만 좌우로 흐른다(HomeMyChallengesSection).
     <section className="w-full">
-      <SectionHeader
-        title="나의 활동"
-        subtitle="스트릭과 참여 중인 챌린지를 한눈에"
-        className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
-      />
+      <div className="rounded-4 border border-gray-200 bg-gray-50 p-5 lg:p-6">
+        <SectionHeader
+          title="나의 활동"
+          subtitle="스트릭과 참여 중인 챌린지를 한눈에"
+          className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
+        />
 
-      <div className="mt-4 flex flex-col gap-4">
-        {/* 모바일/태블릿: 스트릭 슬롯을 배너 위로 올림 */}
-        <div className="lg:hidden">
-          <HomeStreakSlot
-            isLoggedIn={isLoggedIn}
-            streakDays={streakDays}
-            isStreakLoading={isStreakLoading}
-          />
-        </div>
-
-        {/* 배너 + 스트릭 (lg부터 1:1 좌우, 그 이하에선 위쪽 슬롯 사용) */}
-        <div className="grid gap-3 lg:grid-cols-2 lg:gap-5">
-          <HomeWarmBanner />
-          <div className="hidden lg:block">
+        <div className="mt-4 flex flex-col gap-4">
+          {/* 모바일/태블릿: 스트릭 슬롯을 배너 위로 올림 */}
+          <div className="lg:hidden">
             <HomeStreakSlot
               isLoggedIn={isLoggedIn}
               streakDays={streakDays}
               isStreakLoading={isStreakLoading}
             />
           </div>
-        </div>
 
-        <HomeMyChallengesSection
-          challenges={challenges}
-          isLoggedIn={isLoggedIn}
-          isLoading={isStreakLoading}
-        />
+          {/* 배너 + 스트릭 (lg부터 1:1 좌우, 그 이하에선 위쪽 슬롯 사용) */}
+          <div className="grid gap-3 lg:grid-cols-2 lg:gap-5">
+            <HomeWarmBanner />
+            <div className="hidden lg:block">
+              <HomeStreakSlot
+                isLoggedIn={isLoggedIn}
+                streakDays={streakDays}
+                isStreakLoading={isStreakLoading}
+              />
+            </div>
+          </div>
+
+          <HomeMyChallengesSection
+            challenges={challenges}
+            isLoggedIn={isLoggedIn}
+            isLoading={isStreakLoading}
+          />
+        </div>
       </div>
     </section>
   );
