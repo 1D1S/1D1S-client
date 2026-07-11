@@ -46,6 +46,7 @@ import { ChallengeLeaderboardCard } from '../components/ChallengeLeaderboardCard
 import { ChallengePasswordDialog } from '../components/ChallengePasswordDialog';
 import { ChallengeProgressCard } from '../components/ChallengeProgressCard';
 import { ChallengeRulesCard } from '../components/ChallengeRulesCard';
+import { ChallengeStatisticsSection } from '../components/ChallengeStatisticsSection';
 import { ExpandableText } from '../components/ExpandableText';
 import { PendingMemberItem } from '../components/PendingMemberItem';
 import { useChallengeDiaryList } from '../hooks/useChallengeDiaryQueries';
@@ -747,6 +748,8 @@ export function ChallengeDetailScreen({
                   itemClassName="w-[240px] shrink-0 sm:w-[260px]"
                 />
               </section>
+
+              <ChallengeStatisticsSection challengeId={challengeId} />
             </div>
 
             {/* 우측 sticky rail: 진행률 + 리더보드 */}

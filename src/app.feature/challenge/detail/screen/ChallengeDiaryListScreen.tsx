@@ -1,6 +1,6 @@
 'use client';
 
-import { MobileHeader, Text } from '@1d1s/design-system';
+import { MobileHeader, Tag, Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
@@ -23,6 +23,7 @@ import {
   resolveDiaryImageUrl,
 } from '@module/utils/diaryImageUrl';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
+import Link from 'next/link';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { useChallengeDiaryListInfinite } from '../hooks/useChallengeDiaryQueries';
@@ -32,6 +33,8 @@ const CHALLENGE_DIARY_PAGE_SIZE = 12;
 
 interface ChallengeDiaryListScreenProps {
   id: string;
+  // 캘린더에서 넘어온 날짜 필터 (YYYY-MM-DD). 없으면 전체 목록.
+  date?: string;
 }
 
 interface ChallengeDiaryListItemProps {
@@ -87,9 +90,17 @@ ChallengeDiaryListItem.displayName = 'ChallengeDiaryListItem';
 
 export function ChallengeDiaryListScreen({
   id,
+  date,
 }: ChallengeDiaryListScreenProps): React.ReactElement {
   const challengeId = Number(id);
-  const handleBack = useSafeBack(`/challenge/${id}`);
+  // 잘못된 형식은 무시해 쿼리키/요청에 오염이 들어가지 않게 한다.
+  const activeDate =
+    date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined;
+  const filterLabel = activeDate ? formatMonthDayKR(activeDate) : '';
+  // 필터 중엔 뒤로가기를 전체 목록으로 보내 해제 동선을 자연스럽게 한다.
+  const handleBack = useSafeBack(
+    activeDate ? `/challenge/${id}/diary` : `/challenge/${id}`
+  );
   const isLoggedIn = useIsLoggedIn();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const likeDiary = useLikeDiary();
@@ -102,7 +113,11 @@ export function ChallengeDiaryListScreen({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useChallengeDiaryListInfinite(challengeId, CHALLENGE_DIARY_PAGE_SIZE);
+  } = useChallengeDiaryListInfinite(
+    challengeId,
+    CHALLENGE_DIARY_PAGE_SIZE,
+    activeDate
+  );
   const showSkeleton = useMinimumLoading(isLoading);
   const { ref } = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
@@ -178,6 +193,23 @@ export function ChallengeDiaryListScreen({
           </div>
         </header>
 
+        {activeDate ? (
+          <div className="mt-5 flex items-center gap-2 lg:mt-6">
+            <Tag tone="brand" size="sm">
+              {filterLabel} 일지만 보기
+            </Tag>
+            <Link
+              href={`/challenge/${id}/diary`}
+              className={cn(
+                'text-[12px] text-gray-500 underline-offset-2',
+                'hover:text-gray-700 hover:underline'
+              )}
+            >
+              필터 해제
+            </Link>
+          </div>
+        ) : null}
+
         {showSkeleton ? (
           <DiaryCardSkeletonGrid
             count={CHALLENGE_DIARY_PAGE_SIZE}
@@ -210,8 +242,16 @@ export function ChallengeDiaryListScreen({
         {!showSkeleton && !isError && !hasDiaries ? (
           <EmptyState
             variant="diary"
-            title="아직 등록된 일지가 없어요"
-            description="이 챌린지의 첫 일지를 남겨 보세요"
+            title={
+              activeDate
+                ? `${filterLabel}에 작성된 일지가 없어요`
+                : '아직 등록된 일지가 없어요'
+            }
+            description={
+              activeDate
+                ? '다른 날짜를 선택하거나 필터를 해제해 보세요'
+                : '이 챌린지의 첫 일지를 남겨 보세요'
+            }
             className="mt-10"
           />
         ) : null}
