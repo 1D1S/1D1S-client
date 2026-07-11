@@ -14,8 +14,6 @@ interface SubPageShellProps {
   headerAction?: React.ReactNode;
   /** 뒤로가기 동작 (기본값: router.back) */
   onBack?(): void;
-  /** 최상위 진입 화면 등 뒤로가기가 불필요할 때 헤더 좌측 버튼을 숨긴다. */
-  hideBack?: boolean;
   children: React.ReactNode;
 }
 
@@ -33,7 +31,6 @@ export function SubPageShell({
   description,
   headerAction,
   onBack,
-  hideBack = false,
   children,
 }: SubPageShellProps): React.ReactElement {
   const router = useRouter();
@@ -43,7 +40,7 @@ export function SubPageShell({
     <div className="min-h-screen w-full">
       <MobileHeader
         title={title}
-        onBack={hideBack ? undefined : handleBack}
+        onBack={handleBack}
         right={headerAction}
       />
 
