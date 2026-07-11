@@ -79,9 +79,13 @@ const getResponseCode = (payload: unknown): string | null => {
     : null;
 };
 
-// 백엔드가 내려주는 refresh token 무효/형식 오류 코드. 상태 코드와 무관하게
-// 세션을 복구할 수 없으므로 로컬 토큰을 정리해야 한다(예: AUTH-006).
-const INVALID_REFRESH_TOKEN_CODES = new Set(['AUTH-006']);
+// 복구 불가능한 refresh token 상태 코드. 상태 코드와 무관하게 세션을 복구할
+// 수 없으므로 로컬 토큰 정리 + 서버 쿠키 만료(/auth/logout)까지 해야 한다.
+//   - AUTH-006: refresh token 무효/형식 오류
+//   - AUTH-012: 회전형 refresh 재사용 감지. 서버가 쿠키를 만료시키지 않으므로
+//     클라가 /auth/logout 으로 HttpOnly 쿠키를 정리하지 않으면, 미들웨어가
+//     남은 access 쿠키를 보고 힌트를 재발급해 강제 로그아웃이 되돌려진다.
+const INVALID_REFRESH_TOKEN_CODES = new Set(['AUTH-006', 'AUTH-012']);
 
 // 백엔드 도메인 에러 코드(예: CHALLENGE_022)를 응답 본문에서 추출한다.
 // 상태 코드만으로 구분할 수 없는 분기 처리에 사용한다.
