@@ -36,7 +36,7 @@ export default function StatisticsScreen(): React.ReactElement | null {
   }
 
   return (
-    <SubPageShell title="통계" description="나의 활동을 한눈에" hideBack>
+    <SubPageShell title="통계" description="나의 활동을 한눈에">
       <div className="data-fade-in space-y-4 pb-10">
         <PeriodSummarySection />
         <FeelingDistributionSection />
