@@ -111,28 +111,37 @@ export default function HomeScreen({
 
         {isLoggedIn ? (
           <>
-            <HomeStreakSlot
-              streakDays={streakDays}
-              isStreakLoading={isStreakLoading}
-            />
+            <Stories isLoggedIn={isLoggedIn} fetchEnabled={isStoriesEnabled} />
+
+            {/* 배너/스트릭 — 모바일 세로 스택, lg 이상 1:1 좌우 배치 */}
+            <div className="grid gap-3 lg:grid-cols-2">
+              <HomeWarmBanner />
+              <HomeStreakSlot
+                streakDays={streakDays}
+                isStreakLoading={isStreakLoading}
+              />
+            </div>
+
             <HomeTodayRecordSection
               challenges={sidebar?.challengeList ?? []}
               isAuthLoading={isStreakLoading}
             />
-            <Stories isLoggedIn={isLoggedIn} fetchEnabled={isStoriesEnabled} />
           </>
         ) : (
-          <HomeLoginCta />
+          <>
+            <HomeLoginCta />
+            <HomeWarmBanner />
+          </>
         )}
 
-        <HomeWarmBanner />
-
-        <HomeExploreEntry />
-
-        <div className="flex flex-col gap-3">
+        {/* 공지·의견 — 모바일 세로 스택, lg 이상 2열 나란히 */}
+        <div className="grid gap-3 lg:grid-cols-2">
           <HomeNoticeStrip />
           <HomeQuickActions />
         </div>
+
+        {/* 탐색 유도 진입점 — 홈 하단 */}
+        <HomeExploreEntry />
 
         <div className="flex w-full justify-center pt-4">
           <PageWatermark />
