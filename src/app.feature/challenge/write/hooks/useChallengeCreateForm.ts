@@ -161,7 +161,8 @@ export function useChallengeCreateForm(): ReturnType<
       // 허용으로 둔다. 작성자는 필요 시 토글로 비허용으로 바꿀 수 있다.
       allowMidJoin: true,
       isPhotoRequired: false,
-      postEndWriteAllowed: false,
+      // 종료 후 일지 작성을 기본 허용으로 둔다. 작성자는 토글로 끌 수 있다.
+      postEndWriteAllowed: true,
       challengeType: 'PUBLIC',
       password: '',
       goals: [],
