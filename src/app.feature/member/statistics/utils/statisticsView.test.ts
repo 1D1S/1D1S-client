@@ -1,29 +1,36 @@
 import { describe, expect, it } from 'vitest';
 
-import { computeBarHeightPx } from './statisticsView';
+import { computeTrendPoints } from './statisticsView';
 
-describe('computeBarHeightPx', () => {
-  it('scales to the max bucket in pixels', () => {
-    // 최댓값 막대는 전체 영역 높이를 채운다.
-    expect(computeBarHeightPx(10, 10, 100)).toBe(100);
-    // 절반 값은 절반 높이.
-    expect(computeBarHeightPx(5, 10, 100)).toBe(50);
+describe('computeTrendPoints', () => {
+  it('spaces points evenly across the width', () => {
+    const points = computeTrendPoints([1, 1, 1], 1);
+    expect(points.map((p) => p.xPct)).toEqual([0, 50, 100]);
   });
 
-  it('keeps positive counts visible with a 6px floor', () => {
-    // 비율이 아주 작아도 최소 6px 로 보장해 막대가 사라지지 않는다.
-    expect(computeBarHeightPx(1, 1000, 100)).toBe(6);
+  it('centers a single point', () => {
+    expect(computeTrendPoints([5], 5)).toEqual([{ xPct: 50, yPct: 16 }]);
   });
 
-  it('renders zero counts as a thin trace', () => {
-    expect(computeBarHeightPx(0, 10, 100)).toBe(2);
+  it('maps the max count to the top of the band', () => {
+    // topPad=16, band=72 → 비율 1 이면 상단(16), 비율 0 이면 바닥(88).
+    const [low, high] = computeTrendPoints([0, 10], 10);
+    expect(high.yPct).toBe(16);
+    expect(low.yPct).toBe(88);
+    // 절반 값은 밴드 중앙.
+    expect(computeTrendPoints([5], 10)[0].yPct).toBe(52);
   });
 
-  it('handles all-zero data without dividing by zero', () => {
-    expect(computeBarHeightPx(0, 0, 100)).toBe(2);
+  it('flattens all-zero data to the baseline without dividing by zero', () => {
+    const points = computeTrendPoints([0, 0, 0], 0);
+    expect(points.every((p) => p.yPct === 88)).toBe(true);
   });
 
-  it('returns 0 when there is no area to draw in', () => {
-    expect(computeBarHeightPx(5, 10, 0)).toBe(0);
+  it('clamps negative counts to the baseline', () => {
+    expect(computeTrendPoints([-5], 10)[0].yPct).toBe(88);
+  });
+
+  it('returns an empty array for no data', () => {
+    expect(computeTrendPoints([], 0)).toEqual([]);
   });
 });

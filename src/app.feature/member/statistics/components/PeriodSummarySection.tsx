@@ -32,8 +32,8 @@ import {
   formatDelta,
   formatPercent,
 } from '../utils/statisticsView';
+import { LineTrend, type TrendDatum } from './LineTrend';
 import { StatisticsCard } from './StatisticsCard';
-import { TrendBars, type TrendDatum } from './TrendBars';
 
 const UNIT_OPTIONS = [
   { value: 'WEEK', label: '주' },
@@ -445,10 +445,10 @@ export function PeriodSummarySection(): React.ReactElement {
                 <Text size="caption2" className="mb-2 block text-gray-500">
                   기간 내 추이
                 </Text>
-                <TrendBars
+                <LineTrend
                   data={subTrend}
                   compact
-                  ariaLabel="기간 내 작성 추이 막대 차트"
+                  ariaLabel="기간 내 작성 추이 꺾은선 차트"
                 />
               </div>
             ) : null}

@@ -75,25 +75,34 @@ export function formatDelta(delta: number): string {
   return '±0';
 }
 
-// 막대 픽셀 높이 계산.
-// 퍼센트 높이는 부모(flex 컬럼)의 높이가 확정돼 있어야 해석되는데, 컬럼이
-// content 높이라 % 가 0 으로 무너져 막대가 안 보였다. px 로 직접 계산해
-// 부모 높이와 무관하게 항상 그려지도록 한다.
-// - count <= 0: 얇은 흔적(2px)만.
-// - count > 0: 최대값 대비 비율, 최소 6px 로 보장.
-export function computeBarHeightPx(
-  count: number,
+export interface TrendPoint {
+  /** 컨테이너 폭 대비 x 위치(%) */
+  xPct: number;
+  /** 컨테이너 높이 대비 y 위치(%) — 0 이 상단, 100 이 하단 */
+  yPct: number;
+}
+
+// 꺾은선 좌표 매핑. 컨테이너 실제 폭/높이와 무관한 % 좌표로 반환해
+// SVG(preserveAspectRatio="none") 선과 HTML 오버레이 점이 같은 좌표를
+// 공유하게 한다 — SVG 비균등 스케일이 점을 타원으로 찌그러뜨리지 않는다.
+// - x: 균등 분할. 단일 포인트는 가운데(50%).
+// - y: max 대비 비율. max<=0(전부 0)이면 division 없이 바닥 라인으로 평탄화.
+//   음수 count 는 0 으로 클램프.
+// topPad/bottomPad(%) 로 상단 값 라벨 여백과 하단 축 여백을 확보한다.
+export function computeTrendPoints(
+  counts: number[],
   max: number,
-  areaHeight: number,
-): number {
-  if (areaHeight <= 0) {
-    return 0;
-  }
-  if (count <= 0) {
-    return 2;
-  }
-  const ratio = max > 0 ? count / max : 0;
-  return Math.max(6, Math.round(ratio * areaHeight));
+  topPad = 16,
+  bottomPad = 12,
+): TrendPoint[] {
+  const band = Math.max(0, 100 - topPad - bottomPad);
+  const lastIndex = counts.length - 1;
+  return counts.map((count, index) => {
+    const xPct = lastIndex <= 0 ? 50 : (index / lastIndex) * 100;
+    const ratio = max > 0 ? Math.max(0, count) / max : 0;
+    const yPct = topPad + (1 - ratio) * band;
+    return { xPct, yPct };
+  });
 }
 
 // bucket 문자열을 사람이 읽는 짧은 라벨로. 서버 포맷을 방어적으로 처리한다.
