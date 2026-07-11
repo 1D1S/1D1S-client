@@ -1,6 +1,6 @@
 'use client';
 
-import { CircleAvatar, Icon, Stripe, Text } from '@1d1s/design-system';
+import { Button, CircleAvatar, Icon, Stripe, Text } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
 import { cn } from '@module/utils/cn';
 import { resolveDiaryImageUrl } from '@module/utils/diaryImageUrl';
@@ -191,7 +191,7 @@ export default function StoryViewer({
           'bg-white/15 text-white backdrop-blur sm:left-6 sm:flex'
         )}
       >
-        ‹
+        <Icon name="ChevronLeft" size={22} aria-hidden />
       </button>
       <button
         type="button"
@@ -203,7 +203,7 @@ export default function StoryViewer({
           'bg-white/15 text-white backdrop-blur sm:right-6 sm:flex'
         )}
       >
-        ›
+        <Icon name="ChevronRight" size={22} aria-hidden />
       </button>
 
       <div
@@ -267,7 +267,7 @@ export default function StoryViewer({
               'bg-black/40 text-white backdrop-blur-sm'
             )}
           >
-            ✕
+            <Icon name="Close" size={18} aria-hidden />
           </button>
 
           <button
@@ -318,7 +318,7 @@ export default function StoryViewer({
               <div className="flex min-w-0 flex-col">
                 <Text
                   size="caption1"
-                  weight="bold"
+                  weight="semibold"
                   className="truncate text-gray-900"
                 >
                   {name}
@@ -332,18 +332,16 @@ export default function StoryViewer({
               </div>
             </div>
 
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="sm"
+              pill
+              className="shrink-0"
               onClick={handleOpenDiary}
-              className={cn(
-                'inline-flex shrink-0 cursor-pointer items-center gap-1',
-                'bg-main-700 hover:bg-main-800 rounded-full px-3.5 py-2',
-                'text-xs font-bold text-white transition-colors'
-              )}
+              iconRight={<Icon name="ChevronRight" size={14} aria-hidden />}
             >
               일지 보기
-              <Icon name="ChevronRight" size={12} />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
