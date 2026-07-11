@@ -1,20 +1,23 @@
 'use client';
 
-import { PageWatermark, Tabs } from '@1d1s/design-system';
-import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import { PageWatermark } from '@1d1s/design-system';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
+import Stories from '@feature/stories/components/Stories';
 import { useHasMounted } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
-import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useCallback, useState } from 'react';
+import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
+import { useRouter } from 'next/navigation';
+import React from 'react';
 
-import HomeExplorePanel from '../components/HomeExplorePanel';
+import HomeExploreEntry from '../components/HomeExploreEntry';
+import HomeNoticeStrip from '../components/HomeNoticeStrip';
 import HomePopup from '../components/HomePopup';
-import HomeTodayPanel from '../components/HomeTodayPanel';
+import HomeQuickActions from '../components/HomeQuickActions';
+import HomeStreakSlot from '../components/HomeStreakSlot';
+import HomeTodayRecordSection from '../components/HomeTodayRecordSection';
+import HomeWarmBanner from '../components/HomeWarmBanner';
 import HomeWarmGreeting from '../components/HomeWarmGreeting';
-import { useHomeRandomDiaryLike } from '../hooks/useHomeRandomDiaryLike';
 
 interface HomeScreenProps {
   /** 서버에서 쿠키로 평가한 로그인 힌트. SSR/하이드레이션 직후 비로그인 UI 가
@@ -22,24 +25,46 @@ interface HomeScreenProps {
   initialHasAuthHint?: boolean;
 }
 
-type HomeTab = 'today' | 'explore';
-
-const TAB_ITEMS = [
-  { id: 'today', label: '나의 오늘' },
-  { id: 'explore', label: '둘러보기' },
-];
-
-function isHomeTab(value: string | null): value is HomeTab {
-  return value === 'today' || value === 'explore';
+function HomeLoginCta(): React.ReactElement {
+  const router = useRouter();
+  return (
+    <section className="w-full">
+      <button
+        type="button"
+        onClick={() => router.push(loginUrlFromCurrentLocation())}
+        aria-label="로그인하고 나의 오늘 시작하기"
+        className={cn(
+          'flex min-h-[280px] w-full flex-col items-center justify-center',
+          'rounded-4 border-main-200 gap-3 border p-8 text-center',
+          'from-main-100 via-main-200/40 to-main-200 bg-gradient-to-br',
+          'cursor-pointer transition hover:brightness-105'
+        )}
+      >
+        <span aria-hidden className="animate-flame-flicker text-[40px]">
+          🔥
+        </span>
+        <span className="text-[18px] font-extrabold tracking-tight text-gray-900">
+          로그인하고 나의 오늘을 시작하세요
+        </span>
+        <span className="text-[13px] text-gray-600">
+          스트릭·오늘의 기록·스토리를 한곳에서 이어가요.
+        </span>
+        <span
+          className={cn(
+            'mt-1 inline-flex items-center rounded-full',
+            'bg-brand px-4 py-2 text-[13px] font-bold text-white'
+          )}
+        >
+          로그인하기 →
+        </span>
+      </button>
+    </section>
+  );
 }
 
 export default function HomeScreen({
   initialHasAuthHint = false,
 }: HomeScreenProps): React.ReactElement {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const isLoginRequired = searchParams.get('loginRequired') === 'true';
   const hasMounted = useHasMounted();
   const isLoggedInClient = useIsLoggedIn();
   // SSR 및 하이드레이션 직후엔 서버 힌트를, mount 이후엔 권위 있는 클라이언트
@@ -50,69 +75,6 @@ export default function HomeScreen({
     isLoading: isSidebarLoading,
     isFetching: isSidebarFetching,
   } = useSidebar();
-  const { showLoginDialog, setShowLoginDialog, onLikeToggle } =
-    useHomeRandomDiaryLike();
-  const loginDialogDescription = isLoginRequired
-    ? '로그인 후 이용할 수 있습니다.'
-    : undefined;
-
-  // `?loginRequired=true` 진입 시 비로그인 사용자에게만 다이얼로그를 1회 띄운다.
-  // mount-only useEffect 는 hydration 직후 isLoggedIn 이 일시적으로 false 인 구간을
-  // 잡아 잘못된 다이얼로그를 띄울 수 있어, prevState 패턴으로 변경 시점에만 반응한다.
-  // 바운스 시 원래 가려던 경로. 로그인 후 그리로 복귀한다.
-  const [loginReturnTo, setLoginReturnTo] = useState<string | null>(null);
-  const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
-  if (isLoginRequired !== prevIsLoginRequired) {
-    setPrevIsLoginRequired(isLoginRequired);
-    if (isLoginRequired && !isLoggedIn) {
-      setShowLoginDialog(true);
-      setLoginReturnTo(sanitizeReturnTo(searchParams.get(RETURN_TO_PARAM)));
-    }
-  }
-
-  const handleDialogOpenChange = useCallback(
-    (open: boolean): void => {
-      setShowLoginDialog(open);
-      if (!open) {
-        setLoginReturnTo(null);
-      }
-      if (!open && isLoginRequired) {
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete('loginRequired');
-        params.delete(RETURN_TO_PARAM);
-        const query = params.toString();
-        router.replace(query ? `${pathname}?${query}` : pathname, {
-          scroll: false,
-        });
-      }
-    },
-    [setShowLoginDialog, isLoginRequired, searchParams, router, pathname]
-  );
-
-  // 로그인 시 카드 자체가 Link(prefetch)로 동작하므로, 여기서는 비로그인
-  // 클릭에 대한 로그인 유도만 담당한다.
-  const handleRequireLogin = useCallback(
-    () => setShowLoginDialog(true),
-    [setShowLoginDialog]
-  );
-
-  // 탭 상태는 URL 쿼리(`?tab=`)를 단일 소스로 삼는다. 쿼리가 없으면 로그인
-  // 사용자는 '나의 오늘', 비로그인 사용자는 '둘러보기'를 기본으로 본다.
-  const tabParam = searchParams.get('tab');
-  const activeTab: HomeTab = isHomeTab(tabParam)
-    ? tabParam
-    : isLoggedIn
-      ? 'today'
-      : 'explore';
-
-  const handleTabChange = useCallback(
-    (id: string): void => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('tab', id);
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    },
-    [searchParams, router, pathname]
-  );
 
   const streakDays = sidebar?.streakCount ?? 0;
   // 토큰 힌트는 있는데 sidebar 가 아직 도착하지 않은 구간에서 0 → 실제 값으로
@@ -135,12 +97,6 @@ export default function HomeScreen({
 
   return (
     <>
-      <LoginRequiredDialog
-        open={showLoginDialog}
-        onOpenChange={handleDialogOpenChange}
-        description={loginDialogDescription}
-        returnTo={loginReturnTo}
-      />
       <HomePopup enabled={isLoggedIn} />
       <div
         className={cn(
@@ -148,34 +104,35 @@ export default function HomeScreen({
           'px-5 py-7 lg:px-8 lg:py-10'
         )}
       >
-        {/* 모바일 인사 hero — 탭 전환과 무관한 페이지 인사말이라 탭 위에 둔다. */}
+        {/* 모바일 인사 hero — 데스크탑/태블릿은 시안에 따라 생략 */}
         <div className="lg:hidden">
           <HomeWarmGreeting />
         </div>
 
-        <Tabs
-          items={TAB_ITEMS}
-          activeId={activeTab}
-          onChange={handleTabChange}
-          size="lg"
-        />
-
-        {activeTab === 'today' ? (
-          <HomeTodayPanel
-            isLoggedIn={isLoggedIn}
-            streakDays={streakDays}
-            isStreakLoading={isStreakLoading}
-            challenges={sidebar?.challengeList ?? []}
-            storiesFetchEnabled={isStoriesEnabled}
-            onRequireLogin={handleRequireLogin}
-          />
+        {isLoggedIn ? (
+          <>
+            <HomeStreakSlot
+              streakDays={streakDays}
+              isStreakLoading={isStreakLoading}
+            />
+            <HomeTodayRecordSection
+              challenges={sidebar?.challengeList ?? []}
+              isAuthLoading={isStreakLoading}
+            />
+            <Stories isLoggedIn={isLoggedIn} fetchEnabled={isStoriesEnabled} />
+          </>
         ) : (
-          <HomeExplorePanel
-            isLoggedIn={isLoggedIn}
-            onRequireLogin={handleRequireLogin}
-            onLikeToggle={onLikeToggle}
-          />
+          <HomeLoginCta />
         )}
+
+        <HomeWarmBanner />
+
+        <HomeExploreEntry />
+
+        <div className="flex flex-col gap-3">
+          <HomeNoticeStrip />
+          <HomeQuickActions />
+        </div>
 
         <div className="flex w-full justify-center pt-4">
           <PageWatermark />
