@@ -48,6 +48,9 @@ export interface ChallengeSummary {
   deleted?: boolean;
   // 종료 후 2일 유예 동안 일지 작성 허용 여부(생성 시 지정).
   postEndWriteAllowed?: boolean;
+  // 공개 범위 — OFFICIAL 이면 참여자 0명이어도 종료로 판정하지 않는다.
+  // 서버가 상세 응답에 내려주지 않으면 undefined (기존 동작 유지).
+  challengeType?: ChallengeType;
   randomParticipants?: RandomParticipant[];
 }
 

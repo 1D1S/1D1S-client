@@ -39,7 +39,8 @@ export function DiaryConnectedChallengeCard({
       isOngoing={isChallengeOngoing(summary.startDate, summary.endDate)}
       isEnded={isChallengeEndedOrArchived(
         summary.endDate,
-        summary.participantCnt
+        summary.participantCnt,
+        summary.challengeType
       )}
       stripeTone={getCategoryStripeTone(summary.category)}
       onClick={onClick}

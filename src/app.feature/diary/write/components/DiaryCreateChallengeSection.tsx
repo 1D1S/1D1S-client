@@ -131,7 +131,8 @@ function DiaryCreateChallengeSectionComponent({
           )}
           isEnded={isChallengeEndedOrArchived(
             selectedChallenge.endDate,
-            selectedChallenge.participantCnt
+            selectedChallenge.participantCnt,
+            selectedChallenge.challengeType
           )}
           stripeTone={getCategoryStripeTone(selectedChallenge.category)}
           onClick={openPicker}
