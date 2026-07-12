@@ -1,13 +1,13 @@
 'use client';
 
 import { SegmentedControl } from '@1d1s/design-system';
+import { BarTrend, type BarTrendDatum } from '@component/charts/BarTrend';
 import { cn } from '@module/utils/cn';
 import React, { useState } from 'react';
 
 import { useDiaryTrend } from '../hooks/useStatisticsQueries';
 import type { DiaryTrendUnit } from '../type/statistics';
 import { formatBucketLabel } from '../utils/statisticsView';
-import { LineTrend, type TrendDatum } from './LineTrend';
 import { StatisticsCard } from './StatisticsCard';
 
 const UNIT_OPTIONS = [
@@ -17,7 +17,7 @@ const UNIT_OPTIONS = [
 ];
 
 /**
- * 작성 추이 — 일/주/월 토글 + 꺾은선 차트.
+ * 작성 추이 — 일/주/월 토글 + 막대 차트(7개씩 페이징).
  */
 export function DiaryTrendSection(): React.ReactElement {
   const [unit, setUnit] = useState<DiaryTrendUnit>('DAY');
@@ -25,12 +25,12 @@ export function DiaryTrendSection(): React.ReactElement {
     useDiaryTrend({ unit });
 
   const points = data?.points ?? [];
-  const chartData: TrendDatum[] = points.map((p) => ({
-    bucket: p.bucket,
-    count: p.count ?? 0,
-    label: formatBucketLabel(p.bucket),
+  const chartData: BarTrendDatum[] = points.map((point) => ({
+    key: point.bucket,
+    count: point.count ?? 0,
+    label: formatBucketLabel(point.bucket),
   }));
-  const totalCount = chartData.reduce((sum, d) => sum + d.count, 0);
+  const totalCount = chartData.reduce((sum, datum) => sum + datum.count, 0);
 
   return (
     <StatisticsCard
@@ -60,9 +60,9 @@ export function DiaryTrendSection(): React.ReactElement {
           isPlaceholderData && 'opacity-40'
         )}
       >
-        <LineTrend
+        <BarTrend
           data={chartData}
-          ariaLabel={`작성 추이 꺾은선 차트, 총 ${totalCount}건`}
+          ariaLabel={`작성 추이 막대 차트, 총 ${totalCount}건`}
         />
       </div>
     </StatisticsCard>

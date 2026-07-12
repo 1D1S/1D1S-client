@@ -729,7 +729,20 @@ export function ChallengeDetailScreen({
                   'lg:static lg:top-auto lg:z-auto'
                 )}
               >
-                <div className="scrollbar-hide -mx-1 overflow-x-auto px-1">
+                {/* 모바일: 너비 균등 분할. 데스크톱: 좌측 정렬 + 넘치면 스크롤. */}
+                <Tabs
+                  className="lg:hidden"
+                  fullWidth
+                  activeId={activeTab}
+                  onChange={handleTabChange}
+                  items={tabItems}
+                />
+                <div
+                  className={cn(
+                    'scrollbar-hide -mx-1 hidden overflow-x-auto px-1',
+                    'lg:block'
+                  )}
+                >
                   <Tabs
                     activeId={activeTab}
                     onChange={handleTabChange}
@@ -809,9 +822,9 @@ export function ChallengeDetailScreen({
                             />
                             <Text
                               size="caption1"
-                              weight="regular"
+                              weight="medium"
                               className={cn(
-                                'shrink-0 whitespace-nowrap text-gray-400'
+                                'shrink-0 whitespace-nowrap text-gray-600'
                               )}
                             >
                               {row.label}

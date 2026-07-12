@@ -1,15 +1,22 @@
 'use client';
 
-import { StatCard, Text } from '@1d1s/design-system';
+import { CircularProgress, Text } from '@1d1s/design-system';
+import { BarTrend, type BarTrendDatum } from '@component/charts/BarTrend';
 import { Skeleton } from '@component/Skeleton';
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
-import { TrendingUp } from 'lucide-react';
+import {
+  CalendarClock,
+  FileText,
+  type LucideIcon,
+  Target,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useMemo } from 'react';
 
 import { useChallengeStatistics } from '../hooks/useChallengeDiaryQueries';
-import { ChallengeDiaryTrendPoint } from '../type/challengeStatistics';
 import {
   getTrendProgress,
   summarizeDiaryTrend,
@@ -25,78 +32,108 @@ function formatShortDate(date: string): string {
   return `${Number(month)}/${Number(day)}`;
 }
 
-// 날짜별 일지 추이 막대 차트. 막대 클릭 시 그 날짜로 필터된 일지 탭으로 이동.
-function DiaryTrendChart({
-  trend,
-  onSelectDate,
+// KPI 카드 — 아이콘 칩 + 라벨 + 큰 숫자. 그림자 없이 테두리만.
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+  unit,
 }: {
-  trend: ChallengeDiaryTrendPoint[];
-  onSelectDate(date: string): void;
+  icon: LucideIcon;
+  label: string;
+  value: React.ReactNode;
+  unit?: string;
 }): React.ReactElement {
-  const { max, peakIndex } = useMemo(
-    () => summarizeDiaryTrend(trend),
-    [trend]
-  );
-
   return (
     <div
-      className="grid h-[120px] items-end gap-1 sm:h-[150px] sm:gap-1.5"
-      style={{ gridTemplateColumns: `repeat(${trend.length}, 1fr)` }}
+      className={cn(
+        'flex flex-col gap-2.5 rounded-[12px] border border-gray-200',
+        'bg-white p-4'
+      )}
     >
-      {trend.map((point, index) => {
-        const isPeak = index === peakIndex;
-        const hasDiary = point.count > 0;
-        const heightPct = Math.max((point.count / max) * 74, hasDiary ? 10 : 3);
-        return (
-          <button
-            key={point.date}
-            type="button"
-            disabled={!hasDiary}
-            onClick={() => onSelectDate(point.date)}
-            className={cn(
-              'flex h-full flex-col items-center justify-end gap-1.5',
-              hasDiary ? 'cursor-pointer' : 'cursor-default'
-            )}
+      <div className="flex items-center gap-2">
+        <span
+          className={cn(
+            'bg-main-200 flex size-7 items-center justify-center',
+            'rounded-[8px]'
+          )}
+        >
+          <Icon className="text-main-800 size-3.5" strokeWidth={2} aria-hidden />
+        </span>
+        <Text size="caption2" weight="bold" className="text-gray-500">
+          {label}
+        </Text>
+      </div>
+      <div className="flex items-baseline gap-0.5">
+        <Text
+          size="heading1"
+          weight="extrabold"
+          className="text-gray-900 tabular-nums"
+        >
+          {value}
+        </Text>
+        {unit ? (
+          <Text size="caption1" weight="bold" className="text-gray-400">
+            {unit}
+          </Text>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+// 참여율 카드 — 원형 프로그레스로 강조.
+function ParticipationKpi({
+  rate,
+}: {
+  rate: number;
+}): React.ReactElement {
+  const started = rate >= 0;
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-3 rounded-[12px] border border-gray-200',
+        'bg-white p-4'
+      )}
+    >
+      {started ? (
+        <CircularProgress
+          value={Math.min(100, rate)}
+          size={52}
+          stroke={6}
+          showPercentage
+        />
+      ) : (
+        <span
+          className={cn(
+            'bg-main-200 flex size-7 items-center justify-center',
+            'rounded-[8px]'
+          )}
+        >
+          <Users className="text-main-800 size-3.5" strokeWidth={2} aria-hidden />
+        </span>
+      )}
+      <div className="min-w-0">
+        <Text size="caption2" weight="bold" className="block text-gray-500">
+          참여율
+        </Text>
+        {!started ? (
+          <Text
+            size="body1"
+            weight="extrabold"
+            className="mt-0.5 block text-gray-900"
           >
-            {hasDiary ? (
-              <span
-                className={cn(
-                  'text-[10.5px] font-extrabold tabular-nums',
-                  isPeak ? 'text-main-800' : 'text-gray-400'
-                )}
-              >
-                {point.count}
-              </span>
-            ) : null}
-            <span
-              className={cn(
-                'w-full max-w-[26px] rounded-[7px]',
-                !hasDiary
-                  ? 'bg-gray-100'
-                  : isPeak
-                    ? 'bg-main-800'
-                    : 'bg-main-300'
-              )}
-              style={{ height: `${heightPct}%` }}
-            />
-            <span
-              className={cn(
-                'text-[9px] font-medium text-gray-400 sm:text-[9.5px]',
-                '[writing-mode:vertical-rl] sm:[writing-mode:horizontal-tb]'
-              )}
-            >
-              {formatShortDate(point.date)}
-            </span>
-          </button>
-        );
-      })}
+            시작 전
+          </Text>
+        ) : null}
+      </div>
     </div>
   );
 }
 
 /**
- * 챌린지 통계 탭 — 참여율/완료 목표수/총 일지/진행 KPI + 날짜별 일지 추이
- * 막대 차트. 막대를 누르면 그 날짜로 필터된 일지 탭으로 이동한다.
+ * 챌린지 통계 탭 — 참여율(원형)·완료 목표수·총 일지·진행 KPI + 날짜별
+ * 일지 추이 막대 차트. 막대를 누르면 그 날짜로 필터된 일지 탭으로 이동한다.
  */
 export function ChallengeStatisticsSection({
   challengeId,
@@ -108,6 +145,16 @@ export function ChallengeStatisticsSection({
   const trend = useMemo(() => data?.diaryTrend ?? [], [data]);
   const summary = useMemo(() => summarizeDiaryTrend(trend), [trend]);
   const progress = useMemo(() => getTrendProgress(trend), [trend]);
+
+  const barData = useMemo<BarTrendDatum[]>(
+    () =>
+      trend.map((point) => ({
+        key: point.date,
+        label: formatShortDate(point.date),
+        count: point.count,
+      })),
+    [trend]
+  );
 
   if (isPending) {
     return <Skeleton style={{ height: 320 }} className="w-full" />;
@@ -128,30 +175,29 @@ export function ChallengeStatisticsSection({
     );
   }
 
-  const participationLabel =
+  const participationRate =
     data.participationRate < 0
-      ? '시작 전'
-      : `${Math.round(data.participationRate * 10) / 10}%`;
+      ? -1
+      : Math.round(data.participationRate * 10) / 10;
 
   const peakPoint = summary.peakIndex >= 0 ? trend[summary.peakIndex] : null;
 
   return (
     <div className="flex flex-col gap-3.5 lg:gap-4">
       <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
-        <StatCard label="참여율" value={participationLabel} />
-        <StatCard label="완료 목표수" value={`${data.completedGoalCount}개`} />
-        <StatCard label="총 일지" value={`${summary.total}개`} />
-        <StatCard
+        <ParticipationKpi rate={participationRate} />
+        <Kpi
+          icon={Target}
+          label="완료 목표수"
+          value={data.completedGoalCount}
+          unit="개"
+        />
+        <Kpi icon={FileText} label="총 일지" value={summary.total} unit="개" />
+        <Kpi
+          icon={CalendarClock}
           label="진행"
-          value={
-            <span className="tabular-nums">
-              {progress.currentDay}
-              <span className="text-gray-400">
-                {' '}
-                / {progress.totalDays}일
-              </span>
-            </span>
-          }
+          value={progress.currentDay}
+          unit={`/ ${progress.totalDays}일`}
         />
       </div>
 
@@ -196,9 +242,10 @@ export function ChallengeStatisticsSection({
                 </span>
               </div>
             ) : null}
-            <DiaryTrendChart
-              trend={trend}
-              onSelectDate={(date) =>
+            <BarTrend
+              data={barData}
+              ariaLabel={`날짜별 일지 추이, 총 ${summary.total}개`}
+              onSelectBar={(date) =>
                 // 탭/필터 변경은 history 를 오염시키지 않도록 replace 로 처리.
                 router.replace(
                   `/challenge/${challengeId}?tab=diary&date=${date}`,
