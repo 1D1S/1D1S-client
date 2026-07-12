@@ -520,11 +520,11 @@ export function ChallengeDetailScreen({
         : undefined;
 
   const tabItems = [
-    { id: 'overview', label: '소개' },
-    { id: 'stats', label: '통계' },
+    { id: 'overview', label: <span className="whitespace-nowrap">소개</span> },
+    { id: 'stats', label: <span className="whitespace-nowrap">통계</span> },
     {
       id: 'diary',
-      label: '일지',
+      label: <span className="whitespace-nowrap">일지</span>,
       badge:
         diaryCount !== undefined
           ? renderTabCountBadge(diaryCount, activeTab === 'diary')
@@ -532,7 +532,7 @@ export function ChallengeDetailScreen({
     },
     {
       id: 'participants',
-      label: '참여자',
+      label: <span className="whitespace-nowrap">참여자</span>,
       badge:
         summaryParticipantCnt > 0
           ? renderTabCountBadge(

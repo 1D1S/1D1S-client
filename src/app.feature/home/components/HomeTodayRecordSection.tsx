@@ -240,7 +240,10 @@ export default function HomeTodayRecordSection({
   if (!isAuthLoading && ongoing.length === 0) {
     return (
       <section className="w-full">
-        <SectionHeader size="sm" title="오늘의 기록" />
+        <SectionHeader
+          title="오늘의 기록"
+          className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
+        />
         <div
           className={cn(
             'mt-3 flex min-h-[140px] w-full flex-col items-center',
@@ -263,7 +266,10 @@ export default function HomeTodayRecordSection({
   if (isAuthLoading) {
     return (
       <section className="w-full">
-        <SectionHeader size="sm" title="오늘의 기록" />
+        <SectionHeader
+          title="오늘의 기록"
+          className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
+        />
         <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
           {Array.from({ length: 2 }).map((_, index) => (
             <SkeletonCard key={index} />
@@ -284,7 +290,7 @@ export default function HomeTodayRecordSection({
   return (
     <section className="w-full">
       <SectionHeader
-        size="sm"
+        className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
         title="오늘의 기록"
         subtitle={
           isLoading

@@ -12,7 +12,7 @@ import {
   Text,
 } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
-import { Check, ListChecks, X } from 'lucide-react';
+import { ListChecks } from 'lucide-react';
 import React, { useState } from 'react';
 
 interface PendingMemberGoal {
@@ -48,44 +48,49 @@ export function PendingMemberItem({
   return (
     <div
       className={cn(
-        'flex items-center justify-between gap-3 rounded-xl',
+        'flex flex-col gap-3 rounded-xl',
         'border border-gray-200 bg-white px-3.5 py-3'
       )}
     >
-      <button
-        type="button"
-        onClick={onProfileClick}
-        disabled={!onProfileClick}
-        aria-label={`${name} 프로필 보기`}
-        className={cn(
-          'flex min-w-0 flex-1 items-center gap-3 rounded-lg',
-          '-mx-1 -my-1 px-1 py-1 text-left transition-colors',
-          'hover:bg-gray-50 disabled:cursor-default disabled:hover:bg-transparent'
-        )}
-      >
-        <CircleAvatar
-          size="md"
-          imageUrl={profileImg ?? undefined}
-          tone="cream"
-        />
-        <div className="flex min-w-0 flex-col items-start gap-1">
-          <Text size="body2" weight="bold" className="truncate text-gray-900">
-            {name}
-          </Text>
-          <Tag tone="gray" size="xs">
-            {joinedAt}
-          </Tag>
-        </div>
-      </button>
+      <div className="flex min-w-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={onProfileClick}
+          disabled={!onProfileClick}
+          aria-label={`${name} 프로필 보기`}
+          className={cn(
+            'flex min-w-0 flex-1 items-center gap-3 rounded-lg',
+            '-mx-1 -my-1 px-1 py-1 text-left transition-colors',
+            'hover:bg-gray-50 disabled:cursor-default',
+            'disabled:hover:bg-transparent'
+          )}
+        >
+          <CircleAvatar
+            size="md"
+            imageUrl={profileImg ?? undefined}
+            tone="cream"
+          />
+          <div className="flex min-w-0 flex-col items-start gap-1">
+            <Text
+              size="body2"
+              weight="bold"
+              className="max-w-full truncate text-gray-900"
+            >
+              {name}
+            </Text>
+            <Tag tone="gray" size="xs">
+              {joinedAt}
+            </Tag>
+          </div>
+        </button>
 
-      <div className="flex shrink-0 items-center gap-1.5">
         {hasGoals ? (
           <button
             type="button"
             onClick={() => setGoalsOpen(true)}
             aria-label={`${name}님이 설정한 목표 보기`}
             className={cn(
-              'inline-flex items-center gap-1 rounded-full',
+              'inline-flex shrink-0 items-center gap-1 rounded-full',
               'px-2.5 py-1.5 text-[11px] font-bold transition-colors',
               'bg-gray-100 text-gray-600 hover:bg-gray-200/70'
             )}
@@ -94,23 +99,29 @@ export function PendingMemberItem({
             목표
           </button>
         ) : null}
+      </div>
+
+      {/* 좁은 폭(태블릿 2열 등)에서 버튼이 프로필과 겹치지 않도록 아래로 분리. */}
+      <div className="flex items-center gap-2">
         <Button
           variant="primary"
-          size="icon"
-          aria-label="참여 승인"
+          size="sm"
+          pill
+          fullWidth
           onClick={onAccept}
           disabled={isLoading}
         >
-          <Check className="h-4 w-4" />
+          수락
         </Button>
         <Button
           variant="secondary"
-          size="icon"
-          aria-label="참여 거절"
+          size="sm"
+          pill
+          fullWidth
           onClick={onReject}
           disabled={isLoading}
         >
-          <X className="h-4 w-4" />
+          거절
         </Button>
       </div>
 

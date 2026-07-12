@@ -11,9 +11,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import HomeExploreEntry from '../components/HomeExploreEntry';
-import HomeNoticeStrip from '../components/HomeNoticeStrip';
 import HomePopup from '../components/HomePopup';
-import HomeQuickActions from '../components/HomeQuickActions';
 import HomeStreakSlot from '../components/HomeStreakSlot';
 import HomeTodayRecordSection from '../components/HomeTodayRecordSection';
 import HomeWarmBanner from '../components/HomeWarmBanner';
@@ -95,14 +93,6 @@ export default function HomeScreen({
     isSidebarFetching ||
     (!hasMounted && initialHasAuthHint);
 
-  // 공지·의견 — 모바일 세로 스택, lg 이상 2열 나란히. 여러 위치에서 재사용.
-  const noticeRow = (
-    <div className="grid gap-3 lg:grid-cols-2">
-      <HomeNoticeStrip />
-      <HomeQuickActions />
-    </div>
-  );
-
   return (
     <>
       <HomePopup enabled={isLoggedIn} />
@@ -131,9 +121,6 @@ export default function HomeScreen({
               />
             </div>
 
-            {/* 공지·문의는 오늘의 기록 위로 노출한다. */}
-            {noticeRow}
-
             <HomeTodayRecordSection
               challenges={sidebar?.challengeList ?? []}
               isAuthLoading={isStreakLoading}
@@ -143,7 +130,6 @@ export default function HomeScreen({
           <>
             <HomeLoginCta />
             <HomeWarmBanner />
-            {noticeRow}
           </>
         )}
 

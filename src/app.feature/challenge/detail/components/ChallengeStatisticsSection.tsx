@@ -1,6 +1,6 @@
 'use client';
 
-import { CircularProgress, Text } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import { BarTrend, type BarTrendDatum } from '@component/charts/BarTrend';
 import { Skeleton } from '@component/Skeleton';
 import { normalizeApiError } from '@module/api/error';
@@ -82,55 +82,6 @@ function Kpi({
   );
 }
 
-// 참여율 카드 — 원형 프로그레스로 강조.
-function ParticipationKpi({
-  rate,
-}: {
-  rate: number;
-}): React.ReactElement {
-  const started = rate >= 0;
-  return (
-    <div
-      className={cn(
-        'flex items-center gap-3 rounded-[12px] border border-gray-200',
-        'bg-white p-4'
-      )}
-    >
-      {started ? (
-        <CircularProgress
-          value={Math.min(100, rate)}
-          size={52}
-          stroke={6}
-          showPercentage
-        />
-      ) : (
-        <span
-          className={cn(
-            'bg-main-200 flex size-7 items-center justify-center',
-            'rounded-[8px]'
-          )}
-        >
-          <Users className="text-main-800 size-3.5" strokeWidth={2} aria-hidden />
-        </span>
-      )}
-      <div className="min-w-0">
-        <Text size="caption2" weight="bold" className="block text-gray-500">
-          참여율
-        </Text>
-        {!started ? (
-          <Text
-            size="body1"
-            weight="extrabold"
-            className="mt-0.5 block text-gray-900"
-          >
-            시작 전
-          </Text>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
 /**
  * 챌린지 통계 탭 — 참여율(원형)·완료 목표수·총 일지·진행 KPI + 날짜별
  * 일지 추이 막대 차트. 막대를 누르면 그 날짜로 필터된 일지 탭으로 이동한다.
@@ -185,7 +136,12 @@ export function ChallengeStatisticsSection({
   return (
     <div className="flex flex-col gap-3.5 lg:gap-4">
       <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
-        <ParticipationKpi rate={participationRate} />
+        <Kpi
+          icon={Users}
+          label="참여율"
+          value={participationRate < 0 ? '시작 전' : participationRate}
+          unit={participationRate < 0 ? undefined : '%'}
+        />
         <Kpi
           icon={Target}
           label="완료 목표수"

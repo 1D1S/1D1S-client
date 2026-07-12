@@ -7,6 +7,7 @@ import HomeNoticeStrip from '@feature/home/components/HomeNoticeStrip';
 import HomeQuickActions from '@feature/home/components/HomeQuickActions';
 import HomeRandomChallengesSection from '@feature/home/components/HomeRandomChallengesSection';
 import HomeRandomDiariesSection from '@feature/home/components/HomeRandomDiariesSection';
+import HomeWarmBanner from '@feature/home/components/HomeWarmBanner';
 import { useHomeRandomData } from '@feature/home/hooks/useHomeRandomData';
 import { useHomeRandomDiaryLike } from '@feature/home/hooks/useHomeRandomDiaryLike';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
@@ -86,7 +87,10 @@ export default function ExploreScreen(): React.ReactElement {
         }
       >
         <div className="flex flex-col gap-7 pt-2 lg:pt-6">
-          {/* 공지·문의 배너 — 탐색 페이지에서는 맨 위에 노출 */}
+          {/* 프로모션 배너 — 탐색 페이지 맨 위에 노출 */}
+          <HomeWarmBanner />
+
+          {/* 공지·문의 */}
           <div className="grid gap-3 lg:grid-cols-2">
             <HomeNoticeStrip />
             <HomeQuickActions />
@@ -103,6 +107,7 @@ export default function ExploreScreen(): React.ReactElement {
             title="공식 챌린지"
             subtitle="1D1S가 엄선한 챌린지에 참여해보세요"
             emptyTitle="아직 공식 챌린지가 없어요!"
+            official
           />
 
           <HomeRandomChallengesSection

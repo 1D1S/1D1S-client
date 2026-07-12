@@ -1,4 +1,4 @@
-import { SectionHeader, Text } from '@1d1s/design-system';
+import { Icon, SectionHeader, Text } from '@1d1s/design-system';
 import ChallengeCard from '@component/cards/ChallengeCard';
 import EmptyState from '@component/EmptyState';
 import { ChallengeCardSkeleton } from '@component/skeletons/ChallengeCardSkeleton';
@@ -31,6 +31,8 @@ interface HomeRandomChallengesSectionProps {
   title?: string;
   subtitle?: string;
   emptyTitle?: string;
+  // 공식 챌린지 섹션 — 제목 앞에 1D1S 로고를 붙여 공식 표기를 명확히 한다.
+  official?: boolean;
 }
 
 export default function HomeRandomChallengesSection({
@@ -44,12 +46,29 @@ export default function HomeRandomChallengesSection({
   title = '오늘 시작해볼 챌린지',
   subtitle = '함께 도전할 친구를 찾아보세요',
   emptyTitle = '표시할 챌린지가 없어요',
+  official = false,
 }: HomeRandomChallengesSectionProps): React.ReactElement {
   const showSkeleton = useMinimumLoading(isLoading);
+  const titleNode = official ? (
+    <span className="inline-flex items-center gap-2">
+      <span
+        className={cn(
+          'rounded-2 flex h-7 w-7 items-center justify-center',
+          'from-main-700 to-main-800 bg-gradient-to-br',
+          'shadow-warm text-white'
+        )}
+      >
+        <Icon name="Logo" size={16} className="text-white" />
+      </span>
+      {title}
+    </span>
+  ) : (
+    title
+  );
   return (
     <section className="w-full">
       <SectionHeader
-        title={title}
+        title={titleNode}
         subtitle={subtitle}
         actionLabel="전체보기 →"
         onActionClick={onMoreClick}

@@ -162,7 +162,7 @@ export function BarTrend({
               ) : null}
               <span
                 className={cn(
-                  'w-full max-w-[26px] rounded-[7px]',
+                  'w-full rounded-[7px]',
                   !hasValue
                     ? 'bg-gray-100'
                     : isPeak
