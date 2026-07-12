@@ -19,18 +19,22 @@ interface EmptyStateProps {
   bordered?: boolean;
   /** 일러스트 부드러운 플로팅 모션 사용 여부 */
   animate?: boolean;
+  /** 좁은 슬롯용 축소 버전 — 일러스트/여백/텍스트를 작게 */
+  compact?: boolean;
   /** 외곽 컨테이너 추가 클래스 */
   className?: string;
 }
 
 function EmptyIllustration({
   variant,
+  size = 88,
 }: {
   variant: EmptyStateVariant;
+  size?: number;
 }): React.ReactElement {
   const common = {
-    width: 88,
-    height: 88,
+    width: size,
+    height: size,
     viewBox: '0 0 96 96',
     fill: 'none',
     'aria-hidden': true,
@@ -142,26 +146,35 @@ export default function EmptyState({
   action,
   bordered = false,
   animate = true,
+  compact = false,
   className,
 }: EmptyStateProps): React.ReactElement {
   return (
     <div
       className={cn(
-        'flex w-full flex-col items-center justify-center gap-3',
-        'px-6 py-10 text-center',
+        'flex w-full flex-col items-center justify-center text-center',
+        compact ? 'gap-2 px-4 py-4' : 'gap-3 px-6 py-10',
         bordered && 'rounded-3 border border-gray-200',
         className
       )}
     >
       <div className={cn(animate && 'empty-float')}>
-        <EmptyIllustration variant={variant} />
+        <EmptyIllustration variant={variant} size={compact ? 52 : 88} />
       </div>
-      <div className="flex flex-col gap-1.5">
-        <Text size="body1" weight="bold" className="text-gray-900">
+      <div className={cn('flex flex-col', compact ? 'gap-1' : 'gap-1.5')}>
+        <Text
+          size={compact ? 'body2' : 'body1'}
+          weight="bold"
+          className="text-gray-900"
+        >
           {title}
         </Text>
         {description ? (
-          <Text size="body2" weight="medium" className="text-gray-500">
+          <Text
+            size={compact ? 'caption1' : 'body2'}
+            weight="medium"
+            className="text-gray-500"
+          >
             {description}
           </Text>
         ) : null}

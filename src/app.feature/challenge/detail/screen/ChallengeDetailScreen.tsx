@@ -21,6 +21,7 @@ import {
   Calendar,
   Camera,
   CircleAlert,
+  Clock,
   Heart,
   type LucideIcon,
   PenLine,
@@ -41,9 +42,11 @@ import {
   isChallengeEndedOrArchived,
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
+  POST_END_WRITE_GRACE_DAYS,
 } from '../../board/utils/challengePeriod';
 import { ChallengeDetailCompactHeader } from '../components/ChallengeDetailCompactHeader';
 import { ChallengeDetailHero } from '../components/ChallengeDetailHero';
+import { ChallengeDiaryCalendar } from '../components/ChallengeDiaryCalendar';
 import { ChallengeDiaryDateFilter } from '../components/ChallengeDiaryDateFilter';
 import { ChallengeDiaryList } from '../components/ChallengeDiaryList';
 import { ChallengeGoalModals } from '../components/ChallengeGoalModals';
@@ -88,7 +91,12 @@ interface ChallengeDetailScreenProps {
 const FREE_GOAL_REQUIRED_CODE = 'CHALLENGE_022';
 
 // 상세 탭 뷰 — URL ?tab= 으로 보존. 기본은 소개.
-const CHALLENGE_TAB_IDS = ['overview', 'diary', 'participants'] as const;
+const CHALLENGE_TAB_IDS = [
+  'overview',
+  'stats',
+  'diary',
+  'participants',
+] as const;
 type ChallengeTabId = (typeof CHALLENGE_TAB_IDS)[number];
 
 function isChallengeTab(value: string | null): value is ChallengeTabId {
@@ -513,10 +521,11 @@ export function ChallengeDetailScreen({
         : undefined;
 
   const tabItems = [
-    { id: 'overview', label: '소개' },
+    { id: 'overview', label: <span className="whitespace-nowrap">소개</span> },
+    { id: 'stats', label: <span className="whitespace-nowrap">통계</span> },
     {
       id: 'diary',
-      label: '일지',
+      label: <span className="whitespace-nowrap">일지</span>,
       badge:
         diaryCount !== undefined
           ? renderTabCountBadge(diaryCount, activeTab === 'diary')
@@ -524,7 +533,7 @@ export function ChallengeDetailScreen({
     },
     {
       id: 'participants',
-      label: '참여자',
+      label: <span className="whitespace-nowrap">참여자</span>,
       badge:
         summaryParticipantCnt > 0
           ? renderTabCountBadge(
@@ -552,9 +561,9 @@ export function ChallengeDetailScreen({
       icon: Camera,
     },
     {
-      label: '종료 후 작성',
-      value: summary.postEndWriteAllowed ? '허용' : '미허용',
-      icon: PenLine,
+      label: '중도 참여',
+      value: allowMidJoin ? '가능' : '불가',
+      icon: Clock,
     },
   ];
 
@@ -721,7 +730,20 @@ export function ChallengeDetailScreen({
                   'lg:static lg:top-auto lg:z-auto'
                 )}
               >
-                <div className="scrollbar-hide -mx-1 overflow-x-auto px-1">
+                {/* 모바일: 너비 균등 분할. 데스크톱: 좌측 정렬 + 넘치면 스크롤. */}
+                <Tabs
+                  className="lg:hidden"
+                  fullWidth
+                  activeId={activeTab}
+                  onChange={handleTabChange}
+                  items={tabItems}
+                />
+                <div
+                  className={cn(
+                    'scrollbar-hide -mx-1 hidden overflow-x-auto px-1',
+                    'lg:block'
+                  )}
+                >
                   <Tabs
                     activeId={activeTab}
                     onChange={handleTabChange}
@@ -801,9 +823,9 @@ export function ChallengeDetailScreen({
                             />
                             <Text
                               size="caption1"
-                              weight="regular"
+                              weight="medium"
                               className={cn(
-                                'shrink-0 whitespace-nowrap text-gray-400'
+                                'shrink-0 whitespace-nowrap text-gray-600'
                               )}
                             >
                               {row.label}
@@ -821,10 +843,62 @@ export function ChallengeDetailScreen({
                           </div>
                         ))}
                       </div>
+                      {summary.postEndWriteAllowed ? (
+                        <div
+                          className={cn(
+                            'border-main-300 bg-main-100 mt-2 flex',
+                            'items-center gap-2.5 rounded-[10px] border',
+                            'px-3.5 py-3'
+                          )}
+                        >
+                          <PenLine
+                            className="text-main-800 size-4 shrink-0"
+                            strokeWidth={2}
+                            aria-hidden
+                          />
+                          <Text
+                            size="caption1"
+                            weight="bold"
+                            className="text-gray-700"
+                          >
+                            종료 후{' '}
+                            <b className="text-main-800">
+                              {POST_END_WRITE_GRACE_DAYS}일
+                            </b>
+                            까지 일지 작성 가능
+                          </Text>
+                        </div>
+                      ) : null}
                     </section>
 
-                    <ChallengeStatisticsSection challengeId={challengeId} />
+                    {statsData && statsData.diaryTrend.length > 0 ? (
+                      <section
+                        className={cn(
+                          'rounded-[14px] border border-gray-200 bg-white',
+                          'p-4 sm:p-5 lg:p-6'
+                        )}
+                      >
+                        <Text
+                          as="h2"
+                          size="heading2"
+                          weight="extrabold"
+                          className={cn(
+                            'mb-3 block tracking-[-0.3px] text-gray-900'
+                          )}
+                        >
+                          일지 캘린더
+                        </Text>
+                        <ChallengeDiaryCalendar
+                          trend={statsData.diaryTrend}
+                          onSelectDate={(date) => setDiaryDateFilter(date)}
+                        />
+                      </section>
+                    ) : null}
                   </>
+                ) : null}
+
+                {activeTab === 'stats' ? (
+                  <ChallengeStatisticsSection challengeId={challengeId} />
                 ) : null}
 
                 {activeTab === 'diary' ? (

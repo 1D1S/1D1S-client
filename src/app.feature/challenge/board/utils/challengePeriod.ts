@@ -4,7 +4,7 @@ import { add } from 'date-fns';
 const ENDLESS_MIN_YEAR = 2090;
 
 // 종료 후 일지 작성 유예 기간(일). 서버 규칙과 동일하게 종료일 +2일까지 허용.
-const POST_END_WRITE_GRACE_DAYS = 2;
+export const POST_END_WRITE_GRACE_DAYS = 2;
 
 export function isInfiniteChallengeEndDate(endDate?: string | null): boolean {
   const normalizedEndDate = endDate?.trim();

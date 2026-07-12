@@ -11,9 +11,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import HomeExploreEntry from '../components/HomeExploreEntry';
-import HomeNoticeStrip from '../components/HomeNoticeStrip';
 import HomePopup from '../components/HomePopup';
-import HomeQuickActions from '../components/HomeQuickActions';
 import HomeStreakSlot from '../components/HomeStreakSlot';
 import HomeTodayRecordSection from '../components/HomeTodayRecordSection';
 import HomeWarmBanner from '../components/HomeWarmBanner';
@@ -95,26 +93,18 @@ export default function HomeScreen({
     isSidebarFetching ||
     (!hasMounted && initialHasAuthHint);
 
-  // 공지·의견 — 모바일 세로 스택, lg 이상 2열 나란히. 여러 위치에서 재사용.
-  const noticeRow = (
-    <div className="grid gap-3 lg:grid-cols-2">
-      <HomeNoticeStrip />
-      <HomeQuickActions />
-    </div>
-  );
-
   return (
     <>
       <HomePopup enabled={isLoggedIn} />
       <div
         className={cn(
-          'mx-auto flex w-full max-w-[1200px] flex-col gap-6',
+          'mx-auto flex w-full max-w-[1200px] flex-col gap-4 lg:gap-6',
           'px-5 py-7 lg:px-8 lg:py-10'
         )}
       >
         {/* 모바일 인사 hero — 데스크탑/태블릿은 시안에 따라 생략.
             인사~스토리 간격이 과해 보여 모바일에서만 gap 을 좁힌다. */}
-        <div className="-mb-3 lg:mb-0 lg:hidden">
+        <div className="-mb-2 lg:mb-0 lg:hidden">
           <HomeWarmGreeting />
         </div>
 
@@ -131,19 +121,18 @@ export default function HomeScreen({
               />
             </div>
 
-            {/* 공지·문의는 오늘의 기록 위로 노출한다. */}
-            {noticeRow}
-
-            <HomeTodayRecordSection
-              challenges={sidebar?.challengeList ?? []}
-              isAuthLoading={isStreakLoading}
-            />
+            {/* 배너/스트릭과 오늘의 기록 사이만 살짝 더 띄운다. */}
+            <div className="mt-2 lg:mt-3">
+              <HomeTodayRecordSection
+                challenges={sidebar?.challengeList ?? []}
+                isAuthLoading={isStreakLoading}
+              />
+            </div>
           </>
         ) : (
           <>
             <HomeLoginCta />
             <HomeWarmBanner />
-            {noticeRow}
           </>
         )}
 
