@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ChallengeDetailResponse } from '../../../challenge/board/type/challenge';
 import type { DiaryDetail } from '../../board/type/diary';
 import type { DiaryComment } from '../type/comment';
 import {
@@ -159,5 +160,32 @@ describe('mapDiaryToViewData', () => {
     expect(view.connectedChallengeTitle).toBe('아침 러닝');
     expect(view.achievementPercent).toBe(40);
     expect(view.contentImageUrls).toEqual(['https://cdn.example.com/a.jpg']);
+  });
+
+  it('carries challengeType from challengeSummary so the badge can read it', () => {
+    const diary = {
+      id: 8,
+      challenge: null,
+      author: null,
+      title: '일지',
+      content: '<p>내용</p>',
+      imgUrl: null,
+      thumbnailUrl: null,
+      likeInfo: { likedByMe: false, likeCnt: 0 },
+      diaryInfo: { feeling: 'NONE', achievementRate: 0 },
+    } as unknown as DiaryDetail;
+    const challengeDetailData = {
+      challengeSummary: {
+        challengeId: 5,
+        title: '공식 챌린지',
+        participantCnt: 0,
+        challengeType: 'OFFICIAL',
+      },
+    } as unknown as ChallengeDetailResponse;
+
+    const view = mapDiaryToViewData(diary, challengeDetailData);
+
+    // 공식 챌린지 배지가 challengeType 을 읽어 0명이어도 종료로 보지 않게 한다.
+    expect(view.connectedChallengeSummary?.challengeType).toBe('OFFICIAL');
   });
 });

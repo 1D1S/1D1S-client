@@ -16,7 +16,17 @@ export const challengeCreateFormSchema = z
       .max(50, '챌린지 제목은 50자 이하로 입력해주세요.'),
     // 카테고리를 필수로 하고, 선택하지 않았을 때 에러 메시지 지정
     category: z.enum(
-      ['DEV', 'EXERCISE', 'BOOK', 'MUSIC', 'STUDY', 'LEISURE', 'ECONOMY'],
+      [
+        'DEV',
+        'EXERCISE',
+        'BOOK',
+        'DIET',
+        'HEALTH',
+        'HOBBY',
+        'LANGUAGE',
+        'SELF_DEV',
+        'ETC',
+      ],
       {
         message: '카테고리를 선택해주세요.',
       }
@@ -161,7 +171,8 @@ export function useChallengeCreateForm(): ReturnType<
       // 허용으로 둔다. 작성자는 필요 시 토글로 비허용으로 바꿀 수 있다.
       allowMidJoin: true,
       isPhotoRequired: false,
-      postEndWriteAllowed: false,
+      // 종료 후 일지 작성을 기본 허용으로 둔다. 작성자는 토글로 끌 수 있다.
+      postEndWriteAllowed: true,
       challengeType: 'PUBLIC',
       password: '',
       goals: [],

@@ -8,10 +8,12 @@ const CATEGORY_TONE: Record<string, string> = {
   DEV: 'blue',
   EXERCISE: 'peach',
   BOOK: 'mint',
-  MUSIC: 'rose',
-  STUDY: 'cream',
-  LEISURE: 'sky',
-  ECONOMY: 'gray',
+  DIET: 'cream',
+  HEALTH: 'mint',
+  HOBBY: 'rose',
+  LANGUAGE: 'sky',
+  SELF_DEV: 'blue',
+  ETC: 'gray',
 };
 
 export interface ChallengePreviewCardViewProps {

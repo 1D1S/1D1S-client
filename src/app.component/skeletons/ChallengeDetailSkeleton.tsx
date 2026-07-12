@@ -2,7 +2,6 @@
 
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { Skeleton } from '@component/Skeleton';
-import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -111,7 +110,15 @@ export function ChallengeDetailSkeleton(): React.ReactElement {
             )}
           >
             {/* 메인 콘텐츠 */}
-            <div className="flex min-w-0 flex-col gap-3.5 lg:gap-4">
+            <div className="flex min-w-0 flex-col">
+              {/* 탭 바 */}
+              <div className="flex gap-5 border-b border-gray-100 pb-2.5">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <Skeleton key={index} shape="text" className="h-5 w-10" />
+                ))}
+              </div>
+
+              <div className="mt-4 flex min-w-0 flex-col gap-3.5 lg:gap-4">
               {/* 챌린지 소개 카드 */}
               <section
                 className={cn(
@@ -160,33 +167,7 @@ export function ChallengeDetailSkeleton(): React.ReactElement {
                   ))}
                 </div>
               </section>
-
-              {/* 참여자 일지 */}
-              <section
-                className={cn(
-                  'rounded-[14px] border border-gray-100 bg-gray-50',
-                  'lg:border-gray-200 lg:bg-white',
-                  'p-4 sm:p-5 lg:p-6'
-                )}
-              >
-                <div className="mb-3 flex items-baseline justify-between gap-2">
-                  <Skeleton shape="text" className="h-5 w-24" />
-                  <Skeleton shape="text" className="h-3 w-14" />
-                </div>
-                <div
-                  className={cn(
-                    'scrollbar-hide flex gap-3 overflow-x-auto',
-                    'sm:grid sm:gap-2.5 sm:overflow-visible',
-                    'sm:grid-cols-[repeat(auto-fill,minmax(160px,200px))]'
-                  )}
-                >
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <div key={index} className="w-[170px] shrink-0 sm:w-auto">
-                      <DiaryCardSkeleton />
-                    </div>
-                  ))}
-                </div>
-              </section>
+              </div>
             </div>
 
             {/* 우측 sticky rail */}
@@ -209,27 +190,6 @@ export function ChallengeDetailSkeleton(): React.ReactElement {
                     <Skeleton shape="text" className="h-3 w-20" />
                   </div>
                   <Skeleton shape="rounded" className="mt-3.5 h-10 w-full" />
-                </div>
-              </div>
-              <div className="rounded-2xl border border-gray-100 bg-white p-5">
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <Skeleton shape="text" className="h-5 w-20" />
-                  <Skeleton shape="text" className="h-3 w-10" />
-                </div>
-                <div className="flex flex-col">
-                  {Array.from({ length: 5 }).map((_, index) => (
-                    <div
-                      key={index}
-                      className={cn(
-                        'flex items-center gap-2.5 rounded-md px-2 py-2.5',
-                        index < 4 && 'border-b border-gray-100'
-                      )}
-                    >
-                      <Skeleton shape="circle" className="h-8 w-8" />
-                      <Skeleton shape="text" className="h-4 flex-1" />
-                      <Skeleton shape="pill" className="h-5 w-10" />
-                    </div>
-                  ))}
                 </div>
               </div>
             </aside>

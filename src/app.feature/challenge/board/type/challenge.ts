@@ -7,10 +7,12 @@ export type ChallengeCategory =
   | 'DEV'
   | 'EXERCISE'
   | 'BOOK'
-  | 'MUSIC'
-  | 'STUDY'
-  | 'LEISURE'
-  | 'ECONOMY';
+  | 'DIET'
+  | 'HEALTH'
+  | 'HOBBY'
+  | 'LANGUAGE'
+  | 'SELF_DEV'
+  | 'ETC';
 export type GoalType = 'FIXED' | 'FLEXIBLE';
 export type ParticipationType = 'INDIVIDUAL' | 'GROUP';
 // 챌린지 공개 범위 — PUBLIC: 공개, PRIVATE: 비공개(비밀번호), OFFICIAL: 공식
@@ -48,6 +50,9 @@ export interface ChallengeSummary {
   deleted?: boolean;
   // 종료 후 2일 유예 동안 일지 작성 허용 여부(생성 시 지정).
   postEndWriteAllowed?: boolean;
+  // 공개 범위 — OFFICIAL 이면 참여자 0명이어도 종료로 판정하지 않는다.
+  // 서버가 상세 응답(challengeSummary)에 항상 내려주므로 필수.
+  challengeType: ChallengeType;
   randomParticipants?: RandomParticipant[];
 }
 

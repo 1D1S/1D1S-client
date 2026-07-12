@@ -26,6 +26,11 @@ const TOP_NAV_HIDDEN_ROUTES = [
 ];
 
 const RIGHT_RAIL_HIDDEN_ROUTES = [
+  // 홈(`/`)은 '나의 오늘' 탭 본문이 스트릭·참여 중 챌린지·일지 쓰기 동선을
+  // 직접 소유하므로, 같은 정보를 반복하던 우측 레일을 숨겨 중복을 없앤다.
+  // (챌린지·일지 탐색 화면에서는 본문이 개인 정보를 보여주지 않으므로 레일을
+  //  유지해 스트릭·진행 중 챌린지를 한눈에 제공한다.)
+  '/',
   '/auth/login',
   '/login',
   '/auth/signup',
@@ -40,7 +45,13 @@ const RIGHT_RAIL_HIDDEN_ROUTES = [
 
 // 바텀 네비는 최상위 4개 탭에서만 노출한다. 그 외 서브/상세 화면은
 // 각자 모바일 sticky 헤더(뒤로가기)를 사용하므로 바텀 네비를 숨긴다.
-const BOTTOM_NAV_VISIBLE_ROUTES = ['/', '/challenge', '/diary', '/mypage'];
+const BOTTOM_NAV_VISIBLE_ROUTES = [
+  '/',
+  '/explore',
+  '/challenge',
+  '/diary',
+  '/mypage',
+];
 
 function matchesRoute(pathname: string, routes: readonly string[]): boolean {
   return routes.some(
@@ -58,6 +69,9 @@ function isBottomNavVisible(pathname: string): boolean {
 }
 
 function resolveActiveNavId(pathname: string): string {
+  if (pathname.startsWith('/explore')) {
+    return 'explore';
+  }
   if (pathname.startsWith('/challenge')) {
     return 'challenge';
   }

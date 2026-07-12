@@ -22,6 +22,7 @@ export interface SocialLoginResponse {
 
 export interface SignUpInfoRequest {
   nickname: string;
+  phoneNumber: string;
   profileImageKey?: string;
   job: JobType;
   birth: string; // yyyy-MM-dd format

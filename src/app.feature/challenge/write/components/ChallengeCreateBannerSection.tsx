@@ -182,7 +182,9 @@ export function ChallengeCreateBannerSection(): React.ReactElement {
               <FormItem>
                 <ToggleGroup
                   type="single"
-                  value={field.value}
+                  // 미선택(undefined)에서도 controlled 상태를 유지하도록 '' 로
+                  // 보정한다. uncontrolled→controlled 전환 경고 방지.
+                  value={field.value ?? ''}
                   onValueChange={(value) => {
                     if (value) {
                       field.onChange(value);

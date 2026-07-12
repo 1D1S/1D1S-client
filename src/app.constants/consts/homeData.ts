@@ -11,12 +11,12 @@ export interface HomeMainBanner {
 
 export const HOME_MAIN_BANNERS: HomeMainBanner[] = [
   {
-    id: 'popular-challenge',
-    kind: 'HOT',
-    title: '7월 챌린지 시즌\n오픈!',
-    subtitle: '함께 도전할 챌린저를 찾아보세요',
+    id: 'usage-guide',
+    kind: 'TIP',
+    title: '1D1S가\n처음이라면',
+    subtitle: '5단계로 시작하는 사용 가이드 보기',
     gradient: 'linear-gradient(135deg, #ff8a65 0%, #ff5722 100%)',
-    href: '/challenge',
+    href: '/guide',
   },
   {
     id: 'community-diary',
@@ -33,5 +33,13 @@ export const HOME_MAIN_BANNERS: HomeMainBanner[] = [
     subtitle: '챌린저들의 진솔한 하루를 만나보세요',
     gradient: 'linear-gradient(135deg, #7ab3ef 0%, #1666ba 100%)',
     href: '/diary',
+  },
+  {
+    id: 'my-statistics',
+    kind: 'TIP',
+    title: '내 기록을\n통계로 보기',
+    subtitle: '참여율·작성 추이를 한눈에',
+    gradient: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
+    href: '/mypage/statistics',
   },
 ];

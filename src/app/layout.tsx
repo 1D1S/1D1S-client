@@ -3,6 +3,15 @@ import '@/app.styles/globals.css';
 
 import AppLayoutShell from '@component/layout/AppLayoutShell';
 import ScrollToTop from '@component/layout/ScrollToTop';
+import {
+  DEFAULT_OG_IMAGE_PATH,
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_WIDTH,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
+  SITE_URL,
+  toAbsoluteUrl,
+} from '@module/metadata/seo';
 import { AppProviders } from '@module/providers';
 import { cn } from '@module/utils/cn';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -10,23 +19,7 @@ import type { Metadata, Viewport } from 'next';
 
 import { pretendard } from '@/app.lib/font';
 
-function resolveSiteUrl(): URL {
-  const rawUrl =
-    process.env.NEXT_PUBLIC_WEB_URL ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    'http://localhost:3000';
-
-  try {
-    return new URL(rawUrl);
-  } catch {
-    return new URL('http://localhost:3000');
-  }
-}
-
-const SITE_URL = resolveSiteUrl();
-const SITE_TITLE = '1Day 1Streak';
-const SITE_DESCRIPTION = '매일 하나의 챌린지로 꾸준함을 기록하는 1Day 1Streak';
-const OG_IMAGE_PATH = '/images/open-graph.png';
+const OG_IMAGE_URL = toAbsoluteUrl(DEFAULT_OG_IMAGE_PATH);
 
 export const metadata: Metadata = {
   metadataBase: SITE_URL,
@@ -52,9 +45,9 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: OG_IMAGE_PATH,
-        width: 1200,
-        height: 630,
+        url: OG_IMAGE_URL,
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
         alt: SITE_TITLE,
       },
     ],
@@ -65,9 +58,9 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: OG_IMAGE_PATH,
-        width: 1200,
-        height: 630,
+        url: OG_IMAGE_URL,
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
         alt: SITE_TITLE,
       },
     ],

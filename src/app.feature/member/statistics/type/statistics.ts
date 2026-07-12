@@ -91,21 +91,25 @@ export interface StatisticsSummaryParams {
   periodKey?: string;
 }
 
-// 5. 친구 비교
+// 5. 친구 비교 — 특정 친구 1:1 비교 (서버 #321).
 export interface FriendComparisonMetrics {
   diaryCount: number;
   completedGoalCount: number;
 }
 
-export interface FriendComparisonRank {
-  byDiaryCount: number;
-  outOf: number;
+export interface FriendComparisonFriend extends FriendComparisonMetrics {
+  memberId: number;
+  nickname: string;
+  profileUrl: string;
 }
 
 export interface FriendComparison {
   period: FriendComparisonPeriod;
-  friendCount: number;
   me: FriendComparisonMetrics;
-  friendsAverage: FriendComparisonMetrics;
-  myRank: FriendComparisonRank;
+  friend: FriendComparisonFriend;
+}
+
+export interface FriendComparisonParams {
+  period: FriendComparisonPeriod;
+  friendId: number;
 }

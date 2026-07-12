@@ -38,7 +38,11 @@ export function SubPageShell({
   const handleBack = onBack ?? ((): void => router.back());
   return (
     <div className="min-h-screen w-full">
-      <MobileHeader title={title} onBack={handleBack} right={headerAction} />
+      <MobileHeader
+        title={title}
+        onBack={handleBack}
+        right={headerAction}
+      />
 
       <section className="mx-auto w-full max-w-[980px] p-4 lg:p-6">
         {/* 데스크탑 헤더 */}

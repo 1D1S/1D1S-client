@@ -73,6 +73,13 @@ export const memberApi = {
       data: { nickname },
     }),
 
+  updatePhoneNumber: async (phoneNumber: string): Promise<void> =>
+    requestData<void>(apiClient, {
+      url: '/member/phone-number',
+      method: 'PATCH',
+      data: { phoneNumber },
+    }),
+
   checkNickname: async (nickname: string): Promise<{ message?: string }> =>
     requestBody<{ message?: string }>(publicApiClient, {
       url: '/member/nickname/check',

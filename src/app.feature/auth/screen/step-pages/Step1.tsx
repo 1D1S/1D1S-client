@@ -23,6 +23,7 @@ import { NicknameCheckButton } from '@feature/member/components/NicknameCheckBut
 import { useCheckNickname } from '@feature/member/hooks/useMemberMutations';
 import { normalizeApiError } from '@module/api/error';
 import { NICKNAME_REGEX } from '@module/utils/nickname';
+import { formatPhoneNumber } from '@module/utils/phoneNumber';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
@@ -177,6 +178,33 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="phoneNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <TextField
+                  label="전화번호"
+                  placeholder="010-1234-5678"
+                  inputMode="numeric"
+                  maxLength={13}
+                  helper="상품 발송 시에만 사용하고 외부에 공개하지 않아요"
+                  className="w-full"
+                  value={field.value ?? ''}
+                  onChange={(event) =>
+                    field.onChange(formatPhoneNumber(event.target.value))
+                  }
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div>
           <FieldLabel required>생년월일</FieldLabel>
           <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-2">
@@ -290,7 +318,9 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
               <FormItem>
                 <ToggleGroup
                   type="single"
-                  value={field.value}
+                  // 미선택(undefined)에서도 controlled 상태를 유지하도록 '' 로
+                  // 보정한다. uncontrolled→controlled 전환 경고 방지.
+                  value={field.value ?? ''}
                   onValueChange={(value) => {
                     if (value) {
                       field.onChange(value as GenderType);
@@ -327,7 +357,9 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
               <FormItem>
                 <ToggleGroup
                   type="single"
-                  value={field.value}
+                  // 미선택(undefined)에서도 controlled 상태를 유지하도록 '' 로
+                  // 보정한다. uncontrolled→controlled 전환 경고 방지.
+                  value={field.value ?? ''}
                   onValueChange={(value) => {
                     if (value) {
                       field.onChange(value as SignupFormValues['job']);

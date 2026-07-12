@@ -3,11 +3,16 @@
 import { ConfirmDialog, Icon, StepIndicator, Text } from '@1d1s/design-system';
 import { Form } from '@component/ui/Form';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
+import { getApiErrorCode } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { putToStorage } from '@module/api/presignedUpload';
 import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
+import {
+  normalizePhoneNumber,
+  PHONE_NUMBER_DUPLICATE_MESSAGE,
+} from '@module/utils/phoneNumber';
 import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -80,6 +85,7 @@ export function SignUpScreen(): React.ReactElement {
 
       await authApi.completeSignUpInfo({
         nickname: values.nickname,
+        phoneNumber: normalizePhoneNumber(values.phoneNumber),
         job: values.job,
         birth,
         gender: values.gender,
@@ -98,6 +104,15 @@ export function SignUpScreen(): React.ReactElement {
       );
       router.replace(returnTo ?? '/');
     } catch (error) {
+      // 전화번호 중복(409, USER-010)은 토스트 대신 입력 단계의 필드
+      // 에러로 노출해 사용자가 바로 수정할 수 있게 한다.
+      if (getApiErrorCode(error) === 'USER-010') {
+        form.setError('phoneNumber', {
+          message: PHONE_NUMBER_DUPLICATE_MESSAGE,
+        });
+        setStep(1);
+        return;
+      }
       notifyApiError(error);
     } finally {
       setIsSubmitting(false);
@@ -122,6 +137,7 @@ export function SignUpScreen(): React.ReactElement {
   const handleNextStep = async (): Promise<void> => {
     const stepOneValid = await form.trigger([
       'nickname',
+      'phoneNumber',
       'year',
       'month',
       'day',

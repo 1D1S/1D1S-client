@@ -67,6 +67,14 @@ describe('getDateTimestamp', () => {
     );
   });
 
+  // 백엔드가 내려주는 공백구분 타임스탬프. raw new Date() 는 Safari/Firefox 에서
+  // Invalid Date(→NaN) 를 반환하므로, 정규화 파서가 T 로 바꿔 파싱해야 한다.
+  it('parses a space-separated datetime (Safari/Firefox safe)', () => {
+    expect(getDateTimestamp('2026-07-10 12:00:10')).toBe(
+      new Date('2026-07-10T12:00:10').getTime()
+    );
+  });
+
   it('returns 0 for an unparseable value', () => {
     expect(getDateTimestamp('nonsense')).toBe(0);
   });

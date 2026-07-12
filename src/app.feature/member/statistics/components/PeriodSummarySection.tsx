@@ -12,6 +12,7 @@ import {
   StatCard,
   Text,
 } from '@1d1s/design-system';
+import { BarTrend, type BarTrendDatum } from '@component/charts/BarTrend';
 import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
 import Image from 'next/image';
@@ -33,7 +34,6 @@ import {
   formatPercent,
 } from '../utils/statisticsView';
 import { StatisticsCard } from './StatisticsCard';
-import { TrendBars, type TrendDatum } from './TrendBars';
 
 const UNIT_OPTIONS = [
   { value: 'WEEK', label: '주' },
@@ -281,8 +281,8 @@ export function PeriodSummarySection(): React.ReactElement {
     }
   };
 
-  const subTrend: TrendDatum[] = (summary?.subTrend ?? []).map((point) => ({
-    bucket: point.bucket,
+  const subTrend: BarTrendDatum[] = (summary?.subTrend ?? []).map((point) => ({
+    key: point.bucket,
     count: point.count ?? 0,
     label: formatBucketLabel(point.bucket),
   }));
@@ -445,7 +445,7 @@ export function PeriodSummarySection(): React.ReactElement {
                 <Text size="caption2" className="mb-2 block text-gray-500">
                   기간 내 추이
                 </Text>
-                <TrendBars
+                <BarTrend
                   data={subTrend}
                   compact
                   ariaLabel="기간 내 작성 추이 막대 차트"

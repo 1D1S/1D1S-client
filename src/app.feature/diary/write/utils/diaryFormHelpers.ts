@@ -127,10 +127,12 @@ function normalizeChallengeCategory(category: string): ChallengeCategory {
     DEV: 'DEV',
     EXERCISE: 'EXERCISE',
     BOOK: 'BOOK',
-    MUSIC: 'MUSIC',
-    STUDY: 'STUDY',
-    LEISURE: 'LEISURE',
-    ECONOMY: 'ECONOMY',
+    DIET: 'DIET',
+    HEALTH: 'HEALTH',
+    HOBBY: 'HOBBY',
+    LANGUAGE: 'LANGUAGE',
+    SELF_DEV: 'SELF_DEV',
+    ETC: 'ETC',
   };
 
   return categoryMap[category] ?? 'DEV';

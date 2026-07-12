@@ -1,10 +1,12 @@
 import { toStartOfDay } from '@module/utils/date';
 import { add } from 'date-fns';
 
+import type { ChallengeType } from '../type/challenge';
+
 const ENDLESS_MIN_YEAR = 2090;
 
 // 종료 후 일지 작성 유예 기간(일). 서버 규칙과 동일하게 종료일 +2일까지 허용.
-const POST_END_WRITE_GRACE_DAYS = 2;
+export const POST_END_WRITE_GRACE_DAYS = 2;
 
 export function isInfiniteChallengeEndDate(endDate?: string | null): boolean {
   const normalizedEndDate = endDate?.trim();
@@ -91,14 +93,22 @@ export function canWriteDiaryForChallenge(
 }
 
 // 참여자가 0명이면 아카이브된 챌린지로 간주해 종료 처리한다.
+// 단, 공식 챌린지(OFFICIAL)는 참여자 0명이어도 아카이브로 보지 않고
+// 종료 판정을 기간(endDate) 기준으로만 한다. 운영이 만들어둔 공식 챌린지가
+// 아직 참여자가 없다는 이유로 종료로 표시되거나 노출에서 빠지는 걸 막는다.
 export function isChallengeEndedOrArchived(
   endDate: string | null | undefined,
   participantCnt: number | null | undefined,
+  challengeType?: ChallengeType | null,
   referenceDate: Date = new Date()
 ): boolean {
-  return (
-    isChallengeEnded(endDate, referenceDate) || (participantCnt ?? 0) === 0
-  );
+  if (isChallengeEnded(endDate, referenceDate)) {
+    return true;
+  }
+  if (challengeType === 'OFFICIAL') {
+    return false;
+  }
+  return (participantCnt ?? 0) === 0;
 }
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;

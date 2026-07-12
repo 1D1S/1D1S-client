@@ -8,7 +8,14 @@ import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog
 import { notifyApiError } from '@module/api/errorNotify';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
-import { Bell, ChevronRight, LogOut, User, UserMinus } from 'lucide-react';
+import {
+  Bell,
+  BookOpen,
+  ChevronRight,
+  HelpCircle,
+  LogOut,
+  User,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
@@ -140,6 +147,26 @@ export default function SettingsScreen(): React.ReactElement {
           )}
         >
           <SettingsRow
+            icon={<BookOpen className="h-5 w-5" />}
+            label="사용 가이드"
+            description="1D1S 사용법을 5단계로 확인해요"
+            onClick={() => router.push('/guide')}
+          />
+          <div className="h-px w-full bg-gray-100" />
+          <SettingsRow
+            icon={<HelpCircle className="h-5 w-5" />}
+            label="문의하기"
+            description="궁금한 점·불편한 점을 알려주세요"
+            onClick={() => router.push('/inquiry')}
+          />
+        </section>
+
+        <section
+          className={cn(
+            'overflow-hidden rounded-[14px] border border-gray-200 bg-white'
+          )}
+        >
+          <SettingsRow
             icon={<LogOut className="h-5 w-5" />}
             label={logout.isPending ? '로그아웃 중...' : '로그아웃'}
             tone="danger"
@@ -147,15 +174,22 @@ export default function SettingsScreen(): React.ReactElement {
             disabled={isAnySending}
             withChevron={false}
           />
-          <div className="h-px w-full bg-gray-100" />
-          <SettingsRow
-            icon={<UserMinus className="h-5 w-5" />}
-            label="회원 탈퇴"
+        </section>
+
+        <div className="flex justify-end">
+          <button
+            type="button"
             onClick={() => setIsWithdrawDialogOpen(true)}
             disabled={isAnySending}
-            withChevron={false}
-          />
-        </section>
+            className={cn(
+              'text-[13px] text-gray-400 underline-offset-2',
+              'transition-colors hover:text-gray-600 hover:underline',
+              'disabled:opacity-50'
+            )}
+          >
+            회원 탈퇴
+          </button>
+        </div>
       </div>
 
       <ConfirmDialog

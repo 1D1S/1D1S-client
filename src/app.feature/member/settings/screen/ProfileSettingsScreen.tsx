@@ -11,12 +11,19 @@ import { NicknameCheckButton } from '@feature/member/components/NicknameCheckBut
 import {
   useCheckNickname,
   useUpdateNickname,
+  useUpdatePhoneNumber,
   useUpdateProfileImage,
 } from '@feature/member/hooks/useMemberMutations';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
-import { normalizeApiError } from '@module/api/error';
+import { getApiErrorCode, normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
 import { validateNickname } from '@module/utils/nickname';
+import {
+  formatPhoneNumber,
+  normalizePhoneNumber,
+  PHONE_NUMBER_DUPLICATE_MESSAGE,
+  validatePhoneNumber,
+} from '@module/utils/phoneNumber';
 import Image from 'next/image';
 import React, { useState } from 'react';
 
@@ -46,6 +53,8 @@ export default function ProfileSettingsScreen(): React.ReactElement {
 
   const [editedNickname, setEditedNickname] = useState<string | undefined>();
   const [nicknameError, setNicknameError] = useState('');
+  const [editedPhone, setEditedPhone] = useState<string | undefined>();
+  const [phoneError, setPhoneError] = useState('');
   const [localProfilePreview, setLocalProfilePreview] = useState<
     string | undefined
   >();
@@ -54,8 +63,20 @@ export default function ProfileSettingsScreen(): React.ReactElement {
   const profilePreview = localProfilePreview ?? data?.profileUrl ?? '';
 
   const updateNickname = useUpdateNickname();
+  const updatePhoneNumber = useUpdatePhoneNumber();
   const updateProfileImage = useUpdateProfileImage();
   const checkNickname = useCheckNickname();
+
+  const hasPhone = Boolean(data?.phoneNumber);
+  const phoneNumber = editedPhone ?? data?.phoneNumber ?? '';
+  const isSamePhone =
+    normalizePhoneNumber(phoneNumber) ===
+    normalizePhoneNumber(data?.phoneNumber ?? '');
+  const phoneServerError = updatePhoneNumber.isError
+    ? getApiErrorCode(updatePhoneNumber.error) === 'USER-010'
+      ? PHONE_NUMBER_DUPLICATE_MESSAGE
+      : normalizeApiError(updatePhoneNumber.error).message
+    : '';
 
   const trimmedNickname = nickname.trim();
   const isSameAsCurrent = trimmedNickname === data?.nickname;
@@ -101,6 +122,25 @@ export default function ProfileSettingsScreen(): React.ReactElement {
       return;
     }
     updateNickname.mutate(trimmedNickname);
+  };
+
+  const handlePhoneChange = (value: string): void => {
+    updatePhoneNumber.reset();
+    const formatted = formatPhoneNumber(value);
+    setEditedPhone(formatted);
+    setPhoneError(formatted ? validatePhoneNumber(formatted) : '');
+  };
+
+  const handlePhoneSave = (): void => {
+    const error = validatePhoneNumber(phoneNumber);
+    if (error) {
+      setPhoneError(error);
+      return;
+    }
+    if (isSamePhone) {
+      return;
+    }
+    updatePhoneNumber.mutate(normalizePhoneNumber(phoneNumber));
   };
 
   return (
@@ -199,6 +239,63 @@ export default function ProfileSettingsScreen(): React.ReactElement {
                   ✅ 사용 가능한 닉네임이에요
                 </Text>
               ) : null}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Text size="body1" weight="medium" className="text-gray-700">
+                전화번호
+              </Text>
+              <div className="flex gap-2">
+                <TextField
+                  value={phoneNumber}
+                  onChange={(event) => handlePhoneChange(event.target.value)}
+                  placeholder="010-1234-5678"
+                  inputMode="numeric"
+                  maxLength={13}
+                  className="flex-1"
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      handlePhoneSave();
+                    }
+                  }}
+                />
+                <Button
+                  size="sm"
+                  onClick={handlePhoneSave}
+                  disabled={
+                    updatePhoneNumber.isPending ||
+                    !phoneNumber ||
+                    Boolean(phoneError) ||
+                    isSamePhone
+                  }
+                  className="shrink-0 whitespace-nowrap"
+                >
+                  {updatePhoneNumber.isPending ? '저장 중...' : '저장'}
+                </Button>
+              </div>
+              {phoneError ? (
+                <Text size="caption1" weight="regular" className="text-red-500">
+                  {phoneError}
+                </Text>
+              ) : phoneServerError ? (
+                <Text size="caption1" weight="regular" className="text-red-500">
+                  {phoneServerError}
+                </Text>
+              ) : updatePhoneNumber.isSuccess ? (
+                <Text
+                  size="caption1"
+                  weight="regular"
+                  className="text-green-600"
+                >
+                  전화번호가 저장되었습니다.
+                </Text>
+              ) : (
+                <Text size="caption1" weight="regular" className="text-gray-400">
+                  {hasPhone
+                    ? '상품 발송 시에만 사용하고 외부에 공개하지 않아요.'
+                    : '상품 발송을 위해 번호를 등록해 주세요. 외부에 공개되지 않아요.'}
+                </Text>
+              )}
             </div>
 
             {data?.provider && (

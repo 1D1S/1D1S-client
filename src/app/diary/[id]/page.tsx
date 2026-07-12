@@ -5,6 +5,9 @@ interface DiaryDetailProps {
   params: Promise<{ id: string }>;
 }
 
+// 일지 상세는 비인증 조회가 막혀 있어(400 AUTH-002) 개별 메타를 채울 수 없다.
+// generateMetadata 를 두지 않고 루트 레이아웃의 기본 OG 를 그대로 상속한다.
+
 /**
  * 상세 데이터는 클라이언트 React Query(useDiaryDetail)로 이관했다.
  * 인증 가드는 `src/app.module/middleware/auth.ts` 의 미들웨어가 동일 로직
