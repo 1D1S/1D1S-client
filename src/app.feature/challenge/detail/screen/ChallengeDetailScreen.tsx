@@ -21,6 +21,7 @@ import {
   Calendar,
   Camera,
   CircleAlert,
+  Clock,
   Heart,
   type LucideIcon,
   PenLine,
@@ -41,6 +42,7 @@ import {
   isChallengeEndedOrArchived,
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
+  POST_END_WRITE_GRACE_DAYS,
 } from '../../board/utils/challengePeriod';
 import { ChallengeDetailCompactHeader } from '../components/ChallengeDetailCompactHeader';
 import { ChallengeDetailHero } from '../components/ChallengeDetailHero';
@@ -88,7 +90,12 @@ interface ChallengeDetailScreenProps {
 const FREE_GOAL_REQUIRED_CODE = 'CHALLENGE_022';
 
 // 상세 탭 뷰 — URL ?tab= 으로 보존. 기본은 소개.
-const CHALLENGE_TAB_IDS = ['overview', 'diary', 'participants'] as const;
+const CHALLENGE_TAB_IDS = [
+  'overview',
+  'stats',
+  'diary',
+  'participants',
+] as const;
 type ChallengeTabId = (typeof CHALLENGE_TAB_IDS)[number];
 
 function isChallengeTab(value: string | null): value is ChallengeTabId {
@@ -514,6 +521,7 @@ export function ChallengeDetailScreen({
 
   const tabItems = [
     { id: 'overview', label: '소개' },
+    { id: 'stats', label: '통계' },
     {
       id: 'diary',
       label: '일지',
@@ -552,9 +560,9 @@ export function ChallengeDetailScreen({
       icon: Camera,
     },
     {
-      label: '종료 후 작성',
-      value: summary.postEndWriteAllowed ? '허용' : '미허용',
-      icon: PenLine,
+      label: '중도 참여',
+      value: allowMidJoin ? '가능' : '불가',
+      icon: Clock,
     },
   ];
 
@@ -821,10 +829,38 @@ export function ChallengeDetailScreen({
                           </div>
                         ))}
                       </div>
+                      {summary.postEndWriteAllowed ? (
+                        <div
+                          className={cn(
+                            'border-main-300 bg-main-100 mt-2 flex',
+                            'items-center gap-2.5 rounded-[10px] border',
+                            'px-3.5 py-3'
+                          )}
+                        >
+                          <PenLine
+                            className="text-main-800 size-4 shrink-0"
+                            strokeWidth={2}
+                            aria-hidden
+                          />
+                          <Text
+                            size="caption1"
+                            weight="bold"
+                            className="text-gray-700"
+                          >
+                            종료 후{' '}
+                            <b className="text-main-800">
+                              {POST_END_WRITE_GRACE_DAYS}일
+                            </b>
+                            까지 일지 작성 가능
+                          </Text>
+                        </div>
+                      ) : null}
                     </section>
-
-                    <ChallengeStatisticsSection challengeId={challengeId} />
                   </>
+                ) : null}
+
+                {activeTab === 'stats' ? (
+                  <ChallengeStatisticsSection challengeId={challengeId} />
                 ) : null}
 
                 {activeTab === 'diary' ? (
