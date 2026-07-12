@@ -35,21 +35,6 @@ export function toAbsoluteUrl(path: string): string {
   }
 }
 
-// 마크다운/HTML 태그를 제거하고 미리보기용으로 한 줄 요약을 만든다.
-export function toMetaDescription(
-  raw: string | null | undefined,
-  fallback = SITE_DESCRIPTION
-): string {
-  const text = (raw ?? '')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  if (!text) {
-    return fallback;
-  }
-  return text.length > 120 ? `${text.slice(0, 119)}…` : text;
-}
-
 interface ResourceMetadataInput {
   title: string;
   description: string;
@@ -95,22 +80,35 @@ export function buildResourceMetadata({
   };
 }
 
-// generateMetadata 전용 비인증 GET. 공개 리소스만 응답하며, 인증 필요(401)·
-// 삭제(404)·네트워크 오류는 모두 null 로 폴백해 메타를 기본값으로 되돌린다.
-export async function fetchPublicResource<T>(path: string): Promise<T | null> {
+export interface OfficialChallengeMeta {
+  challengeId: number;
+  title: string;
+  thumbnailImage?: string | null;
+}
+
+// 공식 챌린지만 비인증 조회가 열려 있다(/challenges/offset?challengeType=
+// OFFICIAL). 개별 /challenges/{id} 는 비인증 400(AUTH-002)이라 목록에서 id 로
+// 찾는다. 공식 챌린지는 큐레이션 대상이라 수가 적어 한 페이지(size=100)면
+// 충분하다. ponytail: 100개 초과 시에만 페이지네이션 추가.
+export async function fetchOfficialChallenge(
+  id: string
+): Promise<OfficialChallengeMeta | null> {
   if (!API_BASE_URL) {
     return null;
   }
   try {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
-      headers: { accept: 'application/json' },
-      next: { revalidate: 300 },
-    });
+    const res = await fetch(
+      `${API_BASE_URL}/challenges/offset?challengeType=OFFICIAL&size=100`,
+      { headers: { accept: 'application/json' }, next: { revalidate: 300 } }
+    );
     if (!res.ok) {
       return null;
     }
-    const body = (await res.json()) as { data?: T };
-    return body.data ?? null;
+    const body = (await res.json()) as {
+      data?: { items?: OfficialChallengeMeta[] };
+    };
+    const items = body.data?.items ?? [];
+    return items.find((item) => String(item.challengeId) === id) ?? null;
   } catch {
     return null;
   }
