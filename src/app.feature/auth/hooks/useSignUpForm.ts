@@ -1,6 +1,7 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { nicknameSchema } from '@module/utils/nickname';
+import { phoneNumberSchema } from '@module/utils/phoneNumber';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -20,6 +21,7 @@ export const TOPIC_VALUES = [
 
 export const signupFormSchema = z.object({
   nickname: nicknameSchema,
+  phoneNumber: phoneNumberSchema,
   year: z
     .string()
     .nonempty('연도를 선택해 주세요.')
@@ -52,6 +54,7 @@ export function useSignUpForm(): ReturnType<typeof useForm<SignupFormValues>> {
     reValidateMode: 'onChange',
     defaultValues: {
       nickname: '',
+      phoneNumber: '',
       year: '',
       month: '',
       day: '',

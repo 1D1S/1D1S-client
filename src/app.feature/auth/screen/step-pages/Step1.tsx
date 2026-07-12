@@ -23,6 +23,7 @@ import { NicknameCheckButton } from '@feature/member/components/NicknameCheckBut
 import { useCheckNickname } from '@feature/member/hooks/useMemberMutations';
 import { normalizeApiError } from '@module/api/error';
 import { NICKNAME_REGEX } from '@module/utils/nickname';
+import { formatPhoneNumber } from '@module/utils/phoneNumber';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
@@ -173,6 +174,33 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
               ) : (
                 <FormMessage />
               )}
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="phoneNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <TextField
+                  label="전화번호"
+                  placeholder="010-1234-5678"
+                  inputMode="numeric"
+                  maxLength={13}
+                  helper="상품 발송 시에만 사용하고 외부에 공개하지 않아요"
+                  className="w-full"
+                  value={field.value ?? ''}
+                  onChange={(event) =>
+                    field.onChange(formatPhoneNumber(event.target.value))
+                  }
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                />
+              </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
