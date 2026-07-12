@@ -1,4 +1,4 @@
-import { getRelativeTimeLabel } from '@module/utils/date';
+import { getDateTimestamp, getRelativeTimeLabel } from '@module/utils/date';
 
 import { StoryGroup, StoryItem } from '../type/story';
 
@@ -18,10 +18,10 @@ export function isGroupAllSeen(group: StoryGroup): boolean {
 }
 
 // createdAt(ISO) → epoch ms. 파싱 불가 시 0.
-function toTime(iso: string): number {
-  const time = new Date(iso).getTime();
-  return Number.isNaN(time) ? 0 : time;
-}
+// raw new Date(iso) 는 백엔드의 공백구분('YYYY-MM-DD HH:mm:ss')/마이크로초
+// 타임스탬프를 Safari/Firefox 에서 Invalid Date 로 만들어 정렬이 전부 0으로
+// 붕괴한다. date.ts 의 정규화 파서를 공유한다.
+const toTime = getDateTimestamp;
 
 // 그룹 내 가장 최근 스토리의 작성 시각(ms).
 function latestStoryTime(group: StoryGroup): number {
