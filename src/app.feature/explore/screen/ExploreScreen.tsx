@@ -86,7 +86,7 @@ export default function ExploreScreen(): React.ReactElement {
           </div>
         }
       >
-        <div className="flex flex-col gap-7 pt-2 lg:pt-6">
+        <div className="flex flex-col gap-10 pt-2 lg:pt-6">
           {/* 프로모션 배너 — 탐색 페이지 맨 위에 노출 */}
           <HomeWarmBanner />
 

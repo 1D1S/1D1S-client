@@ -121,10 +121,13 @@ export default function HomeScreen({
               />
             </div>
 
-            <HomeTodayRecordSection
-              challenges={sidebar?.challengeList ?? []}
-              isAuthLoading={isStreakLoading}
-            />
+            {/* 배너/스트릭과 오늘의 기록 사이만 살짝 더 띄운다. */}
+            <div className="mt-2 lg:mt-3">
+              <HomeTodayRecordSection
+                challenges={sidebar?.challengeList ?? []}
+                isAuthLoading={isStreakLoading}
+              />
+            </div>
           </>
         ) : (
           <>
