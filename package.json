@@ -21,7 +21,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@1d1s/design-system": "^2.10.0",
+    "@1d1s/design-system": "^2.10.1",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-alert-dialog": "^1.1.7",
     "@radix-ui/react-aspect-ratio": "^1.1.3",
