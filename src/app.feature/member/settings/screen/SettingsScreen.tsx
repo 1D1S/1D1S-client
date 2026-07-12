@@ -8,7 +8,7 @@ import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog
 import { notifyApiError } from '@module/api/errorNotify';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
-import { Bell, ChevronRight, LogOut, User, UserMinus } from 'lucide-react';
+import { Bell, ChevronRight, LogOut, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
@@ -147,15 +147,22 @@ export default function SettingsScreen(): React.ReactElement {
             disabled={isAnySending}
             withChevron={false}
           />
-          <div className="h-px w-full bg-gray-100" />
-          <SettingsRow
-            icon={<UserMinus className="h-5 w-5" />}
-            label="회원 탈퇴"
+        </section>
+
+        <div className="flex justify-end">
+          <button
+            type="button"
             onClick={() => setIsWithdrawDialogOpen(true)}
             disabled={isAnySending}
-            withChevron={false}
-          />
-        </section>
+            className={cn(
+              'text-[13px] text-gray-400 underline-offset-2',
+              'transition-colors hover:text-gray-600 hover:underline',
+              'disabled:opacity-50'
+            )}
+          >
+            회원 탈퇴
+          </button>
+        </div>
       </div>
 
       <ConfirmDialog
