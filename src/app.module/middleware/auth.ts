@@ -32,6 +32,18 @@ export interface AuthCheckResult {
   cookieHeader?: string;
 }
 
+// 링크 프리뷰(OG) 크롤러. 인증 쿠키가 없어 항상 게이트에 걸리므로, 공개
+// 상세(list-redirect)에 한해 통과시켜 generateMetadata 가 실행되고 og 태그가
+// 실린 200 HTML 을 받게 한다. 307 로 튕기면 리다이렉트를 따라가지 않는
+// 스크레이퍼(카카오톡 등)는 상세 OG 를 아예 못 읽는다. 민감 경로
+// (login-redirect: 마이페이지/작성/편집)는 통과시키지 않는다.
+const OG_CRAWLER_UA =
+  /facebookexternalhit|Facebot|Twitterbot|Slackbot|Discordbot|TelegramBot|LinkedInBot|WhatsApp|redditbot|Pinterest|kakaotalk-scrap|KAKAOTALK|Line/i;
+
+function isOgCrawler(req: NextRequest): boolean {
+  return OG_CRAWLER_UA.test(req.headers.get('user-agent') ?? '');
+}
+
 function matchRoute(pathname: string): ProtectedRoute | null {
   return PROTECTED_ROUTES.find(({ pattern }) => pattern.test(pathname)) ?? null;
 }
@@ -169,6 +181,11 @@ export async function authMiddleware(
     hintCookies.length > 0 ? { setCookies: hintCookies } : {};
 
   if (!matched) {
+    return passThrough;
+  }
+
+  // OG 크롤러는 공개 상세를 렌더시켜 generateMetadata 로 og 태그를 싣는다.
+  if (matched.type === 'list-redirect' && isOgCrawler(req)) {
     return passThrough;
   }
 
