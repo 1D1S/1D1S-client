@@ -10,10 +10,12 @@ export const TOPIC_VALUES = [
   'DEV',
   'EXERCISE',
   'BOOK',
-  'MUSIC',
-  'STUDY',
-  'LEISURE',
-  'ECONOMY',
+  'DIET',
+  'HEALTH',
+  'HOBBY',
+  'LANGUAGE',
+  'SELF_DEV',
+  'ETC',
 ] as const;
 
 export const signupFormSchema = z.object({
