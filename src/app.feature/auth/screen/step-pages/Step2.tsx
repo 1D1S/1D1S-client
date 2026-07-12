@@ -20,10 +20,12 @@ const TOPIC_TONE: Record<CategoryType, string> = {
   DEV: 'bg-[#dff5b8]',
   EXERCISE: 'bg-[#ffccbc]',
   BOOK: 'bg-[#c8f4e1]',
-  MUSIC: 'bg-[#deecfb]',
-  STUDY: 'bg-[#fff3e0]',
-  LEISURE: 'bg-[#e0f2fe]',
-  ECONOMY: 'bg-[#ffe0b2]',
+  DIET: 'bg-[#fff3e0]',
+  HEALTH: 'bg-[#d7f8ea]',
+  HOBBY: 'bg-[#fde0ef]',
+  LANGUAGE: 'bg-[#deecfb]',
+  SELF_DEV: 'bg-[#e5e6fb]',
+  ETC: 'bg-[#eceef1]',
 };
 
 const MAX_SELECTABLE_TOPICS = 3;

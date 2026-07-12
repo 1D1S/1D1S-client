@@ -7,10 +7,12 @@ export type ChallengeCategory =
   | 'DEV'
   | 'EXERCISE'
   | 'BOOK'
-  | 'MUSIC'
-  | 'STUDY'
-  | 'LEISURE'
-  | 'ECONOMY';
+  | 'DIET'
+  | 'HEALTH'
+  | 'HOBBY'
+  | 'LANGUAGE'
+  | 'SELF_DEV'
+  | 'ETC';
 export type GoalType = 'FIXED' | 'FLEXIBLE';
 export type ParticipationType = 'INDIVIDUAL' | 'GROUP';
 // 챌린지 공개 범위 — PUBLIC: 공개, PRIVATE: 비공개(비밀번호), OFFICIAL: 공식

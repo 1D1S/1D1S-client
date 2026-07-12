@@ -20,7 +20,17 @@ export const challengeEditFormSchema = z
       .min(1, '챌린지 제목을 입력해주세요.')
       .max(50, '챌린지 제목은 50자 이하로 입력해주세요.'),
     category: z.enum(
-      ['DEV', 'EXERCISE', 'BOOK', 'MUSIC', 'STUDY', 'LEISURE', 'ECONOMY'],
+      [
+        'DEV',
+        'EXERCISE',
+        'BOOK',
+        'DIET',
+        'HEALTH',
+        'HOBBY',
+        'LANGUAGE',
+        'SELF_DEV',
+        'ETC',
+      ],
       {
         message: '카테고리를 선택해주세요.',
       }

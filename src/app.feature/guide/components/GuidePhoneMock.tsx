@@ -41,13 +41,11 @@ function GuidePhone({
 const CATEGORY_HEX: Record<string, string> = {
   EXERCISE: '#ef4444',
   BOOK: '#16a34a',
-  STUDY: '#6366f1',
 };
 
 const CATEGORY_ICON: Record<string, typeof Dumbbell> = {
   EXERCISE: Dumbbell,
   BOOK: BookOpen,
-  STUDY: PencilLine,
 };
 
 /** 미니 무드 얼굴 — 일지 카드의 mood SVG 를 축소해 흉내낸 정적 아이콘 */
