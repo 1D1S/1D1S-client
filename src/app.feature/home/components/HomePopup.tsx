@@ -18,6 +18,8 @@ import { useActivePopups } from '../hooks/usePopupQueries';
 import {
   dismissPopupKeys,
   getDismissedPopupKeys,
+  getSessionDismissedPopupKeys,
+  sessionDismissPopupKeys,
 } from '../utils/popupDismissal';
 
 const SLIDE_INTERVAL_MS = 3_000;
@@ -33,8 +35,15 @@ export default function HomePopup({
   const router = useRouter();
   const { data: popups = [] } = useActivePopups(enabled);
 
-  // 쿠키에 등록된(=다시 보지 않기) key 는 마운트 시 1회만 읽는다.
-  const [dismissedKeys] = useState(() => new Set(getDismissedPopupKeys()));
+  // 차단 대상 key 는 마운트 시 1회만 읽는다.
+  // 쿠키(다시 보지 않기, 영구) + sessionStorage(그냥 닫기, 세션 한정).
+  const [dismissedKeys] = useState(
+    () =>
+      new Set([
+        ...getDismissedPopupKeys(),
+        ...getSessionDismissedPopupKeys(),
+      ])
+  );
   const [closed, setClosed] = useState(false);
   const [index, setIndex] = useState(0);
 
@@ -62,7 +71,12 @@ export default function HomePopup({
   const safeIndex = index % count;
   const current = visiblePopups[safeIndex];
 
-  const close = (): void => setClosed(true);
+  // 닫을 때(그냥 닫기·CTA·다시 보지 않기 공통) 현재 노출된 전체 팝업 key 를
+  // 세션 차단 목록에 기록해 같은 세션에서 재진입해도 다시 뜨지 않게 한다.
+  const close = (): void => {
+    sessionDismissPopupKeys(visiblePopups.map((popup) => popup.popupKey));
+    setClosed(true);
+  };
 
   // "다시 보지 않기": 현재 노출된 모든 팝업 key 를 쿠키에 등록 후 닫는다.
   const handleDismiss = (): void => {
