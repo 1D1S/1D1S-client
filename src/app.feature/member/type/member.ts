@@ -114,6 +114,8 @@ export interface MyPageData {
   nickname: string;
   profileUrl: string;
   email: string;
+  // 미입력 회원은 응답에 키가 없다.
+  phoneNumber?: string;
   provider: 'GOOGLE' | 'KAKAO' | 'NAVER';
   streak: MyPageStreak;
   challengeList: MyPageChallenge[];

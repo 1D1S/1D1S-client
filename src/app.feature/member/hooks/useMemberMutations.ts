@@ -25,6 +25,24 @@ export function useUpdateNickname(): UseMutationResult<void, Error, string> {
   });
 }
 
+export function useUpdatePhoneNumber(): UseMutationResult<
+  void,
+  Error,
+  string
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (phoneNumber: string) =>
+      memberApi.updatePhoneNumber(phoneNumber),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: MEMBER_QUERY_KEYS.myPage(),
+      });
+    },
+  });
+}
+
 export function useCheckNickname(): UseMutationResult<
   { message?: string },
   Error,
