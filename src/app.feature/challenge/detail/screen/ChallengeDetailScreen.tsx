@@ -253,7 +253,8 @@ export function ChallengeDetailScreen({
   );
   const isChallengeAlreadyEnded = isChallengeEndedOrArchived(
     summaryEndDate,
-    summaryParticipantCnt
+    summaryParticipantCnt,
+    summary?.challengeType
   );
   // 종료됐어도 종료 후 작성 허용 옵션 + 2일 유예 이내면 일지 작성을 살린다.
   const canWriteDiary = canWriteDiaryForChallenge(

@@ -55,7 +55,8 @@ const ChallengeBoardCardItem = React.memo(
     const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
     const ended = isChallengeEndedOrArchived(
       challenge.endDate,
-      challenge.participantCnt
+      challenge.participantCnt,
+      challenge.challengeType
     );
     const remainingLabel = formatChallengeRemainingLabel(
       challenge.endDate,

@@ -110,7 +110,8 @@ export function ChallengePicker({
                   )}
                   isEnded={isChallengeEndedOrArchived(
                     challenge.endDate,
-                    challenge.participantCnt
+                    challenge.participantCnt,
+                    challenge.challengeType
                   )}
                   stripeTone={getCategoryStripeTone(challenge.category)}
                   variant="picker"
