@@ -1,4 +1,5 @@
 import { Text } from '@1d1s/design-system';
+import { GuideMobileHeader } from '@feature/guide/components/GuideMobileHeader';
 import { GuidePhoneMock } from '@feature/guide/components/GuidePhoneMock';
 import {
   GUIDE_STEPS,
@@ -82,25 +83,9 @@ function GuideStepBlock({
 export default function GuideScreen(): React.ReactElement {
   return (
     <div className="min-h-screen w-full">
-      {/* 모바일 sticky 헤더 — 사용 가이드. 네비 탭이 있는 최상위 화면이므로
-          홈/챌린지/일지처럼 뒤로가기 없이 타이틀만 노출한다. */}
-      <div
-        className={cn(
-          'sticky top-0 z-20 flex items-center justify-between',
-          'gap-3 border-b border-gray-100',
-          'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
-          'backdrop-blur lg:hidden'
-        )}
-      >
-        <Text
-          as="p"
-          size="heading1"
-          weight="extrabold"
-          className="tracking-[-0.5px] text-gray-900"
-        >
-          사용 가이드
-        </Text>
-      </div>
+      {/* 모바일 헤더 — 설정에서 진입하는 서브페이지이므로 다른 서브페이지와
+          동일하게 DS MobileHeader(뒤로가기)를 사용한다. */}
+      <GuideMobileHeader />
 
       <div className="mx-auto w-full max-w-[960px] px-5 lg:px-6">
         {/* 히어로 */}
