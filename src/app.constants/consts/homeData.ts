@@ -11,12 +11,12 @@ export interface HomeMainBanner {
 
 export const HOME_MAIN_BANNERS: HomeMainBanner[] = [
   {
-    id: 'popular-challenge',
-    kind: 'HOT',
-    title: '7월 챌린지 시즌\n오픈!',
-    subtitle: '함께 도전할 챌린저를 찾아보세요',
+    id: 'usage-guide',
+    kind: 'TIP',
+    title: '1D1S가\n처음이라면',
+    subtitle: '5단계로 시작하는 사용 가이드 보기',
     gradient: 'linear-gradient(135deg, #ff8a65 0%, #ff5722 100%)',
-    href: '/challenge',
+    href: '/guide',
   },
   {
     id: 'community-diary',
