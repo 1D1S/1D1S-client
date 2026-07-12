@@ -87,11 +87,16 @@ export const attachInterceptors = (
         return response;
       }
 
+      // 재시도 전 _retry 를 세워, refresh 후에도 리다이렉트가 지속되면(백엔드가
+      // 특정 GET 을 계속 로그인으로 넘기거나 wasRedirected 오탐) 위 63행 가드로
+      // 응답을 그대로 반환하고 무한 refresh 루프를 끊는다. 401 에러 경로(124행)와
+      // 동일한 1회 재시도 계약을 이 성공-리다이렉트 경로에도 맞춘다.
+      config._retry = true;
+
       if (isRefreshing) {
         return new Promise<AxiosResponse>((resolve, reject) => {
           addRefreshSubscriber({
             resolve: () => {
-              config._retry = false;
               resolve(client(response.config));
             },
             reject,
