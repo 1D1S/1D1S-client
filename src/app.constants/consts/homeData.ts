@@ -34,4 +34,12 @@ export const HOME_MAIN_BANNERS: HomeMainBanner[] = [
     gradient: 'linear-gradient(135deg, #7ab3ef 0%, #1666ba 100%)',
     href: '/diary',
   },
+  {
+    id: 'my-statistics',
+    kind: 'TIP',
+    title: '내 기록을\n통계로 보기',
+    subtitle: '참여율·작성 추이를 한눈에',
+    gradient: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
+    href: '/mypage/statistics',
+  },
 ];
