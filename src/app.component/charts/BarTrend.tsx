@@ -129,7 +129,7 @@ export function BarTrend({
     <div className={cn('w-full', className)} aria-label={ariaLabel}>
       <div
         className={cn('grid items-end gap-1 sm:gap-1.5', areaClass)}
-        style={{ gridTemplateColumns: `repeat(${visible.length}, 1fr)` }}
+        style={{ gridTemplateColumns: `repeat(${pageSize}, 1fr)` }}
       >
         {visible.map((datum, index) => {
           const isPeak = index === peakIndex;
@@ -171,19 +171,18 @@ export function BarTrend({
                 )}
                 style={{ height: `${heightPct}%` }}
               />
-              <span
-                className={cn(
-                  'text-[9px] font-medium text-gray-400 sm:text-[9.5px]',
-                  compact
-                    ? ''
-                    : '[writing-mode:vertical-rl] sm:[writing-mode:horizontal-tb]'
-                )}
-              >
+              <span className="text-[9px] font-medium text-gray-400 sm:text-[9.5px]">
                 {datum.label}
               </span>
             </button>
           );
         })}
+        {/* 페이지가 pageSize 미만이면 빈 칸으로 채워 항상 같은 칸 수를 유지 */}
+        {Array.from({ length: Math.max(0, pageSize - visible.length) }).map(
+          (_, index) => (
+            <span key={`pad-${index}`} aria-hidden />
+          )
+        )}
       </div>
 
       {paged ? (

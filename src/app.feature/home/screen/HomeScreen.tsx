@@ -98,13 +98,13 @@ export default function HomeScreen({
       <HomePopup enabled={isLoggedIn} />
       <div
         className={cn(
-          'mx-auto flex w-full max-w-[1200px] flex-col gap-6',
+          'mx-auto flex w-full max-w-[1200px] flex-col gap-4 lg:gap-6',
           'px-5 py-7 lg:px-8 lg:py-10'
         )}
       >
         {/* 모바일 인사 hero — 데스크탑/태블릿은 시안에 따라 생략.
             인사~스토리 간격이 과해 보여 모바일에서만 gap 을 좁힌다. */}
-        <div className="-mb-3 lg:mb-0 lg:hidden">
+        <div className="-mb-2 lg:mb-0 lg:hidden">
           <HomeWarmGreeting />
         </div>
 

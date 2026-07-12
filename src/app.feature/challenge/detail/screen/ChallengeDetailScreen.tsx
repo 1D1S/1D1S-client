@@ -46,6 +46,7 @@ import {
 } from '../../board/utils/challengePeriod';
 import { ChallengeDetailCompactHeader } from '../components/ChallengeDetailCompactHeader';
 import { ChallengeDetailHero } from '../components/ChallengeDetailHero';
+import { ChallengeDiaryCalendar } from '../components/ChallengeDiaryCalendar';
 import { ChallengeDiaryDateFilter } from '../components/ChallengeDiaryDateFilter';
 import { ChallengeDiaryList } from '../components/ChallengeDiaryList';
 import { ChallengeGoalModals } from '../components/ChallengeGoalModals';
@@ -869,6 +870,30 @@ export function ChallengeDetailScreen({
                         </div>
                       ) : null}
                     </section>
+
+                    {statsData && statsData.diaryTrend.length > 0 ? (
+                      <section
+                        className={cn(
+                          'rounded-[14px] border border-gray-200 bg-white',
+                          'p-4 sm:p-5 lg:p-6'
+                        )}
+                      >
+                        <Text
+                          as="h2"
+                          size="heading2"
+                          weight="extrabold"
+                          className={cn(
+                            'mb-3 block tracking-[-0.3px] text-gray-900'
+                          )}
+                        >
+                          일지 캘린더
+                        </Text>
+                        <ChallengeDiaryCalendar
+                          trend={statsData.diaryTrend}
+                          onSelectDate={(date) => setDiaryDateFilter(date)}
+                        />
+                      </section>
+                    ) : null}
                   </>
                 ) : null}
 

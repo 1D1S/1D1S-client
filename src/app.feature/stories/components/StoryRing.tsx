@@ -275,9 +275,10 @@ function StoryRing({
         <EmptyState
           variant="friends"
           animate={false}
+          compact
           title="친구 스토리가 아직 없어요"
           description="친구를 추가하면 친구들의 일지가 여기에 나타나요"
-          className="min-w-[220px] flex-1 py-6"
+          className="min-w-[200px] flex-1"
         />
       ) : null}
     </div>
