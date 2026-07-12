@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-query';
 
 import { CHALLENGE_QUERY_KEYS } from '../../../challenge/board/consts/queryKeys';
+import { HOME_QUERY_KEYS } from '../../../home/consts/homeQueryKeys';
 import { MEMBER_QUERY_KEYS } from '../../../member/consts/queryKeys';
 import { DIARY_QUERY_KEYS } from '../../board/consts/queryKeys';
 import {
@@ -38,6 +39,7 @@ export function useCreateDiary(): UseMutationResult<
         MEMBER_QUERY_KEYS.myPage(),
         MEMBER_QUERY_KEYS.sidebar(),
         CHALLENGE_QUERY_KEYS.checkWrite(variables.challengeId),
+        HOME_QUERY_KEYS.todayChallenges(),
       ]);
     },
   });
