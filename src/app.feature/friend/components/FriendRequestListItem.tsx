@@ -2,6 +2,7 @@
 
 import { CircleAvatar, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import { getDateTimestamp } from '@module/utils/date';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -37,7 +38,9 @@ export function FriendRequestListItem({
           </Text>
           {request.createdAt ? (
             <Text size="caption2" className="text-gray-400">
-              {new Date(request.createdAt).toLocaleDateString('ko-KR')}
+              {new Date(
+                getDateTimestamp(request.createdAt)
+              ).toLocaleDateString('ko-KR')}
             </Text>
           ) : null}
         </div>
