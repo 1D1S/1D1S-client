@@ -15,10 +15,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { useTodayRecords } from '../hooks/useTodayRecords';
-import {
-  formatChallengeRemainingLabel,
-  isChallengeEndedOrArchived,
-} from '../utils/homeFormatters';
+import { formatChallengeRemainingLabel } from '../utils/homeFormatters';
 
 interface HomeTodayRecordSectionProps {
   /** 사이드바의 참여 챌린지 전체 목록 */
@@ -39,30 +36,16 @@ const CARD_BASE =
 interface RecordCardProps {
   challenge: SidebarChallenge;
   writtenToday: boolean;
-  isStatusLoading: boolean;
   goals: string[];
-  goalsLoading: boolean;
 }
 
 function GoalsBlock({
   goals,
-  goalsLoading,
   isFree,
 }: {
   goals: string[];
-  goalsLoading: boolean;
   isFree: boolean;
 }): React.ReactElement {
-  if (goalsLoading) {
-    return (
-      <div className={cn(GOALS_BLOCK, 'flex flex-col gap-1.5')}>
-        <span className="skeleton-pulse h-3 w-4/5 rounded bg-gray-100" />
-        <span className="skeleton-pulse h-3 w-3/5 rounded bg-gray-100" />
-        <span className="skeleton-pulse h-3 w-2/3 rounded bg-gray-100" />
-      </div>
-    );
-  }
-
   if (goals.length === 0) {
     return (
       <div className={cn(GOALS_BLOCK, 'flex items-center')}>
@@ -104,14 +87,13 @@ function GoalsBlock({
 function RecordCard({
   challenge,
   writtenToday,
-  isStatusLoading,
   goals,
-  goalsLoading,
 }: RecordCardProps): React.ReactElement {
   const router = useRouter();
   const tone = getCategoryStripeTone(challenge.category);
   const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
   const isFree = challenge.goalType === 'FLEXIBLE';
+  const categoryLabel = getCategoryLabel(challenge.category);
   const remainingLabel = formatChallengeRemainingLabel(
     challenge.endDate,
     isInfinite,
@@ -160,11 +142,9 @@ function RecordCard({
           </span>
         </Link>
 
-        {/* 상태/액션 — 폭을 고정해 로딩→확정 전환 시 시프트를 막는다. */}
+        {/* 상태/액션 — 폭을 고정해 그리드 시프트를 막는다. */}
         <div className="flex shrink-0 justify-end">
-          {isStatusLoading ? (
-            <span className="skeleton-pulse h-7 w-[76px] rounded-full bg-gray-100" />
-          ) : writtenToday ? (
+          {writtenToday ? (
             <span
               className={cn(
                 'inline-flex items-center gap-1 rounded-full',
@@ -195,11 +175,12 @@ function RecordCard({
         </div>
       </div>
 
-      <GoalsBlock goals={goals} goalsLoading={goalsLoading} isFree={isFree} />
+      <GoalsBlock goals={goals} isFree={isFree} />
 
-      {/* 카테고리·기간은 보조 정보로 축소해 하단에 배치. */}
+      {/* 카테고리·기간은 보조 정보로 축소해 하단에 배치. 사이드바에 없어
+          보조 정보를 못 채운 경우엔 라인을 비워 시프트만 방지한다. */}
       <span className="mt-auto truncate text-[11px] text-gray-400">
-        {getCategoryLabel(challenge.category)} · {remainingLabel}
+        {categoryLabel ? `${categoryLabel} · ${remainingLabel}` : ''}
       </span>
     </li>
   );
@@ -229,15 +210,30 @@ export default function HomeTodayRecordSection({
   isAuthLoading,
 }: HomeTodayRecordSectionProps): React.ReactElement {
   const router = useRouter();
-  const ongoing = challenges.filter(
-    (challenge) =>
-      !isChallengeEndedOrArchived(challenge.endDate, challenge.participantCnt)
-  );
-  const { items, doneCount, pendingCount, isLoading, allResolved } =
-    useTodayRecords(ongoing);
+  // 서버(GET /challenges/my/today)가 진행 중 챌린지만 내려준다. 사이드바
+  // 전체 목록은 카드 보조 정보(카테고리·기간·목표유형) 조인에만 쓴다.
+  const { items, doneCount, pendingCount, isLoading } =
+    useTodayRecords(challenges);
 
-  // 참여 중인 진행 챌린지가 없을 때 — 탐색으로 유도한다.
-  if (!isAuthLoading && ongoing.length === 0) {
+  // 인증/사이드바 또는 today 쿼리 로딩 중 — 개수를 모르므로 2행을 예약한다.
+  if (isAuthLoading || isLoading) {
+    return (
+      <section className="w-full">
+        <SectionHeader
+          title="오늘의 기록"
+          className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
+        />
+        <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, index) => (
+            <SkeletonCard key={index} />
+          ))}
+        </ul>
+      </section>
+    );
+  }
+
+  // 진행 중 챌린지가 없을 때 — 탐색으로 유도한다.
+  if (items.length === 0) {
     return (
       <section className="w-full">
         <SectionHeader
@@ -262,30 +258,11 @@ export default function HomeTodayRecordSection({
     );
   }
 
-  // 인증/사이드바 로딩 중 — 진행 챌린지 수를 아직 모르므로 2행을 예약한다.
-  if (isAuthLoading) {
-    return (
-      <section className="w-full">
-        <SectionHeader
-          title="오늘의 기록"
-          className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
-        />
-        <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {Array.from({ length: 2 }).map((_, index) => (
-            <SkeletonCard key={index} />
-          ))}
-        </ul>
-      </section>
-    );
-  }
-
-  // 확정 후에만 미작성 우선으로 정렬(로딩 중엔 사이드바 순서 유지).
-  const ordered = allResolved
-    ? [...items].sort(
-        (left, right) => Number(left.writtenToday) - Number(right.writtenToday)
-      )
-    : items;
-  const allDone = allResolved && pendingCount === 0 && ongoing.length > 0;
+  // 미작성 우선으로 정렬.
+  const ordered = [...items].sort(
+    (left, right) => Number(left.writtenToday) - Number(right.writtenToday)
+  );
+  const allDone = pendingCount === 0;
 
   return (
     <section className="w-full">
@@ -293,11 +270,9 @@ export default function HomeTodayRecordSection({
         className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
         title="오늘의 기록"
         subtitle={
-          isLoading
-            ? undefined
-            : allDone
-              ? '오늘 기록을 모두 마쳤어요'
-              : `오늘 ${pendingCount}개 챌린지가 기다리고 있어요`
+          allDone
+            ? '오늘 기록을 모두 마쳤어요'
+            : `오늘 ${pendingCount}개 챌린지가 기다리고 있어요`
         }
         actionLabel="전체보기 →"
         onActionClick={() => router.push('/mypage/challenge')}
@@ -326,9 +301,7 @@ export default function HomeTodayRecordSection({
             key={item.challenge.challengeId}
             challenge={item.challenge}
             writtenToday={item.writtenToday}
-            isStatusLoading={item.isLoading}
             goals={item.goals}
-            goalsLoading={item.goalsLoading}
           />
         ))}
       </ul>
