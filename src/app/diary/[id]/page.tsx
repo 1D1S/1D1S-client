@@ -1,8 +1,37 @@
+import { DiaryDetail } from '@feature/diary/board/type/diary';
 import { DiaryDetailScreen } from '@feature/diary/detail/screen/DiaryDetailScreen';
+import {
+  buildResourceMetadata,
+  fetchPublicResource,
+  SITE_TITLE,
+  toMetaDescription,
+} from '@module/metadata/seo';
+import type { Metadata } from 'next';
 import React from 'react';
 
 interface DiaryDetailProps {
   params: Promise<{ id: string }>;
+}
+
+/**
+ * 공개(isPublic) 일지만 상세 메타를 채운다. 비공개·삭제·인증 필요·조회 실패는
+ * 빈 객체를 반환해 루트 기본 메타(기본 OG)로 폴백한다. 썸네일(없으면 첫
+ * 이미지)이 있으면 OG 이미지로 쓰고 없으면 기본 이미지로 폴백.
+ */
+export async function generateMetadata({
+  params,
+}: DiaryDetailProps): Promise<Metadata> {
+  const { id } = await params;
+  const diary = await fetchPublicResource<DiaryDetail>(`/diaries/${id}`);
+  if (!diary || !diary.isPublic) {
+    return {};
+  }
+
+  return buildResourceMetadata({
+    title: `${diary.title} | ${SITE_TITLE}`,
+    description: toMetaDescription(diary.content),
+    imageUrl: diary.thumbnailUrl ?? diary.imgUrl?.[0] ?? null,
+  });
 }
 
 /**
