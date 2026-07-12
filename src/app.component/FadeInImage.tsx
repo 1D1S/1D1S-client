@@ -112,4 +112,9 @@ function FadeInImage({
   );
 }
 
-export default FadeInImage;
+// 부모 리스트(일지/챌린지 보드, 스토리 등)가 스크롤·상태 변화로 재렌더돼도
+// src 등 props 가 같으면 재렌더를 건너뛴다. 재렌더 시 next/image 가 같은
+// <img> 의 src 를 다시 써 래스터가 blank→재디코드되며 깜빡이던 문제를 리프
+// 한 곳에서 차단한다. 내부 loaded/errored 상태 변화에 의한 자기 재렌더는
+// memo 와 무관하게 정상 동작한다.
+export default React.memo(FadeInImage);
