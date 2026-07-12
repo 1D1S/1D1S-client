@@ -68,7 +68,8 @@ export default function ExploreScreen(): React.ReactElement {
           // AppTopNav 가 같은 영역을 차지하므로 글로벌 sticky 차단 룰로 가린다.
           <div
             className={cn(
-              'sticky top-0 z-20 flex items-center border-b border-gray-100',
+              'sticky top-0 z-20 flex items-center justify-between',
+              'gap-3 border-b border-gray-100',
               'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
               'backdrop-blur lg:hidden'
             )}
