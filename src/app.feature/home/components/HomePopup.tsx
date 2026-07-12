@@ -55,7 +55,7 @@ export default function HomePopup({
     return () => clearInterval(timer);
   }, [closed, count]);
 
-  if (closed || count === 0) {
+  if (count === 0) {
     return null;
   }
 
@@ -81,25 +81,38 @@ export default function HomePopup({
   };
 
   return (
-    <Dialog open onOpenChange={(open) => !open && close()}>
+    <Dialog open={!closed} onOpenChange={(open) => !open && close()}>
       <DialogPortal>
-        <DialogOverlay />
+        <DialogOverlay
+          className={cn(
+            'data-[state=open]:animate-in data-[state=closed]:animate-out',
+            'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0'
+          )}
+        />
         <DialogContent
           className={cn(
             'fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2',
-            'w-auto max-w-[92vw] rounded-2xl bg-white px-5 pt-5 pb-4'
+            'w-[min(500px,90vw)] rounded-2xl bg-white px-5 pt-5 pb-4',
+            'duration-200',
+            'data-[state=open]:animate-in data-[state=closed]:animate-out',
+            'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
+            'data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95'
           )}
         >
           <DialogTitle className="sr-only">이벤트 팝업</DialogTitle>
           <DialogDescription className="sr-only">
             {current.ctaText}
           </DialogDescription>
-          <div className="relative h-[200px] w-[200px] overflow-hidden rounded-xl bg-gray-100">
+          <button
+            type="button"
+            onClick={handleCta}
+            className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-xl bg-gray-100"
+          >
             <FadeInImage
               src={current.imageUrl}
               alt=""
               fill
-              sizes="200px"
+              sizes="(max-width: 540px) 90vw, 500px"
               className="object-cover"
             />
             {count >= 2 && (
@@ -112,8 +125,8 @@ export default function HomePopup({
                 {safeIndex + 1}/{count}
               </span>
             )}
-          </div>
-          <div className="mt-4 flex w-[200px] gap-2">
+          </button>
+          <div className="mt-4 flex w-full gap-2">
             <Button
               variant="secondary"
               className="h-11 flex-1 rounded-[10px]"
