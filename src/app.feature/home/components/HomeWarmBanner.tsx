@@ -6,6 +6,7 @@ import {
   type HomeMainBanner,
 } from '@constants/consts/homeData';
 import { cn } from '@module/utils/cn';
+import { BarChart3 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
@@ -53,6 +54,23 @@ export default function HomeWarmBanner({
           'data-fade-in hover:brightness-105'
         )}
       />
+      {/* 통계 보기 바로가기 — 배너 자체 이동과 겹치지 않게 전파 차단. */}
+      <button
+        type="button"
+        aria-label="내 통계 보기"
+        onClick={(event) => {
+          event.stopPropagation();
+          router.push('/mypage/statistics');
+        }}
+        className={cn(
+          'absolute top-3 right-4 inline-flex items-center gap-1',
+          'rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-bold',
+          'text-white backdrop-blur transition hover:bg-white/30'
+        )}
+      >
+        <BarChart3 className="h-3.5 w-3.5" />
+        통계 보기
+      </button>
       {banners.length > 1 ? (
         <div className="absolute right-4 bottom-3 flex items-center gap-1.5">
           {banners.map((banner, i) => (
