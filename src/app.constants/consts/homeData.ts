@@ -19,6 +19,14 @@ export const HOME_MAIN_BANNERS: HomeMainBanner[] = [
     href: '/challenge/25',
   },
   {
+    id: 'discord-community',
+    kind: 'HOT',
+    title: '디스코드\n참여하기',
+    subtitle: '챌린저들과 실시간으로 이야기 나눠요',
+    gradient: 'linear-gradient(135deg, #7289da 0%, #5865f2 100%)',
+    href: 'https://discord.gg/JaHRYHtrE7',
+  },
+  {
     id: 'usage-guide',
     kind: 'TIP',
     title: '1D1S가\n처음이라면',
@@ -32,14 +40,6 @@ export const HOME_MAIN_BANNERS: HomeMainBanner[] = [
     title: '꾸준함이\n실력이 됩니다',
     subtitle: '매일 조금씩, 30일 후 달라진 나',
     gradient: 'linear-gradient(135deg, #7dd8b5 0%, #3eb489 100%)',
-    href: '/diary',
-  },
-  {
-    id: 'challenge-create',
-    kind: 'NEW',
-    title: '오늘의 일지\n인기글',
-    subtitle: '챌린저들의 진솔한 하루를 만나보세요',
-    gradient: 'linear-gradient(135deg, #7ab3ef 0%, #1666ba 100%)',
     href: '/diary',
   },
   {
