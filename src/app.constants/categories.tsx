@@ -12,9 +12,9 @@ export const CATEGORY_OPTIONS: ReadonlyArray<{
   { value: 'DIET', label: '식단', iconName: 'Salad' },
   { value: 'HEALTH', label: '건강', iconName: 'Heart' },
   { value: 'HOBBY', label: '취미', iconName: 'Palette' },
-  { value: 'LANGUAGE', label: '어학', iconName: 'Flag' },
+  { value: 'LANGUAGE', label: '어학', iconName: 'Languages' },
   { value: 'SELF_DEV', label: '자기계발', iconName: 'Target' },
-  { value: 'ETC', label: '기타', iconName: 'Pin' },
+  { value: 'ETC', label: '기타', iconName: 'Shapes' },
 ];
 
 // 카테고리별 stripe/hero accent 색. 같은 보드/일지 화면에 여러 카테고리가
