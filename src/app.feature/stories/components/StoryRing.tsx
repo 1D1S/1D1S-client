@@ -47,8 +47,9 @@ function pickStoryMood(userId: number): StoryMood {
   return STORY_MOODS[Math.abs(userId) % STORY_MOODS.length];
 }
 
-// 프로필 썸네일(52px 원) + 무드 아이콘 오버레이 + 읽음 테두리 링만 남긴
-// 원형 스토리 아이템. 링 색으로 읽음/안읽음을 표현한다.
+// 사각형 스토리 카드(144x180). 무드 이미지를 크게 중앙에 두고 그 아래
+// 프로필 썸네일만 노출한다(닉네임/시간/제목/개수 미표시). 읽음 여부는
+// 카드 테두리 색으로 표현한다(안읽음 border-main-500, 읽음 border-gray-200).
 function StoryRing({
   groups,
   onSelect,
@@ -66,8 +67,8 @@ function StoryRing({
   return (
     <div
       className={cn(
-        'scrollbar-hide flex w-full items-start gap-3.5',
-        'overflow-x-auto py-3'
+        'scrollbar-hide flex w-full items-start gap-3',
+        'overflow-x-auto py-3.5'
       )}
     >
       {showMySlot && !hasMyStory ? (
@@ -75,13 +76,28 @@ function StoryRing({
           type="button"
           onClick={onAddStory}
           aria-label="오늘 일지 올리기"
-          className="relative shrink-0"
+          className={cn(
+            'flex h-[180px] w-[144px] shrink-0 flex-col items-center',
+            'justify-center gap-3 overflow-hidden rounded-[20px]',
+            'border-main-200 border-2 border-dashed bg-white',
+            'hover:shadow-warm transition-all duration-300 ease-out'
+          )}
         >
           <span
             className={cn(
-              'flex h-13 w-13 items-center justify-center overflow-hidden',
-              'border-main-200 rounded-full border-2 border-dashed bg-white'
+              'bg-main-500 shadow-warm flex h-14 w-14 items-center',
+              'justify-center rounded-full text-white'
             )}
+            aria-hidden
+          >
+            <Icon name="Plus" size={24} />
+          </span>
+          <span
+            className={cn(
+              'flex h-11 w-11 items-center justify-center overflow-hidden',
+              'rounded-full border-2 border-white bg-[#ffe1a8]'
+            )}
+            aria-hidden
           >
             {isValidNextImageSrc(myImageUrl) ? (
               <span className="relative h-full w-full">
@@ -89,21 +105,13 @@ function StoryRing({
                   src={myImageUrl}
                   alt=""
                   fill
-                  sizes="52px"
+                  sizes="44px"
                   className="object-cover"
                 />
               </span>
-            ) : null}
-          </span>
-          <span
-            className={cn(
-              'absolute -right-0.5 -bottom-0.5 flex h-[22px] w-[22px]',
-              'bg-main-500 items-center justify-center rounded-full',
-              'text-white ring-2 ring-white'
+            ) : (
+              <span className="h-2.5 w-5 rounded-full bg-white" />
             )}
-            aria-hidden
-          >
-            <Icon name="Plus" size={12} />
           </span>
         </button>
       ) : null}
@@ -120,52 +128,41 @@ function StoryRing({
             type="button"
             onClick={() => onSelect(index)}
             aria-label={`${name} 스토리 열기`}
-            className="relative shrink-0"
+            className={cn(
+              'flex h-[180px] w-[144px] shrink-0 flex-col items-center',
+              'justify-center gap-3 overflow-hidden rounded-[20px] border-2',
+              'hover:shadow-warm transition-all duration-300 ease-out',
+              seen ? 'border-gray-200' : 'border-main-500',
+              mood.tint
+            )}
           >
+            {/* 무드 SVG는 정적 에셋이라 Next 이미지 최적화 없이 서빙한다. */}
+            <Image
+              src={mood.src}
+              alt={mood.alt}
+              width={56}
+              height={56}
+              className="h-14 w-14"
+              unoptimized
+            />
             <span
               className={cn(
-                'flex h-13 w-13 items-center justify-center overflow-hidden',
-                'rounded-full border-2 p-0.5',
-                seen ? 'border-gray-200' : 'border-main-500'
-              )}
-            >
-              <span
-                className={cn(
-                  'relative flex h-full w-full items-center justify-center',
-                  'overflow-hidden rounded-full',
-                  mood.tint
-                )}
-              >
-                {isValidNextImageSrc(profileUrl) ? (
-                  <FadeInImage
-                    src={profileUrl}
-                    alt=""
-                    fill
-                    sizes="48px"
-                    className="object-cover"
-                  />
-                ) : (
-                  <span className="h-3.5 w-6 rounded-full bg-white/80" />
-                )}
-              </span>
-            </span>
-            <span
-              className={cn(
-                'absolute -right-0.5 -bottom-0.5 flex h-[22px] w-[22px]',
-                'items-center justify-center overflow-hidden rounded-full',
-                'bg-white ring-2 ring-white'
+                'relative flex h-11 w-11 items-center justify-center',
+                'overflow-hidden rounded-full border-2 border-white bg-white'
               )}
               aria-hidden
             >
-              {/* 무드 SVG는 정적 에셋이라 Next 이미지 최적화 없이 서빙한다. */}
-              <Image
-                src={mood.src}
-                alt={mood.alt}
-                width={20}
-                height={20}
-                className="h-5 w-5"
-                unoptimized
-              />
+              {isValidNextImageSrc(profileUrl) ? (
+                <FadeInImage
+                  src={profileUrl}
+                  alt=""
+                  fill
+                  sizes="44px"
+                  className="object-cover"
+                />
+              ) : (
+                <span className="h-3.5 w-6 rounded-full bg-gray-200" />
+              )}
             </span>
           </button>
         );

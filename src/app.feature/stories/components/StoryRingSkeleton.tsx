@@ -8,16 +8,17 @@ interface StoryRingSkeletonProps {
   count?: number;
 }
 
-// 실제 StoryRing 과 동일한 원형 크기/간격을 두고 내용만 pulse 로 채운다.
-// (h-13 w-13 + gap-3.5 + py-3 → 레이아웃 시프트 없이 데이터로 전환)
+// 실제 StoryRing 과 동일한 사각 카드 크기/간격을 두고 내용만 pulse 로
+// 채운다. (h-[180px] w-[144px] + gap-3 + py-3.5 → 레이아웃 시프트 없이
+// 데이터로 전환)
 export default function StoryRingSkeleton({
   count = 6,
 }: StoryRingSkeletonProps): React.ReactElement {
   return (
     <div
       className={cn(
-        'scrollbar-hide flex w-full items-start gap-3.5',
-        'overflow-x-auto py-3'
+        'scrollbar-hide flex w-full items-start gap-3',
+        'overflow-x-auto py-3.5'
       )}
       aria-busy
       aria-label="스토리 불러오는 중"
@@ -26,7 +27,7 @@ export default function StoryRingSkeleton({
         <div
           key={index}
           className={cn(
-            'skeleton-pulse h-13 w-13 shrink-0 rounded-full',
+            'skeleton-pulse h-[180px] w-[144px] shrink-0 rounded-[20px]',
             'bg-gray-100'
           )}
         />
