@@ -37,6 +37,17 @@ export default function HomeWarmBanner({
 
   const current = banners[index];
 
+  const handleClick = (): void => {
+    if (!current.href) {
+      return;
+    }
+    if (/^https?:\/\//.test(current.href)) {
+      window.open(current.href, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    router.push(current.href);
+  };
+
   return (
     <div className="relative h-full w-full">
       <Banner
@@ -47,7 +58,7 @@ export default function HomeWarmBanner({
         bg={current.gradient}
         size="md"
         role="link"
-        onClick={() => current.href && router.push(current.href)}
+        onClick={handleClick}
         className={cn(
           'shadow-warm h-full cursor-pointer transition',
           'data-fade-in hover:brightness-105'
