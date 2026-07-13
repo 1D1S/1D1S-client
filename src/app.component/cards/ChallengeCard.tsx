@@ -261,29 +261,31 @@ function ChallengeCard({
             className={cn(
               // pointer-events-none: stretched-link 위의 장식 배지가 클릭
               // 데드존이 되지 않도록 포인터 이벤트를 통과시킨다.
-              'pointer-events-none absolute top-2 right-2 z-10 flex',
-              'items-center gap-1'
+              // left-2 로 폭을 제한하고 flex-wrap+justify-end 로 좁은 카드에서
+              // 배지가 겹치지 않고 우측 정렬을 유지한 채 다음 줄로 넘어가게 한다.
+              'pointer-events-none absolute top-2 right-2 left-2 z-10 flex',
+              'flex-wrap items-center justify-end gap-1'
             )}
           >
             {isPhotoRequired ? (
               <span
                 aria-label="인증샷 필수"
                 className={cn(
-                  'inline-flex items-center gap-1 rounded-full',
+                  'inline-flex shrink-0 items-center gap-1 rounded-full',
                   'bg-main-800 px-2 py-1 text-[10px] font-bold text-white',
-                  'shadow-sm'
+                  'whitespace-nowrap shadow-sm'
                 )}
               >
-                <Camera className="h-3 w-3" />
+                <Camera className="h-3 w-3 shrink-0" />
                 인증샷
               </span>
             ) : null}
             {goalLabel ? (
               <span
                 className={cn(
-                  'inline-flex items-center rounded-full bg-white/95',
+                  'inline-flex shrink-0 items-center rounded-full bg-white/95',
                   'px-2 py-1 text-[10px] font-bold text-gray-700',
-                  'shadow-sm'
+                  'whitespace-nowrap shadow-sm'
                 )}
               >
                 {goalLabel}
@@ -291,8 +293,8 @@ function ChallengeCard({
             ) : null}
             <span
               className={cn(
-                'inline-flex items-center rounded-full px-2.5 py-1',
-                'text-[11px] font-bold shadow-sm',
+                'inline-flex shrink-0 items-center rounded-full px-2.5 py-1',
+                'text-[11px] font-bold whitespace-nowrap shadow-sm',
                 isGroup ? 'bg-main-800 text-white' : 'bg-white text-gray-900'
               )}
             >
