@@ -87,6 +87,14 @@ const getResponseCode = (payload: unknown): string | null => {
 //     남은 access 쿠키를 보고 힌트를 재발급해 강제 로그아웃이 되돌려진다.
 const INVALID_REFRESH_TOKEN_CODES = new Set(['AUTH-006', 'AUTH-012']);
 
+// 인증 주체(principal) 자체가 무효인 코드. 익명/무효 세션으로 인증 필수
+// 엔드포인트를 호출하면 서버가 401 이 아니라 400 으로 내려주므로 상태 코드만으론
+// 걸러지지 않는다. 클라 세션 힌트(hasTokens)가 stale 해서 로그아웃 사용자가
+// 인증 쿼리를 실행한 상황이라, 401 과 동일하게 조용히 세션 정리 대상으로 본다.
+//   - AUTH-001: 인증 정보 없음
+//   - AUTH-002: 잘못된 시큐리티 프린시플(INVALID_AUTH_PRINCIPAL)
+const INVALID_AUTH_PRINCIPAL_CODES = new Set(['AUTH-001', 'AUTH-002']);
+
 // 백엔드 도메인 에러 코드(예: CHALLENGE_022)를 응답 본문에서 추출한다.
 // 상태 코드만으로 구분할 수 없는 분기 처리에 사용한다.
 export const getApiErrorCode = (error: unknown): string | null => {
@@ -114,6 +122,14 @@ export const isInvalidRefreshTokenError = (error: unknown): boolean => {
   }
   const code = getResponseCode(error.response?.data);
   return code !== null && INVALID_REFRESH_TOKEN_CODES.has(code);
+};
+
+export const isAuthPrincipalError = (error: unknown): boolean => {
+  if (!isAxiosErrorLike(error)) {
+    return false;
+  }
+  const code = getResponseCode(error.response?.data);
+  return code !== null && INVALID_AUTH_PRINCIPAL_CODES.has(code);
 };
 
 export const normalizeApiError = (error: unknown): NormalizedApiError => {

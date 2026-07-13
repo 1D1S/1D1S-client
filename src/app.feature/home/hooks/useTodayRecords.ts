@@ -1,6 +1,7 @@
 'use client';
 
 import type { SidebarChallenge } from '@feature/member/type/member';
+import { authStorage } from '@module/utils/auth';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
@@ -54,6 +55,9 @@ export function useTodayRecords(
   const { data, isLoading } = useQuery({
     queryKey: HOME_QUERY_KEYS.todayChallenges(),
     queryFn: homeApi.getMyTodayChallenges,
+    // 인증 필수 API — 로그아웃/stale 힌트 상태에서 실행돼 AUTH-002 를 유발하지
+    // 않도록 세션이 있을 때만 조회한다.
+    enabled: authStorage.hasTokens(),
   });
 
   return useMemo(() => {

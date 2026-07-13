@@ -6,6 +6,7 @@ import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 
 import { API_BASE_URL } from './config';
 import {
+  isAuthPrincipalError,
   isForbiddenError,
   isInvalidRefreshTokenError,
   isRedirectError,
@@ -64,11 +65,16 @@ export const handleAuthError = (error: unknown): void => {
   // 무한 반복된다. 반대로 5xx·429·408·네트워크/타임아웃(일시적)에는 세션을
   // 유지하고 다음 요청에서 재시도하게 둔다 — 백엔드 순단으로 로그인 사용자를
   // 일괄 로그아웃시키지 않기 위함.
+  // AUTH-001/AUTH-002: 세션 힌트(hasTokens)가 stale 해서 로그아웃 사용자가
+  // 인증 쿼리를 실행한 경우. 서버가 400 으로 내려 401 경로를 안 타므로 여기서
+  // 힌트를 정리하지 않으면 hasTokens() 가 계속 true 라 같은 요청이 반복된다.
   const invalidRefresh = isInvalidRefreshTokenError(error);
+  const invalidPrincipal = isAuthPrincipalError(error);
   if (
     !isUnauthorizedError(error) &&
     !isForbiddenError(error) &&
-    !invalidRefresh
+    !invalidRefresh &&
+    !invalidPrincipal
   ) {
     return;
   }
@@ -111,10 +117,17 @@ export const notifyApiError = (error: unknown): void => {
     return;
   }
 
-  // refresh token 자체가 무효(AUTH-006)면, 같은 에러를 토스트로 반복 노출하는
-  // 대신 조용히 로그아웃 정리한다. (handleUnauthorized=false 인 publicApiClient
-  // 의 /auth/token 호출이 이 경로로 들어온다.)
-  if (isInvalidRefreshTokenError(error)) {
+  // 인증 계열 에러는 토스트로 노출하지 않고 조용히 처리한다. 비로그인/세션 만료는
+  // 사용자에게 "잘못된 시큐리티 프린시플" 같은 원문 에러를 보여줄 게 아니라,
+  // 세션 힌트를 정리하고 (보호 경로면) 로그인으로 유도해야 한다.
+  //   - 401: 토큰 없음/만료
+  //   - AUTH-001/AUTH-002: 익명/무효 principal 로 인증 필수 API 호출(400)
+  //   - AUTH-006/AUTH-012: refresh token 무효
+  if (
+    isUnauthorizedError(error) ||
+    isAuthPrincipalError(error) ||
+    isInvalidRefreshTokenError(error)
+  ) {
     handleAuthError(error);
     return;
   }

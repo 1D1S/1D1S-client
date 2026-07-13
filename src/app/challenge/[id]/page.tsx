@@ -2,7 +2,7 @@ import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSke
 import { ChallengeDetailScreen } from '@feature/challenge/detail/screen/ChallengeDetailScreen';
 import {
   buildResourceMetadata,
-  fetchOfficialChallenge,
+  fetchPublicChallengeMeta,
   SITE_DESCRIPTION,
   SITE_TITLE,
 } from '@module/metadata/seo';
@@ -14,25 +14,24 @@ interface ChallengeDetailProps {
 }
 
 /**
- * 공식(OFFICIAL) 챌린지만 전용 OG 를 채운다. 개별 챌린지 상세는 비인증 조회가
- * 막혀 있어(400 AUTH-002) 목록(/challenges/offset?challengeType=OFFICIAL)에서
- * id 로 찾는다. 일반(비공식)·비공개·조회 실패는 빈 객체를 반환해 루트 기본
- * 메타(기본 OG)로 폴백한다. 배너/썸네일이 있으면 OG 이미지로, 없으면 기본
- * 이미지. 목록엔 설명이 없어 사이트 설명을 쓴다.
+ * 챌린지 상세는 비인증 GET /challenges/{id} 로 제목·설명·썸네일을 채운다.
+ * 조회 실패(비공개 403·예약 전 공식 404·네트워크)는 빈 객체를 반환해 루트
+ * 기본 메타(기본 OG)로 폴백한다(정보 노출 없음). 썸네일이 있으면 og:image 로,
+ * 없으면 기본 OG 이미지.
  */
 export async function generateMetadata({
   params,
 }: ChallengeDetailProps): Promise<Metadata> {
   const { id } = await params;
-  const official = await fetchOfficialChallenge(id);
-  if (!official) {
+  const challenge = await fetchPublicChallengeMeta(id);
+  if (!challenge) {
     return {};
   }
 
   return buildResourceMetadata({
-    title: `${official.title} | ${SITE_TITLE}`,
-    description: SITE_DESCRIPTION,
-    imageUrl: official.thumbnailImage,
+    title: `${challenge.title} | ${SITE_TITLE}`,
+    description: challenge.description?.trim() || SITE_DESCRIPTION,
+    imageUrl: challenge.thumbnailImage,
   });
 }
 

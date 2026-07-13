@@ -16,7 +16,6 @@ import {
 } from '@constants/categories';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
-import { useLoginRequiredParam } from '@module/hooks/useLoginRequiredParam';
 import { cn } from '@module/utils/cn';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -39,9 +38,8 @@ import {
 
 interface ChallengeBoardCardItemProps {
   challenge: ChallengeListItem;
-  /** 로그인 시 상세 링크. 비로그인 시 undefined + onRequireLogin 사용. */
-  href?: string;
-  onRequireLogin(): void;
+  /** 상세 링크. 상세는 비로그인도 열람 가능하므로 항상 지정된다. */
+  href: string;
 }
 
 // 카드 매핑에서 인라인 람다·파생 계산을 제거해 React.memo(ChallengeCard) 가
@@ -50,7 +48,6 @@ const ChallengeBoardCardItem = React.memo(
   ({
     challenge,
     href,
-    onRequireLogin,
   }: ChallengeBoardCardItemProps): React.ReactElement => {
     const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
     const ended = isChallengeEndedOrArchived(
@@ -86,7 +83,6 @@ const ChallengeBoardCardItem = React.memo(
         isOfficial={challenge.challengeType === 'OFFICIAL'}
         participants={challenge.randomParticipants}
         href={href}
-        onClick={onRequireLogin}
       />
     );
   }
@@ -95,7 +91,6 @@ ChallengeBoardCardItem.displayName = 'ChallengeBoardCardItem';
 
 export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
-  const { isLoginRequired, returnTo } = useLoginRequiredParam();
   const isLoggedIn = useIsLoggedIn();
 
   const [showLoginDialog, setShowLoginDialog] = useState(false);
@@ -112,18 +107,6 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     'UPCOMING',
     'ONGOING',
   ]);
-
-  // 상세 → 목록 바운스 시 원래 가려던 상세 경로. 로그인 후 그리로 복귀한다.
-  const [loginReturnTo, setLoginReturnTo] = useState<string | null>(null);
-  const [prevIsLoginRequired, setPrevIsLoginRequired] = useState(false);
-  if (isLoginRequired !== prevIsLoginRequired) {
-    setPrevIsLoginRequired(isLoginRequired);
-    if (isLoginRequired && !isLoggedIn) {
-      setShowLoginDialog(true);
-      setLoginDialogDescription('챌린지 상세는 로그인 후 이용할 수 있습니다.');
-      setLoginReturnTo(returnTo);
-    }
-  }
 
   const requireAuth = useCallback(
     (description: string, action: () => void): void => {
@@ -183,12 +166,6 @@ export default function ChallengeBoardScreen(): React.ReactElement {
       router.push('/challenge/create')
     );
   }, [requireAuth, router]);
-
-  // 로그인 시 카드 자체가 Link(prefetch)로 이동하므로 비로그인 유도만 남는다.
-  const handleCardRequireLogin = useCallback((): void => {
-    setLoginDialogDescription('챌린지 상세는 로그인 후 이용할 수 있습니다.');
-    setShowLoginDialog(true);
-  }, []);
 
   // 미선택 필터는 undefined 로 넘겨 요청에서 키 자체가 빠지게 한다
   // (빈 값 전송 시 서버 enum 변환 400). status 빈 배열도 동일.
@@ -301,14 +278,8 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     >
       <LoginRequiredDialog
         open={showLoginDialog}
-        onOpenChange={(open) => {
-          setShowLoginDialog(open);
-          if (!open) {
-            setLoginReturnTo(null);
-          }
-        }}
+        onOpenChange={setShowLoginDialog}
         description={loginDialogDescription}
-        returnTo={loginReturnTo}
       />
 
       <div className="mt-2 flex flex-col gap-4 lg:mt-6">
@@ -375,10 +346,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               <ChallengeBoardCardItem
                 key={challenge.challengeId}
                 challenge={challenge}
-                href={
-                  isLoggedIn ? `/challenge/${challenge.challengeId}` : undefined
-                }
-                onRequireLogin={handleCardRequireLogin}
+                href={`/challenge/${challenge.challengeId}`}
               />
             ))}
           </div>

@@ -23,10 +23,7 @@ interface HomeRandomChallengesSectionProps {
   isLoading: boolean;
   isError: boolean;
   errorMessage: string | null;
-  /** 로그인 시 카드가 상세 Link(prefetch)로, 비로그인 시 로그인 유도로 동작 */
-  isLoggedIn: boolean;
   onMoreClick(): void;
-  onRequireLogin(): void;
   // 아래는 탐색(/explore)에서 공식 챌린지 섹션으로 재사용하기 위한 표시 옵션.
   title?: string;
   subtitle?: string;
@@ -40,9 +37,7 @@ export default function HomeRandomChallengesSection({
   isLoading,
   isError,
   errorMessage,
-  isLoggedIn,
   onMoreClick,
-  onRequireLogin,
   title = '오늘 시작해볼 챌린지',
   subtitle = '함께 도전할 친구를 찾아보세요',
   emptyTitle = '표시할 챌린지가 없어요',
@@ -147,12 +142,7 @@ export default function HomeRandomChallengesSection({
                   isEnded={ended}
                   isPhotoRequired={challenge.photoRequired}
                   participants={challenge.randomParticipants}
-                  href={
-                    isLoggedIn
-                      ? `/challenge/${challenge.challengeId}`
-                      : undefined
-                  }
-                  onClick={onRequireLogin}
+                  href={`/challenge/${challenge.challengeId}`}
                 />
               </div>
             );

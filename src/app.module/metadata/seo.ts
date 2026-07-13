@@ -80,35 +80,45 @@ export function buildResourceMetadata({
   };
 }
 
-export interface OfficialChallengeMeta {
-  challengeId: number;
+export interface PublicChallengeMeta {
   title: string;
+  description?: string | null;
   thumbnailImage?: string | null;
 }
 
-// 공식 챌린지만 비인증 조회가 열려 있다(/challenges/offset?challengeType=
-// OFFICIAL). 개별 /challenges/{id} 는 비인증 400(AUTH-002)이라 목록에서 id 로
-// 찾는다. 공식 챌린지는 큐레이션 대상이라 수가 적어 한 페이지(size=100)면
-// 충분하다. ponytail: 100개 초과 시에만 페이지네이션 추가.
-export async function fetchOfficialChallenge(
+// 챌린지 상세는 비인증 GET /challenges/{id} 가 열려 있어(dev tip 248a99d~)
+// 게스트 응답으로 제목·설명·썸네일을 그대로 OG 에 채운다. 비공개(403)·예약 전
+// 공식(404)·네트워크 오류는 null 을 반환해 루트 기본 OG 로 폴백한다(정보
+// 노출 없음).
+export async function fetchPublicChallengeMeta(
   id: string
-): Promise<OfficialChallengeMeta | null> {
+): Promise<PublicChallengeMeta | null> {
   if (!API_BASE_URL) {
     return null;
   }
   try {
-    const res = await fetch(
-      `${API_BASE_URL}/challenges/offset?challengeType=OFFICIAL&size=100`,
-      { headers: { accept: 'application/json' }, next: { revalidate: 300 } }
-    );
+    const res = await fetch(`${API_BASE_URL}/challenges/${id}`, {
+      headers: { accept: 'application/json' },
+      next: { revalidate: 300 },
+    });
     if (!res.ok) {
       return null;
     }
     const body = (await res.json()) as {
-      data?: { items?: OfficialChallengeMeta[] };
+      data?: {
+        challengeSummary?: { title?: string; thumbnailImage?: string | null };
+        challengeDetail?: { description?: string | null };
+      };
     };
-    const items = body.data?.items ?? [];
-    return items.find((item) => String(item.challengeId) === id) ?? null;
+    const title = body.data?.challengeSummary?.title;
+    if (!title) {
+      return null;
+    }
+    return {
+      title,
+      description: body.data?.challengeDetail?.description,
+      thumbnailImage: body.data?.challengeSummary?.thumbnailImage,
+    };
   } catch {
     return null;
   }
