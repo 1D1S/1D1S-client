@@ -4,7 +4,10 @@ import { Icon, StreakChip } from '@1d1s/design-system';
 import { ChallengeTrophyIcon } from '@component/ChallengeTrophyIcon';
 import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
-import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
+import {
+  buildLoginUrl,
+  loginUrlFromCurrentLocation,
+} from '@module/utils/returnTo';
 import { BookOpen, Compass, User } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -85,10 +88,16 @@ export default function AppTopNav({
       <nav className="flex items-center gap-1">
         {NAV_ITEMS.map((item) => {
           const active = activeId === item.id;
+          // 로그인 필요한 최상위 메뉴(마이페이지)는 비로그인에 그대로 노출하지
+          // 않는다. 모바일 바텀 네비와 동일하게 '로그인'으로 바꾸고 로그인 후
+          // 원래 목적지(마이페이지)로 복귀하는 동선으로 유도한다.
+          const isGuestMyPage = item.id === 'mypage' && !isLoggedIn;
+          const href = isGuestMyPage ? buildLoginUrl('/mypage') : item.href;
+          const label = isGuestMyPage ? '로그인' : item.label;
           return (
             <Link
               key={item.id}
-              href={item.href}
+              href={href}
               className={cn(
                 'rounded-2 inline-flex items-center gap-1.5 transition',
                 'px-2.5 py-1.5 lg:px-3.5 lg:py-2',
@@ -101,7 +110,7 @@ export default function AppTopNav({
               {item.NavIcon ? (
                 <item.NavIcon className="h-3.5 w-3.5" aria-hidden />
               ) : null}
-              {item.label}
+              {label}
             </Link>
           );
         })}
