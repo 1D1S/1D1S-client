@@ -101,9 +101,7 @@ export default function ExploreScreen(): React.ReactElement {
             isLoading={isOfficialLoading}
             isError={isOfficialError}
             errorMessage={officialErrorMessage}
-            isLoggedIn={isLoggedIn}
             onMoreClick={handleMoreChallenges}
-            onRequireLogin={handleRequireLogin}
             title="공식 챌린지"
             subtitle="1D1S가 엄선한 챌린지에 참여해보세요"
             emptyTitle="아직 공식 챌린지가 없어요!"
@@ -115,9 +113,7 @@ export default function ExploreScreen(): React.ReactElement {
             isLoading={isChallengesLoading}
             isError={isChallengesError}
             errorMessage={challengesErrorMessage}
-            isLoggedIn={isLoggedIn}
             onMoreClick={handleMoreChallenges}
-            onRequireLogin={handleRequireLogin}
           />
 
           <HomeRandomDiariesSection
