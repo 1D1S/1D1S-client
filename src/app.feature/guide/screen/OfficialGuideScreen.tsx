@@ -126,7 +126,7 @@ const NAVER_GREEN = '#03C75A';
 
 function SummaryCards(): React.ReactElement {
   return (
-    <section className="animate-pop-in -mt-9">
+    <section className="animate-pop-in">
       <div className="grid gap-3.5 sm:grid-cols-3">
         {SUMMARY.map((c) => {
           const CardIcon = c.icon;
@@ -696,9 +696,9 @@ export default function OfficialGuideScreen(): React.ReactElement {
         {/* 히어로 */}
         <header
           className={cn(
-            'animate-pop-in -mx-5 mb-2 px-5 pt-14 pb-16 text-center lg:-mx-6',
-            'lg:px-6 lg:pt-20 lg:pb-20',
-            'bg-[linear-gradient(160deg,var(--main-100)_0%,var(--gray-50)_70%)]'
+            'animate-pop-in rounded-3 lg:rounded-4 mb-4 px-6 pt-14 pb-16',
+            'text-center lg:px-10 lg:pt-20 lg:pb-20',
+            'bg-[linear-gradient(180deg,var(--main-100),var(--gray-50))]'
           )}
         >
           <span
