@@ -11,6 +11,20 @@ const AUTH_SESSION_KEY = '1d1s:isAuthenticated';
 const AUTH_HINT_COOKIE = AUTH_HINT_COOKIE_NAME;
 
 /**
+ * 권위 있는 로그인 판정 상태.
+ * - `unknown`: 부팅 세션 확인 전. 로그인/로그아웃 UI 를 확정 렌더하지 말고
+ *   스켈레톤으로 둔다. (JS 힌트만으로는 판정 불가한 Safari standalone PWA 대응)
+ * - `authenticated`: 서버가 세션 생존을 확인(또는 로그인 성공).
+ * - `guest`: 서버가 세션을 거부(또는 로그아웃).
+ *
+ * 힌트(hasTokens)는 Safari ITP/standalone 웹뷰에서 콜드 스타트 시 소실·지연될
+ * 수 있어 첫 진입 로그인 사용자가 게스트로 굳는 원인이었다. 이 상태는 httpOnly
+ * 세션 쿠키에 의존하는 서버 확인(GET /auth/token)으로 확정한다. (runAuthBootProbe)
+ */
+export type AuthStatus = 'unknown' | 'authenticated' | 'guest';
+let authStatus: AuthStatus = 'unknown';
+
+/**
  * 실제 access 토큰 쿠키가 JS에서 읽히는지 확인한다.
  * - 개발 환경의 devAccessToken 등 HttpOnly가 아닌 토큰은 여기서 감지된다.
  * - 상용의 HttpOnly accessToken 은 항상 false를 반환하므로,
@@ -22,16 +36,21 @@ function hasReadableAccessTokenCookie(): boolean {
   );
 }
 
-// 로그인 힌트(쿠키/localStorage) 변화를 구독자에게 알린다. 힌트 값은 JS 에서
-// 반응형이 아니라, markAuthenticated/clearTokens 로 바뀌어도 이를 읽는
-// 컴포넌트가 저절로 re-render 되지 않는다. 그 결과 미들웨어/재발급이 세션을
-// 복구해도(=힌트 set) useSidebar 의 enabled(=hasTokens) 가 재평가되지 않아
-// 전체 새로고침 전까지 로그아웃처럼 보였다. useSyncExternalStore 구독으로
-// 힌트 변화를 즉시 UI 에 반영한다. (useHasSessionHint 참조)
+// 로그인 상태 변화를 구독자에게 알린다. 상태는 JS 에서 반응형이 아니라
+// markAuthenticated/clearTokens/settleGuest 로만 바뀌므로, 변경 시점에 명시적으로
+// 통지해 useAuthStatus(useSyncExternalStore) 구독자가 즉시 재렌더되게 한다.
 type AuthListener = () => void;
 const authListeners = new Set<AuthListener>();
 const notifyAuthChange = (): void => {
   authListeners.forEach((listener) => listener());
+};
+
+// 상태 전이 후 구독자 통지. 값이 같아도 통지는 하되(반복 markAuthenticated 등
+// 기존 계약 유지), useAuthStatus 는 useSyncExternalStore 스냅샷이 동일하면
+// 재렌더를 건너뛴다.
+const setStatus = (next: AuthStatus): void => {
+  authStatus = next;
+  notifyAuthChange();
 };
 
 export const authStorage = {
@@ -56,7 +75,7 @@ export const authStorage = {
       sameSite: 'lax',
       secure: window.location.protocol === 'https:',
     });
-    notifyAuthChange();
+    setStatus('authenticated');
   },
 
   // 인증 상태 플래그 제거 (실제 토큰은 백엔드 Set-Cookie/HTTP-only로 관리)
@@ -68,7 +87,20 @@ export const authStorage = {
     // 저장되지 않은 잔존 쿠키를 완전히 정리하기 위함)
     Cookies.remove(AUTH_HINT_COOKIE);
     Cookies.remove(AUTH_HINT_COOKIE, { domain: AUTH_HINT_COOKIE_DOMAIN });
-    notifyAuthChange();
+    setStatus('guest');
+  },
+
+  /** 현재 권위 있는 로그인 상태. (useAuthStatus 로 구독) */
+  getStatus: (): AuthStatus => authStatus,
+
+  /**
+   * 부팅 세션 확인이 로그인으로 판정되지 못했을 때 게스트로 확정한다.
+   * 이미 authenticated/guest 로 확정된 상태는 덮어쓰지 않는다(레이스 방지).
+   */
+  settleGuest: (): void => {
+    if (authStatus === 'unknown') {
+      setStatus('guest');
+    }
   },
 
   /**

@@ -1,7 +1,7 @@
 'use client';
 
 import type { SidebarChallenge } from '@feature/member/type/member';
-import { authStorage } from '@module/utils/auth';
+import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
@@ -52,12 +52,15 @@ function fallbackChallenge(today: MyTodayChallenge): SidebarChallenge {
 export function useTodayRecords(
   sidebarChallenges: SidebarChallenge[]
 ): TodayRecordsResult {
+  // 서버가 확인한 로그인 상태에서만 조회한다. 예전엔 JS 힌트(hasTokens)로
+  // 게이팅해 (a) 비반응형이라 세션 복구 후에도 재평가되지 않고 (b) 힌트가
+  // 소실된 Safari PWA 콜드 스타트에서 아예 비활성화됐다. authenticated 는
+  // 반응형이라 부팅 확인 직후 자동으로 켜진다.
+  const status = useAuthStatus();
   const { data, isLoading } = useQuery({
     queryKey: HOME_QUERY_KEYS.todayChallenges(),
     queryFn: homeApi.getMyTodayChallenges,
-    // 인증 필수 API — 로그아웃/stale 힌트 상태에서 실행돼 AUTH-002 를 유발하지
-    // 않도록 세션이 있을 때만 조회한다.
-    enabled: authStorage.hasTokens(),
+    enabled: status === 'authenticated',
   });
 
   return useMemo(() => {

@@ -29,18 +29,12 @@ import {
   type EditableChallengeCategory,
   useChallengeEditForm,
 } from '@feature/challenge/write/hooks/useChallengeEditForm';
-import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
-import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
+import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { Check, Lightbulb } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-  useSyncExternalStore,
-} from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import type {
   ChallengeDetailResponse,
@@ -365,13 +359,10 @@ export default function ChallengeEditScreen({
   id,
 }: ChallengeEditScreenProps): React.ReactElement | null {
   const router = useRouter();
-  // 하이드레이션 직후 useIsLoggedIn 이 false 인 구간에 /login 로 라우팅되는 것을 막기 위한 가드.
-  const hasMounted = useSyncExternalStore(
-    NOOP_SUBSCRIBE,
-    () => true,
-    () => false
-  );
-  const isLoggedIn = useIsLoggedIn();
+  // 부팅 세션 확인 전(`unknown`)에는 /login 으로 튕기지 않는다. 확정된 게스트만
+  // 리다이렉트하고, 확인 중에는 아래 로딩 화면을 보여준다.
+  const status = useAuthStatus();
+  const isGuest = status === 'guest';
   const challengeId = Number(id);
   const { data, isLoading, isError } = useChallengeDetail(challengeId);
   const updateChallenge = useUpdateChallenge();
@@ -385,10 +376,10 @@ export default function ChallengeEditScreen({
   const [errorOpen, setErrorOpen] = useState(false);
 
   useEffect(() => {
-    if (hasMounted && !isLoggedIn) {
+    if (isGuest) {
       router.replace(loginUrlFromCurrentLocation());
     }
-  }, [hasMounted, isLoggedIn, router]);
+  }, [isGuest, router]);
 
   useEffect(() => {
     if (!data) {
@@ -399,11 +390,13 @@ export default function ChallengeEditScreen({
     }
   }, [data, id, router]);
 
-  if (!isLoggedIn) {
+  if (isGuest) {
     return null;
   }
 
-  if (isLoading || !defaults || !data) {
+  // 부팅 세션 확인 전(unknown)에는 폼을 그리지 않고 로딩으로 둔다 — 공개
+  // 챌린지 상세가 먼저 도착해도 로그인 확정 전 편집 폼이 번쩍이지 않게 한다.
+  if (status !== 'authenticated' || isLoading || !defaults || !data) {
     return (
       <div
         className={cn('flex min-h-screen items-center justify-center bg-white')}

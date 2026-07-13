@@ -4,15 +4,14 @@ import { Button } from '@1d1s/design-system';
 import { MyPageSkeleton } from '@component/skeletons/MyPageSkeleton';
 import { useMyDiaries } from '@feature/diary/board/hooks/useDiaryQueries';
 import { MyPageFriendsEntry } from '@feature/friend/components/MyPageFriendsEntry';
-import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import { MyPageStatisticsEntry } from '@feature/member/statistics/components/MyPageStatisticsEntry';
-import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
+import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useSyncExternalStore } from 'react';
+import React, { useEffect } from 'react';
 
 import { MyPageActiveChallenges } from '../components/MyPageActiveChallenges';
 import { MyPageActivityHeatmap } from '../components/MyPageActivityHeatmap';
@@ -25,25 +24,22 @@ import { MyPageStreakHeroCard } from '../components/MyPageStreakHeroCard';
 
 export default function MyPageScreen(): React.ReactElement | null {
   const router = useRouter();
-  // 하이드레이션 직후 useIsLoggedIn 이 false 인 구간에 /login 로 라우팅되는 것을 막기 위한 가드.
-  const hasMounted = useSyncExternalStore(
-    NOOP_SUBSCRIBE,
-    () => true,
-    () => false
-  );
-  const isLoggedIn = useIsLoggedIn();
+  // 부팅 세션 확인 전(`unknown`)에는 리다이렉트하지 않는다. 확정된 게스트만
+  // /login 으로 보낸다 — 예전엔 확인 전 false 구간에 로그인 사용자까지 튕겨
+  // Safari PWA 첫 진입에서 로그인 상태인데 /login 으로 밀리는 사고가 있었다.
+  const status = useAuthStatus();
+  const isGuest = status === 'guest';
   const { data, isLoading } = useMyPage();
   const { data: myDiariesData } = useMyDiaries(5);
   const showSkeleton = useMinimumLoading(isLoading);
 
-  // 미들웨어가 잔존 쿠키 등으로 통과시킨 비로그인 사용자를 /login 으로 보낸다.
   useEffect(() => {
-    if (hasMounted && !isLoggedIn) {
+    if (isGuest) {
       router.replace(loginUrlFromCurrentLocation());
     }
-  }, [hasMounted, isLoggedIn, router]);
+  }, [isGuest, router]);
 
-  if (hasMounted && !isLoggedIn) {
+  if (isGuest) {
     return null;
   }
 
