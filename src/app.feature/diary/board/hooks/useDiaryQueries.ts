@@ -1,3 +1,4 @@
+import { authStorage } from '@module/utils/auth';
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -81,6 +82,8 @@ export function useMyDiaries(
   return useQuery({
     queryKey: DIARY_QUERY_KEYS.myDiaries({ size }),
     queryFn: () => diaryBoardApi.getMyDiaries({ size }),
+    // 인증 필수 API — 세션이 있을 때만 조회한다(로그아웃 상태 AUTH-002 방지).
+    enabled: authStorage.hasTokens(),
   });
 }
 
