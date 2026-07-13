@@ -1,6 +1,7 @@
 import { silentAuthClient, tokenClient } from '@module/api/client';
 import { isUnauthorizedError } from '@module/api/error';
 import { requestData } from '@module/api/request';
+import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { authStorage } from '@module/utils/auth';
 import {
   InfiniteData,
@@ -80,6 +81,11 @@ async function fetchSidebarWithRetry(): Promise<SidebarData | null> {
 }
 
 export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
+  // 부팅 세션 확인이 로그인으로 확정된 뒤에만 프로필을 가져온다. 예전엔
+  // hasTokens()(=JS 힌트) 로 게이팅해, 힌트가 소실된 Safari PWA 콜드 스타트에서
+  // 사이드바가 영영 비활성화돼 로그인 사용자가 게스트로 굳었다. 이제 힌트 대신
+  // 서버가 확인한 authenticated 상태를 게이트로 쓴다.
+  const status = useAuthStatus();
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.sidebar(),
     queryFn: async () => {
@@ -90,7 +96,7 @@ export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
       return data;
     },
     retry: false, // queryFn 내부에서 직접 재시도 처리
-    enabled: !isServer && authStorage.hasTokens(),
+    enabled: !isServer && status === 'authenticated',
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
     refetchOnMount: true,

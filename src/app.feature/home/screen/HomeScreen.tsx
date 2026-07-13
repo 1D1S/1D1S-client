@@ -1,9 +1,9 @@
 'use client';
 
 import { PageWatermark } from '@1d1s/design-system';
-import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import Stories from '@feature/stories/components/Stories';
+import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useHasMounted } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
@@ -16,12 +16,6 @@ import HomeStreakSlot from '../components/HomeStreakSlot';
 import HomeTodayRecordSection from '../components/HomeTodayRecordSection';
 import HomeWarmBanner from '../components/HomeWarmBanner';
 import HomeWarmGreeting from '../components/HomeWarmGreeting';
-
-interface HomeScreenProps {
-  /** 서버에서 쿠키로 평가한 로그인 힌트. SSR/하이드레이션 직후 비로그인 UI 가
-   *  잠깐 그려졌다가 로그인 UI 로 점프하는 시프트를 막기 위한 초기값. */
-  initialHasAuthHint?: boolean;
-}
 
 function HomeLoginCta(): React.ReactElement {
   const router = useRouter();
@@ -60,14 +54,15 @@ function HomeLoginCta(): React.ReactElement {
   );
 }
 
-export default function HomeScreen({
-  initialHasAuthHint = false,
-}: HomeScreenProps): React.ReactElement {
+export default function HomeScreen(): React.ReactElement {
   const hasMounted = useHasMounted();
-  const isLoggedInClient = useIsLoggedIn();
-  // SSR 및 하이드레이션 직후엔 서버 힌트를, mount 이후엔 권위 있는 클라이언트
-  // 판정을 사용한다. 두 값이 일치하지 않을 때만 1회 전환이 발생한다.
-  const isLoggedIn = hasMounted ? isLoggedInClient : initialHasAuthHint;
+  const status = useAuthStatus();
+  const isLoggedIn = status === 'authenticated';
+  // 부팅 세션 확인 중(unknown)에는 게스트 CTA 대신 로그인 셸을 스켈레톤으로
+  // 그린다. Safari standalone PWA 첫 진입에서 로그인 사용자가 게스트 CTA 를
+  // 봤다가 로그인 UI 로 점프하던 깜빡임을 없앤다. 확정된 게스트만 CTA 를 본다.
+  const showGuestCta = status === 'guest';
+  const showLoggedInShell = !showGuestCta;
   const {
     data: sidebar,
     isLoading: isSidebarLoading,
@@ -75,23 +70,13 @@ export default function HomeScreen({
   } = useSidebar();
 
   const streakDays = sidebar?.streakCount ?? 0;
-  // 토큰 힌트는 있는데 sidebar 가 아직 도착하지 않은 구간에서 0 → 실제 값으로
-  // 깜빡이는 것을 막기 위해 스켈레톤을 노출.
-  //
-  // `!hasMounted` 를 포함하는 이유: SSR/하이드레이션 첫 페인트에서 sidebar 쿼리
-  // 결과가 서버(미도착 → skeleton)와 클라이언트(dehydrate 캐시 → 데이터)로
-  // 갈려 hydration mismatch 가 발생했다. mount 전에는 항상 skeleton 으로 고정해
-  // 서버/클라 첫 출력을 일치시키고, 실제 값(streakDays)은 mount 이후에만 렌더한다.
+  // 로그인 셸을 그리는 동안(확인 중 포함) sidebar 가 도착하기 전까지 스트릭
+  // 스켈레톤을 노출해 0 → 실제 값 깜빡임을 막는다. `!hasMounted` 를 포함하는
+  // 이유: SSR/하이드레이션 첫 페인트를 항상 skeleton 으로 고정해 서버/클라
+  // 출력을 일치시키기 위함(hydration mismatch 방지).
   const isStreakLoading =
-    isLoggedIn &&
+    showLoggedInShell &&
     (!hasMounted || isSidebarLoading || isSidebarFetching || !sidebar);
-  // 스토리 스켈레톤이 늦게 뜨지 않도록, "로그인 확정" 외에도
-  // sidebar 인증 판정이 진행 중이면 stories 쿼리를 선제 활성화한다.
-  const isStoriesEnabled =
-    isLoggedIn ||
-    isSidebarLoading ||
-    isSidebarFetching ||
-    (!hasMounted && initialHasAuthHint);
 
   return (
     <>
@@ -108,9 +93,9 @@ export default function HomeScreen({
           <HomeWarmGreeting />
         </div>
 
-        {isLoggedIn ? (
+        {showLoggedInShell ? (
           <>
-            <Stories isLoggedIn={isLoggedIn} fetchEnabled={isStoriesEnabled} />
+            <Stories isLoggedIn={showLoggedInShell} fetchEnabled={isLoggedIn} />
 
             {/* 배너/스트릭 — 모바일 세로 스택, lg 이상 1:1 좌우 배치 */}
             <div className="grid gap-3 lg:grid-cols-2">

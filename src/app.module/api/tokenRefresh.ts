@@ -2,6 +2,7 @@ import { authStorage } from '@module/utils/auth';
 import axios from 'axios';
 
 import { API_BASE_URL } from './config';
+import { isUnauthorizedError } from './error';
 
 let inFlight: Promise<void> | null = null;
 
@@ -32,4 +33,32 @@ export function refreshAccessTokenOnce(): Promise<void> {
       });
   }
   return inFlight;
+}
+
+/**
+ * 앱 부팅 시 1회 실행하는 권위 있는 세션 확인.
+ *
+ * JS 힌트(localStorage/쿠키)에 의존하지 않고 httpOnly 세션 쿠키로 서버에
+ * /auth/token 을 태워 세션 생존을 확정한다. Safari standalone PWA 는 콜드
+ * 스타트에서 JS 힌트가 소실·지연되지만 httpOnly 쿠키는 요청에 실려 나가므로,
+ * 이 경로가 로그인 상태를 힌트 없이도 복구한다. (근본 원인 대응)
+ *
+ * - 성공: refreshAccessTokenOnce 가 markAuthenticated() 로 authenticated 확정.
+ * - 401: refresh 토큰 무효 → 게스트 확정(스테일 힌트 무시).
+ * - 그 외(네트워크/타임아웃): 판정 불가 → 힌트가 있으면 낙관적 로그인, 없으면
+ *   게스트. 힌트 없는 콜드 PWA 는 resume refresh 가 다음 기회에 재시도한다.
+ *
+ * single-flight 라 인터셉터/resume 과 동시에 불려도 요청은 1발이다.
+ */
+export function runAuthBootProbe(): Promise<void> {
+  return refreshAccessTokenOnce().catch((error: unknown) => {
+    if (authStorage.getStatus() !== 'unknown') {
+      return; // 다른 경로(사이드바/에러 핸들러)가 이미 확정함
+    }
+    if (!isUnauthorizedError(error) && authStorage.hasTokens()) {
+      authStorage.markAuthenticated();
+      return;
+    }
+    authStorage.settleGuest();
+  });
 }
