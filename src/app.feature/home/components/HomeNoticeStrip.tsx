@@ -13,7 +13,7 @@ export default function HomeNoticeStrip(): React.ReactElement | null {
   return (
     <div className="w-full">
       <Link
-        href="/notice"
+        href={latest.href ?? '/notice'}
         className={cn(
           'flex w-full cursor-pointer items-center gap-3',
           'rounded-4 border border-gray-200 bg-white px-4 py-3',
