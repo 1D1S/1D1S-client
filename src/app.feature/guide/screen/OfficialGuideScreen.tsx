@@ -69,7 +69,6 @@ const DIFF: Array<{
 const CRITERIA: Array<{
   icon: LucideIcon;
   accent: string;
-  borderL: string;
   iconBg: string;
   kicker: string;
   note: string;
@@ -79,7 +78,6 @@ const CRITERIA: Array<{
   {
     icon: Flame,
     accent: 'text-main-800',
-    borderL: 'border-l-main-800',
     iconBg: 'bg-main-100 border-main-300',
     kicker: '1순위 기준',
     note: '연속 일지 작성일 기준',
@@ -89,7 +87,6 @@ const CRITERIA: Array<{
   {
     icon: Check,
     accent: 'text-mint-900',
-    borderL: 'border-l-mint-900',
     iconBg: 'bg-mint-100 border-mint-400',
     kicker: '2순위 기준',
     note: '완료 처리된 목표 합계',
@@ -99,7 +96,6 @@ const CRITERIA: Array<{
   {
     icon: Heart,
     accent: 'text-red-500',
-    borderL: 'border-l-red-500',
     iconBg: 'bg-red-50 border-red-300',
     kicker: '동점 처리 1',
     note: '동순위 1차 타이브레이크',
@@ -109,7 +105,6 @@ const CRITERIA: Array<{
   {
     icon: MessageSquare,
     accent: 'text-blue-600',
-    borderL: 'border-l-blue-600',
     iconBg: 'bg-blue-200 border-blue-300',
     kicker: '동점 처리 2',
     note: '도배 댓글 제외 후 산정',
@@ -119,9 +114,15 @@ const CRITERIA: Array<{
 ];
 
 const REWARD_POINTS = [
+  '상위 5명에게 지급',
+  '참여자 수에 따라 5명보다 더 많이 지급될 수 있어요',
   '챌린지 종료 후 최종 순위를 기준으로 지급',
   '지급 방식·일정은 챌린지 상세 공지를 확인하세요',
 ];
+
+// 네이버 포인트 브랜드 컬러 — DS 토큰에 없는 외부 브랜드 색
+// ponytail: 인라인 상수 1개, 브랜드 색이라 토큰화 불필요
+const NAVER_GREEN = '#03C75A';
 
 function SummaryCards(): React.ReactElement {
   return (
@@ -351,11 +352,12 @@ function RankingSection(): React.ReactElement {
 
       <div
         className={cn(
-          'mt-11 flex flex-wrap items-start justify-center gap-10'
+          'mt-11 flex flex-col items-center gap-10',
+          'lg:flex-row lg:items-start lg:justify-center'
         )}
       >
         {/* 캐스케이드 */}
-        <div className="w-full max-w-[640px] min-w-0 flex-1 lg:flex-[1_1_380px]">
+        <div className="w-full max-w-[640px] min-w-0 lg:flex-1">
           {CRITERIA.map((c, i) => {
             const CritIcon = c.icon;
             return (
@@ -363,8 +365,7 @@ function RankingSection(): React.ReactElement {
                 <div
                   className={cn(
                     'animate-pop-in rounded-4 flex gap-4 border border-gray-200',
-                    'border-l-4 bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)]',
-                    c.borderL
+                    'bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)]'
                   )}
                 >
                   <span
@@ -529,32 +530,31 @@ function RewardSection(): React.ReactElement {
       </div>
       <div
         className={cn(
-          'animate-pop-in rounded-4 border-main-300 flex flex-wrap items-center',
-          'justify-center gap-7 border p-9 shadow-[var(--shadow-warm)]',
-          'bg-[linear-gradient(135deg,var(--main-100)_0%,#ffffff_100%)]'
+          'animate-pop-in rounded-4 flex flex-col items-center gap-7 border',
+          'border-gray-200 bg-white p-7 sm:p-9',
+          'shadow-[0_2px_10px_rgba(0,0,0,0.04)]',
+          'lg:flex-row lg:items-center'
         )}
       >
         {/* 기프티콘 카드 목업 */}
         <div
           className={cn(
             'w-[240px] shrink-0 overflow-hidden rounded-[18px] border',
-            'border-gray-200 bg-white shadow-[0_12px_30px_rgba(0,0,0,0.1)]'
+            'border-gray-200 bg-white shadow-[0_8px_22px_rgba(0,0,0,0.08)]'
           )}
         >
           <div
-            className={cn(
-              'px-5 pt-5 pb-4 text-white',
-              'bg-[linear-gradient(135deg,var(--main-600)_0%,var(--main-800)_100%)]'
-            )}
+            className="px-5 pt-5 pb-4 text-white"
+            style={{ backgroundColor: NAVER_GREEN }}
           >
             <div className="mb-4 flex items-center justify-between">
-              <span className="text-[12px] font-extrabold opacity-90">GIFT</span>
+              <span className="text-[12px] font-bold opacity-90">GIFT</span>
               <Gift className="h-5 w-5" strokeWidth={2} />
             </div>
-            <div className="text-[13px] font-bold opacity-90">네이버 포인트</div>
+            <div className="text-[13px] font-medium opacity-90">네이버 포인트</div>
             <div className="mt-0.5 text-[30px] font-extrabold tracking-tight">
               10,000
-              <span className="ml-1 text-[15px] font-extrabold">원</span>
+              <span className="ml-1 text-[15px] font-bold">원</span>
             </div>
           </div>
           <div className="flex items-center gap-2 px-5 py-3.5">
@@ -564,25 +564,30 @@ function RewardSection(): React.ReactElement {
                 'rounded-[8px] bg-gray-100'
               )}
             >
-              <Trophy className="text-main-800 h-[15px] w-[15px]" strokeWidth={2} />
+              <Trophy
+                className="h-[15px] w-[15px]"
+                strokeWidth={2}
+                style={{ color: NAVER_GREEN }}
+              />
             </span>
             <div>
-              <div className="text-[11px] font-bold text-gray-400">
+              <div className="text-[11px] font-medium text-gray-400">
                 공식 챌린지 보상
               </div>
-              <div className="text-[12.5px] font-extrabold text-gray-800">
+              <div className="text-[12.5px] font-bold text-gray-800">
                 기프티콘
               </div>
             </div>
           </div>
         </div>
 
-        <div className="min-w-0 flex-1 basis-[300px]">
+        <div className="w-full min-w-0 lg:flex-1">
           <span
             className={cn(
-              'bg-main-800 mb-3.5 inline-block rounded-full px-3 py-1',
-              'text-[12px] font-extrabold text-white'
+              'mb-3.5 inline-block rounded-full px-3 py-1',
+              'text-[12px] font-bold text-white'
             )}
+            style={{ backgroundColor: NAVER_GREEN }}
           >
             1만원 상당
           </span>
@@ -599,15 +604,16 @@ function RewardSection(): React.ReactElement {
             weight="regular"
             className="mb-4.5 block leading-relaxed break-keep text-gray-600"
           >
-            공식 챌린지 순위에 따라 <b>1만원 상당의 기프티콘</b>이 지급됩니다.
-            보상은 <b>네이버 포인트 기프티콘</b> 형태로 제공될 예정이에요.
+            공식 챌린지 순위에 따라 1만원 상당의 네이버 포인트 기프티콘이
+            지급됩니다.
           </Text>
           <ul className="flex flex-col gap-2.5">
             {REWARD_POINTS.map((t) => (
               <li key={t} className="flex items-start gap-2.5">
                 <Check
-                  className="text-main-800 mt-0.5 h-4 w-4 shrink-0"
+                  className="mt-0.5 h-4 w-4 shrink-0"
                   strokeWidth={2.6}
+                  style={{ color: NAVER_GREEN }}
                 />
                 <Text
                   size="body2"
