@@ -42,7 +42,7 @@ function sortStoriesByRecent(stories: StoryItem[]): StoryItem[] {
 // 스토리가 있는 그룹을 앞에 둔다(시간 내림차순). 시청 여부로 순서를 바꾸면,
 // 방금 본 최신 스토리가 더 오래된 미시청 그룹 뒤로 밀려 "최신이 먼저 보이지
 // 않는" 문제가 생기므로 시간만으로 정렬한다.
-// (미시청 표시는 StoryRing 의 NEW 배지가 isGroupAllSeen 으로 별도 처리한다.)
+// (미시청 표시는 StoryRing 이 isGroupAllSeen 으로 테두리 링 색을 바꿔 처리한다.)
 // 각 그룹 내부 스토리도 최신순으로 정렬한다.
 export function sortStoryGroups(groups: StoryGroup[]): StoryGroup[] {
   return groups
