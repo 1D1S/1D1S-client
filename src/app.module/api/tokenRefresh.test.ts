@@ -27,7 +27,12 @@ async function loadFresh(): Promise<BootProbeModules> {
   const { runAuthBootProbe, refreshAccessTokenOnce } = await import(
     './tokenRefresh'
   );
-  return { get: axios.get, authStorage, runAuthBootProbe, refreshAccessTokenOnce };
+  return {
+    get: axios.get,
+    authStorage,
+    runAuthBootProbe,
+    refreshAccessTokenOnce,
+  };
 }
 
 const unauthorized = {
