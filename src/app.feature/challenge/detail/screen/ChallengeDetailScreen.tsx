@@ -56,6 +56,7 @@ import { ChallengeProgressCard } from '../components/ChallengeProgressCard';
 import { ChallengeRulesCard } from '../components/ChallengeRulesCard';
 import { ChallengeStatisticsSection } from '../components/ChallengeStatisticsSection';
 import { ExpandableText } from '../components/ExpandableText';
+import { OfficialChallengeGuideBanner } from '../components/OfficialChallengeGuideBanner';
 import { PendingMemberItem } from '../components/PendingMemberItem';
 import { useChallengeStatistics } from '../hooks/useChallengeDiaryQueries';
 import { useChallengeGoalEditors } from '../hooks/useChallengeGoalEditors';
@@ -727,6 +728,9 @@ export function ChallengeDetailScreen({
             'sm:pt-6 md:px-6 lg:gap-4 lg:px-8 lg:pt-8'
           )}
         >
+          {summary.challengeType === 'OFFICIAL' ? (
+            <OfficialChallengeGuideBanner />
+          ) : null}
           <div
             className={cn(
               'grid grid-cols-1 gap-4',

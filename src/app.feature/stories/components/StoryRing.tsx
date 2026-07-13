@@ -1,6 +1,6 @@
 'use client';
 
-import { Icon, Text } from '@1d1s/design-system';
+import { Icon } from '@1d1s/design-system';
 import EmptyState from '@component/EmptyState';
 import FadeInImage from '@component/FadeInImage';
 import { cn } from '@module/utils/cn';
@@ -9,49 +9,27 @@ import Image from 'next/image';
 import React from 'react';
 
 import { StoryGroup } from '../type/story';
-import {
-  formatStoryDate,
-  isGroupAllSeen,
-} from '../utils/storyHelpers';
+import { isGroupAllSeen } from '../utils/storyHelpers';
 
 interface StoryRingProps {
   groups: StoryGroup[];
   onSelect(index: number): void;
-  compact?: boolean;
   myProfileImage?: string | null;
   onAddStory?(): void;
 }
 
-interface StoryVisual {
-  badge: string;
-  moodImage: { src: string; alt: string };
-  surface: string;
-  accent: string;
-  avatar: string;
+interface StoryMood {
+  src: string;
+  alt: string;
+  tint: string;
 }
 
-const STORY_VISUALS: StoryVisual[] = [
-  {
-    badge: '뿌듯함',
-    moodImage: { src: '/images/mood-happy.svg', alt: '행복한 얼굴' },
-    surface: 'bg-[linear-gradient(180deg,#ffe1d7_0%,#fff7f3_100%)]',
-    accent: 'text-main-800',
-    avatar: 'border-main-500 bg-[#c9f1e7]',
-  },
-  {
-    badge: '좋아요',
-    moodImage: { src: '/images/mood-soso.svg', alt: '무표정 얼굴' },
-    surface: 'bg-[linear-gradient(180deg,#def4ec_0%,#f8fffc_100%)]',
-    accent: 'text-green-800',
-    avatar: 'border-green-700 bg-[#e6f1ff]',
-  },
-  {
-    badge: '기록',
-    moodImage: { src: '/images/mood-sad.svg', alt: '슬픈 얼굴' },
-    surface: 'bg-[linear-gradient(180deg,#f4e8dc_0%,#fffaf5_100%)]',
-    accent: 'text-gray-700',
-    avatar: 'border-main-400 bg-[#fff1c8]',
-  },
+// 감정(무드) 아이콘은 API 에 실제 감정 필드가 없어 userId 로 고정 배정한다.
+// 같은 사용자는 항상 같은 무드/틴트를 받는다(장식 목적).
+const STORY_MOODS: StoryMood[] = [
+  { src: '/images/mood-happy.svg', alt: '행복한 얼굴', tint: 'bg-[#c9f1e7]' },
+  { src: '/images/mood-soso.svg', alt: '무표정 얼굴', tint: 'bg-[#e6f1ff]' },
+  { src: '/images/mood-sad.svg', alt: '슬픈 얼굴', tint: 'bg-[#fff1c8]' },
 ];
 
 // next/image 는 절대 URL 또는 / 시작 상대 경로만 허용한다.
@@ -65,20 +43,20 @@ function isValidNextImageSrc(src: string | undefined): src is string {
   return /^(https?:|data:|blob:)/i.test(src);
 }
 
-function pickStoryVisual(userId: number): StoryVisual {
-  return STORY_VISUALS[userId % STORY_VISUALS.length];
+function pickStoryMood(userId: number): StoryMood {
+  return STORY_MOODS[Math.abs(userId) % STORY_MOODS.length];
 }
 
+// 사각형 스토리 카드(144x180). 무드 이미지를 크게 중앙에 두고 그 아래
+// 프로필 썸네일만 노출한다(닉네임/시간/제목/개수 미표시). 읽음 여부는
+// 카드 테두리 색으로 표현한다(안읽음 border-main-500, 읽음 border-gray-200).
 function StoryRing({
   groups,
   onSelect,
-  compact = false,
   myProfileImage,
   onAddStory,
 }: StoryRingProps): React.ReactElement {
   const showMySlot = typeof onAddStory === 'function';
-  const cardWidthClass = compact ? 'w-[136px]' : 'w-[168px]';
-  const cardHeightClass = compact ? 'h-[174px]' : 'h-[208px]';
   // 내 스토리는 sortStoryGroups 로 항상 맨 앞에 고정된다. 응답에 포함되면
   // 일반 스토리 카드로 렌더돼 뷰어로 열리고, 없으면 일지 작성으로 유도하는
   // 추가 카드를 대신 그린다.
@@ -89,10 +67,8 @@ function StoryRing({
   return (
     <div
       className={cn(
-        'scrollbar-hide flex w-full overflow-x-auto',
-        // "나의 활동" 패널 내부에 놓이므로 좌우 패딩 없이 패널 내부 라인에서
-        // 시작한다(첫 카드 좌측 = 헤더·배너와 동일 세로선).
-        compact ? 'gap-2.5 px-4 py-3' : 'gap-3 py-3.5'
+        'scrollbar-hide flex w-full items-start gap-3',
+        'overflow-x-auto py-3.5'
       )}
     >
       {showMySlot && !hasMyStory ? (
@@ -101,72 +77,50 @@ function StoryRing({
           onClick={onAddStory}
           aria-label="오늘 일지 올리기"
           className={cn(
-            'flex shrink-0 flex-col overflow-hidden rounded-[22px]',
-            'border-main-200 border border-dashed bg-white text-left',
-            'hover:shadow-warm transition-all duration-300 ease-out',
-            cardWidthClass,
-            cardHeightClass
+            'flex h-[180px] w-[144px] shrink-0 flex-col items-center',
+            'justify-center gap-3 overflow-hidden rounded-[20px]',
+            'border-main-200 border-2 border-dashed bg-white',
+            'hover:shadow-warm transition-all duration-300 ease-out'
           )}
         >
           <span
             className={cn(
-              'flex flex-1 flex-col items-center justify-center gap-3',
-              'px-4 text-center'
+              'bg-main-500 shadow-warm flex h-14 w-14 items-center',
+              'justify-center rounded-full text-white'
             )}
+            aria-hidden
           >
-            <span
-              className={cn(
-                'flex h-14 w-14 items-center justify-center rounded-full',
-                'bg-main-500 shadow-warm text-white'
-              )}
-              aria-hidden
-            >
-              <Icon name="Plus" size={24} />
-            </span>
-            <Text size="caption2" weight="extrabold" className="text-main-800">
-              오늘 일지 올리기
-            </Text>
+            <Icon name="Plus" size={24} />
           </span>
-          <span className="flex items-center gap-3 px-4 pb-6">
-            <span
-              className={cn(
-                'flex h-9 w-9 shrink-0 items-center justify-center',
-                'overflow-hidden rounded-full bg-[#ffe1a8]'
-              )}
-              aria-hidden
-            >
-              {isValidNextImageSrc(myImageUrl) ? (
-                <span className="relative h-full w-full">
-                  <FadeInImage
-                    src={myImageUrl}
-                    alt=""
-                    fill
-                    sizes="36px"
-                    className="object-cover"
-                  />
-                </span>
-              ) : (
-                <span className="h-2 w-4 rounded-full bg-white" />
-              )}
-            </span>
-            <span className="min-w-0 text-base font-extrabold text-gray-900">
-              내 스토리
-            </span>
+          <span
+            className={cn(
+              'flex h-11 w-11 items-center justify-center overflow-hidden',
+              'rounded-full border-2 border-white bg-[#ffe1a8]'
+            )}
+            aria-hidden
+          >
+            {isValidNextImageSrc(myImageUrl) ? (
+              <span className="relative h-full w-full">
+                <FadeInImage
+                  src={myImageUrl}
+                  alt=""
+                  fill
+                  sizes="44px"
+                  className="object-cover"
+                />
+              </span>
+            ) : (
+              <span className="h-2.5 w-5 rounded-full bg-white" />
+            )}
           </span>
         </button>
       ) : null}
       {groups.map((group, index) => {
         const seen = isGroupAllSeen(group);
-        const [preview] = group.stories;
         const profileUrl =
           resolveDiaryImageUrl(group.profileImage) ?? undefined;
         const name = group.userName?.trim() || `친구 ${group.userId}`;
-        const title = preview?.diaryTitle ?? '';
-        const time = preview ? formatStoryDate(preview.createdAt) : '';
-        const visual = pickStoryVisual(group.userId);
-        const unreadCount = group.stories.filter(
-          (story) => story.hasUnreadJournal
-        ).length;
+        const mood = pickStoryMood(group.userId);
 
         return (
           <button
@@ -175,95 +129,40 @@ function StoryRing({
             onClick={() => onSelect(index)}
             aria-label={`${name} 스토리 열기`}
             className={cn(
-              'relative flex shrink-0 flex-col overflow-hidden rounded-[22px]',
-              'border bg-white text-left transition-all duration-300 ease-out',
-              'hover:shadow-warm',
-              seen ? 'border-gray-100' : 'border-main-200',
-              visual.surface,
-              cardWidthClass,
-              cardHeightClass
+              'flex h-[180px] w-[144px] shrink-0 flex-col items-center',
+              'justify-center gap-3 overflow-hidden rounded-[20px] border-2',
+              'hover:shadow-warm transition-all duration-300 ease-out',
+              seen ? 'border-gray-200' : 'border-main-500',
+              mood.tint
             )}
           >
+            {/* 무드 SVG는 정적 에셋이라 Next 이미지 최적화 없이 서빙한다. */}
+            <Image
+              src={mood.src}
+              alt={mood.alt}
+              width={56}
+              height={56}
+              className="h-14 w-14"
+              unoptimized
+            />
             <span
               className={cn(
-                'absolute top-4 left-4 inline-flex max-w-[112px]',
-                'items-center gap-1 rounded-full bg-white/75 px-2.5 py-1',
-                'text-[11px] font-extrabold',
-                visual.accent
+                'relative flex h-11 w-11 items-center justify-center',
+                'overflow-hidden rounded-full border-2 border-white bg-white'
               )}
+              aria-hidden
             >
-              <Icon name="Flag" size={10} aria-hidden />
-              <span className="truncate">{title || visual.badge}</span>
-            </span>
-            {!seen ? (
-              <span
-                className={cn(
-                  'absolute top-4 right-4 flex h-5 min-w-5 items-center',
-                  'bg-main-600 justify-center rounded-full px-1',
-                  'text-[11px] font-bold text-white ring-2 ring-white'
-                )}
-                aria-label={`${unreadCount || 1}개 새 스토리`}
-              >
-                {unreadCount || 1}
-              </span>
-            ) : null}
-
-            <span
-              className={cn(
-                'flex flex-1 items-center justify-center pt-9',
-                'px-4'
+              {isValidNextImageSrc(profileUrl) ? (
+                <FadeInImage
+                  src={profileUrl}
+                  alt=""
+                  fill
+                  sizes="44px"
+                  className="object-cover"
+                />
+              ) : (
+                <span className="h-3.5 w-6 rounded-full bg-gray-200" />
               )}
-            >
-              {/* 무드 SVG는 정적 에셋이라 Next 이미지 최적화 없이 서빙한다. */}
-              <Image
-                src={visual.moodImage.src}
-                alt={visual.moodImage.alt}
-                width={56}
-                height={56}
-                className="h-14 w-14"
-                unoptimized
-              />
-            </span>
-
-            <span className="flex items-end gap-3 px-4 pb-6">
-              <span
-                className={cn(
-                  'relative flex h-10 w-10 shrink-0 items-center',
-                  'justify-center overflow-hidden rounded-full border-2',
-                  visual.avatar
-                )}
-                aria-hidden
-              >
-                {isValidNextImageSrc(profileUrl) ? (
-                  <FadeInImage
-                    src={profileUrl}
-                    alt=""
-                    fill
-                    sizes="40px"
-                    className="object-cover"
-                  />
-                ) : (
-                  <span className="h-4 w-7 rounded-full bg-white/80" />
-                )}
-              </span>
-              <span className="min-w-0">
-                <span
-                  className={cn(
-                    'block truncate text-base font-extrabold',
-                    seen ? 'text-gray-700' : 'text-gray-900'
-                  )}
-                >
-                  {name}
-                </span>
-                <span
-                  className={cn(
-                    'block truncate text-[13px] font-medium',
-                    seen ? 'text-gray-400' : 'text-gray-500'
-                  )}
-                >
-                  {time}
-                </span>
-              </span>
             </span>
           </button>
         );

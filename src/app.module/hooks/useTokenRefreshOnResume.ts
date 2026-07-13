@@ -1,6 +1,9 @@
 'use client';
 
-import { refreshAccessTokenOnce } from '@module/api/tokenRefresh';
+import {
+  refreshAccessTokenOnce,
+  runAuthBootProbe,
+} from '@module/api/tokenRefresh';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 
@@ -82,12 +85,12 @@ export function useTokenRefreshOnResume(): void {
     window.addEventListener('pageshow', handlePageShow);
     window.addEventListener('focus', handleFocus);
 
-    // 마운트 직후 선제 갱신 — `pageshow` 이벤트는 listener 등록 전에 이미
-    // 발생했을 수 있어 놓치기 쉽다. 또한 보호 라우트(미들웨어가 가드)와 달리
-    // 홈/보드 같은 공개 라우트는 SSR 단계에서 access 토큰을 새로 발급하지
-    // 않으므로, 클라이언트가 직접 한 번 시도해야 만료 직후의 첫 요청이
-    // 실패하는 시나리오를 피할 수 있다.
-    void tryRefresh();
+    // 마운트 직후 권위 있는 부팅 세션 확인. tryRefresh 와 달리 결과를
+    // authStorage 상태(authenticated/guest)로 확정해, JS 힌트가 소실된 Safari
+    // standalone PWA 콜드 스타트에서도 로그인 여부가 unknown 에 갇히지 않는다.
+    // pageshow 가 listener 등록 전에 이미 발생했을 수 있어 마운트에서 반드시
+    // 한 번 태운다. (refreshAccessTokenOnce single-flight 라 중복 요청 없음)
+    void runAuthBootProbe();
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);

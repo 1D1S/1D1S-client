@@ -10,7 +10,11 @@ import React from 'react';
  * DS `MobileHeader`(뒤로가기 + 타이틀)를 사용한다. RSC인 GuideScreen을 그대로
  * 두기 위해 router.back 을 쓰는 이 헤더만 client 리프로 분리한다.
  */
-export function GuideMobileHeader(): React.ReactElement {
+export function GuideMobileHeader({
+  title = '사용 가이드',
+}: {
+  title?: string;
+} = {}): React.ReactElement {
   const router = useRouter();
-  return <MobileHeader title="사용 가이드" onBack={() => router.back()} />;
+  return <MobileHeader title={title} onBack={() => router.back()} />;
 }

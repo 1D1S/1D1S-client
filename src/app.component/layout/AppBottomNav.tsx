@@ -2,8 +2,8 @@
 
 import { BottomNav } from '@1d1s/design-system';
 import { ChallengeTrophyIcon } from '@component/ChallengeTrophyIcon';
-import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
+import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { cn } from '@module/utils/cn';
 import { resolveDiaryImageUrl } from '@module/utils/diaryImageUrl';
 import { buildLoginUrl } from '@module/utils/returnTo';
@@ -47,7 +47,10 @@ export default function AppBottomNav({
 }: AppBottomNavProps): React.ReactElement {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const isLoggedIn = useIsLoggedIn();
+  // 확정된 게스트만 "로그인" 탭을 노출한다. 부팅 세션 확인 중(unknown)에는
+  // 프로필 자리를 유지해, Safari PWA 첫 진입에서 마이 탭이 "로그인"으로
+  // 번쩍였다 프로필로 바뀌는 깜빡임을 없앤다.
+  const isGuest = useAuthStatus() === 'guest';
   const { data: sidebar } = useSidebar();
   const profileImageUrl = resolveDiaryImageUrl(sidebar?.profileUrl ?? null);
 
@@ -58,17 +61,17 @@ export default function AppBottomNav({
     ITEMS.forEach((item) => {
       router.prefetch(item.href);
     });
-    if (!isLoggedIn) {
+    if (isGuest) {
       router.prefetch('/login');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn]);
+  }, [isGuest]);
 
   const handleChange = useCallback(
     (id: string): void => {
       // 비로그인 마이 탭: 로그인 후 원래 목적지(마이페이지)로 복귀
       const target =
-        id === 'mypage' && !isLoggedIn
+        id === 'mypage' && isGuest
           ? buildLoginUrl('/mypage')
           : ITEMS.find((it) => it.id === id)?.href;
       if (!target) {
@@ -80,14 +83,14 @@ export default function AppBottomNav({
         router.push(target);
       });
     },
-    [router, isLoggedIn]
+    [router, isGuest]
   );
 
   const navItems = useMemo(
     () =>
       ITEMS.map(({ id, label, Icon }) => {
         if (id === 'mypage') {
-          if (!isLoggedIn) {
+          if (isGuest) {
             return {
               id,
               label: '로그인',
@@ -124,7 +127,7 @@ export default function AppBottomNav({
           icon: <Icon size={20} strokeWidth={1.8} />,
         };
       }),
-    [isLoggedIn, profileImageUrl]
+    [isGuest, profileImageUrl]
   );
 
   return (

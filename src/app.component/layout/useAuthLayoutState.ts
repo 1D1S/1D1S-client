@@ -2,8 +2,8 @@
 
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
+import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { NOOP_SUBSCRIBE } from '@module/hooks/useHasMounted';
-import { useHasSessionHint } from '@module/hooks/useHasSessionHint';
 import { useMemo, useSyncExternalStore } from 'react';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -108,30 +108,26 @@ export function useAuthLayoutState(): AuthLayoutState {
   );
   const now = useSyncExternalStore(NOOP_SUBSCRIBE, getMountTimestamp, () => 0);
 
-  // 로그인 힌트 변화를 구독한다. 재발급/미들웨어가 세션을 복구해 힌트가
-  // 나타나면(콜드 PWA 런치의 지연 복원, BFCache 복귀, 탭 재포커스, SPA 이동 중
-  // 재발급 성공 포함) 즉시 재렌더돼 useSidebar 의 enabled(=hasTokens) 가
-  // 재평가된다. 예전엔 폴링 reducer 로 흉내냈으나, 이벤트 기반 구독으로 대체해
-  // 전체 새로고침(=미들웨어 재실행) 없이도 로그인 상태를 스스로 복구한다.
-  const hasTokenHint = useHasSessionHint();
+  // 권위 있는 로그인 상태를 구독한다. 부팅 세션 확인(runAuthBootProbe)·로그인·
+  // 로그아웃·재발급 성공이 즉시 재렌더에 반영된다. 예전엔 JS 힌트(hasTokens)로
+  // 게이팅해, 힌트가 소실된 Safari standalone PWA 콜드 스타트에서 로그인 사용자가
+  // 게스트로 굳었다. 이제 httpOnly 세션으로 서버가 확인한 상태를 그대로 쓴다.
+  const status = useAuthStatus();
 
   const {
     data: sidebarData,
     isLoading: isSidebarLoading,
-    isFetching: isSidebarFetching,
   } = useSidebar();
 
-  const isLoggedIn =
-    hasMounted &&
-    hasTokenHint &&
-    (Boolean(sidebarData) || isSidebarLoading || isSidebarFetching);
+  const isLoggedIn = hasMounted && status === 'authenticated';
 
-  // SSR/하이드레이션 직후에는 클라이언트에서만 읽히는 토큰 힌트(localStorage,
-  // 쿠키)를 알 수 없어 무조건 게스트로 렌더된다. 그대로 노출하면 로그인 상태
-  // 사용자가 새로고침할 때 매번 게스트→로그인으로 깜빡인다. 인증 확정 전
-  // (`hasMounted` 이전 + 토큰 힌트는 있으나 사이드바 쿼리가 아직 pending)
-  // 까지는 사용자 정보 영역을 스켈레톤으로 가린다.
-  const isAuthLoading = !hasMounted || (hasTokenHint && isSidebarLoading);
+  // 확정 전(`unknown`)에는 로그아웃 UI 를 그리지 않고 스켈레톤으로 가린다.
+  // 로그인 확정 후에도 사이드바(프로필)가 도착하기 전까지는 로딩으로 둬,
+  // 아바타·닉네임이 기본값에서 실제 값으로 번쩍이는 것을 막는다.
+  const isAuthLoading =
+    !hasMounted ||
+    status === 'unknown' ||
+    (status === 'authenticated' && isSidebarLoading);
 
   const { data: unreadData } = useUnreadCount({ enabled: isLoggedIn });
   const hasUnread = isLoggedIn && (unreadData?.unreadCount ?? 0) > 0;
