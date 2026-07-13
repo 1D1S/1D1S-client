@@ -13,11 +13,8 @@ type ProtectedRoute =
   | { pattern: RegExp; type: 'login-redirect' };
 
 const PROTECTED_ROUTES: ProtectedRoute[] = [
-  {
-    pattern: /^\/challenge\/\d+\/?$/,
-    type: 'list-redirect',
-    fallback: '/challenge',
-  },
+  // 챌린지 상세(/challenge/{id})는 비인증 공개 조회가 열려 있어 보호 대상에서
+  // 제외한다. 비공개(403)·예약 전(404)은 상세 화면이 클라이언트에서 처리한다.
   { pattern: /^\/diary\/\d+\/?$/, type: 'list-redirect', fallback: '/diary' },
 
   { pattern: /^\/challenge\/\d+\/edit\/?$/, type: 'login-redirect' },

@@ -206,6 +206,18 @@ export function ChallengeDetailScreen({
     useState(false);
   // 비공개 챌린지가 자유 목표로 확인돼 목표 입력이 필요한지.
   const [passwordNeedsGoals, setPasswordNeedsGoals] = useState(false);
+  // 비로그인 사용자가 로그인 필요 액션(참여·좋아요 등)을 누르면 로그인 유도.
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  // 로그인 필요 액션 게이트. 비로그인이면 로그인 유도 다이얼로그를 띄우고
+  // false 를 반환한다(호출부는 즉시 return).
+  const requireLogin = (): boolean => {
+    if (isLoggedIn) {
+      return true;
+    }
+    setShowLoginPrompt(true);
+    return false;
+  };
 
   const summary = data?.challengeSummary;
   const detail = data?.challengeDetail;
@@ -310,6 +322,9 @@ export function ChallengeDetailScreen({
   });
 
   const handleJoinChallenge = (): void => {
+    if (!requireLogin()) {
+      return;
+    }
     if (isChallengeAlreadyEnded) {
       toast.error('종료된 챌린지는 참여 신청을 보낼 수 없습니다.');
       return;
@@ -351,6 +366,9 @@ export function ChallengeDetailScreen({
   };
 
   const handleToggleLike = (): void => {
+    if (!requireLogin()) {
+      return;
+    }
     if (!summary) {
       return;
     }
@@ -431,19 +449,6 @@ export function ChallengeDetailScreen({
   // 비공개 챌린지(403)는 비밀번호 검증 모달로 유도한다.
   const isPrivateChallengeLocked =
     isError && normalizeApiError(error).status === 403;
-
-  if (!isLoggedIn) {
-    return (
-      <LoginRequiredDialog
-        open
-        onOpenChange={() => {}}
-        title="간편 가입 후에 둘러보세요!"
-        description="챌린지 상세는 로그인 후 이용할 수 있습니다."
-        required
-        onClose={() => router.push('/challenge')}
-      />
-    );
-  }
 
   if (showSkeleton) {
     return <ChallengeDetailSkeleton />;
@@ -584,6 +589,12 @@ export function ChallengeDetailScreen({
         )}
       >
         <ChallengeGoalModals editors={goalEditors} />
+        <LoginRequiredDialog
+          open={showLoginPrompt}
+          onOpenChange={setShowLoginPrompt}
+          title="로그인이 필요해요"
+          description="이 기능은 로그인 후 이용할 수 있어요."
+        />
         <AlertDialog
           open={showCreateUnavailableDialog}
           onOpenChange={setShowCreateUnavailableDialog}
