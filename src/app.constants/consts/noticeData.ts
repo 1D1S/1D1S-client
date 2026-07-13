@@ -7,15 +7,18 @@ export interface NoticeItem {
   body: string;
   /** 표시용 ISO 날짜 문자열 (YYYY-MM-DD) */
   createdAt: string;
+  /** 클릭 시 이동할 경로 (없으면 공지 목록으로 이동) */
+  href?: string;
 }
 
 export const NOTICE_ITEMS: NoticeItem[] = [
   {
-    id: 'notice-2026-07-11',
-    category: '업데이트',
-    title: '통계 기능이 추가됐어요! 나의 기록을 한눈에',
-    body: '마이페이지에 통계 기능이 새로 추가됐습니다. 주·월·연 단위 활동 요약부터 감정 분포, 일지 작성 추이, 친구들과 나의 활동까지 한눈에 확인할 수 있어요. 마이페이지 > 활동 통계의 더보기에서 만나보세요. 꾸준히 쌓아온 기록이 얼마나 성장했는지 지금 확인해 보세요!',
-    createdAt: '2026-07-11',
+    id: 'notice-2026-07-13',
+    category: '이벤트',
+    title: '공식 챌린지 시작!',
+    body: '공식 챌린지가 시작됐어요! 모두 함께 참여하고 1만원 기프티콘 받아가요.',
+    createdAt: '2026-07-13',
+    href: '/challenge/25',
   },
   {
     id: 'notice-2026-05-23',
