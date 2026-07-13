@@ -11,6 +11,14 @@ export interface HomeMainBanner {
 
 export const HOME_MAIN_BANNERS: HomeMainBanner[] = [
   {
+    id: 'official-challenge',
+    kind: 'NEW',
+    title: '공식 챌린지\n시작!',
+    subtitle: '지금 참여하고 1만원 기프티콘 받아가요',
+    gradient: 'linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%)',
+    href: '/challenge/25',
+  },
+  {
     id: 'usage-guide',
     kind: 'TIP',
     title: '1D1S가\n처음이라면',
