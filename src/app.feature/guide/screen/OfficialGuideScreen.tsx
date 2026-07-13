@@ -10,6 +10,7 @@ import {
   Flame,
   Gift,
   Heart,
+  Info,
   type LucideIcon,
   Medal,
   MessageSquare,
@@ -627,6 +628,56 @@ function RewardSection(): React.ReactElement {
           </ul>
         </div>
       </div>
+
+      {/* 지급 유의사항 — 순위 안에 들어도 완주하지 않으면 미지급 */}
+      <div
+        className={cn(
+          'animate-pop-in rounded-4 mx-auto mt-5 flex max-w-[640px] gap-3.5',
+          'border border-red-200 bg-red-50 p-5 sm:p-6'
+        )}
+      >
+        <span
+          className={cn(
+            'flex h-10 w-10 shrink-0 items-center justify-center',
+            'rounded-[11px] border border-red-300 bg-white'
+          )}
+        >
+          <Info className="h-5 w-5 text-red-500" strokeWidth={2} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <Text
+            size="body1"
+            weight="extrabold"
+            className="mb-2 block break-keep text-gray-900"
+          >
+            지급 전 꼭 확인하세요
+          </Text>
+          <ul className="flex flex-col gap-2">
+            <li className="flex items-start gap-2">
+              <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-red-400" />
+              <Text
+                size="body2"
+                weight="regular"
+                className="block leading-relaxed break-keep text-gray-700"
+              >
+                순위가 <b>5위 안에 들더라도, 완주자가 아니면</b> 상품은 지급되지
+                않아요.
+              </Text>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-red-400" />
+              <Text
+                size="body2"
+                weight="regular"
+                className="block leading-relaxed break-keep text-gray-700"
+              >
+                완주 기준은 <b>챌린지 목표의 70% 이상 수행</b>이에요.
+              </Text>
+            </li>
+          </ul>
+        </div>
+      </div>
+
       <Text
         size="caption2"
         weight="regular"
