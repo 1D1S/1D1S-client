@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, CircleAvatar, Icon, Text } from '@1d1s/design-system';
+import { ProfileAlertBadge } from '@component/ProfileAlertBadge';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
 import { cn } from '@module/utils/cn';
@@ -98,6 +99,8 @@ interface MyPageProfileCardProps {
   completedFiniteChallengeCount: number;
   /** 모바일 3-col grid에서 스트릭 카운트 표시용 */
   currentStreak?: number;
+  /** 전화번호 미입력 시 아바타에 경고 배지 노출 */
+  showPhoneBadge?: boolean;
   /** 우측 액션 영역 — 미지정 시 기본 (프로필 편집 + 설정) 사용 */
   actions?: React.ReactNode;
   /** 지정 시 챌린지 스탯을 누르면 해당 경로로 이동 */
@@ -117,6 +120,7 @@ export function MyPageProfileCard({
   totalChallengeCount,
   completedFiniteChallengeCount,
   currentStreak,
+  showPhoneBadge = false,
   actions,
   challengeHref,
   diaryHref,
@@ -197,13 +201,18 @@ export function MyPageProfileCard({
           )}
         </div>
         <div className="mt-1 flex items-center gap-3.5">
-          <div
-            className={cn(
-              'h-18 w-18 shrink-0 overflow-hidden rounded-full',
-              'border-[3px] border-gray-100'
-            )}
-          >
-            <CircleAvatar imageUrl={profileUrl} size={66} />
+          <div className="relative shrink-0">
+            <div
+              className={cn(
+                'h-18 w-18 overflow-hidden rounded-full',
+                'border-[3px] border-gray-100'
+              )}
+            >
+              <CircleAvatar imageUrl={profileUrl} size={66} />
+            </div>
+            {showPhoneBadge ? (
+              <ProfileAlertBadge className="h-5 w-5 text-[11px]" />
+            ) : null}
           </div>
           <div className="min-w-0 flex-1">
             <Text size="heading1" weight="extrabold" className="text-gray-900">
@@ -252,13 +261,18 @@ export function MyPageProfileCard({
         )}
       >
         <div className="flex shrink-0 justify-center sm:block">
-          <div
-            className={cn(
-              'h-24 w-24 overflow-hidden rounded-full border-4',
-              'border-gray-100'
-            )}
-          >
-            <CircleAvatar imageUrl={profileUrl} size={88} />
+          <div className="relative inline-block">
+            <div
+              className={cn(
+                'h-24 w-24 overflow-hidden rounded-full border-4',
+                'border-gray-100'
+              )}
+            >
+              <CircleAvatar imageUrl={profileUrl} size={88} />
+            </div>
+            {showPhoneBadge ? (
+              <ProfileAlertBadge className="h-5 w-5 text-[11px]" />
+            ) : null}
           </div>
         </div>
 

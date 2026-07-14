@@ -18,6 +18,7 @@ import { MyPageActivityHeatmap } from '../components/MyPageActivityHeatmap';
 import { MyPageBadgesSection } from '../components/MyPageBadgesSection';
 import { MyPageDiarySection } from '../components/MyPageDiarySection';
 import { MyPageHeroBanner } from '../components/MyPageHeroBanner';
+import { MyPagePhoneBanner } from '../components/MyPagePhoneBanner';
 import { MyPageProfileCard } from '../components/MyPageProfileCard';
 import { MyPageStatSection } from '../components/MyPageStatSection';
 import { MyPageStreakHeroCard } from '../components/MyPageStreakHeroCard';
@@ -48,6 +49,8 @@ export default function MyPageScreen(): React.ReactElement | null {
   }
 
   const { nickname, profileUrl, streak, challengeList } = data;
+  // 미입력 회원은 응답에 phoneNumber 키가 없다.
+  const phoneMissing = !data.phoneNumber;
   const myDiaries = myDiariesData?.items ?? [];
   const hasMoreDiaries = myDiariesData?.pageInfo.hasNextPage ?? false;
 
@@ -74,9 +77,12 @@ export default function MyPageScreen(): React.ReactElement | null {
             streak.completedFiniteChallengeCount ?? 0
           }
           currentStreak={streak.currentStreak}
+          showPhoneBadge={phoneMissing}
           diaryHref="/mypage/diary"
           challengeHref="/mypage/challenge"
         />
+
+        {phoneMissing ? <MyPagePhoneBanner className="mt-6" /> : null}
 
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <MyPageFriendsEntry />
