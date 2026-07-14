@@ -58,6 +58,8 @@ Optional env vars:
 - `LOCAL_ALLOW_INSECURE_TLS=true` (optional, allow insecure backend TLS in dev)
 - `LOCAL_BIND_HOST` (optional bind host override)
 - `LOCAL_ALIAS_OPEN_BROWSER=false` (optional, disable auto-open)
+- `NEXT_PUBLIC_POSTHOG_KEY` (PostHog product analytics; unset → init skipped)
+- `NEXT_PUBLIC_POSTHOG_HOST` (default `https://us.i.posthog.com`)
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
