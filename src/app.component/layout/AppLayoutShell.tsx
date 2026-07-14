@@ -10,10 +10,9 @@ import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
 import { buildLoginUrl } from '@module/utils/returnTo';
 import { ArrowLeft } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import AppBottomNav from './AppBottomNav';
-import { AppLayoutProvider } from './AppLayoutContext';
 import AppRightRail from './AppRightRail';
 import AppTopNav from './AppTopNav';
 import NativeBridge from './NativeBridge';
@@ -26,12 +25,12 @@ const TOP_NAV_HIDDEN_ROUTES = [
   '/signup',
 ];
 
+// 홈(`/`)은 한때 본문이 스트릭·참여 중 챌린지·일지 쓰기를 직접 소유한다는
+// 이유로 레일을 숨겼다. 그러나 모든 화면이 `max-w-[1200px] mx-auto` 라
+// 레일 유무가 본문 중앙 정렬 기준을 바꿔, 홈↔챌린지 이동 시 본문이 가로로
+// 튀었다(1920px 기준 약 140px). 레이아웃 일관성을 우선해 홈에도 레일을
+// 노출하고, 스트릭·챌린지가 본문과 겹치는 것은 감수한다.
 const RIGHT_RAIL_HIDDEN_ROUTES = [
-  // 홈(`/`)은 '나의 오늘' 탭 본문이 스트릭·참여 중 챌린지·일지 쓰기 동선을
-  // 직접 소유하므로, 같은 정보를 반복하던 우측 레일을 숨겨 중복을 없앤다.
-  // (챌린지·일지 탐색 화면에서는 본문이 개인 정보를 보여주지 않으므로 레일을
-  //  유지해 스트릭·진행 중 챌린지를 한눈에 제공한다.)
-  '/',
   '/auth/login',
   '/login',
   '/auth/signup',
@@ -198,76 +197,64 @@ export default function AppLayoutShell({
     router.back();
   }, [router]);
 
-  // Context value 객체를 매 렌더마다 새로 만들면 모든 구독자가 재렌더된다.
-  // showRightRail 이 실제로 바뀔 때만 새 객체를 만든다.
-  const layoutContextValue = useMemo(
-    () => ({
-      hasRightSidebar: showRightRail,
-      isRightSidebarCollapsed: false,
-    }),
-    [showRightRail]
-  );
-
   return (
-    <AppLayoutProvider value={layoutContextValue}>
-      <div className="flex min-h-screen w-full flex-col bg-white">
-        {showTopNav ? (
-          <AppTopNav
-            activeId={activeNavId}
-            isLoggedIn={isLoggedIn}
-            isAuthLoading={isAuthLoading}
-            hasUnread={hasUnread}
-            streakDays={sidebarData?.streakCount ?? 0}
-            profileImageUrl={sidebarData?.profileUrl}
-            showPhoneBadge={showPhoneBadge}
-            onProfileClick={handleProfileClick}
-            className={topNavRespClass}
-          />
-        ) : null}
+    <div className="flex min-h-screen w-full flex-col bg-white">
+      {showTopNav ? (
+        <AppTopNav
+          activeId={activeNavId}
+          isLoggedIn={isLoggedIn}
+          isAuthLoading={isAuthLoading}
+          hasUnread={hasUnread}
+          streakDays={sidebarData?.streakCount ?? 0}
+          profileImageUrl={sidebarData?.profileUrl}
+          showPhoneBadge={showPhoneBadge}
+          onProfileClick={handleProfileClick}
+          className={topNavRespClass}
+        />
+      ) : null}
 
-        {showBackButton ? (
-          <div className="hidden shrink-0 px-7 pt-3 lg:flex">
-            <Button variant="ghost" size="sm" onClick={handleBackClick}>
-              <ArrowLeft className="mr-1 h-4 w-4" />
-              뒤로가기
-            </Button>
-          </div>
-        ) : null}
+      {showBackButton ? (
+        <div className="hidden shrink-0 px-7 pt-3 lg:flex">
+          <Button variant="ghost" size="sm" onClick={handleBackClick}>
+            <ArrowLeft className="mr-1 h-4 w-4" />
+            뒤로가기
+          </Button>
+        </div>
+      ) : null}
 
-        <div className="flex min-h-0 flex-1">
-          {/* overflow-x-clip 로 가로 넘침을 막되, overflow-clip-margin 으로
+      <div className="flex min-h-0 flex-1">
+        {/* overflow-x-clip 로 가로 넘침을 막되, overflow-clip-margin 으로
               카드 hover 그림자/살짝 떠오르는 효과가 잘리지 않게 24px 여유를
               둔다. clip 은 스크롤바를 만들지 않으므로 가로 스크롤은 그대로 차단된다. */}
-          <main className="min-h-0 min-w-0 flex-1 overflow-x-clip [overflow-clip-margin:1.5rem]">
-            {children}
-          </main>
-          {showRightRail ? (
-            <div className="hidden lg:flex">
-              <AppRightRail
-                isLoggedIn={isLoggedIn}
-                isAuthLoading={isAuthLoading}
-                nickname={sidebarData?.nickname ?? '사용자'}
-                handle={
-                  sidebarData?.nickname ? `@${sidebarData.nickname}` : undefined
-                }
-                profileImageUrl={sidebarData?.profileUrl}
-                showPhoneBadge={showPhoneBadge}
-                streakDays={sidebarData?.streakCount ?? 0}
-                todayGoalCount={sidebarData?.todayGoalCount ?? 0}
-                challenges={railChallenges}
-              />
-            </div>
-          ) : null}
-        </div>
-
-        {showBottomNav ? (
-          <AppBottomNav activeId={activeNavId} className={bottomNavRespClass} />
+        <main className="min-h-0 min-w-0 flex-1 overflow-x-clip [overflow-clip-margin:1.5rem]">
+          {children}
+        </main>
+        {showRightRail ? (
+          <div className="hidden lg:flex">
+            <AppRightRail
+              isLoggedIn={isLoggedIn}
+              isAuthLoading={isAuthLoading}
+              nickname={sidebarData?.nickname ?? '사용자'}
+              handle={
+                sidebarData?.nickname ? `@${sidebarData.nickname}` : undefined
+              }
+              profileImageUrl={sidebarData?.profileUrl}
+              showPhoneBadge={showPhoneBadge}
+              streakDays={sidebarData?.streakCount ?? 0}
+              todayGoalCount={sidebarData?.todayGoalCount ?? 0}
+              challenges={railChallenges}
+            />
+          </div>
         ) : null}
-
-        {!isLoginPage && !isNativeApp ? <BrowserPermissionPrompt /> : null}
-        {!isLoginPage && !isNativeApp ? <AddToHomeScreenPrompt /> : null}
-        {isNativeApp ? <NativeBridge authState={authState} /> : null}
       </div>
-    </AppLayoutProvider>
+
+      {showBottomNav ? (
+        <AppBottomNav activeId={activeNavId} className={bottomNavRespClass} />
+      ) : null}
+
+      {!isLoginPage && !isNativeApp ? <BrowserPermissionPrompt /> : null}
+      {!isLoginPage && !isNativeApp ? <AddToHomeScreenPrompt /> : null}
+      {isNativeApp ? <NativeBridge authState={authState} /> : null}
+    </div>
   );
 }
