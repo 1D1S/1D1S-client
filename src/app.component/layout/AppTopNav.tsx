@@ -2,6 +2,7 @@
 
 import { Icon, StreakChip } from '@1d1s/design-system';
 import { ChallengeTrophyIcon } from '@component/ChallengeTrophyIcon';
+import { ProfileAlertBadge } from '@component/ProfileAlertBadge';
 import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
 import {
@@ -41,6 +42,7 @@ interface AppTopNavProps {
   hasUnread: boolean;
   streakDays: number;
   profileImageUrl?: string;
+  showPhoneBadge?: boolean;
   onProfileClick(): void;
   className?: string;
 }
@@ -52,6 +54,7 @@ export default function AppTopNav({
   hasUnread,
   streakDays,
   profileImageUrl,
+  showPhoneBadge = false,
   onProfileClick,
   className,
 }: AppTopNavProps): React.ReactElement {
@@ -154,25 +157,28 @@ export default function AppTopNav({
               {streakDays > 0 ? (
                 <StreakChip days={streakDays} unit="일" />
               ) : null}
-              <button
-                type="button"
-                onClick={onProfileClick}
-                aria-label="프로필"
-                className={cn(
-                  'h-9 w-9 overflow-hidden rounded-full',
-                  'border-main-200 bg-main-100 border-2'
-                )}
-              >
-                {profileImageUrl ? (
-                  <Image
-                    src={profileImageUrl}
-                    alt="프로필"
-                    width={36}
-                    height={36}
-                    className="h-full w-full object-cover"
-                  />
-                ) : null}
-              </button>
+              <span className="relative inline-flex">
+                <button
+                  type="button"
+                  onClick={onProfileClick}
+                  aria-label="프로필"
+                  className={cn(
+                    'h-9 w-9 overflow-hidden rounded-full',
+                    'border-main-200 bg-main-100 border-2'
+                  )}
+                >
+                  {profileImageUrl ? (
+                    <Image
+                      src={profileImageUrl}
+                      alt="프로필"
+                      width={36}
+                      height={36}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </button>
+                {showPhoneBadge ? <ProfileAlertBadge /> : null}
+              </span>
             </>
           ) : (
             <Link

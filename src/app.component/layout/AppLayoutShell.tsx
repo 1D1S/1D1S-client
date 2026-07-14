@@ -2,6 +2,7 @@
 
 import { Button } from '@1d1s/design-system';
 import { AddToHomeScreenPrompt } from '@feature/install/components/AddToHomeScreenPrompt';
+import { usePhoneNumberMissing } from '@feature/member/hooks/usePhoneNumberMissing';
 import { BrowserPermissionPrompt } from '@feature/notification/components/BrowserPermissionPrompt';
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { useServiceWorkerNavigation } from '@module/hooks/useServiceWorkerNavigation';
@@ -143,6 +144,10 @@ export default function AppLayoutShell({
   const { isLoggedIn, isAuthLoading, hasUnread, sidebarData, railChallenges } =
     authState;
 
+  // 전화번호 미입력 시 프로필 아바타에 경고 배지를 띄운다. 사이드바 응답에는
+  // phoneNumber 가 없어 my-page 쿼리를 재사용한다(동일 queryKey dedupe).
+  const showPhoneBadge = usePhoneNumberMissing();
+
   useEffect(() => {
     if (
       !isLoggedIn ||
@@ -214,6 +219,7 @@ export default function AppLayoutShell({
             hasUnread={hasUnread}
             streakDays={sidebarData?.streakCount ?? 0}
             profileImageUrl={sidebarData?.profileUrl}
+            showPhoneBadge={showPhoneBadge}
             onProfileClick={handleProfileClick}
             className={topNavRespClass}
           />
@@ -245,6 +251,7 @@ export default function AppLayoutShell({
                   sidebarData?.nickname ? `@${sidebarData.nickname}` : undefined
                 }
                 profileImageUrl={sidebarData?.profileUrl}
+                showPhoneBadge={showPhoneBadge}
                 streakDays={sidebarData?.streakCount ?? 0}
                 todayGoalCount={sidebarData?.todayGoalCount ?? 0}
                 challenges={railChallenges}

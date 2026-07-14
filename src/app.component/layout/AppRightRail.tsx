@@ -1,6 +1,7 @@
 'use client';
 
 import { Icon, StreakHero } from '@1d1s/design-system';
+import { ProfileAlertBadge } from '@component/ProfileAlertBadge';
 import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
@@ -24,6 +25,7 @@ interface AppRightRailProps {
   nickname: string;
   handle?: string;
   profileImageUrl?: string;
+  showPhoneBadge?: boolean;
   streakDays: number;
   todayGoalCount: number;
   challenges: ChallengeProgressItem[];
@@ -80,6 +82,7 @@ export default function AppRightRail({
   nickname,
   handle,
   profileImageUrl,
+  showPhoneBadge = false,
   streakDays,
   todayGoalCount,
   challenges,
@@ -189,21 +192,24 @@ export default function AppRightRail({
                 'text-left transition hover:bg-gray-50'
               )}
             >
-              <span
-                className={cn(
-                  'h-12 w-12 shrink-0 overflow-hidden rounded-full',
-                  'border-main-200 bg-main-100 border-2'
-                )}
-              >
-                {profileImageUrl ? (
-                  <Image
-                    src={profileImageUrl}
-                    alt={nickname}
-                    width={48}
-                    height={48}
-                    className="h-full w-full object-cover"
-                  />
-                ) : null}
+              <span className="relative shrink-0">
+                <span
+                  className={cn(
+                    'block h-12 w-12 overflow-hidden rounded-full',
+                    'border-main-200 bg-main-100 border-2'
+                  )}
+                >
+                  {profileImageUrl ? (
+                    <Image
+                      src={profileImageUrl}
+                      alt={nickname}
+                      width={48}
+                      height={48}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </span>
+                {showPhoneBadge ? <ProfileAlertBadge /> : null}
               </span>
               <div className="min-w-0 flex-1">
                 <div
