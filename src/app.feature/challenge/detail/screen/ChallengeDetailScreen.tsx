@@ -1055,7 +1055,9 @@ export function ChallengeDetailScreen({
                   className={cn(
                     'mt-1 self-center text-[12px] text-gray-500',
                     'underline-offset-2 hover:text-gray-700 hover:underline',
-                    'disabled:opacity-50'
+                    'disabled:opacity-50',
+                    // 모바일에선 참여자 탭에서만 노출. 데스크톱은 항상 노출.
+                    activeTab !== 'participants' && 'hidden lg:block'
                   )}
                 >
                   챌린지 나가기
