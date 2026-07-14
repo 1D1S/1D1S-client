@@ -1,3 +1,4 @@
+import { PostHogProvider } from './PostHogProvider';
 import { TanStackQueryProvider } from './QueryClientProvider';
 import { ToastProvider } from './ToastProvider';
 
@@ -8,7 +9,9 @@ export function AppProviders({
 }): React.ReactElement {
   return (
     <TanStackQueryProvider>
-      <ToastProvider>{children}</ToastProvider>
+      <PostHogProvider>
+        <ToastProvider>{children}</ToastProvider>
+      </PostHogProvider>
     </TanStackQueryProvider>
   );
 }
