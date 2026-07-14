@@ -14,6 +14,7 @@ import {
   ChevronRight,
   HelpCircle,
   LogOut,
+  Trophy,
   User,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -151,6 +152,13 @@ export default function SettingsScreen(): React.ReactElement {
             label="사용 가이드"
             description="1D1S 사용법을 5단계로 확인해요"
             onClick={() => router.push('/guide')}
+          />
+          <div className="h-px w-full bg-gray-100" />
+          <SettingsRow
+            icon={<Trophy className="h-5 w-5" />}
+            label="공식 챌린지 안내"
+            description="공식 챌린지 참여·보상 조건을 확인해요"
+            onClick={() => router.push('/guide/official')}
           />
           <div className="h-px w-full bg-gray-100" />
           <SettingsRow
