@@ -1,3 +1,4 @@
+import { peekNativeOAuth } from '@module/utils/nativeBridge';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
 import { authApi } from '../api/authApi';
@@ -12,7 +13,13 @@ export function useSocialLogin(
 ): UseQueryResult<SocialLoginResponse, Error> {
   return useQuery({
     queryKey: AUTH_QUERY_KEYS.socialLogin(provider, code, state),
-    queryFn: () => authApi.socialLogin(provider, code!, state ?? undefined),
+    queryFn: () =>
+      authApi.socialLogin(
+        provider,
+        code!,
+        state ?? undefined,
+        peekNativeOAuth() ?? undefined
+      ),
     enabled: Boolean(provider) && Boolean(code),
     retry: false,
     staleTime: Infinity,

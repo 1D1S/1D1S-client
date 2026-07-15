@@ -1,4 +1,5 @@
 import { authStorage } from '@module/utils/auth';
+import { requestNativeTokenRefresh } from '@module/utils/nativeBridge';
 import axios from 'axios';
 
 import { API_BASE_URL } from './config';
@@ -21,8 +22,11 @@ let inFlight: Promise<void> | null = null;
  */
 export function refreshAccessTokenOnce(): Promise<void> {
   if (!inFlight) {
-    inFlight = axios
-      .get(`${API_BASE_URL}/auth/token`, { withCredentials: true })
+    const nativeRefresh = requestNativeTokenRefresh();
+    const refreshRequest =
+      nativeRefresh ??
+      axios.get(`${API_BASE_URL}/auth/token`, { withCredentials: true });
+    inFlight = refreshRequest
       .then(() => {
         // 갱신 성공 = 세션 생존 확정. 일시적 401 로 지워졌을 수 있는
         // 로그인 힌트(쿠키/localStorage)를 복구한다.
