@@ -3,6 +3,10 @@
 import { Button } from '@1d1s/design-system';
 import { API_BASE_URL } from '@module/api/config';
 import { cn } from '@module/utils/cn';
+import {
+  isNativeBridgeAvailable,
+  postNativeMessage,
+} from '@module/utils/nativeBridge';
 import { RETURN_TO_PARAM, returnToStorage } from '@module/utils/returnTo';
 import Image from 'next/image';
 
@@ -28,6 +32,15 @@ const handleSocialLogin = (provider: OAuthProvider): void => {
     returnToStorage.save(
       new URLSearchParams(window.location.search).get(RETURN_TO_PARAM)
     );
+    if (isNativeBridgeAvailable()) {
+      const startUrl = new URL('/login', window.location.origin);
+      startUrl.searchParams.set('nativeProvider', provider);
+      postNativeMessage({
+        type: 'oauth_open',
+        payload: { url: startUrl.toString() },
+      });
+      return;
+    }
   }
   window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
 };

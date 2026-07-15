@@ -17,6 +17,8 @@ export interface SocialLoginResponse {
   message: string;
   data: {
     profileComplete: boolean;
+    nativeLoginCode?: string;
+    nativeLoginCodeExpiresInSeconds?: number;
   };
 }
 

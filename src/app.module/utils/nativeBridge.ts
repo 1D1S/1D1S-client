@@ -8,6 +8,8 @@
 const CHANNEL_NAME = 'OneDayOneStreakNative';
 const NAVIGATE_EVENT = 'native:navigate';
 const MODAL_RESULT_EVENT = 'native:modal_result';
+const TOKEN_REFRESH_RESULT_EVENT = 'native:token_refresh_result';
+const NATIVE_OAUTH_MARKER = '1d1s:native-oauth';
 
 export interface NativeAuthPayload {
   isLoggedIn: boolean;
@@ -55,6 +57,9 @@ export type NativeMessage =
   // collapse/expand 하는 용도. 매 프레임 보내는 대신 방향 전환에만 발화해
   // JS 채널 트래픽을 최소화한다.
   | { type: 'scroll_dir'; payload: NativeScrollDirPayload }
+  | { type: 'oauth_open'; payload: { url: string } }
+  | { type: 'token_refresh'; payload: { id: string } }
+  | { type: 'logout' }
   // 네이티브 다이얼로그 노출 요청. 응답은 native:modal_result CustomEvent
   // 로 비동기 도착. openNativeModal() 헬퍼가 id 매칭으로 Promise 화 한다.
   | { type: 'modal_open'; payload: NativeModalOpenPayload };
@@ -90,6 +95,90 @@ export function postNativeMessage(message: NativeMessage): void {
   } catch {
     // 네이티브 쉘이 응답하지 못하더라도 웹 흐름을 멈추지 않는다.
   }
+}
+
+export function isNativeBridgeAvailable(): boolean {
+  return getNativeWindow()?.[CHANNEL_NAME] != null;
+}
+
+export function markNativeOAuth(codeChallenge: string): void {
+  window.sessionStorage.setItem(NATIVE_OAUTH_MARKER, codeChallenge);
+}
+
+export function consumeNativeOAuth(): string | null {
+  const codeChallenge = window.sessionStorage.getItem(NATIVE_OAUTH_MARKER);
+  if (codeChallenge) {
+    window.sessionStorage.removeItem(NATIVE_OAUTH_MARKER);
+  }
+  return codeChallenge;
+}
+
+export function peekNativeOAuth(): string | null {
+  return window.sessionStorage.getItem(NATIVE_OAUTH_MARKER);
+}
+
+interface PendingTokenRefresh {
+  resolve(): void;
+  reject(): void;
+  timeout: number;
+}
+
+const pendingTokenRefreshes = new Map<string, PendingTokenRefresh>();
+let tokenRefreshListenerAttached = false;
+
+function ensureTokenRefreshListener(): void {
+  if (tokenRefreshListenerAttached) {
+    return;
+  }
+  const win = getNativeWindow();
+  if (!win) {
+    return;
+  }
+  win.addEventListener(TOKEN_REFRESH_RESULT_EVENT, (event: Event) => {
+    const detail = (event as CustomEvent<{ id?: string; ok?: boolean }>).detail;
+    if (!detail?.id) {
+      return;
+    }
+    const pending = pendingTokenRefreshes.get(detail.id);
+    if (!pending) {
+      return;
+    }
+    pendingTokenRefreshes.delete(detail.id);
+    window.clearTimeout(pending.timeout);
+    if (detail.ok) {
+      pending.resolve();
+    } else {
+      pending.reject();
+    }
+  });
+  tokenRefreshListenerAttached = true;
+}
+
+export function requestNativeTokenRefresh(): Promise<void> | null {
+  const channel = getNativeWindow()?.[CHANNEL_NAME];
+  if (!channel) {
+    return null;
+  }
+  ensureTokenRefreshListener();
+  const id = `refresh_${Date.now().toString(36)}_${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+  return new Promise<void>((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      pendingTokenRefreshes.delete(id);
+      reject();
+    }, 15_000);
+    pendingTokenRefreshes.set(id, { resolve, reject, timeout });
+    try {
+      channel.postMessage(
+        JSON.stringify({ type: 'token_refresh', payload: { id } })
+      );
+    } catch {
+      window.clearTimeout(timeout);
+      pendingTokenRefreshes.delete(id);
+      reject();
+    }
+  });
 }
 
 export function onNativeNavigateRequest(

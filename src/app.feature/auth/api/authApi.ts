@@ -1,6 +1,7 @@
 import { apiClient, publicApiClient } from '@module/api/client';
 import { requestBody } from '@module/api/request';
 import { refreshAccessTokenOnce } from '@module/api/tokenRefresh';
+import { postNativeMessage } from '@module/utils/nativeBridge';
 
 import {
   LogoutResponse,
@@ -17,12 +18,13 @@ export const authApi = {
   socialLogin: async (
     provider: OAuthProvider,
     code: string,
-    state?: string
+    state?: string,
+    nativeCodeChallenge?: string
   ): Promise<SocialLoginResponse> =>
     requestBody<SocialLoginResponse>(publicApiClient, {
       url: `/login/oauth2/code/${provider}`,
       method: 'GET',
-      params: { code, state },
+      params: { code, state, nativeCodeChallenge },
       withCredentials: true,
     }),
 
@@ -51,10 +53,18 @@ export const authApi = {
   refreshToken: async (): Promise<void> => refreshAccessTokenOnce(),
 
   // 로그아웃
-  logout: async (): Promise<LogoutResponse> =>
-    requestBody<LogoutResponse, Record<string, never>>(apiClient, {
-      url: '/auth/logout',
-      method: 'POST',
-      data: {},
-    }),
+  logout: async (): Promise<LogoutResponse> => {
+    try {
+      return await requestBody<LogoutResponse, Record<string, never>>(
+        apiClient,
+        {
+          url: '/auth/logout',
+          method: 'POST',
+          data: {},
+        }
+      );
+    } finally {
+      postNativeMessage({ type: 'logout' });
+    }
+  },
 };

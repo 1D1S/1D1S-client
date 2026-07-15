@@ -5,6 +5,7 @@ import { OAuthProvider } from '@feature/auth/type/auth';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import { NotificationOptInPrompt } from '@feature/notification/components/NotificationOptInPrompt';
 import { authStorage } from '@module/utils/auth';
+import { consumeNativeOAuth } from '@module/utils/nativeBridge';
 import { RETURN_TO_PARAM, returnToStorage } from '@module/utils/returnTo';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -50,6 +51,20 @@ function OAuthCallbackContent(): React.ReactElement {
 
     if (isSuccess) {
       processed.current = true;
+      const nativeCodeChallenge = consumeNativeOAuth();
+      if (nativeCodeChallenge) {
+        const nativeLoginCode = data?.data?.nativeLoginCode;
+        if (!nativeLoginCode) {
+          processed.current = false;
+          console.error('[OAuth] 앱 로그인 코드가 응답에 없습니다.');
+          router.replace('/login');
+          return;
+        }
+        const callback = new URL('onedayonestreak://auth/callback');
+        callback.searchParams.set('code', nativeLoginCode);
+        window.location.replace(callback.toString());
+        return;
+      }
       authStorage.markAuthenticated();
       returnToRef.current = returnToStorage.consume();
       // 로그인 전 null로 캐시된 사이드바 무효화 → 홈에서 즉시 리페치
