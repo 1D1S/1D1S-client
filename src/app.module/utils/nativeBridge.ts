@@ -9,6 +9,7 @@ const CHANNEL_NAME = 'OneDayOneStreakNative';
 const NAVIGATE_EVENT = 'native:navigate';
 const MODAL_RESULT_EVENT = 'native:modal_result';
 const POPUP_RESULT_EVENT = 'native:popup_result';
+const DATE_RESULT_EVENT = 'native:date_result';
 const TOKEN_REFRESH_RESULT_EVENT = 'native:token_refresh_result';
 const NATIVE_OAUTH_MARKER = '1d1s:native-oauth';
 
@@ -71,6 +72,17 @@ export interface NativePopupOutcome {
   popupKey: string;
 }
 
+// 날짜는 전부 'YYYY-MM-DD' 로컬 날짜 문자열. Date 를 직렬화하면 타임존에
+// 따라 하루가 밀린다.
+export interface NativeDatePickerPayload {
+  id: string;
+  value?: string;
+  min?: string;
+  max?: string;
+  // [min, max] 안에서 개별적으로 막을 날짜 (예: 이미 일지를 쓴 날).
+  disabled?: string[];
+}
+
 export type NativeMessage =
   | { type: 'auth_state'; payload: NativeAuthPayload }
   | { type: 'nav_state'; payload: NativeNavPayload }
@@ -91,7 +103,9 @@ export type NativeMessage =
   // 네이티브 이벤트 팝업 노출 요청. 응답은 native:popup_result CustomEvent.
   | { type: 'popup_open'; payload: NativePopupOpenPayload }
   // 네이티브 이미지 뷰어(라이트박스). 결과 회신 없음 — fire-and-forget.
-  | { type: 'image_viewer_open'; payload: { urls: string[]; index: number } };
+  | { type: 'image_viewer_open'; payload: { urls: string[]; index: number } }
+  // 네이티브 날짜 피커. 응답은 native:date_result CustomEvent.
+  | { type: 'date_picker_open'; payload: NativeDatePickerPayload };
 
 interface NativeChannel {
   postMessage(payload: string): void;
@@ -101,7 +115,10 @@ interface NativeWindow extends Window {
   [CHANNEL_NAME]?: NativeChannel;
   __IS_NATIVE_APP__?: boolean;
   __NATIVE_NAV__?(path: string): void;
+  // 쉘 빌드가 처리 가능한 브릿지 메시지 플래그. injectHandshake 가 세운다.
+  __1D1S_FEATURES__?: Partial<Record<string, boolean>>;
 }
+
 
 function getNativeWindow(): NativeWindow | null {
   if (typeof window === 'undefined') {
@@ -109,6 +126,12 @@ function getNativeWindow(): NativeWindow | null {
   }
   return window as NativeWindow;
 }
+// 메시지를 모르는 구버전 쉘에 요청을 보내면 응답을 영영 기다리는 죽은
+// 컨트롤이 된다. 응답이 필요한 새 위임은 이 플래그를 먼저 확인한다.
+function hasNativeFeature(name: string): boolean {
+  return getNativeWindow()?.__1D1S_FEATURES__?.[name] === true;
+}
+
 
 export function postNativeMessage(message: NativeMessage): void {
   const win = getNativeWindow();
@@ -318,6 +341,61 @@ function ensurePopupResultListener(): void {
     );
   });
   popupResultListenerAttached = true;
+}
+
+// 날짜 피커 응답 대기 큐. modal/popup 과 같은 pending-Map 패턴.
+const pendingNativeDates = new Map<string, (value: string | null) => void>();
+let dateResultListenerAttached = false;
+
+function ensureDateResultListener(): void {
+  if (dateResultListenerAttached) {
+    return;
+  }
+  const win = getNativeWindow();
+  if (!win) {
+    return;
+  }
+  win.addEventListener(DATE_RESULT_EVENT, (event: Event) => {
+    const detail = (
+      event as CustomEvent<{ id?: string; value?: string | null }>
+    ).detail;
+    if (!detail?.id) {
+      return;
+    }
+    const resolver = pendingNativeDates.get(detail.id);
+    if (resolver) {
+      pendingNativeDates.delete(detail.id);
+      resolver(detail.value ?? null);
+    }
+  });
+  dateResultListenerAttached = true;
+}
+
+/**
+ * 날짜 피커를 네이티브 쉘에 위임한다. 웹 캘린더 시트는 WebView 안에 갇혀
+ * 잘리고 네이티브 헤더도 못 가린다. 선택하면 'YYYY-MM-DD', dismiss 면
+ * null. 네이티브 쉘이 아니면(브라우저) null — 호출자가 웹 피커로 폴백.
+ */
+/** 현재 쉘이 날짜 피커 위임을 지원하는지. 오버레이 렌더 여부 판정용. */
+export function isNativeDatePickerAvailable(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('datePicker')
+  );
+}
+
+export function openNativeDatePicker(
+  options: Omit<NativeDatePickerPayload, 'id'>
+): Promise<string | null> | null {
+  const win = getNativeWindow();
+  if (!win?.[CHANNEL_NAME] || !hasNativeFeature('datePicker')) {
+    return null;
+  }
+  ensureDateResultListener();
+  const id = generateModalId();
+  return new Promise<string | null>((resolve) => {
+    pendingNativeDates.set(id, resolve);
+    postNativeMessage({ type: 'date_picker_open', payload: { id, ...options } });
+  });
 }
 
 /**

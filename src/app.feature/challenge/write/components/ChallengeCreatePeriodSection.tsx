@@ -1,5 +1,4 @@
 import {
-  DatePicker,
   Icon,
   SegmentedControl,
   Text,
@@ -7,6 +6,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@1d1s/design-system';
+import { NativeDatePicker } from '@component/NativeDatePicker';
 import { cn } from '@module/utils/cn';
 import { formatDateKR } from '@module/utils/date';
 import { add, startOfToday } from 'date-fns';
@@ -99,11 +99,12 @@ export function ChallengeCreatePeriodSection(): React.ReactElement {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <DatePicker
+                  <NativeDatePicker
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="YYYY/MM/DD"
                     calendarProps={{ disabled: { before: startOfToday() } }}
+                    nativeMin={startOfToday()}
                   />
                 </FormControl>
                 <FormMessage />

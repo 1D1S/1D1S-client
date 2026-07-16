@@ -2,13 +2,14 @@
 
 import {
   Button,
-  DatePicker,
   MobileHeader,
   Text,
 } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
+import { NativeDatePicker } from '@component/NativeDatePicker';
 import { cn } from '@module/utils/cn';
+import { startOfToday, subDays } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -212,11 +213,17 @@ export default function DiaryCreateScreen(): React.ReactElement {
             >
               언제의 기록인가요?
             </Text>
-            <DatePicker
+            <NativeDatePicker
               value={achievedDate}
               onChange={handleAchievedDateChange}
               placeholder="날짜를 선택해주세요"
               calendarProps={{ disabled: isAchievedDateDisabled }}
+              // "오늘 포함 최근 3일" 창. 창 안의 개별 비활성(이미 작성한
+              // 날, 챌린지 시작 전) 은 같은 판정 함수를 하루씩 평가해
+              // 네이티브로 보낸다.
+              nativeMin={subDays(startOfToday(), 2)}
+              nativeMax={startOfToday()}
+              nativeIsDisabled={isAchievedDateDisabled}
             />
             <Text
               size="caption2"
