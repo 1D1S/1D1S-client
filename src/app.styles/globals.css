@@ -135,6 +135,22 @@
   html[data-native-app='true'] .native-only {
     display: revert !important;
   }
+
+  /* 숨겨진 웹 헤더를 전제로 잡혀 있던 상단 여백 제거. 네이티브 헤더가
+     이미 그 공간을 차지하므로 py-*/mt-* 의 top 만 0 으로 누른다. */
+  html[data-native-app='true']
+    :is([data-native-flush-top], .native-flush-top) {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  /* 챌린지 보드: 네이티브 검색 바(58px)가 body 최상단에 오버레이로 얹힌다.
+     kept sticky 래퍼(필터)를 그 아래로 내리고, 스크롤 시에도 바 아래에
+     붙게 sticky 오프셋을 같이 민다. Flutter kBoardSearchRowHeight 와 짝. */
+  html[data-native-app='true'] [data-native-search-offset] {
+    margin-top: 58px;
+    top: 58px !important;
+  }
   /* h-14 (3.5rem) 컨텐츠 높이는 유지하면서 노치 영역만큼 위로 확장 */
   .h-14-safe {
     height: calc(3.5rem + env(safe-area-inset-top));

@@ -83,6 +83,27 @@ export interface NativeDatePickerPayload {
   disabled?: string[];
 }
 
+// 스토리 한 장. 시간 라벨은 웹이 미리 계산해 보낸다 — 상대 시간 규칙을
+// 네이티브에 복제하지 않기 위해.
+export interface NativeStoryItem {
+  diaryId: number;
+  title: string;
+  thumbnail: string | null;
+  timeLabel: string;
+  unread: boolean;
+}
+
+export interface NativeStoryGroup {
+  userName: string;
+  profileImage: string | null;
+  stories: NativeStoryItem[];
+}
+
+export interface NativeStoryOpenPayload {
+  startGroup: number;
+  groups: NativeStoryGroup[];
+}
+
 export type NativeMessage =
   | { type: 'auth_state'; payload: NativeAuthPayload }
   | { type: 'nav_state'; payload: NativeNavPayload }
@@ -105,7 +126,10 @@ export type NativeMessage =
   // 네이티브 이미지 뷰어(라이트박스). 결과 회신 없음 — fire-and-forget.
   | { type: 'image_viewer_open'; payload: { urls: string[]; index: number } }
   // 네이티브 날짜 피커. 응답은 native:date_result CustomEvent.
-  | { type: 'date_picker_open'; payload: NativeDatePickerPayload };
+  | { type: 'date_picker_open'; payload: NativeDatePickerPayload }
+  // 네이티브 스토리 뷰어. 진행/이동/닫기는 네이티브가 처리하고, 읽음
+  // 처리용 native:story_viewed 이벤트만 웹으로 돌아온다.
+  | { type: 'story_open'; payload: NativeStoryOpenPayload };
 
 interface NativeChannel {
   postMessage(payload: string): void;
@@ -376,6 +400,41 @@ function ensureDateResultListener(): void {
  * 잘리고 네이티브 헤더도 못 가린다. 선택하면 'YYYY-MM-DD', dismiss 면
  * null. 네이티브 쉘이 아니면(브라우저) null — 호출자가 웹 피커로 폴백.
  */
+/**
+ * 스토리 뷰어를 네이티브 쉘에 위임한다. 뷰어 UI(진행바/자동 전환/이동/
+ * 일지 보기)는 전부 네이티브가 그리고, 웹은 읽음 처리 이벤트만 받는다.
+ * 채널이 없거나 구버전 쉘이면 false — 호출자는 웹 뷰어로 폴백.
+ */
+export function openNativeStoryViewer(
+  payload: NativeStoryOpenPayload
+): boolean {
+  const win = getNativeWindow();
+  if (!win?.[CHANNEL_NAME] || !hasNativeFeature('storyViewer')) {
+    return false;
+  }
+  postNativeMessage({ type: 'story_open', payload });
+  return true;
+}
+
+/** 네이티브 스토리 뷰어가 보내는 "이 일지를 봤다" 이벤트 구독. */
+export function onNativeStoryViewed(
+  handler: (diaryId: number) => void
+): () => void {
+  const win = getNativeWindow();
+  if (!win) {
+    return () => {};
+  }
+  const listener = (event: Event): void => {
+    const detail = (event as CustomEvent<{ diaryId?: number }>).detail;
+    if (typeof detail?.diaryId === 'number') {
+      handler(detail.diaryId);
+    }
+  };
+  win.addEventListener('native:story_viewed', listener);
+  return () => win.removeEventListener('native:story_viewed', listener);
+}
+
+
 /** 현재 쉘이 날짜 피커 위임을 지원하는지. 오버레이 렌더 여부 판정용. */
 export function isNativeDatePickerAvailable(): boolean {
   return (

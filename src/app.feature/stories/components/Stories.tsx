@@ -3,14 +3,19 @@
 import { Text } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
+import {
+  onNativeStoryViewed,
+  openNativeStoryViewer,
+} from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowRight, Lock } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { useViewStory } from '../hooks/useStoryMutations';
 import { useStories } from '../hooks/useStoryQueries';
-import { sortStoryGroups } from '../utils/storyHelpers';
+import { formatStoryDate, sortStoryGroups } from '../utils/storyHelpers';
 import StoryRing from './StoryRing';
 import StoryRingSkeleton from './StoryRingSkeleton';
 
@@ -141,6 +146,39 @@ export default function Stories({
   // 인라인 핸들러는 매 렌더마다 새로 생성돼 뷰어의 콜백 안정성과
   // React.memo(StoryRing) 를 깬다.
   const handleCloseViewer = useCallback(() => setOpenIndex(-1), []);
+  const viewStory = useViewStory();
+
+  // 네이티브 뷰어가 보내는 읽음 이벤트. 웹 뷰어의 useViewStory 호출과 같은
+  // 처리 — 판단(무엇을 읽음으로 칠지)은 네이티브가, 기록은 웹이 한다.
+  useEffect(
+    () => onNativeStoryViewed((diaryId) => viewStory.mutate(diaryId)),
+    [viewStory]
+  );
+
+  // 네이티브 쉘에서는 뷰어를 Flutter 가 그린다. 웹 오버레이는 WebView 안에
+  // 갇혀 네이티브 헤더/바텀바를 덮지 못한다 — 팝업/이미지 뷰어와 같은 제약.
+  const handleSelect = useCallback(
+    (index: number) => {
+      const delegated = openNativeStoryViewer({
+        startGroup: index,
+        groups: groups.map((group) => ({
+          userName: group.userName ?? `친구 ${group.userId}`,
+          profileImage: group.profileImage,
+          stories: group.stories.map((story) => ({
+            diaryId: story.diaryId,
+            title: story.diaryTitle,
+            thumbnail: story.diaryThumbnail,
+            timeLabel: formatStoryDate(story.createdAt),
+            unread: story.hasUnreadJournal,
+          })),
+        })),
+      });
+      if (!delegated) {
+        setOpenIndex(index);
+      }
+    },
+    [groups]
+  );
   const handleAddStory = useCallback(() => {
     router.push('/diary/create');
   }, [router]);
@@ -161,7 +199,7 @@ export default function Stories({
       <div className="data-fade-in">
         <StoryRing
           groups={groups}
-          onSelect={setOpenIndex}
+          onSelect={handleSelect}
           myProfileImage={sidebar?.profileUrl ?? null}
           onAddStory={handleAddStory}
         />

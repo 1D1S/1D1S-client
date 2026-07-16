@@ -34,6 +34,8 @@ export function BoardScreenLayout({
       {mobileHeader}
 
       <div
+        // 네이티브 쉘: 웹 헤더가 사라진 자리의 상단 패딩 제거.
+        data-native-flush-top
         className={cn(
           'mx-auto w-full max-w-[1200px]',
           'px-5 py-5 lg:px-8 lg:py-10'

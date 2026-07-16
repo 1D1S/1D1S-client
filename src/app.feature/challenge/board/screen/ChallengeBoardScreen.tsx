@@ -232,6 +232,9 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         // 가린다. 새 챌린지 버튼은 이미 자체 data-native-hide 가 있다.
         <div
           data-native-keep
+          // 네이티브 검색 바(58px)가 body 위에 오버레이로 얹힌다 — 이
+          // 래퍼(필터)를 그 아래로 내리고 sticky 오프셋도 같이 민다.
+          data-native-search-offset
           className={cn(
             'sticky top-0 z-20 border-b border-gray-100',
             'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
@@ -310,7 +313,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         description={loginDialogDescription}
       />
 
-      <div className="mt-2 flex flex-col gap-4 lg:mt-6">
+      <div className="native-flush-top mt-2 flex flex-col gap-4 lg:mt-6">
         {/* 데스크탑 검색바 — 모바일은 sticky 헤더에 있음 */}
         <div className="hidden w-full max-w-[480px] gap-2 lg:flex">
           <div className="w-full">
@@ -360,7 +363,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         />
       </div>
 
-      <div className="mt-4 lg:mt-6">
+      <div className="native-flush-top mt-4 lg:mt-6">
         {isLoading && challenges.length === 0 ? (
           <ChallengeCardSkeletonGrid count={8} className="gap-4" />
         ) : challenges.length > 0 ? (
