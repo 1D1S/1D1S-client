@@ -19,7 +19,7 @@ import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { cn } from '@module/utils/cn';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect,useMemo, useState } from 'react';
 
 import { ChallengeBoardFilters } from '../components/ChallengeBoardFilters';
 import { toCategoryParam } from '../consts/categoryFilters';
@@ -45,10 +45,7 @@ interface ChallengeBoardCardItemProps {
 // 카드 매핑에서 인라인 람다·파생 계산을 제거해 React.memo(ChallengeCard) 가
 // 실제로 재렌더를 건너뛸 수 있도록 한다.
 const ChallengeBoardCardItem = React.memo(
-  ({
-    challenge,
-    href,
-  }: ChallengeBoardCardItemProps): React.ReactElement => {
+  ({ challenge, href }: ChallengeBoardCardItemProps): React.ReactElement => {
     const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
     const ended = isChallengeEndedOrArchived(
       challenge.endDate,
@@ -135,6 +132,22 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     setInputValue('');
     setQuery('');
     scrollListToTop();
+  }, [scrollListToTop]);
+
+  // 네이티브 쉘의 검색 다이얼로그. 검색 상태가 로컬 useState 뿐이라 URL
+  // 파라미터로는 전달할 수 없어 bridge 이벤트로 직접 꽂는다. 웹 검색
+  // 필드는 네이티브에서 숨겨지고(data-native-hide) 이 이벤트가 유일한
+  // 검색 입력 경로가 된다.
+  useEffect(() => {
+    const listener = (event: Event): void => {
+      const detail = (event as CustomEvent<{ keyword?: string }>).detail;
+      const keyword = detail?.keyword ?? '';
+      setInputValue(keyword);
+      setQuery(keyword);
+      scrollListToTop();
+    };
+    window.addEventListener('native:board_search', listener);
+    return () => window.removeEventListener('native:board_search', listener);
   }, [scrollListToTop]);
 
   const handleCategoryChange = useCallback(
@@ -251,30 +264,34 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               <Icon name="Plus" size={12} />새 챌린지
             </button>
           </div>
-          <TextField
-            className="w-full"
-            placeholder="챌린지 검색"
-            value={inputValue}
-            iconLeft={<Icon name="Search" size={15} />}
-            iconRight={
-              inputValue ? (
-                <button
-                  type="button"
-                  aria-label="검색어 지우기"
-                  onClick={handleClear}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              ) : undefined
-            }
-            onChange={(event) => setInputValue(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                handleSearch();
+          {/* 네이티브에서는 헤더의 검색 버튼(다이얼로그)이 이 필드를
+              대신한다 — native:board_search 이벤트로 같은 상태에 꽂힌다. */}
+          <div data-native-hide>
+            <TextField
+              className="w-full"
+              placeholder="챌린지 검색"
+              value={inputValue}
+              iconLeft={<Icon name="Search" size={15} />}
+              iconRight={
+                inputValue ? (
+                  <button
+                    type="button"
+                    aria-label="검색어 지우기"
+                    onClick={handleClear}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                ) : undefined
               }
-            }}
-          />
+              onChange={(event) => setInputValue(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  handleSearch();
+                }
+              }}
+            />
+          </div>
           <ChallengeBoardFilters
             category={category}
             onCategoryChange={handleCategoryChange}

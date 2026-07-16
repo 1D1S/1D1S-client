@@ -125,6 +125,16 @@
   html[data-native-app='true'] [data-native-top-0] {
     top: 0 !important;
   }
+
+  /* 네이티브 쉘에서만 보이는 요소. 숨겨지는 웹 헤더 안의 액션(알림의
+     "모두 읽음" 등) 을 본문으로 옮겨 네이티브에서만 노출할 때 쓴다.
+     revert 는 UA 기본 display 로 되돌린다 (div→block, button→inline-block). */
+  .native-only {
+    display: none !important;
+  }
+  html[data-native-app='true'] .native-only {
+    display: revert !important;
+  }
   /* h-14 (3.5rem) 컨텐츠 높이는 유지하면서 노치 영역만큼 위로 확장 */
   .h-14-safe {
     height: calc(3.5rem + env(safe-area-inset-top));

@@ -67,6 +67,12 @@ export function NotificationScreen(): React.JSX.Element {
       headerAction={markAllAction}
       onBack={handleBack}
     >
+      {/* 네이티브 쉘에서는 SubPageShell 의 웹 헤더(와 headerAction 의
+          "모두 읽음")가 통째로 숨는다. 같은 액션을 본문 상단에 native-only
+          로 한 번 더 그려 네이티브에서도 모두 읽음이 가능하게 한다. */}
+      {hasUnread ? (
+        <div className="native-only mb-3 text-right">{markAllAction}</div>
+      ) : null}
       {showSkeleton ? (
         <NotificationListSkeleton count={6} />
       ) : !hasNotifications ? (
