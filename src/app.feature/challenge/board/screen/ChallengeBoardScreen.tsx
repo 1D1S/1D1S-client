@@ -150,6 +150,35 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     return () => window.removeEventListener('native:board_search', listener);
   }, [scrollListToTop]);
 
+  // 네이티브 툴바의 필터 선택. 검색과 같은 방식 — 카테고리/종류/상태를
+  // 한 번에 받아 로컬 상태에 반영한다.
+  useEffect(() => {
+    const listener = (event: Event): void => {
+      const detail = (
+        event as CustomEvent<{
+          category?: ChallengeCategory;
+          challengeType?: ChallengeTypeFilter | 'ALL';
+          statuses?: ChallengeStatus[];
+        }>
+      ).detail;
+      if (!detail) {
+        return;
+      }
+      if (detail.category) {
+        setCategory(detail.category);
+      }
+      if (detail.challengeType) {
+        setChallengeType(detail.challengeType);
+      }
+      if (Array.isArray(detail.statuses)) {
+        setStatuses(detail.statuses);
+      }
+      scrollListToTop();
+    };
+    window.addEventListener('native:board_filter', listener);
+    return () => window.removeEventListener('native:board_filter', listener);
+  }, [scrollListToTop]);
+
   const handleCategoryChange = useCallback(
     (value: ChallengeCategory): void => {
       setCategory(value);
@@ -230,11 +259,9 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         //
         // 그래서 래퍼는 살리고(data-native-keep), 실제로 중복인 타이틀 행만
         // 가린다. 새 챌린지 버튼은 이미 자체 data-native-hide 가 있다.
+        // 네이티브 쉘은 검색과 필터를 전부 네이티브 툴바로 그린다 — 이
+        // 래퍼는 글로벌 sticky 차단 룰이 통째로 숨긴다 (keep 마커 없음).
         <div
-          data-native-keep
-          // 네이티브 검색 바(58px)가 body 위에 오버레이로 얹힌다 — 이
-          // 래퍼(필터)를 그 아래로 내리고 sticky 오프셋도 같이 민다.
-          data-native-search-offset
           className={cn(
             'sticky top-0 z-20 border-b border-gray-100',
             'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
@@ -363,7 +390,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         />
       </div>
 
-      <div className="native-flush-top mt-4 lg:mt-6">
+      <div data-native-toolbar-offset className="mt-4 lg:mt-6">
         {isLoading && challenges.length === 0 ? (
           <ChallengeCardSkeletonGrid count={8} className="gap-4" />
         ) : challenges.length > 0 ? (

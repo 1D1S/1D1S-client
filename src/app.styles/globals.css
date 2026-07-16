@@ -144,12 +144,11 @@
     margin-top: 0 !important;
   }
 
-  /* 챌린지 보드: 네이티브 검색 바(58px)가 body 최상단에 오버레이로 얹힌다.
-     kept sticky 래퍼(필터)를 그 아래로 내리고, 스크롤 시에도 바 아래에
-     붙게 sticky 오프셋을 같이 민다. Flutter kBoardSearchRowHeight 와 짝. */
-  html[data-native-app='true'] [data-native-search-offset] {
-    margin-top: 58px;
-    top: 58px !important;
+  /* 챌린지 보드: 네이티브 툴바(검색+필터, 194px)가 body 최상단 오버레이로
+     얹힌다. 첫 콘텐츠를 그 아래로 내린다. Flutter
+     kChallengeToolbarHeight 와 짝 — 바꾸면 같이 바꿀 것. */
+  html[data-native-app='true'] [data-native-toolbar-offset] {
+    margin-top: 194px !important;
   }
   /* h-14 (3.5rem) 컨텐츠 높이는 유지하면서 노치 영역만큼 위로 확장 */
   .h-14-safe {
