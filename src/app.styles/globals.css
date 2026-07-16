@@ -117,6 +117,14 @@
   html[data-native-app='true'] :is([data-native-hide], .native-hide) {
     display: none !important;
   }
+
+  /* 숨겨진 웹 헤더 높이를 보정하던 sticky 오프셋 마커. `top-14` 처럼 자기
+     위의 모바일 헤더(h-14, data-native-hide) 높이만큼 내려 붙는 요소는
+     네이티브에서 그 헤더가 사라지므로 56px 아래 허공에 붙는다 — 챌린지
+     상세 탭바가 그랬다. 이 마커를 달면 네이티브에서 top:0 으로 당겨진다. */
+  html[data-native-app='true'] [data-native-top-0] {
+    top: 0 !important;
+  }
   /* h-14 (3.5rem) 컨텐츠 높이는 유지하면서 노치 영역만큼 위로 확장 */
   .h-14-safe {
     height: calc(3.5rem + env(safe-area-inset-top));
