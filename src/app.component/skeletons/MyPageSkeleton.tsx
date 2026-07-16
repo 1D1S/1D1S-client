@@ -25,7 +25,14 @@ export function MyPageSkeleton(): React.ReactElement {
       >
         {/* 모바일 프로필 */}
         <div className="lg:hidden">
-          <div className="flex min-h-8 items-center justify-end gap-1">
+          {/* 실제 페이지(MyPageProfileCard)의 액션 행(벨+설정)은 네이티브
+              에서 data-native-hide 로 숨는다. skeleton 만 그 자리를 그리면
+              로딩 → 실제 전환 때 행 높이만큼 레이아웃이 밀린다 — 같은
+              마커로 skeleton 쪽도 숨긴다. */}
+          <div
+            data-native-hide
+            className="flex min-h-8 items-center justify-end gap-1"
+          >
             <Skeleton shape="rounded" className="h-8 w-8 rounded-lg" />
             <Skeleton shape="rounded" className="h-8 w-8 rounded-lg" />
           </div>
