@@ -206,18 +206,29 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         </Button>
       }
       mobileHeader={
-        // 모바일 sticky 헤더 — 타이틀 + 새 챌린지 + 검색바.
-        // 네이티브 쉘에서는 AppTopNav + sliver AppBar 가 동일 영역을
-        // 책임지고, FAB 가 "챌린지 추가" 액션을 제공하므로 이 헤더는
-        // 글로벌 sticky 차단 룰로 함께 가린다 (data-native-keep 제거).
+        // 모바일 sticky 헤더 — 타이틀 + 새 챌린지 + 검색바 + 필터.
+        //
+        // 네이티브 쉘이 대체하는 건 **타이틀과 새 챌린지 버튼뿐**이다
+        // (AppBoardHeader + FAB). 검색 입력과 ChallengeBoardFilters 는
+        // 네이티브에 대응물이 없다. 예전엔 data-native-keep 을 빼서 글로벌
+        // sticky 차단 룰이 이 래퍼를 통째로 가렸는데, 그러면 같은 래퍼 안에
+        // 있는 검색과 카테고리/종류/상태 필터까지 전부 사라진다 — 앱에서만
+        // 챌린지를 검색하거나 거를 수 없었다.
+        //
+        // 그래서 래퍼는 살리고(data-native-keep), 실제로 중복인 타이틀 행만
+        // 가린다. 새 챌린지 버튼은 이미 자체 data-native-hide 가 있다.
         <div
+          data-native-keep
           className={cn(
             'sticky top-0 z-20 border-b border-gray-100',
             'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
             'backdrop-blur lg:hidden'
           )}
         >
-          <div className="mb-3 flex items-center justify-between">
+          <div
+            data-native-hide
+            className="mb-3 flex items-center justify-between"
+          >
             <Text
               as="h1"
               size="heading1"

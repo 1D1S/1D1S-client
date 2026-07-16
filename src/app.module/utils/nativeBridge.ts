@@ -8,6 +8,7 @@
 const CHANNEL_NAME = 'OneDayOneStreakNative';
 const NAVIGATE_EVENT = 'native:navigate';
 const MODAL_RESULT_EVENT = 'native:modal_result';
+const POPUP_RESULT_EVENT = 'native:popup_result';
 const TOKEN_REFRESH_RESULT_EVENT = 'native:token_refresh_result';
 const NATIVE_OAUTH_MARKER = '1d1s:native-oauth';
 
@@ -46,6 +47,30 @@ export interface NativeModalOpenPayload {
   buttons: NativeModalButton[];
 }
 
+// 메인 이벤트 팝업 한 장. 서버 ActivePopup 과 같은 모양.
+export interface NativePopupSpec {
+  popupKey: string;
+  imageUrl: string;
+  ctaText: string;
+  linkUrl: string;
+}
+
+export interface NativePopupOpenPayload {
+  id: string;
+  // 노출 대상 전체를 한 번에 넘긴다. 2장 이상이면 네이티브가 3초 간격으로
+  // 순환시킨다 (웹 HomePopup 과 같은 규칙).
+  popups: NativePopupSpec[];
+}
+
+// 사용자가 팝업에서 무엇을 했는지. dismiss(밖 클릭/시스템 백) 는 'close'.
+export type NativePopupAction = 'cta' | 'dismissForever' | 'close';
+
+export interface NativePopupOutcome {
+  action: NativePopupAction;
+  // 액션 시점에 보이던 팝업. 캐러셀이 돌므로 첫 장과 다를 수 있다.
+  popupKey: string;
+}
+
 export type NativeMessage =
   | { type: 'auth_state'; payload: NativeAuthPayload }
   | { type: 'nav_state'; payload: NativeNavPayload }
@@ -62,7 +87,9 @@ export type NativeMessage =
   | { type: 'logout' }
   // 네이티브 다이얼로그 노출 요청. 응답은 native:modal_result CustomEvent
   // 로 비동기 도착. openNativeModal() 헬퍼가 id 매칭으로 Promise 화 한다.
-  | { type: 'modal_open'; payload: NativeModalOpenPayload };
+  | { type: 'modal_open'; payload: NativeModalOpenPayload }
+  // 네이티브 이벤트 팝업 노출 요청. 응답은 native:popup_result CustomEvent.
+  | { type: 'popup_open'; payload: NativePopupOpenPayload };
 
 interface NativeChannel {
   postMessage(payload: string): void;
@@ -246,6 +273,71 @@ function generateModalId(): string {
  * resolve 된다. 네이티브 쉘이 아닌 일반 브라우저에서는 즉시 `null` 을
  * resolve 해, 호출자는 자체 fallback 다이얼로그를 띄우면 된다.
  */
+// 메인 이벤트 팝업을 네이티브 쉘에 위임한다. 웹 다이얼로그는 WebView 안에
+// 갇혀 네이티브 헤더/바텀바를 덮지 못하므로, 앱에서는 네이티브가 그린다.
+//
+// 네이티브 쉘이 아니거나(브라우저) 쉘이 이 메시지를 모르는 구버전이면
+// null 을 resolve 한다 → 호출자는 웹 팝업을 그대로 띄우면 된다.
+const pendingNativePopups = new Map<
+  string,
+  (value: NativePopupOutcome | null) => void
+>();
+let popupResultListenerAttached = false;
+
+function ensurePopupResultListener(): void {
+  if (popupResultListenerAttached) {
+    return;
+  }
+  const win = getNativeWindow();
+  if (!win) {
+    return;
+  }
+  win.addEventListener(POPUP_RESULT_EVENT, (event: Event) => {
+    const detail = (
+      event as CustomEvent<{
+        id?: string;
+        action?: NativePopupAction | null;
+        popupKey?: string | null;
+      }>
+    ).detail;
+    if (!detail?.id) {
+      return;
+    }
+    const resolver = pendingNativePopups.get(detail.id);
+    if (!resolver) {
+      return;
+    }
+    pendingNativePopups.delete(detail.id);
+    // action 이 없으면 dismiss — 그냥 닫기로 읽는다.
+    resolver(
+      detail.action && detail.popupKey
+        ? { action: detail.action, popupKey: detail.popupKey }
+        : { action: 'close', popupKey: '' }
+    );
+  });
+  popupResultListenerAttached = true;
+}
+
+// 타임아웃은 두지 않는다. 결과는 사용자가 버튼을 누를 때 오므로 몇 초 안에
+// 온다는 보장이 없고, 성급히 null 로 떨어뜨리면 네이티브 팝업이 떠 있는 채로
+// 웹 팝업까지 겹쳐 뜬다. popup_open 을 모르는 구버전 쉘에서는 이벤트 팝업이
+// 뜨지 않는데(기능 손실이지 오동작은 아니다), 웹과 앱을 같이 배포하면 된다.
+// openNativeModal 도 같은 약속이다.
+export function openNativePopup(
+  popups: NativePopupSpec[]
+): Promise<NativePopupOutcome | null> {
+  const win = getNativeWindow();
+  if (!win?.[CHANNEL_NAME]) {
+    return Promise.resolve(null);
+  }
+  ensurePopupResultListener();
+  const id = generateModalId();
+  return new Promise<NativePopupOutcome | null>((resolve) => {
+    pendingNativePopups.set(id, resolve);
+    postNativeMessage({ type: 'popup_open', payload: { id, popups } });
+  });
+}
+
 export function openNativeModal(
   options: Omit<NativeModalOpenPayload, 'id'>
 ): Promise<string | null> {

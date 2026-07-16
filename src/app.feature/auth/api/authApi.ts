@@ -1,7 +1,6 @@
 import { apiClient, publicApiClient } from '@module/api/client';
 import { requestBody } from '@module/api/request';
 import { refreshAccessTokenOnce } from '@module/api/tokenRefresh';
-import { postNativeMessage } from '@module/utils/nativeBridge';
 
 import {
   LogoutResponse,
@@ -53,18 +52,14 @@ export const authApi = {
   refreshToken: async (): Promise<void> => refreshAccessTokenOnce(),
 
   // 로그아웃
-  logout: async (): Promise<LogoutResponse> => {
-    try {
-      return await requestBody<LogoutResponse, Record<string, never>>(
-        apiClient,
-        {
-          url: '/auth/logout',
-          method: 'POST',
-          data: {},
-        }
-      );
-    } finally {
-      postNativeMessage({ type: 'logout' });
-    }
-  },
+  //
+  // 네이티브 쉘 통지는 여기가 아니라 useLogout 의 onSettled 가 한다. 여기서
+  // 알리면 로컬 인증 힌트(localStorage/쿠키/사이드바 캐시)를 지우기 *전*이라,
+  // 통지를 받은 쉘이 리로드한 탭들이 그 힌트를 읽고 로그인 상태로 되돌아간다.
+  logout: async (): Promise<LogoutResponse> =>
+    requestBody<LogoutResponse, Record<string, never>>(apiClient, {
+      url: '/auth/logout',
+      method: 'POST',
+      data: {},
+    }),
 };
