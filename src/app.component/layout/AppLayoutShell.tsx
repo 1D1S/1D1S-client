@@ -120,10 +120,10 @@ export default function AppLayoutShell({
   // UA 를 다시 점검해 chrome 중복을 방지한다.
   const isNativeApp = useIsNativeApp(isNativeAppFromServer);
 
-  // SSR 가 false 로 내려왔어도 클라이언트 감지가 true 로 바뀌면 <html> 의
-  // data 속성을 동기화해, globals.css 의 sticky 헤더 차단 규칙이 즉시
-  // 적용되도록 한다. RootLayout 은 App Router 에서 재렌더되지 않으므로
-  // 이 effect 가 유일한 갱신 경로다.
+  // 첫 판정은 RootLayout <head> 의 inline script 가 페인트 전에 끝낸다.
+  // 이 effect 는 늦게 도착한 `native:ready` handshake 처럼 그 이후에
+  // 값이 바뀌는 경우만 <html> 속성에 반영한다. RootLayout 은 App Router
+  // 에서 재렌더되지 않으므로 이 effect 가 유일한 갱신 경로다.
   useEffect(() => {
     if (typeof document === 'undefined') {
       return;
@@ -163,14 +163,14 @@ export default function AppLayoutShell({
   }, [isLoggedIn, sidebarData, pathname, router]);
 
   const isLoginPage = matchesRoute(pathname, TOP_NAV_HIDDEN_ROUTES);
-  // TopNav 가시성: 로그인/회원가입 페이지거나 네이티브 앱 쉘이면 완전 제거.
-  // 그 외엔 CSS로 처리.
-  const showTopNav = !isLoginPage && !isNativeApp;
+  // TopNav 가시성: 로그인/회원가입 페이지면 완전 제거. 네이티브 쉘 숨김은
+  // BottomNav 와 같은 이유로 `native-hide` 클래스(CSS) 에 맡긴다.
+  const showTopNav = !isLoginPage;
   // 모든 라우트에서 `lg`(1024px) 기준으로 데스크탑/태블릿 전환을 통일한다.
   // - 데스크탑(≥lg): 글로벌 TopNav 노출
   // - 태블릿/모바일(<lg): 글로벌 TopNav 숨김, BottomNav 노출
   //   (페이지별 자체 sticky 헤더가 있으면 화면 상단을 채운다)
-  const topNavRespClass = 'hidden lg:flex';
+  const topNavRespClass = 'hidden lg:flex native-hide';
 
   const showBackButton = needsBackButton(pathname);
   const isContentRouteForRail = !matchesRoute(
@@ -178,8 +178,13 @@ export default function AppLayoutShell({
     RIGHT_RAIL_HIDDEN_ROUTES
   );
   const showRightRail = isContentRouteForRail;
-  const showBottomNav = isBottomNavVisible(pathname) && !isNativeApp;
-  const bottomNavRespClass = 'lg:hidden';
+  // 바텀 네비는 네이티브에서도 마운트하되 CSS(`native-hide`) 로 가린다.
+  // isNativeApp 으로 언마운트하면 서버 HTML → 하이드레이션 사이에 한 번
+  // 그려졌다 사라져 본문이 위로 튄다. 가시성 판단은 inline script 가
+  // 세팅한 `data-native-app` 이 첫 페인트 전에 끝낸다.
+  // ponytail: 네이티브에서도 훅(라우트 prefetch) 은 그대로 돈다.
+  const showBottomNav = isBottomNavVisible(pathname);
+  const bottomNavRespClass = 'lg:hidden native-hide';
   const activeNavId = resolveActiveNavId(pathname);
 
   // 프로필 아바타 클릭 — pathname 이 변해 AppLayoutShell 이 재렌더돼도

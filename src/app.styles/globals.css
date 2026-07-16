@@ -111,8 +111,10 @@
   }
 
   /* 네이티브에서 강제 숨김 마커. 헤더 외 임의 요소(인라인 버튼, 푸터,
-     PWA 프롬프트 등) 에 부착해 isNativeApp 분기를 JS 없이도 처리한다. */
-  html[data-native-app='true'] [data-native-hide] {
+     PWA 프롬프트 등) 에 부착해 isNativeApp 분기를 JS 없이도 처리한다.
+     data 속성을 못 받는 컴포넌트(className 만 뚫려 있는 경우) 는
+     `.native-hide` 클래스를 쓴다. */
+  html[data-native-app='true'] :is([data-native-hide], .native-hide) {
     display: none !important;
   }
   /* h-14 (3.5rem) 컨텐츠 높이는 유지하면서 노치 영역만큼 위로 확장 */
