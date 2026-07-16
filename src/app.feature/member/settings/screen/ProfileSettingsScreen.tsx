@@ -205,7 +205,7 @@ export default function ProfileSettingsScreen(): React.ReactElement {
                     isSameAsCurrent ||
                     !isVerified
                   }
-                  className="shrink-0 whitespace-nowrap"
+                  className="h-auto shrink-0 self-stretch whitespace-nowrap"
                 >
                   {updateNickname.isPending ? '저장 중...' : '저장'}
                 </Button>
@@ -268,7 +268,7 @@ export default function ProfileSettingsScreen(): React.ReactElement {
                     Boolean(phoneError) ||
                     isSamePhone
                   }
-                  className="shrink-0 whitespace-nowrap"
+                  className="h-auto shrink-0 self-stretch whitespace-nowrap"
                 >
                   {updatePhoneNumber.isPending ? '저장 중...' : '저장'}
                 </Button>

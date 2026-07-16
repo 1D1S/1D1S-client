@@ -89,7 +89,9 @@ export type NativeMessage =
   // 로 비동기 도착. openNativeModal() 헬퍼가 id 매칭으로 Promise 화 한다.
   | { type: 'modal_open'; payload: NativeModalOpenPayload }
   // 네이티브 이벤트 팝업 노출 요청. 응답은 native:popup_result CustomEvent.
-  | { type: 'popup_open'; payload: NativePopupOpenPayload };
+  | { type: 'popup_open'; payload: NativePopupOpenPayload }
+  // 네이티브 이미지 뷰어(라이트박스). 결과 회신 없음 — fire-and-forget.
+  | { type: 'image_viewer_open'; payload: { urls: string[]; index: number } };
 
 interface NativeChannel {
   postMessage(payload: string): void;
@@ -316,6 +318,19 @@ function ensurePopupResultListener(): void {
     );
   });
   popupResultListenerAttached = true;
+}
+
+/**
+ * 이미지 뷰어(라이트박스)를 네이티브 쉘에 위임한다. 웹 오버레이는 WebView
+ * 안에 갇혀 네이티브 헤더를 덮지 못한다. 채널이 없으면(브라우저) false 를
+ * 반환하고, 호출자는 자체 웹 오버레이를 연다.
+ */
+export function openNativeImageViewer(urls: string[], index: number): boolean {
+  if (!getNativeWindow()?.[CHANNEL_NAME]) {
+    return false;
+  }
+  postNativeMessage({ type: 'image_viewer_open', payload: { urls, index } });
+  return true;
 }
 
 // 타임아웃은 두지 않는다. 결과는 사용자가 버튼을 누를 때 오므로 몇 초 안에

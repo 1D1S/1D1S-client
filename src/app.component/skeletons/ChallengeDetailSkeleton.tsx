@@ -45,6 +45,11 @@ export function ChallengeDetailSkeleton(): React.ReactElement {
             type="button"
             aria-label="뒤로가기"
             onClick={() => router.back()}
+            // 실제 페이지(ChallengeDetailScreen)의 floating 백버튼과 같은
+            // 이유로 네이티브에서 숨긴다 — absolute 라 글로벌 sticky 차단
+            // 룰이 못 잡는다. 스켈레톤에만 마커가 빠져 있어서 로딩 동안만
+            // 웹 백버튼이 네이티브 백바 밑에 겹쳐 보였다.
+            data-native-hide
             className={cn(
               'absolute left-3.5 z-10 flex h-9 w-9',
               'top-[calc(0.875rem+env(safe-area-inset-top))]',
