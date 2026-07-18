@@ -12,7 +12,7 @@ import { cn } from '@module/utils/cn';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { useTodayRecords } from '../hooks/useTodayRecords';
 import { formatChallengeRemainingLabel } from '../utils/homeFormatters';
@@ -215,6 +215,17 @@ export default function HomeTodayRecordSection({
   const { items, doneCount, pendingCount, isLoading } =
     useTodayRecords(challenges);
 
+  // 미작성 우선으로 정렬. 조건부 early return 위에서 훅을 호출해야 하므로
+  // (Rules of Hooks) 여기서 계산하고 items 변경 시에만 재정렬한다.
+  const ordered = useMemo(
+    () =>
+      [...items].sort(
+        (left, right) =>
+          Number(left.writtenToday) - Number(right.writtenToday)
+      ),
+    [items]
+  );
+
   // 인증/사이드바 또는 today 쿼리 로딩 중 — 개수를 모르므로 2행을 예약한다.
   if (isAuthLoading || isLoading) {
     return (
@@ -258,10 +269,6 @@ export default function HomeTodayRecordSection({
     );
   }
 
-  // 미작성 우선으로 정렬.
-  const ordered = [...items].sort(
-    (left, right) => Number(left.writtenToday) - Number(right.writtenToday)
-  );
   const allDone = pendingCount === 0;
 
   return (
