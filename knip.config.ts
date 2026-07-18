@@ -47,7 +47,6 @@ const config: KnipConfig = {
     'postcss',
     // 디자인 시스템 내부에서 사용되는 보조 라이브러리
     'class-variance-authority',
-    'react-day-picker',
     // 훅/커밋/테스트 체인 (husky, jest 등)
     '@commitlint/cli',
     '@eslint/eslintrc',
