@@ -2,30 +2,54 @@
 
 import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { usePathname, useSearchParams } from 'next/navigation';
-import posthog from 'posthog-js';
+import type { PostHog } from 'posthog-js';
 import React, { Suspense, useEffect } from 'react';
 
 import { useSidebar } from '@/app.feature/member/hooks/useMemberQueries';
 
 const DEFAULT_HOST = 'https://us.i.posthog.com';
 
-// 초기화 여부를 자체 플래그로 추적한다(posthog 내부 필드 의존 회피).
-let initialized = false;
+// 로드 상태: pending(동적 import 전) → ready(init 완료) | disabled(키 없음).
+type LoadState = 'pending' | 'ready' | 'disabled';
+
+let posthog: PostHog | null = null;
+let loadState: LoadState = 'pending';
+let bootstrapStarted = false;
+
+// init 완료 전에 발생한 capture/identify 를 순서대로 큐잉했다가 flush 한다.
+// 첫 페이지뷰가 lazy import 완료 이전에 발생해도 유실되지 않는다.
+const pendingCalls: Array<(ph: PostHog) => void> = [];
+
+/** posthog 준비 시 즉시 실행, 아직이면 큐잉(키 없음이면 조용히 무시). */
+function withPostHog(fn: (ph: PostHog) => void): void {
+  if (loadState === 'ready' && posthog) {
+    fn(posthog);
+    return;
+  }
+  if (loadState === 'pending') {
+    pendingCalls.push(fn);
+  }
+}
 
 /**
- * PostHog 클라이언트 1회 초기화. 키가 없으면(로컬/프리뷰) 스킵해 에러를 막는다.
- * 모듈 로드 시점(클라이언트)에 호출되어 이후 pageview/identify 이펙트가
- * 초기화 완료 상태를 볼 수 있게 한다.
+ * posthog-js 를 동적 import 해 초기 번들에서 제외한다. 마운트 직후 1회 실행.
+ * 키가 없으면(로컬/프리뷰) import 자체를 건너뛰어 에러를 막는다.
  */
-function initPostHog(): void {
-  if (initialized || typeof window === 'undefined') {
+async function bootstrapPostHog(): Promise<void> {
+  if (bootstrapStarted || typeof window === 'undefined') {
     return;
   }
+  bootstrapStarted = true;
+
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   if (!key) {
+    loadState = 'disabled';
+    pendingCalls.length = 0;
     return;
   }
-  posthog.init(key, {
+
+  const { default: ph } = await import('posthog-js');
+  ph.init(key, {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? DEFAULT_HOST,
     // App Router 는 자동 pageview 가 오동작하므로 수동 캡처한다.
     capture_pageview: false,
@@ -33,11 +57,14 @@ function initPostHog(): void {
     disable_session_recording: true,
     person_profiles: 'identified_only',
   });
-  initialized = true;
-}
 
-if (typeof window !== 'undefined') {
-  initPostHog();
+  posthog = ph;
+  loadState = 'ready';
+  // init 전 큐잉된 호출을 발생 순서대로 flush.
+  for (const call of pendingCalls) {
+    call(ph);
+  }
+  pendingCalls.length = 0;
 }
 
 /**
@@ -49,10 +76,12 @@ function PostHogPageView(): null {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (!initialized || !pathname) {
+    if (!pathname) {
       return;
     }
-    posthog.capture('$pageview', { $current_url: window.location.href });
+    withPostHog((ph) =>
+      ph.capture('$pageview', { $current_url: window.location.href })
+    );
   }, [pathname, searchParams]);
 
   return null;
@@ -69,13 +98,10 @@ function PostHogIdentify(): null {
   const nickname = sidebar?.nickname;
 
   useEffect(() => {
-    if (!initialized) {
-      return;
-    }
     if (status === 'authenticated' && nickname) {
-      posthog.identify(nickname, { nickname });
+      withPostHog((ph) => ph.identify(nickname, { nickname }));
     } else if (status === 'guest') {
-      posthog.reset();
+      withPostHog((ph) => ph.reset());
     }
   }, [status, nickname]);
 
@@ -87,6 +113,11 @@ export function PostHogProvider({
 }: {
   children: React.ReactNode;
 }): React.ReactElement {
+  // 마운트 직후 posthog-js 를 lazy load + init. 초기 번들엔 포함되지 않는다.
+  useEffect(() => {
+    void bootstrapPostHog();
+  }, []);
+
   return (
     <>
       <Suspense fallback={null}>
