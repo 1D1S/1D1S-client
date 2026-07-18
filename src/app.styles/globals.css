@@ -137,7 +137,7 @@
   }
 
   /* 숨겨진 웹 헤더를 전제로 잡혀 있던 상단 여백 제거. 네이티브 헤더가
-     이미 그 공간을 차지하므로 py-*/mt-* 의 top 만 0 으로 누른다. */
+     이미 그 공간을 차지하므로 py-* / mt-* 의 top 만 0 으로 누른다. */
   html[data-native-app='true']
     :is([data-native-flush-top], .native-flush-top) {
     padding-top: 0 !important;
