@@ -5,6 +5,7 @@ import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import Stories from '@feature/stories/components/Stories';
 import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useHasMounted } from '@module/hooks/useHasMounted';
+import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { useRouter } from 'next/navigation';
@@ -58,10 +59,18 @@ export default function HomeScreen(): React.ReactElement {
   const hasMounted = useHasMounted();
   const status = useAuthStatus();
   const isLoggedIn = status === 'authenticated';
-  // 부팅 세션 확인 중(unknown)에는 게스트 CTA 대신 로그인 셸을 스켈레톤으로
-  // 그린다. Safari standalone PWA 첫 진입에서 로그인 사용자가 게스트 CTA 를
-  // 봤다가 로그인 UI 로 점프하던 깜빡임을 없앤다. 확정된 게스트만 CTA 를 본다.
-  const showGuestCta = status === 'guest';
+  // 로그인 힌트(hasTokens)는 확인 중(unknown) 구간에 "어느 스켈레톤을 보여줄지"
+  // 만 고르는 provisional 신호다. 권위 있는 판정은 여전히 status(서버 확인)이며
+  // 힌트로 로그인 여부를 확정하지 않는다(tri-state 원칙 유지).
+  // - 마운트 전(SSR/하이드레이션): 힌트를 못 읽어 로그인 셸을 기본값으로 둔다
+  //   (기존과 동일 → hydration mismatch 방지).
+  // - 확인 중 + 힌트 있음: 로그인 셸 스켈레톤 유지 → Safari PWA 로그인 사용자의
+  //   게스트→로그인 점프 깜빡임 방지(#207).
+  // - 확인 중 + 힌트 없음(=일반 게스트): 게스트 CTA 를 바로 보여줘 로그인용
+  //   스켈레톤이 뜨지 않게 한다.
+  const hasAuthHint = hasMounted && authStorage.hasTokens();
+  const showGuestCta =
+    status === 'guest' || (status === 'unknown' && hasMounted && !hasAuthHint);
   const showLoggedInShell = !showGuestCta;
   const {
     data: sidebar,
