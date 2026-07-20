@@ -1,7 +1,7 @@
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import { clearCachedSidebar } from '@feature/member/hooks/useMemberQueries';
 import { authStorage } from '@module/utils/auth';
-import { postNativeMessage } from '@module/utils/nativeBridge';
+import { peekNativeOAuth, postNativeMessage } from '@module/utils/nativeBridge';
 import {
   RETURN_TO_PARAM,
   sanitizeReturnTo,
@@ -34,7 +34,11 @@ export function useAppleLogin(): UseMutationResult<
   return useMutation({
     mutationFn: async () => {
       const credential = await signInWithApple();
-      return authApi.appleLogin({ ...credential, platform: 'web' });
+      // 네이티브 쉘에서 시작된 경우에만 challenge 가 실린다(구글 흐름과 동일).
+      return authApi.appleLogin({
+        ...credential,
+        nativeCodeChallenge: peekNativeOAuth() ?? undefined,
+      });
     },
     onSuccess: (res) => {
       authStorage.markAuthenticated();
