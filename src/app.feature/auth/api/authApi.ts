@@ -3,6 +3,7 @@ import { requestBody } from '@module/api/request';
 import { refreshAccessTokenOnce } from '@module/api/tokenRefresh';
 
 import {
+  AppleLoginRequest,
   LogoutResponse,
   OAuthProvider,
   PresignedUrlRequest,
@@ -24,6 +25,18 @@ export const authApi = {
       url: `/login/oauth2/code/${provider}`,
       method: 'GET',
       params: { code, state, nativeCodeChallenge },
+      withCredentials: true,
+    }),
+
+  // Sign in with Apple (웹) — 클라에서 받은 identityToken 등을 서버로 전달.
+  // 서버가 Set-Cookie(HttpOnly)로 세션을 세우고 SocialLoginResponse 를 돌려준다.
+  appleLogin: async (
+    data: AppleLoginRequest
+  ): Promise<SocialLoginResponse> =>
+    requestBody<SocialLoginResponse, AppleLoginRequest>(publicApiClient, {
+      url: '/auth/apple/login',
+      method: 'POST',
+      data,
       withCredentials: true,
     }),
 

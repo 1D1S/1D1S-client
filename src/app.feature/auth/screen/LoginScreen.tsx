@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
+import { AppleLoginButton } from '../components/AppleLoginButton';
 import { BrandPanel } from '../components/BrandPanel';
 import { getLastOAuthProvider, LoginButton } from '../components/LoginButtons';
 import { LoginMobileView } from '../components/LoginMobileView';
@@ -154,6 +155,8 @@ export function LoginScreen(): React.ReactElement {
                   />
                 );
               })}
+              {/* env 설정 시에만 렌더(미설정이면 null) */}
+              <AppleLoginButton size="lg" className="h-13 text-[15px]" />
             </div>
 
             <Text

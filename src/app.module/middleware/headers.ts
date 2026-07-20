@@ -33,19 +33,26 @@ export function headersMiddleware(res: NextResponse): void {
   );
   // 카카오 공유(JS SDK) 도메인 — SDK 스크립트 + API 호출 허용에 사용한다.
   const kakaoOrigins = 'https://t1.kakaocdn.net https://*.kakao.com';
+  // Sign in with Apple(웹) — SDK 스크립트는 cdn-apple, 인증 호출/프레임은
+  // appleid.apple.com. (팝업 자체는 top-level 이라 CSP 대상 아님)
+  const appleScriptOrigin = 'https://appleid.cdn-apple.com';
+  const appleAuthOrigin = 'https://appleid.apple.com';
   const connectSrcValue =
     allowedOrigins.length > 0
-      ? `connect-src 'self' ${allowedOrigins.join(' ')} ${kakaoOrigins} https://vercel.live https://*.vercel.live;`
-      : `connect-src 'self' ${kakaoOrigins} https://vercel.live https://*.vercel.live;`;
+      ? `connect-src 'self' ${allowedOrigins.join(' ')} ${kakaoOrigins} ${appleAuthOrigin} https://vercel.live https://*.vercel.live;`
+      : `connect-src 'self' ${kakaoOrigins} ${appleAuthOrigin} https://vercel.live https://*.vercel.live;`;
   const imgSrcValue = "img-src 'self' blob: data: https: http:;";
   const scriptSrcValue =
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://t1.kakaocdn.net https://vercel.live https://*.vercel.live;";
+    `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://t1.kakaocdn.net ${appleScriptOrigin} https://vercel.live https://*.vercel.live;`;
+  // 애플 SDK 가 인증 처리에 iframe 을 쓰는 경우가 있어 frame-src 를 명시한다.
+  const frameSrcValue = `frame-src 'self' ${appleAuthOrigin};`;
 
   // const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const cspHeader = `
     default-src 'self';
     ${connectSrcValue}
     ${scriptSrcValue}
+    ${frameSrcValue}
     style-src 'self' 'unsafe-inline';
     ${imgSrcValue}
     font-src 'self';

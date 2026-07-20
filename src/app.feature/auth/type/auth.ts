@@ -22,6 +22,17 @@ export interface SocialLoginResponse {
   };
 }
 
+// Sign in with Apple (웹) 요청 body.
+// name/email 은 애플이 "최초 인가" 때만 내려주므로 optional. platform 은 서버가
+// 웹/네이티브 발급 경로를 구분하도록 항상 'web' 을 보낸다.
+export interface AppleLoginRequest {
+  identityToken: string;
+  authorizationCode: string;
+  name?: string;
+  email?: string;
+  platform: 'web';
+}
+
 export interface SignUpInfoRequest {
   nickname: string;
   phoneNumber: string;

@@ -8,6 +8,7 @@ import React from 'react';
 
 import { PROVIDER_META } from '../consts/providerMeta';
 import type { OAuthProvider } from '../type/auth';
+import { AppleLoginButton } from './AppleLoginButton';
 import { LoginButton } from './LoginButtons';
 
 interface LoginMobileViewProps {
@@ -144,6 +145,8 @@ export function LoginMobileView({
               />
             );
           })}
+          {/* env 설정 시에만 렌더(미설정이면 null) */}
+          <AppleLoginButton size="lg" className="h-14 text-[15px]" />
         </div>
 
         <Text
