@@ -47,9 +47,9 @@ function pickStoryMood(userId: number): StoryMood {
   return STORY_MOODS[Math.abs(userId) % STORY_MOODS.length];
 }
 
-// 사각형 스토리 카드(144x180). 무드 이미지를 크게 중앙에 두고 그 아래
+// 사각형 스토리 카드(112x140). 무드 이미지를 크게 중앙에 두고 그 아래
 // 프로필 썸네일만 노출한다(닉네임/시간/제목/개수 미표시). 읽음 여부는
-// 카드 테두리 색으로 표현한다(안읽음 border-main-500, 읽음 border-gray-200).
+// 카드 테두리로 표현한다(안읽음 3px border-main-500, 읽음 2px border-gray-200).
 function StoryRing({
   groups,
   onSelect,
@@ -77,24 +77,24 @@ function StoryRing({
           onClick={onAddStory}
           aria-label="오늘 일지 올리기"
           className={cn(
-            'flex h-[180px] w-[144px] shrink-0 flex-col items-center',
-            'justify-center gap-3 overflow-hidden rounded-[20px]',
+            'flex h-[140px] w-[112px] shrink-0 flex-col items-center',
+            'justify-center gap-2.5 overflow-hidden rounded-[16px]',
             'border-main-200 border-2 border-dashed bg-white',
             'hover:shadow-warm transition-all duration-300 ease-out'
           )}
         >
           <span
             className={cn(
-              'bg-main-500 shadow-warm flex h-14 w-14 items-center',
+              'bg-main-500 shadow-warm flex h-11 w-11 items-center',
               'justify-center rounded-full text-white'
             )}
             aria-hidden
           >
-            <Icon name="Plus" size={24} />
+            <Icon name="Plus" size={20} />
           </span>
           <span
             className={cn(
-              'flex h-11 w-11 items-center justify-center overflow-hidden',
+              'flex h-9 w-9 items-center justify-center overflow-hidden',
               'rounded-full border-2 border-white bg-[#ffe1a8]'
             )}
             aria-hidden
@@ -105,7 +105,7 @@ function StoryRing({
                   src={myImageUrl}
                   alt=""
                   fill
-                  sizes="44px"
+                  sizes="36px"
                   className="object-cover"
                 />
               </span>
@@ -129,10 +129,12 @@ function StoryRing({
             onClick={() => onSelect(index)}
             aria-label={`${name} 스토리 열기`}
             className={cn(
-              'flex h-[180px] w-[144px] shrink-0 flex-col items-center',
-              'justify-center gap-3 overflow-hidden rounded-[20px] border-2',
+              'flex h-[140px] w-[112px] shrink-0 flex-col items-center',
+              'justify-center gap-2.5 overflow-hidden rounded-[16px]',
               'hover:shadow-warm transition-all duration-300 ease-out',
-              seen ? 'border-gray-200' : 'border-main-500',
+              seen
+                ? 'border-2 border-gray-200'
+                : 'border-main-500 border-[3px]',
               mood.tint
             )}
           >
@@ -140,14 +142,14 @@ function StoryRing({
             <Image
               src={mood.src}
               alt={mood.alt}
-              width={56}
-              height={56}
-              className="h-14 w-14"
+              width={44}
+              height={44}
+              className="h-11 w-11"
               unoptimized
             />
             <span
               className={cn(
-                'relative flex h-11 w-11 items-center justify-center',
+                'relative flex h-9 w-9 items-center justify-center',
                 'overflow-hidden rounded-full border-2 border-white bg-white'
               )}
               aria-hidden
@@ -157,7 +159,7 @@ function StoryRing({
                   src={profileUrl}
                   alt=""
                   fill
-                  sizes="44px"
+                  sizes="36px"
                   className="object-cover"
                 />
               ) : (
