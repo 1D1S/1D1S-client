@@ -69,7 +69,10 @@ import {
   useUnlikeChallenge,
   useVerifyChallengePassword,
 } from '../hooks/useChallengeMutations';
-import { useChallengePendingParticipants } from '../hooks/useChallengeParticipantQueries';
+import {
+  useChallengeParticipantsInfinite,
+  useChallengePendingParticipants,
+} from '../hooks/useChallengeParticipantQueries';
 import { usePokeMembers } from '../hooks/usePokeMembers';
 import { buildHeroGradient, getCategoryAccent } from '../utils/challengeAccent';
 import { buildChallengeCta } from '../utils/challengeCta';
@@ -90,6 +93,11 @@ interface ChallengeDetailScreenProps {
 // 자유 목표 비공개 챌린지에 목표 없이 참여 시도할 때 백엔드가 내려주는 코드.
 // 이 신호를 받으면 비밀번호 다이얼로그를 목표 입력 단계로 전환한다.
 const FREE_GOAL_REQUIRED_CODE = 'CHALLENGE_022';
+
+// 참여자 미리보기 노출 수. 상세 응답 participants 는 서버가 상위 5명만 주므로,
+// 10명까지 보여주려면 참여자 목록 API 를 size=10 으로 별도 조회한다.
+// "전체 보기"는 전체 참여자 수(summaryParticipantCnt)가 이 수를 넘을 때만 뜬다.
+const PARTICIPANT_PREVIEW_SIZE = 10;
 
 // 상세 탭 뷰 — URL ?tab= 으로 보존. 기본은 소개.
 const CHALLENGE_TAB_IDS = [
@@ -230,13 +238,6 @@ export function ChallengeDetailScreen({
       Math.min(100, Math.max(0, detail?.participationRate ?? 0)) * 10
     ) / 10;
 
-  const activeParticipants = useMemo(
-    () =>
-      participants.filter((participant) =>
-        PARTICIPATING_STATUS.includes(participant.status)
-      ),
-    [participants]
-  );
 
   const myStatus = detail?.myStatus ?? 'NONE';
   const isHost = myStatus === 'HOST';
@@ -247,6 +248,22 @@ export function ChallengeDetailScreen({
       challengeId,
       isHost && activeTab === 'participants'
     );
+  // 참여자 미리보기용 상위 10명. 상세 응답 participants(상위 5명)로는 부족해
+  // 참여자 목록 API 를 등수순 size=10 으로 조회한다. 로그인 + 참여자 탭일 때만
+  // 호출하고, 미도착/게스트일 땐 상세 top-5 로 폴백한다(빈 화면 방지).
+  const { data: participantPreviewData } = useChallengeParticipantsInfinite(
+    challengeId,
+    'RANK',
+    PARTICIPANT_PREVIEW_SIZE,
+    isLoggedIn && activeTab === 'participants'
+  );
+  const previewParticipants = useMemo(() => {
+    const fetched = participantPreviewData?.pages?.[0]?.items ?? [];
+    const source = fetched.length > 0 ? fetched : participants;
+    return source.filter((participant) =>
+      PARTICIPATING_STATUS.includes(participant.status)
+    );
+  }, [participantPreviewData, participants]);
   const isJoinRequestPending = myStatus === 'PENDING';
   const isParticipating = PARTICIPATING_STATUS.includes(myStatus);
   const canJoinByStatus = myStatus === 'NONE' || myStatus === 'REJECTED';
@@ -990,7 +1007,8 @@ export function ChallengeDetailScreen({
                     ) : null}
 
                     <ChallengeLeaderboardCard
-                    entries={activeParticipants.map((participant) => ({
+                    maxRows={PARTICIPANT_PREVIEW_SIZE}
+                    entries={previewParticipants.map((participant) => ({
                       participantId: participant.participantId,
                       memberId: participant.memberId,
                       nickname: participant.nickname,
