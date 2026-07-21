@@ -151,6 +151,12 @@ function DiaryCard({
         // 배경과의 구분을 위해 기본(gray-200)보다 한 단계 진한 보더
         'border-gray-300 p-4 transition-all duration-500 ease-out',
         'hover:shadow-warm',
+        // 화면 밖 카드는 레이아웃/페인트를 스킵해 긴 무한스크롤 목록의
+        // 렌더 비용을 줄인다. auto 는 화면에 들어와 한 번 렌더되면 실제
+        // 높이를 기억해 재스크롤 시 점프가 없다(초기 추정 360px). 카드
+        // 자신의 hover:shadow-warm 는 own 박스 데코라 contain:paint 로도
+        // 잘리지 않고, LikeBurst 는 이미 Card 의 overflow-hidden 에 갇힌다.
+        '[content-visibility:auto] [contain-intrinsic-size:auto_360px]',
         href && 'relative',
         className
       )}

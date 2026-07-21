@@ -739,8 +739,11 @@ export function ChallengeDetailScreen({
           >
             {/* 메인 콘텐츠: 탭(소개 / 일지 / 참여자) */}
             <div className="flex min-w-0 flex-col">
-              {/* 모바일에선 compact 헤더(h-14) 아래에 sticky 로 붙인다. */}
+              {/* 모바일에선 compact 헤더(h-14) 아래에 sticky 로 붙인다.
+                  네이티브 앱은 그 헤더를 숨기므로(data-native-hide) top-14
+                  가 허공을 가리킨다 — data-native-top-0 이 top:0 으로 보정. */}
               <div
+                data-native-top-0
                 className={cn(
                   'sticky top-14 z-20 bg-white',
                   'lg:static lg:top-auto lg:z-auto'

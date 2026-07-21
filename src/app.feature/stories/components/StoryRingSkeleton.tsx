@@ -9,7 +9,7 @@ interface StoryRingSkeletonProps {
 }
 
 // 실제 StoryRing 과 동일한 사각 카드 크기/간격을 두고 내용만 pulse 로
-// 채운다. (h-[180px] w-[144px] + gap-3 + py-3.5 → 레이아웃 시프트 없이
+// 채운다. (h-[140px] w-[112px] + gap-3 + py-3.5 → 레이아웃 시프트 없이
 // 데이터로 전환)
 export default function StoryRingSkeleton({
   count = 6,
@@ -27,7 +27,7 @@ export default function StoryRingSkeleton({
         <div
           key={index}
           className={cn(
-            'skeleton-pulse h-[180px] w-[144px] shrink-0 rounded-[20px]',
+            'skeleton-pulse h-[140px] w-[112px] shrink-0 rounded-[16px]',
             'bg-gray-100'
           )}
         />

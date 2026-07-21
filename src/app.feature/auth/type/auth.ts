@@ -17,7 +17,22 @@ export interface SocialLoginResponse {
   message: string;
   data: {
     profileComplete: boolean;
+    nativeLoginCode?: string;
+    nativeLoginCodeExpiresInSeconds?: number;
   };
+}
+
+// Sign in with Apple (웹) 요청 body. (서버 확정 계약)
+// - identityToken 만 필수. name/email 은 애플 "최초 인가" 때만 오므로 optional.
+// - 응답은 구글 웹 로그인과 동일하게 Set-Cookie(accessToken/refreshToken)로
+//   세션을 세우고 { data: { profileComplete } } 를 돌려준다(별도 토큰 저장 안 함).
+// - nativeCodeChallenge 는 네이티브 쉘에서 시작된 경우에만 실린다(구글과 동일).
+export interface AppleLoginRequest {
+  identityToken: string;
+  authorizationCode?: string;
+  name?: string;
+  email?: string;
+  nativeCodeChallenge?: string;
 }
 
 export interface SignUpInfoRequest {

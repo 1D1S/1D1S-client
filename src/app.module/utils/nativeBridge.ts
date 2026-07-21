@@ -8,6 +8,10 @@
 const CHANNEL_NAME = 'OneDayOneStreakNative';
 const NAVIGATE_EVENT = 'native:navigate';
 const MODAL_RESULT_EVENT = 'native:modal_result';
+const POPUP_RESULT_EVENT = 'native:popup_result';
+const DATE_RESULT_EVENT = 'native:date_result';
+const TOKEN_REFRESH_RESULT_EVENT = 'native:token_refresh_result';
+const NATIVE_OAUTH_MARKER = '1d1s:native-oauth';
 
 export interface NativeAuthPayload {
   isLoggedIn: boolean;
@@ -44,6 +48,62 @@ export interface NativeModalOpenPayload {
   buttons: NativeModalButton[];
 }
 
+// 메인 이벤트 팝업 한 장. 서버 ActivePopup 과 같은 모양.
+export interface NativePopupSpec {
+  popupKey: string;
+  imageUrl: string;
+  ctaText: string;
+  linkUrl: string;
+}
+
+export interface NativePopupOpenPayload {
+  id: string;
+  // 노출 대상 전체를 한 번에 넘긴다. 2장 이상이면 네이티브가 3초 간격으로
+  // 순환시킨다 (웹 HomePopup 과 같은 규칙).
+  popups: NativePopupSpec[];
+}
+
+// 사용자가 팝업에서 무엇을 했는지. dismiss(밖 클릭/시스템 백) 는 'close'.
+export type NativePopupAction = 'cta' | 'dismissForever' | 'close';
+
+export interface NativePopupOutcome {
+  action: NativePopupAction;
+  // 액션 시점에 보이던 팝업. 캐러셀이 돌므로 첫 장과 다를 수 있다.
+  popupKey: string;
+}
+
+// 날짜는 전부 'YYYY-MM-DD' 로컬 날짜 문자열. Date 를 직렬화하면 타임존에
+// 따라 하루가 밀린다.
+export interface NativeDatePickerPayload {
+  id: string;
+  value?: string;
+  min?: string;
+  max?: string;
+  // [min, max] 안에서 개별적으로 막을 날짜 (예: 이미 일지를 쓴 날).
+  disabled?: string[];
+}
+
+// 스토리 한 장. 시간 라벨은 웹이 미리 계산해 보낸다 — 상대 시간 규칙을
+// 네이티브에 복제하지 않기 위해.
+export interface NativeStoryItem {
+  diaryId: number;
+  title: string;
+  thumbnail: string | null;
+  timeLabel: string;
+  unread: boolean;
+}
+
+export interface NativeStoryGroup {
+  userName: string;
+  profileImage: string | null;
+  stories: NativeStoryItem[];
+}
+
+export interface NativeStoryOpenPayload {
+  startGroup: number;
+  groups: NativeStoryGroup[];
+}
+
 export type NativeMessage =
   | { type: 'auth_state'; payload: NativeAuthPayload }
   | { type: 'nav_state'; payload: NativeNavPayload }
@@ -55,9 +115,21 @@ export type NativeMessage =
   // collapse/expand 하는 용도. 매 프레임 보내는 대신 방향 전환에만 발화해
   // JS 채널 트래픽을 최소화한다.
   | { type: 'scroll_dir'; payload: NativeScrollDirPayload }
+  | { type: 'oauth_open'; payload: { url: string } }
+  | { type: 'token_refresh'; payload: { id: string } }
+  | { type: 'logout' }
   // 네이티브 다이얼로그 노출 요청. 응답은 native:modal_result CustomEvent
   // 로 비동기 도착. openNativeModal() 헬퍼가 id 매칭으로 Promise 화 한다.
-  | { type: 'modal_open'; payload: NativeModalOpenPayload };
+  | { type: 'modal_open'; payload: NativeModalOpenPayload }
+  // 네이티브 이벤트 팝업 노출 요청. 응답은 native:popup_result CustomEvent.
+  | { type: 'popup_open'; payload: NativePopupOpenPayload }
+  // 네이티브 이미지 뷰어(라이트박스). 결과 회신 없음 — fire-and-forget.
+  | { type: 'image_viewer_open'; payload: { urls: string[]; index: number } }
+  // 네이티브 날짜 피커. 응답은 native:date_result CustomEvent.
+  | { type: 'date_picker_open'; payload: NativeDatePickerPayload }
+  // 네이티브 스토리 뷰어. 진행/이동/닫기는 네이티브가 처리하고, 읽음
+  // 처리용 native:story_viewed 이벤트만 웹으로 돌아온다.
+  | { type: 'story_open'; payload: NativeStoryOpenPayload };
 
 interface NativeChannel {
   postMessage(payload: string): void;
@@ -67,7 +139,10 @@ interface NativeWindow extends Window {
   [CHANNEL_NAME]?: NativeChannel;
   __IS_NATIVE_APP__?: boolean;
   __NATIVE_NAV__?(path: string): void;
+  // 쉘 빌드가 처리 가능한 브릿지 메시지 플래그. injectHandshake 가 세운다.
+  __1D1S_FEATURES__?: Partial<Record<string, boolean>>;
 }
+
 
 function getNativeWindow(): NativeWindow | null {
   if (typeof window === 'undefined') {
@@ -75,6 +150,12 @@ function getNativeWindow(): NativeWindow | null {
   }
   return window as NativeWindow;
 }
+// 메시지를 모르는 구버전 쉘에 요청을 보내면 응답을 영영 기다리는 죽은
+// 컨트롤이 된다. 응답이 필요한 새 위임은 이 플래그를 먼저 확인한다.
+function hasNativeFeature(name: string): boolean {
+  return getNativeWindow()?.__1D1S_FEATURES__?.[name] === true;
+}
+
 
 export function postNativeMessage(message: NativeMessage): void {
   const win = getNativeWindow();
@@ -90,6 +171,90 @@ export function postNativeMessage(message: NativeMessage): void {
   } catch {
     // 네이티브 쉘이 응답하지 못하더라도 웹 흐름을 멈추지 않는다.
   }
+}
+
+export function isNativeBridgeAvailable(): boolean {
+  return getNativeWindow()?.[CHANNEL_NAME] != null;
+}
+
+export function markNativeOAuth(codeChallenge: string): void {
+  window.sessionStorage.setItem(NATIVE_OAUTH_MARKER, codeChallenge);
+}
+
+export function consumeNativeOAuth(): string | null {
+  const codeChallenge = window.sessionStorage.getItem(NATIVE_OAUTH_MARKER);
+  if (codeChallenge) {
+    window.sessionStorage.removeItem(NATIVE_OAUTH_MARKER);
+  }
+  return codeChallenge;
+}
+
+export function peekNativeOAuth(): string | null {
+  return window.sessionStorage.getItem(NATIVE_OAUTH_MARKER);
+}
+
+interface PendingTokenRefresh {
+  resolve(): void;
+  reject(): void;
+  timeout: number;
+}
+
+const pendingTokenRefreshes = new Map<string, PendingTokenRefresh>();
+let tokenRefreshListenerAttached = false;
+
+function ensureTokenRefreshListener(): void {
+  if (tokenRefreshListenerAttached) {
+    return;
+  }
+  const win = getNativeWindow();
+  if (!win) {
+    return;
+  }
+  win.addEventListener(TOKEN_REFRESH_RESULT_EVENT, (event: Event) => {
+    const detail = (event as CustomEvent<{ id?: string; ok?: boolean }>).detail;
+    if (!detail?.id) {
+      return;
+    }
+    const pending = pendingTokenRefreshes.get(detail.id);
+    if (!pending) {
+      return;
+    }
+    pendingTokenRefreshes.delete(detail.id);
+    window.clearTimeout(pending.timeout);
+    if (detail.ok) {
+      pending.resolve();
+    } else {
+      pending.reject();
+    }
+  });
+  tokenRefreshListenerAttached = true;
+}
+
+export function requestNativeTokenRefresh(): Promise<void> | null {
+  const channel = getNativeWindow()?.[CHANNEL_NAME];
+  if (!channel) {
+    return null;
+  }
+  ensureTokenRefreshListener();
+  const id = `refresh_${Date.now().toString(36)}_${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+  return new Promise<void>((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      pendingTokenRefreshes.delete(id);
+      reject();
+    }, 15_000);
+    pendingTokenRefreshes.set(id, { resolve, reject, timeout });
+    try {
+      channel.postMessage(
+        JSON.stringify({ type: 'token_refresh', payload: { id } })
+      );
+    } catch {
+      window.clearTimeout(timeout);
+      pendingTokenRefreshes.delete(id);
+      reject();
+    }
+  });
 }
 
 export function onNativeNavigateRequest(
@@ -157,6 +322,174 @@ function generateModalId(): string {
  * resolve 된다. 네이티브 쉘이 아닌 일반 브라우저에서는 즉시 `null` 을
  * resolve 해, 호출자는 자체 fallback 다이얼로그를 띄우면 된다.
  */
+// 메인 이벤트 팝업을 네이티브 쉘에 위임한다. 웹 다이얼로그는 WebView 안에
+// 갇혀 네이티브 헤더/바텀바를 덮지 못하므로, 앱에서는 네이티브가 그린다.
+//
+// 네이티브 쉘이 아니거나(브라우저) 쉘이 이 메시지를 모르는 구버전이면
+// null 을 resolve 한다 → 호출자는 웹 팝업을 그대로 띄우면 된다.
+const pendingNativePopups = new Map<
+  string,
+  (value: NativePopupOutcome | null) => void
+>();
+let popupResultListenerAttached = false;
+
+function ensurePopupResultListener(): void {
+  if (popupResultListenerAttached) {
+    return;
+  }
+  const win = getNativeWindow();
+  if (!win) {
+    return;
+  }
+  win.addEventListener(POPUP_RESULT_EVENT, (event: Event) => {
+    const detail = (
+      event as CustomEvent<{
+        id?: string;
+        action?: NativePopupAction | null;
+        popupKey?: string | null;
+      }>
+    ).detail;
+    if (!detail?.id) {
+      return;
+    }
+    const resolver = pendingNativePopups.get(detail.id);
+    if (!resolver) {
+      return;
+    }
+    pendingNativePopups.delete(detail.id);
+    // action 이 없으면 dismiss — 그냥 닫기로 읽는다.
+    resolver(
+      detail.action && detail.popupKey
+        ? { action: detail.action, popupKey: detail.popupKey }
+        : { action: 'close', popupKey: '' }
+    );
+  });
+  popupResultListenerAttached = true;
+}
+
+// 날짜 피커 응답 대기 큐. modal/popup 과 같은 pending-Map 패턴.
+const pendingNativeDates = new Map<string, (value: string | null) => void>();
+let dateResultListenerAttached = false;
+
+function ensureDateResultListener(): void {
+  if (dateResultListenerAttached) {
+    return;
+  }
+  const win = getNativeWindow();
+  if (!win) {
+    return;
+  }
+  win.addEventListener(DATE_RESULT_EVENT, (event: Event) => {
+    const detail = (
+      event as CustomEvent<{ id?: string; value?: string | null }>
+    ).detail;
+    if (!detail?.id) {
+      return;
+    }
+    const resolver = pendingNativeDates.get(detail.id);
+    if (resolver) {
+      pendingNativeDates.delete(detail.id);
+      resolver(detail.value ?? null);
+    }
+  });
+  dateResultListenerAttached = true;
+}
+
+/**
+ * 날짜 피커를 네이티브 쉘에 위임한다. 웹 캘린더 시트는 WebView 안에 갇혀
+ * 잘리고 네이티브 헤더도 못 가린다. 선택하면 'YYYY-MM-DD', dismiss 면
+ * null. 네이티브 쉘이 아니면(브라우저) null — 호출자가 웹 피커로 폴백.
+ */
+/**
+ * 스토리 뷰어를 네이티브 쉘에 위임한다. 뷰어 UI(진행바/자동 전환/이동/
+ * 일지 보기)는 전부 네이티브가 그리고, 웹은 읽음 처리 이벤트만 받는다.
+ * 채널이 없거나 구버전 쉘이면 false — 호출자는 웹 뷰어로 폴백.
+ */
+export function openNativeStoryViewer(
+  payload: NativeStoryOpenPayload
+): boolean {
+  const win = getNativeWindow();
+  if (!win?.[CHANNEL_NAME] || !hasNativeFeature('storyViewer')) {
+    return false;
+  }
+  postNativeMessage({ type: 'story_open', payload });
+  return true;
+}
+
+/** 네이티브 스토리 뷰어가 보내는 "이 일지를 봤다" 이벤트 구독. */
+export function onNativeStoryViewed(
+  handler: (diaryId: number) => void
+): () => void {
+  const win = getNativeWindow();
+  if (!win) {
+    return () => {};
+  }
+  const listener = (event: Event): void => {
+    const detail = (event as CustomEvent<{ diaryId?: number }>).detail;
+    if (typeof detail?.diaryId === 'number') {
+      handler(detail.diaryId);
+    }
+  };
+  win.addEventListener('native:story_viewed', listener);
+  return () => win.removeEventListener('native:story_viewed', listener);
+}
+
+
+/** 현재 쉘이 날짜 피커 위임을 지원하는지. 오버레이 렌더 여부 판정용. */
+export function isNativeDatePickerAvailable(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('datePicker')
+  );
+}
+
+export function openNativeDatePicker(
+  options: Omit<NativeDatePickerPayload, 'id'>
+): Promise<string | null> | null {
+  const win = getNativeWindow();
+  if (!win?.[CHANNEL_NAME] || !hasNativeFeature('datePicker')) {
+    return null;
+  }
+  ensureDateResultListener();
+  const id = generateModalId();
+  return new Promise<string | null>((resolve) => {
+    pendingNativeDates.set(id, resolve);
+    postNativeMessage({ type: 'date_picker_open', payload: { id, ...options } });
+  });
+}
+
+/**
+ * 이미지 뷰어(라이트박스)를 네이티브 쉘에 위임한다. 웹 오버레이는 WebView
+ * 안에 갇혀 네이티브 헤더를 덮지 못한다. 채널이 없으면(브라우저) false 를
+ * 반환하고, 호출자는 자체 웹 오버레이를 연다.
+ */
+export function openNativeImageViewer(urls: string[], index: number): boolean {
+  if (!getNativeWindow()?.[CHANNEL_NAME]) {
+    return false;
+  }
+  postNativeMessage({ type: 'image_viewer_open', payload: { urls, index } });
+  return true;
+}
+
+// 타임아웃은 두지 않는다. 결과는 사용자가 버튼을 누를 때 오므로 몇 초 안에
+// 온다는 보장이 없고, 성급히 null 로 떨어뜨리면 네이티브 팝업이 떠 있는 채로
+// 웹 팝업까지 겹쳐 뜬다. popup_open 을 모르는 구버전 쉘에서는 이벤트 팝업이
+// 뜨지 않는데(기능 손실이지 오동작은 아니다), 웹과 앱을 같이 배포하면 된다.
+// openNativeModal 도 같은 약속이다.
+export function openNativePopup(
+  popups: NativePopupSpec[]
+): Promise<NativePopupOutcome | null> {
+  const win = getNativeWindow();
+  if (!win?.[CHANNEL_NAME]) {
+    return Promise.resolve(null);
+  }
+  ensurePopupResultListener();
+  const id = generateModalId();
+  return new Promise<NativePopupOutcome | null>((resolve) => {
+    pendingNativePopups.set(id, resolve);
+    postNativeMessage({ type: 'popup_open', payload: { id, popups } });
+  });
+}
+
 export function openNativeModal(
   options: Omit<NativeModalOpenPayload, 'id'>
 ): Promise<string | null> {

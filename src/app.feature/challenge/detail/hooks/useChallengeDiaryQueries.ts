@@ -15,10 +15,12 @@ import { ChallengeStatistics } from '../type/challengeStatistics';
 const CHALLENGE_STATISTICS_STALE_TIME = 5 * 60 * 1000;
 
 // 챌린지 일지 목록 조회 (무한 스크롤). date 지정 시 그 날짜 일지만.
+// 서버가 인증을 요구하므로 비로그인 상태에서는 enabled=false 로 막는다.
 export function useChallengeDiaryListInfinite(
   challengeId: number,
   size?: number,
-  date?: string
+  date?: string,
+  enabled = true
 ): UseInfiniteQueryResult<InfiniteData<ChallengeDiaryListResponse>, Error> {
   return useInfiniteQuery({
     queryKey: CHALLENGE_QUERY_KEYS.diariesInfinite(challengeId, { size, date }),
@@ -31,7 +33,7 @@ export function useChallengeDiaryListInfinite(
     initialPageParam: 0,
     getNextPageParam: (lastPage) =>
       lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.page + 1 : undefined,
-    enabled: Boolean(challengeId),
+    enabled: Boolean(challengeId) && enabled,
   });
 }
 

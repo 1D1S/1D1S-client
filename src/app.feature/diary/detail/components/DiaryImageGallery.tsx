@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@module/utils/cn';
+import { openNativeImageViewer } from '@module/utils/nativeBridge';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -80,7 +81,14 @@ export function DiaryImageGallery({
             key={`${url}-${index}`}
             type="button"
             aria-label={`이미지 ${index + 1} 크게 보기`}
-            onClick={() => setOpenIndex(index)}
+            // 네이티브 쉘에서는 Flutter 가 전체 화면 뷰어를 그린다. 웹
+            // 오버레이는 WebView 안에 갇혀 네이티브 헤더를 덮지 못한다.
+            // openNativeImageViewer 가 false 면(브라우저) 웹 라이트박스.
+            onClick={() => {
+              if (!openNativeImageViewer(imageUrls, index)) {
+                setOpenIndex(index);
+              }
+            }}
             className={cn(
               'aspect-square w-[200px] max-w-full cursor-zoom-in',
               'overflow-hidden rounded-xl border border-gray-200 bg-gray-100'

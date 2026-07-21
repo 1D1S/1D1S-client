@@ -96,8 +96,9 @@ const DiaryListItem = React.memo(
     const diaryInfo = getDiaryInfo(item);
     const authorInfo = getDiaryAuthorInfo(item);
 
-    // 수동 useCallback 은 React Compiler 의 자동 메모이제이션과 충돌해
-    // (preserve-manual-memoization) 제거 — 컴파일러가 참조를 안정화한다.
+    // 얇은 어댑터 — 안정적인 onLikeToggle 에 item 을 바인딩만 한다.
+    // 이 컴포넌트는 React.memo 라 item/props 가 바뀔 때만 재렌더되므로,
+    // 매 렌더 새 함수가 생겨도 DiaryCard 메모를 유의미하게 깨뜨리지 않는다.
     const handleLike = (): void => {
       onLikeToggle(item);
     };
@@ -261,11 +262,11 @@ export default function DiaryListScreen(): React.ReactElement {
       />
 
       {showSkeleton ? (
-        <DiaryCardSkeletonGrid count={12} className="data-fade-in mt-6" />
+        <DiaryCardSkeletonGrid count={12} className="data-fade-in native-flush-top mt-6" />
       ) : null}
 
       {isError && !hasLoadedDiaries ? (
-        <div className="mt-10 flex w-full justify-center py-10">
+        <div className="native-flush-top mt-10 flex w-full justify-center py-10">
           <Text size="body1" weight="medium" className="text-red-600">
             {error
               ? normalizeApiError(error).message
@@ -275,7 +276,7 @@ export default function DiaryListScreen(): React.ReactElement {
       ) : null}
 
       {!showSkeleton && hasLoadedDiaries ? (
-        <MasonryColumns className="data-fade-in mt-6">
+        <MasonryColumns className="data-fade-in native-flush-top mt-6">
           {sortedDiaries.map((item) => (
             <DiaryListItem
               key={item.id}
@@ -293,7 +294,7 @@ export default function DiaryListScreen(): React.ReactElement {
           variant="diary"
           title="아직 등록된 일지가 없어요"
           description="첫 일지를 남기고 스트릭을 시작해 보세요"
-          className="mt-10"
+          className="native-flush-top mt-10"
         />
       ) : null}
 

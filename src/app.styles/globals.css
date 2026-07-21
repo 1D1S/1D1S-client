@@ -111,9 +111,45 @@
   }
 
   /* 네이티브에서 강제 숨김 마커. 헤더 외 임의 요소(인라인 버튼, 푸터,
-     PWA 프롬프트 등) 에 부착해 isNativeApp 분기를 JS 없이도 처리한다. */
-  html[data-native-app='true'] [data-native-hide] {
+     PWA 프롬프트 등) 에 부착해 isNativeApp 분기를 JS 없이도 처리한다.
+     data 속성을 못 받는 컴포넌트(className 만 뚫려 있는 경우) 는
+     `.native-hide` 클래스를 쓴다. */
+  html[data-native-app='true'] :is([data-native-hide], .native-hide) {
     display: none !important;
+  }
+
+  /* 숨겨진 웹 헤더 높이를 보정하던 sticky 오프셋 마커. `top-14` 처럼 자기
+     위의 모바일 헤더(h-14, data-native-hide) 높이만큼 내려 붙는 요소는
+     네이티브에서 그 헤더가 사라지므로 56px 아래 허공에 붙는다 — 챌린지
+     상세 탭바가 그랬다. 이 마커를 달면 네이티브에서 top:0 으로 당겨진다. */
+  html[data-native-app='true'] [data-native-top-0] {
+    top: 0 !important;
+  }
+
+  /* 네이티브 쉘에서만 보이는 요소. 숨겨지는 웹 헤더 안의 액션(알림의
+     "모두 읽음" 등) 을 본문으로 옮겨 네이티브에서만 노출할 때 쓴다.
+     revert 는 UA 기본 display 로 되돌린다 (div→block, button→inline-block). */
+  .native-only {
+    display: none !important;
+  }
+  html[data-native-app='true'] .native-only {
+    display: revert !important;
+  }
+
+  /* 숨겨진 웹 헤더를 전제로 잡혀 있던 상단 여백 제거. 네이티브 헤더가
+     이미 그 공간을 차지하므로 py-* / mt-* 의 top 만 0 으로 누른다. */
+  html[data-native-app='true']
+    :is([data-native-flush-top], .native-flush-top) {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  /* 챌린지 보드: 네이티브 툴바(검색+필터, 194px)가 body 최상단 오버레이로
+     얹힌다. 첫 콘텐츠를 그 아래로 내린다. 불변식:
+     offset = 툴바높이(Flutter kChallengeToolbarHeight = 194) + 12 clearance
+     = 206. 툴바 높이가 바뀌면 이 값도 같이 바꿀 것. */
+  html[data-native-app='true'] [data-native-toolbar-offset] {
+    margin-top: 206px !important;
   }
   /* h-14 (3.5rem) 컨텐츠 높이는 유지하면서 노치 영역만큼 위로 확장 */
   .h-14-safe {

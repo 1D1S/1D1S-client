@@ -1,6 +1,6 @@
 'use client';
 
-import { Tag, Text } from '@1d1s/design-system';
+import { Button, Tag, Text } from '@1d1s/design-system';
 import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
@@ -12,8 +12,8 @@ import {
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
-import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
+import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { cn } from '@module/utils/cn';
 import { formatMonthDayKR } from '@module/utils/date';
@@ -21,8 +21,10 @@ import {
   resolveDiaryImageList,
   resolveDiaryImageUrl,
 } from '@module/utils/diaryImageUrl';
+import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { useChallengeDiaryListInfinite } from '../hooks/useChallengeDiaryQueries';
@@ -106,7 +108,10 @@ export function ChallengeDiaryList({
   const activeDate =
     date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined;
   const filterLabel = activeDate ? formatMonthDayKR(activeDate) : '';
-  const isLoggedIn = useIsLoggedIn();
+  const router = useRouter();
+  // 'unknown'(세션 확인 중)에는 게스트 UI 를 그리지 않아 깜빡임을 막는다.
+  const authStatus = useAuthStatus();
+  const isLoggedIn = authStatus === 'authenticated';
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
@@ -121,9 +126,12 @@ export function ChallengeDiaryList({
   } = useChallengeDiaryListInfinite(
     challengeId,
     CHALLENGE_DIARY_PAGE_SIZE,
-    activeDate
+    activeDate,
+    isLoggedIn
   );
-  const showSkeleton = useMinimumLoading(isLoading);
+  const showSkeleton = useMinimumLoading(
+    isLoading || authStatus === 'unknown'
+  );
   const { ref } = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,
@@ -162,6 +170,28 @@ export function ChallengeDiaryList({
     },
     [isLoggedIn, isLikePending, likeDiary, unlikeDiary]
   );
+
+  const handleGoLogin = useCallback((): void => {
+    router.push(loginUrlFromCurrentLocation());
+  }, [router]);
+
+  // 일지 목록은 서버가 인증을 요구한다. 게스트는 요청을 보내지 않고
+  // 탭 안에서 로그인 CTA 를 보여준다 (401 → 강제 리다이렉트 방지).
+  if (authStatus === 'guest') {
+    return (
+      <EmptyState
+        variant="diary"
+        title="로그인이 필요해요"
+        description="챌린지 일지는 로그인 후 확인할 수 있어요"
+        action={
+          <Button variant="primary" onClick={handleGoLogin}>
+            로그인 하러가기
+          </Button>
+        }
+        className="mt-10"
+      />
+    );
+  }
 
   return (
     <>

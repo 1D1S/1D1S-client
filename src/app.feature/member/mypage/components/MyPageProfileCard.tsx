@@ -162,7 +162,21 @@ export function MyPageProfileCard({
     <>
       {/* 모바일: 부모 컨테이너 패딩에 정렬, 72px 아바타 + 3-col stats grid */}
       <section className="relative lg:hidden">
-        <div className="flex min-h-8 items-center justify-end gap-1">
+        {/*
+          네이티브 쉘에서는 이 액션 행이 통째로 숨는다. 알림 벨은 AppTopNav 의
+          벨과 중복이고, 설정 진입은 AppTopNav 가 /mypage 에서 톱니 버튼으로
+          제공한다. 이 행이 남아 있으면 네이티브 헤더 바로 밑에 또 하나의
+          헤더처럼 보인다.
+
+          이 섹션은 sticky/fixed 가 아니라 relative 라, globals.css 의 sticky
+          기반 차단 룰이 잡지 못한다 — 그래서 data-native-hide 를 직접 붙인다.
+          섹션 전체가 아니라 액션 행에만 붙이는 게 중요하다. 아바타/닉네임/
+          스트릭 타일은 네이티브가 대체하지 않는다.
+        */}
+        <div
+          data-native-hide
+          className="flex min-h-8 items-center justify-end gap-1"
+        >
           {actions ?? (
             <>
               <button

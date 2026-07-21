@@ -14,6 +14,7 @@ import {
 } from '@module/metadata/seo';
 import { AppProviders } from '@module/providers';
 import { cn } from '@module/utils/cn';
+import { NATIVE_APP_INIT_SCRIPT } from '@module/utils/nativeAppScript';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata, Viewport } from 'next';
 
@@ -81,22 +82,17 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }): React.ReactElement {
-  // 네이티브 앱 감지는 클라이언트 `useIsNativeApp`(AppLayoutShell) 이
-  // 단독으로 수행한다: window.__IS_NATIVE_APP__ / JS 채널 / navigator.userAgent
-  // (서버와 동일한 `1D1S-App` UA 토큰) 를 읽어 correctness 를 완결한다.
-  //
-  // 과거엔 SSR 에서 headers() 로 UA 를 읽어 `data-native-app` 을 미리 세팅했지만,
-  // headers() 는 Dynamic API 라 루트 레이아웃이 앱 전체 route 를 dynamic 렌더로
-  // 강제했다 → `<Link>` 가 데이터까지 prefetch 하지 못하고 이동마다 RSC 를
-  // 다시 받아오는 "매번 로딩" 의 근본 원인. 이를 제거해 route 를 정적
-  // prefetch 가능 상태로 되돌린다.
-  //
-  // 트레이드오프: `data-native-app` 초기값이 항상 "false" 라, 네이티브 쉘
-  // 사용자는 하드 로드(콜드) 첫 페인트에서 웹 chrome(sticky 헤더 등)을 한
-  // 프레임 볼 수 있다. 하이드레이션 직후 AppLayoutShell 의 useEffect 가
-  // 속성을 다시 세팅해 즉시 사라진다(SPA 이동에는 영향 없음).
+  // 네이티브 앱 감지는 <head> 의 blocking inline script 가 첫 페인트 전에
+  // 확정한다. headers() 를 쓰면 루트 레이아웃이 dynamic 렌더로 강제돼
+  // `<Link>` prefetch 가 죽으므로(= "이동마다 로딩") 서버 UA 판정은 쓰지
+  // 않는다. 스크립트는 정적 HTML 에 그대로 실려 나가므로 route 는 정적
+  // prefetch 가능 상태를 유지하면서도 chrome 가시성은 페인트 시점에 이미
+  // 결정돼 있다. 하이드레이션 이후 토글되는 값이 아니라 시프트가 없다.
   return (
     <html lang="ko" data-native-app="false">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: NATIVE_APP_INIT_SCRIPT }} />
+      </head>
       <body
         className={cn(
           pretendard.variable,

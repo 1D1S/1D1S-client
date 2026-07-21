@@ -2,12 +2,15 @@
 
 import { Text } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
+import { API_BASE_URL } from '@module/api/config';
 import { cn } from '@module/utils/cn';
+import { markNativeOAuth } from '@module/utils/nativeBridge';
 import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
+import { AppleLoginButton } from '../components/AppleLoginButton';
 import { BrandPanel } from '../components/BrandPanel';
 import { getLastOAuthProvider, LoginButton } from '../components/LoginButtons';
 import { LoginMobileView } from '../components/LoginMobileView';
@@ -30,6 +33,19 @@ export function LoginScreen(): React.ReactElement {
   );
 
   React.useEffect(() => {
+    const nativeProvider = new URLSearchParams(window.location.search).get(
+      'nativeProvider'
+    );
+    const codeChallenge = new URLSearchParams(window.location.search).get(
+      'pkceChallenge'
+    );
+    if (nativeProvider === 'naver' && codeChallenge) {
+      markNativeOAuth(codeChallenge);
+      window.location.replace(
+        `${API_BASE_URL}/oauth2/authorization/${nativeProvider}`
+      );
+      return;
+    }
     setRecommended(getLastOAuthProvider());
     setStreakDay(getLaunchStreakDay());
   }, []);
@@ -139,6 +155,8 @@ export function LoginScreen(): React.ReactElement {
                   />
                 );
               })}
+              {/* env 설정 시에만 렌더(미설정이면 null) */}
+              <AppleLoginButton size="lg" className="h-13 text-[15px]" />
             </div>
 
             <Text

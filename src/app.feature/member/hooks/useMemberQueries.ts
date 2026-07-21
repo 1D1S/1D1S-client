@@ -97,9 +97,10 @@ export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
     },
     retry: false, // queryFn 내부에서 직접 재시도 처리
     enabled: !isServer && status === 'authenticated',
+    // staleTime: Infinity 라 마운트 시 데이터가 stale 이 아니므로
+    // refetchOnMount(기본 true)는 어차피 refetch 하지 않는다 — 명시 제거.
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
-    refetchOnMount: true,
   });
 }
 
@@ -138,8 +139,8 @@ export function useMyPage(): UseQueryResult<MyPageData, Error> {
     queryKey: MEMBER_QUERY_KEYS.myPage(),
     queryFn: () => memberApi.getMyPage(),
     enabled: isLoggedIn,
+    // staleTime: Infinity 라 refetchOnMount(기본 true)는 no-op — 명시 제거.
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
-    refetchOnMount: true,
   });
 }

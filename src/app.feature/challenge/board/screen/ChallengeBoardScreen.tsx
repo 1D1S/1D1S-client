@@ -19,7 +19,7 @@ import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { cn } from '@module/utils/cn';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect,useMemo, useState } from 'react';
 
 import { ChallengeBoardFilters } from '../components/ChallengeBoardFilters';
 import { toCategoryParam } from '../consts/categoryFilters';
@@ -45,10 +45,7 @@ interface ChallengeBoardCardItemProps {
 // 카드 매핑에서 인라인 람다·파생 계산을 제거해 React.memo(ChallengeCard) 가
 // 실제로 재렌더를 건너뛸 수 있도록 한다.
 const ChallengeBoardCardItem = React.memo(
-  ({
-    challenge,
-    href,
-  }: ChallengeBoardCardItemProps): React.ReactElement => {
+  ({ challenge, href }: ChallengeBoardCardItemProps): React.ReactElement => {
     const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
     const ended = isChallengeEndedOrArchived(
       challenge.endDate,
@@ -137,6 +134,51 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     scrollListToTop();
   }, [scrollListToTop]);
 
+  // 네이티브 쉘의 검색 다이얼로그. 검색 상태가 로컬 useState 뿐이라 URL
+  // 파라미터로는 전달할 수 없어 bridge 이벤트로 직접 꽂는다. 웹 검색
+  // 필드는 네이티브에서 숨겨지고(data-native-hide) 이 이벤트가 유일한
+  // 검색 입력 경로가 된다.
+  useEffect(() => {
+    const listener = (event: Event): void => {
+      const detail = (event as CustomEvent<{ keyword?: string }>).detail;
+      const keyword = detail?.keyword ?? '';
+      setInputValue(keyword);
+      setQuery(keyword);
+      scrollListToTop();
+    };
+    window.addEventListener('native:board_search', listener);
+    return () => window.removeEventListener('native:board_search', listener);
+  }, [scrollListToTop]);
+
+  // 네이티브 툴바의 필터 선택. 검색과 같은 방식 — 카테고리/종류/상태를
+  // 한 번에 받아 로컬 상태에 반영한다.
+  useEffect(() => {
+    const listener = (event: Event): void => {
+      const detail = (
+        event as CustomEvent<{
+          category?: ChallengeCategory;
+          challengeType?: ChallengeTypeFilter | 'ALL';
+          statuses?: ChallengeStatus[];
+        }>
+      ).detail;
+      if (!detail) {
+        return;
+      }
+      if (detail.category) {
+        setCategory(detail.category);
+      }
+      if (detail.challengeType) {
+        setChallengeType(detail.challengeType);
+      }
+      if (Array.isArray(detail.statuses)) {
+        setStatuses(detail.statuses);
+      }
+      scrollListToTop();
+    };
+    window.addEventListener('native:board_filter', listener);
+    return () => window.removeEventListener('native:board_filter', listener);
+  }, [scrollListToTop]);
+
   const handleCategoryChange = useCallback(
     (value: ChallengeCategory): void => {
       setCategory(value);
@@ -206,10 +248,19 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         </Button>
       }
       mobileHeader={
-        // 모바일 sticky 헤더 — 타이틀 + 새 챌린지 + 검색바.
-        // 네이티브 쉘에서는 AppTopNav + sliver AppBar 가 동일 영역을
-        // 책임지고, FAB 가 "챌린지 추가" 액션을 제공하므로 이 헤더는
-        // 글로벌 sticky 차단 룰로 함께 가린다 (data-native-keep 제거).
+        // 모바일 sticky 헤더 — 타이틀 + 새 챌린지 + 검색바 + 필터.
+        //
+        // 네이티브 쉘이 대체하는 건 **타이틀과 새 챌린지 버튼뿐**이다
+        // (AppBoardHeader + FAB). 검색 입력과 ChallengeBoardFilters 는
+        // 네이티브에 대응물이 없다. 예전엔 data-native-keep 을 빼서 글로벌
+        // sticky 차단 룰이 이 래퍼를 통째로 가렸는데, 그러면 같은 래퍼 안에
+        // 있는 검색과 카테고리/종류/상태 필터까지 전부 사라진다 — 앱에서만
+        // 챌린지를 검색하거나 거를 수 없었다.
+        //
+        // 그래서 래퍼는 살리고(data-native-keep), 실제로 중복인 타이틀 행만
+        // 가린다. 새 챌린지 버튼은 이미 자체 data-native-hide 가 있다.
+        // 네이티브 쉘은 검색과 필터를 전부 네이티브 툴바로 그린다 — 이
+        // 래퍼는 글로벌 sticky 차단 룰이 통째로 숨긴다 (keep 마커 없음).
         <div
           className={cn(
             'sticky top-0 z-20 border-b border-gray-100',
@@ -217,7 +268,10 @@ export default function ChallengeBoardScreen(): React.ReactElement {
             'backdrop-blur lg:hidden'
           )}
         >
-          <div className="mb-3 flex items-center justify-between">
+          <div
+            data-native-hide
+            className="mb-3 flex items-center justify-between"
+          >
             <Text
               as="h1"
               size="heading1"
@@ -240,30 +294,34 @@ export default function ChallengeBoardScreen(): React.ReactElement {
               <Icon name="Plus" size={12} />새 챌린지
             </button>
           </div>
-          <TextField
-            className="w-full"
-            placeholder="챌린지 검색"
-            value={inputValue}
-            iconLeft={<Icon name="Search" size={15} />}
-            iconRight={
-              inputValue ? (
-                <button
-                  type="button"
-                  aria-label="검색어 지우기"
-                  onClick={handleClear}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              ) : undefined
-            }
-            onChange={(event) => setInputValue(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                handleSearch();
+          {/* 네이티브에서는 헤더의 검색 버튼(다이얼로그)이 이 필드를
+              대신한다 — native:board_search 이벤트로 같은 상태에 꽂힌다. */}
+          <div data-native-hide>
+            <TextField
+              className="w-full"
+              placeholder="챌린지 검색"
+              value={inputValue}
+              iconLeft={<Icon name="Search" size={15} />}
+              iconRight={
+                inputValue ? (
+                  <button
+                    type="button"
+                    aria-label="검색어 지우기"
+                    onClick={handleClear}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                ) : undefined
               }
-            }}
-          />
+              onChange={(event) => setInputValue(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  handleSearch();
+                }
+              }}
+            />
+          </div>
           <ChallengeBoardFilters
             category={category}
             onCategoryChange={handleCategoryChange}
@@ -282,7 +340,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         description={loginDialogDescription}
       />
 
-      <div className="mt-2 flex flex-col gap-4 lg:mt-6">
+      <div className="native-flush-top mt-2 flex flex-col gap-4 lg:mt-6">
         {/* 데스크탑 검색바 — 모바일은 sticky 헤더에 있음 */}
         <div className="hidden w-full max-w-[480px] gap-2 lg:flex">
           <div className="w-full">
@@ -332,7 +390,7 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         />
       </div>
 
-      <div className="mt-4 lg:mt-6">
+      <div data-native-toolbar-offset className="mt-4 lg:mt-6">
         {isLoading && challenges.length === 0 ? (
           <ChallengeCardSkeletonGrid count={8} className="gap-4" />
         ) : challenges.length > 0 ? (

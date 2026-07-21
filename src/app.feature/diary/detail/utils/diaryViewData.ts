@@ -241,34 +241,17 @@ export function mapDiaryToViewData(
   let checklistItems: ChecklistItem[] = [];
   let checkedChecklistIds: string[] = [];
 
-  if (checklistItemsFromChallenge.length > 0) {
-    checklistItems = checklistItemsFromChallenge;
-
-    if (diaryGoals.length > 0) {
-      const achievedDiaryGoalIds = new Set(
-        diaryGoals
-          .filter((goal) => goal.isAchieved)
-          .map((goal) => String(goal.challengeGoalId))
-      );
-      const achievedDiaryGoalNames = new Set(
-        diaryGoals
-          .filter((goal) => goal.isAchieved && Boolean(goal.challengeGoalName))
-          .map((goal) => goal.challengeGoalName.trim())
-      );
-
-      checkedChecklistIds = checklistItems
-        .filter(
-          (item) =>
-            achievedDiaryGoalIds.has(item.id) ||
-            achievedDiaryGoalNames.has(item.label.trim())
-        )
-        .map((item) => item.id);
-    } else {
-      checkedChecklistIds = checklistItems
-        .filter((item) => achievementIds.has(item.id))
-        .map((item) => item.id);
-    }
-  } else if (diaryGoals.length > 0) {
+  if (diaryGoals.length > 0) {
+    // 일지의 diaryGoal 은 그 일지(=작성자) 고유의 목표 목록과 달성 여부를
+    // 그대로 담는 유일하게 신뢰할 수 있는 소스다. 항상 이걸 우선 사용한다.
+    //
+    // 과거엔 challengeGoals(=열람자의 챌린지 목표)로 체크리스트를 만들고
+    // 작성자 달성분을 goal id/이름으로 매칭했다. 그런데 challenge_goal 은
+    // 참여자마다 복제돼 id 가 달라(FIXED 포함), "타인 일지"에서 id 매칭이
+    // 전부 깨졌다. 본인 일지는 열람자 id == 작성자 id 라 우연히 맞아 정상,
+    // 타인 일지는 이름 매칭에 의존하다 목표 문구가 조금만 달라도(FLEXIBLE
+    // 등) 실패해 달성한 목표가 미달성으로 표시됐다. diaryGoal 을 직접 쓰면
+    // 본인/타인 모두 정확하다.
     checklistItems = diaryGoals.map((goal) => ({
       id: String(goal.challengeGoalId),
       label: goal.challengeGoalName || `목표 ${goal.challengeGoalId}`,
@@ -276,6 +259,13 @@ export function mapDiaryToViewData(
     checkedChecklistIds = diaryGoals
       .filter((goal) => goal.isAchieved)
       .map((goal) => String(goal.challengeGoalId));
+  } else if (checklistItemsFromChallenge.length > 0) {
+    // 레거시(diaryGoal 이 없는 구 응답): 챌린지 목표 목록 + deprecated
+    // achievement(달성 목표 id 배열)로 구성한다.
+    checklistItems = checklistItemsFromChallenge;
+    checkedChecklistIds = checklistItems
+      .filter((item) => achievementIds.has(item.id))
+      .map((item) => item.id);
   } else {
     const achievedGoalIds = Array.from(achievementIds);
     checklistItems = achievedGoalIds.map((goalId) => ({
