@@ -188,4 +188,44 @@ describe('mapDiaryToViewData', () => {
     // 공식 챌린지 배지가 challengeType 을 읽어 0명이어도 종료로 보지 않게 한다.
     expect(view.connectedChallengeSummary?.challengeType).toBe('OFFICIAL');
   });
+
+  it('타인 일지: 열람자 챌린지 목표 id/문구가 달라도 작성자 diaryGoal 로 달성 표시', () => {
+    // 작성자(참여자)의 goal id 는 열람자와 다르다(challenge_goal 은 참여자별
+    // 복제). 두 목표 모두 달성한 일지.
+    const diary = {
+      id: 11,
+      challenge: { challengeId: 5, title: '공식 챌린지' },
+      author: { id: 2, nickname: '작성자', profileImage: null },
+      title: '일지',
+      content: '<p>내용</p>',
+      imgUrl: null,
+      thumbnailUrl: null,
+      likeInfo: { likedByMe: false, likeCnt: 0 },
+      diaryInfo: {
+        feeling: 'HAPPY',
+        achievementRate: 100,
+        diaryGoal: [
+          { challengeGoalId: 901, challengeGoalName: '물 마시기', isAchieved: true },
+          { challengeGoalId: 902, challengeGoalName: '운동하기', isAchieved: true },
+        ],
+      },
+    } as unknown as DiaryDetail;
+    // 열람자 시점의 챌린지 목표 — id 도 문구도 작성자와 다르다.
+    const challengeDetailData = {
+      challengeGoals: [
+        { challengeGoalId: 1, content: '열람자 목표 A' },
+        { challengeGoalId: 2, content: '열람자 목표 B' },
+      ],
+    } as unknown as ChallengeDetailResponse;
+
+    const view = mapDiaryToViewData(diary, challengeDetailData);
+
+    // 체크리스트는 작성자의 diaryGoal 을 반영해야 한다(열람자 목표 아님).
+    expect(view.checklistItems.map((item) => item.label)).toEqual([
+      '물 마시기',
+      '운동하기',
+    ]);
+    // 두 목표 모두 달성으로 표시(과거엔 id/문구 불일치로 미달성이었음).
+    expect(view.checkedChecklistIds).toEqual(['901', '902']);
+  });
 });
