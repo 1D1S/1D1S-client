@@ -17,6 +17,18 @@ export function isGroupAllSeen(group: StoryGroup): boolean {
   return group.stories.every((story) => !story.hasUnreadJournal);
 }
 
+// 스토리 카드 미리보기 이미지 = 그룹의 (정렬 후) 최신 스토리의 실제 일지
+// 썸네일. 감정과 무관한 실제 콘텐츠다.
+//
+// 과거 StoryRing 은 스토리 응답에 feeling 이 없다는 이유로 userId 해시로
+// 감정 얼굴(happy/soso/sad)을 임의 배정했다. 그 결과 작성자가 고른 실제
+// 감정(상세 화면은 정상)과 스토리의 감정 얼굴이 어긋나 "아주 좋음으로 썼는데
+// 스토리엔 안좋음"처럼 보였다. 스토리 응답엔 feeling 이 없어 실제 감정을 그릴
+// 수 없으므로, 잘못된 감정 대신 실제 썸네일을 노출한다.
+export function getStoryPreviewThumbnail(group: StoryGroup): string | null {
+  return group.stories[0]?.diaryThumbnail ?? null;
+}
+
 // createdAt(ISO) → epoch ms. 파싱 불가 시 0.
 // raw new Date(iso) 는 백엔드의 공백구분('YYYY-MM-DD HH:mm:ss')/마이크로초
 // 타임스탬프를 Safari/Firefox 에서 Invalid Date 로 만들어 정렬이 전부 0으로

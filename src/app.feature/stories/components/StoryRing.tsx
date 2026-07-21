@@ -5,11 +5,13 @@ import EmptyState from '@component/EmptyState';
 import FadeInImage from '@component/FadeInImage';
 import { cn } from '@module/utils/cn';
 import { resolveDiaryImageUrl } from '@module/utils/diaryImageUrl';
-import Image from 'next/image';
 import React from 'react';
 
 import { StoryGroup } from '../type/story';
-import { isGroupAllSeen } from '../utils/storyHelpers';
+import {
+  getStoryPreviewThumbnail,
+  isGroupAllSeen,
+} from '../utils/storyHelpers';
 
 interface StoryRingProps {
   groups: StoryGroup[];
@@ -18,19 +20,15 @@ interface StoryRingProps {
   onAddStory?(): void;
 }
 
-interface StoryMood {
-  src: string;
-  alt: string;
-  tint: string;
-}
+// 카드 배경 틴트 — 감정과 무관한 장식(사용자별 고정 파스텔).
+// 과거엔 userId 해시로 감정 얼굴(happy/soso/sad)까지 임의 배정해, 작성자가
+// 고른 실제 감정(상세는 정상)과 어긋나 보였다. 스토리 응답엔 feeling 이 없어
+// 실제 감정을 그릴 수 없으므로, 감정 얼굴을 제거하고 실제 일지 썸네일을 쓴다.
+const CARD_TINTS = ['bg-[#c9f1e7]', 'bg-[#e6f1ff]', 'bg-[#fff1c8]'] as const;
 
-// 감정(무드) 아이콘은 API 에 실제 감정 필드가 없어 userId 로 고정 배정한다.
-// 같은 사용자는 항상 같은 무드/틴트를 받는다(장식 목적).
-const STORY_MOODS: StoryMood[] = [
-  { src: '/images/mood-happy.svg', alt: '행복한 얼굴', tint: 'bg-[#c9f1e7]' },
-  { src: '/images/mood-soso.svg', alt: '무표정 얼굴', tint: 'bg-[#e6f1ff]' },
-  { src: '/images/mood-sad.svg', alt: '슬픈 얼굴', tint: 'bg-[#fff1c8]' },
-];
+function pickCardTint(userId: number): string {
+  return CARD_TINTS[Math.abs(userId) % CARD_TINTS.length];
+}
 
 // next/image 는 절대 URL 또는 / 시작 상대 경로만 허용한다.
 function isValidNextImageSrc(src: string | undefined): src is string {
@@ -41,10 +39,6 @@ function isValidNextImageSrc(src: string | undefined): src is string {
     return true;
   }
   return /^(https?:|data:|blob:)/i.test(src);
-}
-
-function pickStoryMood(userId: number): StoryMood {
-  return STORY_MOODS[Math.abs(userId) % STORY_MOODS.length];
 }
 
 // 사각형 스토리 카드(112x140). 무드 이미지를 크게 중앙에 두고 그 아래
@@ -120,7 +114,9 @@ function StoryRing({
         const profileUrl =
           resolveDiaryImageUrl(group.profileImage) ?? undefined;
         const name = group.userName?.trim() || `친구 ${group.userId}`;
-        const mood = pickStoryMood(group.userId);
+        const tint = pickCardTint(group.userId);
+        const previewUrl =
+          resolveDiaryImageUrl(getStoryPreviewThumbnail(group)) ?? undefined;
 
         return (
           <button
@@ -135,18 +131,28 @@ function StoryRing({
               seen
                 ? 'border-2 border-gray-200'
                 : 'border-main-500 border-[3px]',
-              mood.tint
+              tint
             )}
           >
-            {/* 무드 SVG는 정적 에셋이라 Next 이미지 최적화 없이 서빙한다. */}
-            <Image
-              src={mood.src}
-              alt={mood.alt}
-              width={44}
-              height={44}
-              className="h-11 w-11"
-              unoptimized
-            />
+            {/* 실제 일지 썸네일(감정과 무관한 실제 콘텐츠). 없으면 중립
+                placeholder — 잘못된 감정 얼굴을 그리지 않는다. */}
+            <span
+              className={cn(
+                'relative flex h-11 w-11 items-center justify-center',
+                'overflow-hidden rounded-[12px] bg-white/70'
+              )}
+              aria-hidden
+            >
+              {isValidNextImageSrc(previewUrl) ? (
+                <FadeInImage
+                  src={previewUrl}
+                  alt=""
+                  fill
+                  sizes="44px"
+                  className="object-cover"
+                />
+              ) : null}
+            </span>
             <span
               className={cn(
                 'relative flex h-9 w-9 items-center justify-center',
