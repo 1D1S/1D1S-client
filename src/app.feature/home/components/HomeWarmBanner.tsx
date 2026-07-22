@@ -2,8 +2,8 @@
 
 import { Banner } from '@1d1s/design-system';
 import {
-  HOME_MAIN_BANNERS,
   type HomeMainBanner,
+  PINNED_HOME_BANNERS,
 } from '@constants/consts/homeData';
 import { useBanners } from '@feature/banner/hooks/useBanners';
 import { type Banner as ServerBanner } from '@feature/banner/type/banner';
@@ -52,21 +52,23 @@ function fromServerBanner(banner: ServerBanner): CarouselBanner {
 }
 
 interface HomeWarmBannerProps {
-  /** 폴백(서버 배너가 없을 때) 하드코딩 배너 목록. */
-  fallbackBanners?: HomeMainBanner[];
+  /** 항상 캐러셀 맨 뒤에 고정되는 배너(디스코드·사용가이드·통계). */
+  pinnedBanners?: HomeMainBanner[];
 }
 
 export default function HomeWarmBanner({
-  fallbackBanners = HOME_MAIN_BANNERS,
+  pinnedBanners = PINNED_HOME_BANNERS,
 }: HomeWarmBannerProps): React.ReactElement | null {
   const router = useRouter();
   const { data: serverBanners } = useBanners();
 
-  // 서버 배너가 하나라도 있으면 우선. 없거나(빈 배열)·로딩·오류면 하드코딩 폴백.
-  const banners: CarouselBanner[] =
-    serverBanners && serverBanners.length > 0
-      ? serverBanners.map(fromServerBanner)
-      : fallbackBanners.map(fromHomeBanner);
+  // 최종 목록 = [서버(admin) 배너] + [고정 3개]. 고정 3개는 서버 배너 유무와
+  // 무관하게 항상 맨 뒤에 붙는다. 서버 배너가 없으면(빈 배열/로딩/404/에러)
+  // 고정 3개만 노출된다. 서버 배너 key 는 `server-*`, 고정은 자체 id 라 충돌 없음.
+  const banners: CarouselBanner[] = [
+    ...(serverBanners ?? []).map(fromServerBanner),
+    ...pinnedBanners.map(fromHomeBanner),
+  ];
 
   const count = banners.length;
   const [index, setIndex] = useState(0);
