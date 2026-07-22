@@ -42,7 +42,8 @@ function fromHomeBanner(banner: HomeMainBanner): CarouselBanner {
 function fromServerBanner(banner: ServerBanner): CarouselBanner {
   return {
     id: `server-${banner.id}`,
-    // 서버 배너는 상태 라벨(kind)이 없다.
+    // 서버 tag → 태그 칩(kind 재사용). null/미지정이면 undefined → 칩 미표시.
+    kind: banner.tag ?? undefined,
     title: banner.title,
     subtitle: banner.subtitle,
     // imageUrl → 배경 이미지(cover). DS Banner 는 bg 를 background 로 적용한다.
@@ -149,8 +150,12 @@ export default function HomeWarmBanner({
   );
 
   return (
+    // 배너 종횡비 5:2(2.5:1) 고정 — 서버 이미지 배너(cover)와 그라디언트 배너
+    // 모두 일관. 모바일은 폭에 맞춰 비율 유지, 폭이 넓은 데스크톱에서는
+    // max-h 로 상한을 둬 너무 커지지 않게 한다. self-start 로 grid/flex 부모의
+    // stretch 가 비율을 깨지 않게 막는다(내부 Banner 는 h-full 로 채움).
     <div
-      className="relative h-full w-full"
+      className="relative aspect-[5/2] max-h-[240px] w-full self-start"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >

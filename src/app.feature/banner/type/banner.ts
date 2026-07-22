@@ -6,6 +6,8 @@ export interface Banner {
   subtitle: string;
   imageUrl: string;
   linkUrl: string;
+  // 배너 태그 칩 라벨(nullable). null/미지정이면 칩 미표시.
+  tag?: string | null;
   // 게시 기간(YYYY-MM-DD). 서버가 "오늘 활성"만 내려주므로 클라 필터는 불필요.
   startDate: string;
   endDate: string;
