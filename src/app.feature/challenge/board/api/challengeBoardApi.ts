@@ -10,6 +10,8 @@ import {
   ChallengeListParams,
   ChallengeListResponse,
   MemberChallengesParams,
+  MyChallengeItem,
+  MyChallengeScope,
   RandomChallengesParams,
 } from '../type/challenge';
 
@@ -31,6 +33,19 @@ const normalizeMemberChallengesResponse = (
 };
 
 export const challengeBoardApi = {
+  // 내 챌린지 전체보기(self) — scope: ALL(기본)/ONGOING/ENDED.
+  // 응답 항목은 { participationStatus, challenge } 중첩 구조다.
+  getMyChallenges: async (
+    scope: MyChallengeScope = 'ALL'
+  ): Promise<MyChallengeItem[]> => {
+    const query = buildQueryString({ scope });
+
+    return requestData<MyChallengeItem[]>(apiClient, {
+      url: `/challenges/my?${query}`,
+      method: 'GET',
+    });
+  },
+
   // 챌린지 랜덤 불러오기
   getRandomChallenges: async (
     params: RandomChallengesParams = {}

@@ -56,6 +56,21 @@ export interface ChallengeSummary {
   randomParticipants?: RandomParticipant[];
 }
 
+// 내 챌린지 전체보기 — GET /challenges/my?scope=
+// ALL: 참여 이력 전체(HOST/PARTICIPANT/LEAVE, 기간 무관)
+// ONGOING: HOST·PARTICIPANT & 오늘이 게시기간 내
+// ENDED: 종료됐거나 과거참여(LEAVE)
+export type MyChallengeScope = 'ALL' | 'ONGOING' | 'ENDED';
+
+// 내 참여 상태. LEAVE(과거참여/탈퇴)는 공용 ParticipantStatus 에 없어
+// 이 화면 전용 타입으로 둔다.
+export type MyParticipationStatus = 'HOST' | 'PARTICIPANT' | 'LEAVE';
+
+export interface MyChallengeItem {
+  participationStatus: MyParticipationStatus;
+  challenge: ChallengeSummary;
+}
+
 export interface ChallengeListItem {
   challengeId: number;
   title: string;
