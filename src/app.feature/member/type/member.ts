@@ -98,11 +98,15 @@ export interface MemberDiaryListResponse {
   pageInfo: MemberDiaryPageInfo;
 }
 
+// 연동 소셜 프로바이더. 서버가 새 값을 추가할 수 있으므로 표시 로직은
+// getProviderConfig() 폴백을 거쳐야 한다(APPLE 누락으로 크래시했던 이력).
+export type SocialProvider = 'GOOGLE' | 'KAKAO' | 'NAVER' | 'APPLE';
+
 export interface MemberProfileData {
   nickname: string;
   profileUrl: string;
   email?: string;
-  provider?: 'GOOGLE' | 'KAKAO' | 'NAVER';
+  provider?: SocialProvider;
   streak: MyPageStreak;
   challengeList: MyPageChallenge[];
   diaryList: MemberDiaryListResponse;
@@ -116,7 +120,7 @@ export interface MyPageData {
   email: string;
   // 미입력 회원은 응답에 키가 없다.
   phoneNumber?: string;
-  provider: 'GOOGLE' | 'KAKAO' | 'NAVER';
+  provider: SocialProvider;
   streak: MyPageStreak;
   challengeList: MyPageChallenge[];
   diaryList: MyPageDiary[];
