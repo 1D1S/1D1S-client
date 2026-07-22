@@ -6,6 +6,7 @@ import React, { useEffect } from 'react';
 
 import { useAppleLogin } from '../hooks/useAuthMutations';
 import { getAppleAuthConfig } from '../utils/appleAuth';
+import { LoginProcessingScreen } from './LoginProcessingScreen';
 
 // Apple 로고 마크(공식 형태). 버튼 텍스트와 같은 흰색을 따르도록 currentColor.
 function AppleLogo(): React.ReactElement {
@@ -39,7 +40,7 @@ export function AppleLoginButton({
   size = 'lg',
 }: AppleLoginButtonProps): React.ReactElement | null {
   const configured = getAppleAuthConfig() !== null;
-  const { mutate, isPending } = useAppleLogin();
+  const { startLogin, isPending, isExchanging } = useAppleLogin();
 
   useEffect(() => {
     if (!configured && process.env.NODE_ENV !== 'production') {
@@ -55,21 +56,28 @@ export function AppleLoginButton({
   }
 
   return (
-    <Button
-      size={size}
-      fullWidth
-      disabled={isPending}
-      onClick={() => mutate()}
-      className={cn(
-        'relative border-0 bg-black font-extrabold text-white',
-        'hover:bg-black/90 hover:brightness-100',
-        className
-      )}
-    >
-      <span className="absolute left-5 inline-flex">
-        <AppleLogo />
-      </span>
-      Apple로 계속하기
-    </Button>
+    <>
+      <Button
+        size={size}
+        fullWidth
+        disabled={isPending}
+        onClick={() => startLogin()}
+        className={cn(
+          'relative border-0 bg-black font-extrabold text-white',
+          'hover:bg-black/90 hover:brightness-100',
+          className
+        )}
+      >
+        <span className="absolute left-5 inline-flex">
+          <AppleLogo />
+        </span>
+        Apple로 계속하기
+      </Button>
+
+      {/* 애플은 페이지 이동이 없으므로, credential 수신 후 서버 교환·라우팅
+          동안 리다이렉트형 소셜 로그인과 같은 화면을 오버레이로 덮는다.
+          팝업 취소 시엔 isExchanging 이 켜지지 않아 잔류 로딩이 없다. */}
+      {isExchanging ? <LoginProcessingScreen overlay /> : null}
+    </>
   );
 }

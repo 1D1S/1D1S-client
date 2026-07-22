@@ -12,6 +12,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { authApi } from '../api/authApi';
 import { LogoutResponse, SocialLoginResponse } from '../type/auth';
@@ -23,22 +24,41 @@ import { signInWithApple } from '../utils/appleAuth';
 // 세션을 확정하고, 로그인 전 null 로 캐시된 사이드바를 무효화한 뒤,
 // profileComplete 여부로 /signup 또는 returnTo(없으면 홈)로 이동한다.
 // (구글 콜백의 NotificationOptInPrompt 는 이번 웹 애플 흐름엔 미포함 — 보고 참조)
-export function useAppleLogin(): UseMutationResult<
-  SocialLoginResponse,
-  Error,
-  void
-> {
+interface AppleLoginController {
+  /** 애플 팝업 로그인 시작. */
+  startLogin(): void;
+  /** 팝업 오픈~서버 교환까지 — 버튼 중복 클릭 방지용. */
+  isPending: boolean;
+  /**
+   * credential 수신 이후(서버 교환 + 라우팅) 구간에만 true.
+   * 이 구간에서만 다른 소셜 로그인과 동일한 "로그인 처리 중..." 화면을 덮는다.
+   * 팝업이 떠 있는 동안은 false 라, 사용자가 팝업을 닫아도 잔류 로딩이 없다.
+   */
+  isExchanging: boolean;
+}
+
+export function useAppleLogin(): AppleLoginController {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [isExchanging, setIsExchanging] = useState(false);
 
-  return useMutation({
+  const mutation = useMutation<SocialLoginResponse, Error, void>({
     mutationFn: async () => {
       const credential = await signInWithApple();
-      // 네이티브 쉘에서 시작된 경우에만 challenge 가 실린다(구글 흐름과 동일).
-      return authApi.appleLogin({
-        ...credential,
-        nativeCodeChallenge: peekNativeOAuth() ?? undefined,
-      });
+      // 여기부터가 "제공자 인증 완료 후 서버 교환" 구간 — 리다이렉트형이
+      // 콜백 페이지를 보여주는 시점과 같다.
+      setIsExchanging(true);
+      try {
+        // 네이티브 쉘에서 시작된 경우에만 challenge 가 실린다(구글 흐름과 동일).
+        return await authApi.appleLogin({
+          ...credential,
+          nativeCodeChallenge: peekNativeOAuth() ?? undefined,
+        });
+      } catch (error) {
+        // 서버 교환 실패 → 로딩 해제하고 원래 로그인 화면으로 복귀.
+        setIsExchanging(false);
+        throw error;
+      }
     },
     onSuccess: (res) => {
       authStorage.markAuthenticated();
@@ -61,9 +81,16 @@ export function useAppleLogin(): UseMutationResult<
     },
     onError: (error) => {
       // 사용자가 팝업을 닫으면(popup_closed_by_user) 여기로 온다 — 조용히 로그.
+      // 이 경우 isExchanging 은 애초에 켜지지 않아 로딩이 남지 않는다.
       console.error('[Apple] 로그인 실패:', error);
     },
   });
+
+  return {
+    startLogin: mutation.mutate,
+    isPending: mutation.isPending,
+    isExchanging,
+  };
 }
 
 // 로그아웃
