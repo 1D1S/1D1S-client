@@ -32,7 +32,9 @@ import { formatFormValues } from '@feature/challenge/write/utils/challengeCreate
 import { cn } from '@module/utils/cn';
 import {
   hideNativeProgress,
+  isNativeModalAvailable,
   isNativeProgressAvailable,
+  openNativeModal,
   showNativeProgress,
 } from '@module/utils/nativeBridge';
 import { Check, Lightbulb } from 'lucide-react';
@@ -49,6 +51,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
   const [createdIsPrivate, setCreatedIsPrivate] = useState(false);
   const [createdPassword, setCreatedPassword] = useState<string>();
   const [isErrorOpen, setIsErrorOpen] = useState(false);
+  const nativeModalAvailable = isNativeModalAvailable();
   const nativeProgressAvailable = isNativeProgressAvailable();
 
   useEffect(() => {
@@ -67,8 +70,24 @@ export default function ChallengeCreateScreen(): React.ReactElement {
         setCreatedChallengeId(data.challengeId);
         setCreatedIsPrivate(payload.challengeType === 'PRIVATE');
         setCreatedPassword(payload.password);
-        // 네이티브 앱에서도 iOS 기본 알림이 아니라 웹 스타일 완료 모달을 쓴다.
-        setIsSuccessOpen(true);
+        if (nativeModalAvailable) {
+          void openNativeModal({
+            title: '챌린지가 완성됐어요!',
+            message: '새 챌린지를 바로 확인하거나 홈으로 이동할 수 있어요.',
+            buttons: [
+              { label: '홈으로', value: 'home', style: 'cancel' },
+              { label: '챌린지 보기', value: 'detail' },
+            ],
+          }).then((value) => {
+            if (value === 'home') {
+              router.push('/');
+            } else if (value === 'detail') {
+              router.push(`/challenge/${data.challengeId}`);
+            }
+          });
+        } else {
+          setIsSuccessOpen(true);
+        }
       },
       onError: () => {
         setIsErrorOpen(true);
@@ -77,6 +96,23 @@ export default function ChallengeCreateScreen(): React.ReactElement {
   };
 
   const canSubmit = form.formState.isValid && !createChallenge.isPending;
+  const handleCreateRequest = async (): Promise<void> => {
+    if (!nativeModalAvailable) {
+      form.handleSubmit(onSubmit)();
+      return;
+    }
+    const result = await openNativeModal({
+      title: '이 챌린지를 만들까요?',
+      message: '입력한 내용으로 챌린지를 생성합니다.',
+      buttons: [
+        { label: '취소', value: 'cancel', style: 'cancel' },
+        { label: '만들기', value: 'confirm' },
+      ],
+    });
+    if (result === 'confirm') {
+      form.handleSubmit(onSubmit)();
+    }
+  };
 
   return (
     <div className={cn('pb-mobile-action-bar min-h-screen w-full')}>
@@ -186,18 +222,29 @@ export default function ChallengeCreateScreen(): React.ReactElement {
               )}
             </Text>
             <div className="w-full lg:ml-auto lg:w-auto">
-              {/* 네이티브 앱에서도 iOS 기본 알림이 아니라 웹 스타일 미리보기/
-                  생성확인 모달(ChallengeCreateDialog)을 그대로 쓴다. */}
-              <ChallengeCreateDialog
-                onConfirm={() => form.handleSubmit(onSubmit)()}
-                disabled={!canSubmit}
-                triggerText={
-                  canSubmit
+              {nativeModalAvailable ? (
+                <Button
+                  type="button"
+                  disabled={!canSubmit}
+                  className="w-full lg:w-auto"
+                  onClick={() => void handleCreateRequest()}
+                >
+                  {canSubmit
                     ? '챌린지 만들기'
-                    : '제목 · 내 목표를 입력해 주세요'
-                }
-                triggerClassName="w-full lg:w-auto"
-              />
+                    : '제목 · 내 목표를 입력해 주세요'}
+                </Button>
+              ) : (
+                <ChallengeCreateDialog
+                  onConfirm={() => form.handleSubmit(onSubmit)()}
+                  disabled={!canSubmit}
+                  triggerText={
+                    canSubmit
+                      ? '챌린지 만들기'
+                      : '제목 · 내 목표를 입력해 주세요'
+                  }
+                  triggerClassName="w-full lg:w-auto"
+                />
+              )}
             </div>
           </div>
         </MobileBottomActionBar>
@@ -232,7 +279,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
       )}
 
       <ChallengeCreateSuccessDialog
-        open={isSuccessOpen}
+        open={isSuccessOpen && !nativeModalAvailable}
         onOpenChange={setIsSuccessOpen}
         challengeId={createdChallengeId}
         isPrivate={createdIsPrivate}

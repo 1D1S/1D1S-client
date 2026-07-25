@@ -39,6 +39,15 @@ export interface NativeModalButton {
   style?: 'default' | 'cancel' | 'destructive';
 }
 
+// 선택형 모달(예: 일지 작성 "챌린지 선택")에서 네이티브가 웹처럼 썸네일+이름
+// 리스트를 그릴 수 있도록 넘기는 항목. 사용자가 항목을 선택하면 modal 은
+// challengeId 를 문자열로 resolve 한다(buttons[].value 와 동일 규약).
+export interface NativeModalChallengeItem {
+  challengeId: number;
+  title: string;
+  thumbnailUrl: string | null;
+}
+
 export interface NativeModalOpenPayload {
   // 같은 모달 요청을 식별. 응답이 돌아오는 modal_result 의 id 와 매칭.
   id: string;
@@ -46,6 +55,10 @@ export interface NativeModalOpenPayload {
   message?: string;
   // 1~3개 권장. 빈 배열이면 네이티브가 기본 "확인" 1개로 채운다.
   buttons: NativeModalButton[];
+  // 선택형 리스트 모달용. 지정 시 네이티브는 기본 알림 버튼 나열 대신 이
+  // 목록을 웹 스타일 리스트(썸네일+이름)로 렌더한다. 선택 결과는 항목의
+  // challengeId 문자열로 resolve 하고, 취소는 buttons 의 cancel value 를 쓴다.
+  challenges?: NativeModalChallengeItem[];
 }
 
 // 메인 이벤트 팝업 한 장. 서버 ActivePopup 과 같은 모양.
@@ -179,6 +192,10 @@ export function postNativeMessage(message: NativeMessage): void {
 
 export function isNativeBridgeAvailable(): boolean {
   return getNativeWindow()?.[CHANNEL_NAME] != null;
+}
+
+export function isNativeModalAvailable(): boolean {
+  return getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('modal');
 }
 
 /**

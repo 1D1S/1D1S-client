@@ -10,10 +10,14 @@ import {
   Text,
 } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import {
+  isNativeModalAvailable,
+  openNativeModal,
+} from '@module/utils/nativeBridge';
 import { ImageIcon, Maximize2, Minimize2 } from 'lucide-react';
 import Image from 'next/image';
 import type { ReactElement, ReactNode } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   cropImageFile,
@@ -126,6 +130,8 @@ export function ImageCropDialog({
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const nativeRequestInFlight = useRef(false);
+  const nativeModalAvailable = isNativeModalAvailable();
   const previewOffsetFactor = mode === 'cover' ? 1 : zoom - 1;
   const imageTransform =
     `translate(${offsetX * 18 * previewOffsetFactor}%, ` +
@@ -156,8 +162,72 @@ export function ImageCropDialog({
     };
   }, [file]);
 
-  // 네이티브 앱에서도 iOS 기본 알림(화면 채우기/사진 전체 보기)이 아니라
-  // 웹 스타일 크롭 모달을 그대로 쓴다.
+  useEffect(() => {
+    if (!open) {
+      nativeRequestInFlight.current = false;
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (
+      !open ||
+      !file ||
+      !nativeModalAvailable ||
+      nativeRequestInFlight.current
+    ) {
+      return;
+    }
+    nativeRequestInFlight.current = true;
+
+    void openNativeModal({
+      title,
+      message: '사진을 배너 비율에 맞추는 방식을 선택해 주세요.',
+      buttons: [
+        { label: '화면 채우기', value: 'cover' },
+        { label: '사진 전체 보기', value: 'contain' },
+        { label: '취소', value: 'cancel', style: 'cancel' },
+      ],
+    }).then(async (value) => {
+      if (value !== 'cover' && value !== 'contain') {
+        onOpenChange(false);
+        return;
+      }
+      setIsProcessing(true);
+      try {
+        const croppedFile = await cropImageFile(file, {
+          mode: value,
+          outputSize,
+          zoom: 1,
+          offsetX: 0,
+          offsetY: 0,
+          backgroundColor: '#ffffff',
+        });
+        onApply(croppedFile);
+        onOpenChange(false);
+      } catch {
+        setErrorMessage(
+          '이미지를 편집하지 못했습니다. 다른 사진을 선택해주세요.'
+        );
+        nativeRequestInFlight.current = false;
+        onOpenChange(false);
+      } finally {
+        setIsProcessing(false);
+      }
+    });
+  }, [
+    file,
+    nativeModalAvailable,
+    onApply,
+    onOpenChange,
+    open,
+    outputSize,
+    title,
+  ]);
+
+  if (nativeModalAvailable) {
+    return null;
+  }
+
   const handleApply = async (): Promise<void> => {
     if (!file || isProcessing) {
       return;
