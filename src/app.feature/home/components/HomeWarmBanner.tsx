@@ -48,8 +48,7 @@ function fromServerBanner(banner: ServerBanner): CarouselBanner {
     subtitle: banner.subtitle,
     // imageUrl → 배경 이미지(cover). DS Banner 는 bg 를 background 로 적용한다.
     bg:
-      'linear-gradient(90deg, rgba(17,24,39,.62) 0%, ' +
-      'rgba(17,24,39,.20) 62%, rgba(17,24,39,.34) 100%), ' +
+      'linear-gradient(rgba(17,24,39,.36), rgba(17,24,39,.36)), ' +
       `url('${banner.imageUrl}') center/cover no-repeat`,
     href: banner.linkUrl,
   };
@@ -173,8 +172,7 @@ export default function HomeWarmBanner({
         onClick={handleClick}
         className={cn(
           'shadow-warm h-full cursor-pointer transition',
-          'data-fade-in px-12 hover:brightness-105',
-          '[&_*]:drop-shadow-[0_1px_2px_rgba(0,0,0,0.65)]'
+          'data-fade-in px-12 hover:brightness-105'
         )}
       />
 
