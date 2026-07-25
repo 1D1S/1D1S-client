@@ -48,7 +48,7 @@ export function InquiryScreen(): React.ReactElement {
       title="문의하기"
       description="궁금한 점이 있으시면 언제든지 문의해주세요."
     >
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 pb-8">
         <section className="rounded-4 border border-gray-200 bg-white">
           <div className="border-b border-gray-100 px-5 py-4">
             <Text size="body1" weight="bold" className="text-gray-500">
@@ -149,7 +149,11 @@ export function InquiryScreen(): React.ReactElement {
                 <Text size="body1" weight="bold" className="text-gray-900">
                   무엇을 도와드릴까요?
                 </Text>
-                <Text size="caption1" weight="regular" className="text-gray-500">
+                <Text
+                  size="caption1"
+                  weight="regular"
+                  className="text-gray-500"
+                >
                   문제가 발생하거나 추가됐으면 하는 기능이 있다면 아래 버튼을
                   통해 문의를 남겨주세요.
                 </Text>

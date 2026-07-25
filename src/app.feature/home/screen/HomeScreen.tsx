@@ -91,7 +91,7 @@ export default function HomeScreen(): React.ReactElement {
     <>
       <HomePopup enabled={isLoggedIn} />
       <div
-        data-native-flush-top
+        data-native-home-content
         className={cn(
           'mx-auto flex w-full max-w-[1200px] flex-col gap-4 lg:gap-6',
           'px-5 py-7 lg:px-8 lg:py-10'

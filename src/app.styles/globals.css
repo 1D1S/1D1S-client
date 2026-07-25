@@ -123,7 +123,22 @@
      네이티브에서 그 헤더가 사라지므로 56px 아래 허공에 붙는다 — 챌린지
      상세 탭바가 그랬다. 이 마커를 달면 네이티브에서 top:0 으로 당겨진다. */
   html[data-native-app='true'] [data-native-top-0] {
-    top: 0 !important;
+    /* 챌린지 상세의 Flutter compact AppBackBar는 WebView 위에 56px로
+       오버레이되므로 탭이 그 바로 아래에 붙게 한다. */
+    top: 3.5rem !important;
+  }
+
+  html[data-native-app='true'] [data-native-home-content] {
+    padding-top: 0.875rem !important;
+  }
+
+  html[data-native-app='true'] [data-native-subpage-content] {
+    padding-top: 0.5rem !important;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  html[data-native-app='true'] [data-native-subpage-body] {
+    margin-top: 0.5rem !important;
   }
 
   /* 네이티브 쉘에서만 보이는 요소. 숨겨지는 웹 헤더 안의 액션(알림의
@@ -138,8 +153,7 @@
 
   /* 숨겨진 웹 헤더를 전제로 잡혀 있던 상단 여백 제거. 네이티브 헤더가
      이미 그 공간을 차지하므로 py-* / mt-* 의 top 만 0 으로 누른다. */
-  html[data-native-app='true']
-    :is([data-native-flush-top], .native-flush-top) {
+  html[data-native-app='true'] :is([data-native-flush-top], .native-flush-top) {
     padding-top: 0 !important;
     margin-top: 0 !important;
   }

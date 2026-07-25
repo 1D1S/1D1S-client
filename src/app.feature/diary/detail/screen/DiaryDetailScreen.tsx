@@ -7,6 +7,7 @@ import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
+import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import {
   Edit3,
@@ -352,9 +353,12 @@ function DiaryDetailView({
             diaryData.connectedChallengeId ? (
               <DiaryConnectedChallengeCard
                 summary={diaryData.connectedChallengeSummary}
-                onClick={() =>
-                  router.push(`/challenge/${diaryData.connectedChallengeId}`)
-                }
+                onClick={() => {
+                  const path = `/challenge/${diaryData.connectedChallengeId}`;
+                  if (!requestNativePushRoute(path)) {
+                    router.push(path);
+                  }
+                }}
               />
             ) : (
               <DiaryConnectedChallengeFallback

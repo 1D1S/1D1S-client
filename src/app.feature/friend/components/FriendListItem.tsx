@@ -2,6 +2,7 @@
 
 import { CircleAvatar, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -18,7 +19,10 @@ export function FriendListItem({
 }: FriendListItemProps): React.ReactElement {
   const router = useRouter();
   const handleOpenProfile = (): void => {
-    router.push(`/member/${friend.memberId}`);
+    const path = `/member/${friend.memberId}`;
+    if (!requestNativePushRoute(path)) {
+      router.push(path);
+    }
   };
 
   return (
