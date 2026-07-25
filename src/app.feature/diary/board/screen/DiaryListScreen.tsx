@@ -199,8 +199,7 @@ export default function DiaryListScreen(): React.ReactElement {
   }, []);
 
   const handleLikeToggle = useCallback(
-    (diary: DiaryItem): void =>
-      toggleLike(diary.id, diary.likeInfo.likedByMe),
+    (diary: DiaryItem): void => toggleLike(diary.id, diary.likeInfo.likedByMe),
     [toggleLike]
   );
 
@@ -262,11 +261,11 @@ export default function DiaryListScreen(): React.ReactElement {
       />
 
       {showSkeleton ? (
-        <DiaryCardSkeletonGrid count={12} className="data-fade-in native-flush-top mt-6" />
+        <DiaryCardSkeletonGrid count={12} className="data-fade-in mt-6" />
       ) : null}
 
       {isError && !hasLoadedDiaries ? (
-        <div className="native-flush-top mt-10 flex w-full justify-center py-10">
+        <div className="mt-10 flex w-full justify-center py-10">
           <Text size="body1" weight="medium" className="text-red-600">
             {error
               ? normalizeApiError(error).message
@@ -276,7 +275,7 @@ export default function DiaryListScreen(): React.ReactElement {
       ) : null}
 
       {!showSkeleton && hasLoadedDiaries ? (
-        <MasonryColumns className="data-fade-in native-flush-top mt-6">
+        <MasonryColumns className="data-fade-in mt-6">
           {sortedDiaries.map((item) => (
             <DiaryListItem
               key={item.id}

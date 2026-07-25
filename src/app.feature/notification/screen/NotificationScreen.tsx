@@ -44,17 +44,21 @@ export function NotificationScreen(): React.JSX.Element {
   const unreadCount = notifications.filter((notif) => !notif.isRead).length;
   const hasNotifications = notifications.length > 0;
 
-  const markAllAction = hasUnread ? (
+  const markAllAction = (
     <button
       type="button"
+      disabled={!hasUnread}
       onClick={() => markAllAsRead()}
-      className="text-main-800 hover:text-main-900 transition-colors"
+      className={cn(
+        'text-main-800 hover:text-main-900 transition-colors',
+        'disabled:cursor-default disabled:text-gray-300'
+      )}
     >
       <Text size="body2" weight="medium" className="text-inherit">
         모두 읽음
       </Text>
     </button>
-  ) : null;
+  );
 
   const description = hasUnread
     ? `읽지 않은 알림이 ${unreadCount}개 있어요.`
@@ -70,9 +74,7 @@ export function NotificationScreen(): React.JSX.Element {
       {/* 네이티브 쉘에서는 SubPageShell 의 웹 헤더(와 headerAction 의
           "모두 읽음")가 통째로 숨는다. 같은 액션을 본문 상단에 native-only
           로 한 번 더 그려 네이티브에서도 모두 읽음이 가능하게 한다. */}
-      {hasUnread ? (
-        <div className="native-only mb-3 text-right">{markAllAction}</div>
-      ) : null}
+      <div className="native-only mb-3 text-right">{markAllAction}</div>
       {showSkeleton ? (
         <NotificationListSkeleton count={6} />
       ) : !hasNotifications ? (

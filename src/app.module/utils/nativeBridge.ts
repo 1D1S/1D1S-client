@@ -118,6 +118,12 @@ export type NativeMessage =
   | { type: 'oauth_open'; payload: { url: string } }
   | { type: 'token_refresh'; payload: { id: string } }
   | { type: 'logout' }
+  | {
+      type: 'progress_open';
+      payload: { message: string };
+    }
+  | { type: 'progress_close' }
+  | { type: 'push_route'; payload: { path: string } }
   // 네이티브 다이얼로그 노출 요청. 응답은 native:modal_result CustomEvent
   // 로 비동기 도착. openNativeModal() 헬퍼가 id 매칭으로 Promise 화 한다.
   | { type: 'modal_open'; payload: NativeModalOpenPayload }
@@ -143,7 +149,6 @@ interface NativeWindow extends Window {
   __1D1S_FEATURES__?: Partial<Record<string, boolean>>;
 }
 
-
 function getNativeWindow(): NativeWindow | null {
   if (typeof window === 'undefined') {
     return null;
@@ -155,7 +160,6 @@ function getNativeWindow(): NativeWindow | null {
 function hasNativeFeature(name: string): boolean {
   return getNativeWindow()?.__1D1S_FEATURES__?.[name] === true;
 }
-
 
 export function postNativeMessage(message: NativeMessage): void {
   const win = getNativeWindow();
@@ -175,6 +179,50 @@ export function postNativeMessage(message: NativeMessage): void {
 
 export function isNativeBridgeAvailable(): boolean {
   return getNativeWindow()?.[CHANNEL_NAME] != null;
+}
+
+export function isNativeModalAvailable(): boolean {
+  return getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('modal');
+}
+
+/**
+ * SPA 데이터 요청이 끝나기 전에 네이티브 화면을 먼저 연다. 앱이 아닌
+ * 환경에서는 false를 반환하므로 호출자가 router.push로 폴백할 수 있다.
+ */
+export function requestNativePushRoute(path: string): boolean {
+  if (
+    !path.startsWith('/') ||
+    getNativeWindow()?.[CHANNEL_NAME] == null ||
+    !hasNativeFeature('pushRoute')
+  ) {
+    return false;
+  }
+  postNativeMessage({ type: 'push_route', payload: { path } });
+  return true;
+}
+
+export function showNativeProgress(message: string): boolean {
+  if (
+    getNativeWindow()?.[CHANNEL_NAME] == null ||
+    !hasNativeFeature('progress')
+  ) {
+    return false;
+  }
+  postNativeMessage({ type: 'progress_open', payload: { message } });
+  return true;
+}
+
+export function isNativeProgressAvailable(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('progress')
+  );
+}
+
+export function hideNativeProgress(): void {
+  if (getNativeWindow()?.[CHANNEL_NAME] == null) {
+    return;
+  }
+  postNativeMessage({ type: 'progress_close' });
 }
 
 export function markNativeOAuth(codeChallenge: string): void {
@@ -434,7 +482,6 @@ export function onNativeStoryViewed(
   return () => win.removeEventListener('native:story_viewed', listener);
 }
 
-
 /** 현재 쉘이 날짜 피커 위임을 지원하는지. 오버레이 렌더 여부 판정용. */
 export function isNativeDatePickerAvailable(): boolean {
   return (
@@ -453,7 +500,10 @@ export function openNativeDatePicker(
   const id = generateModalId();
   return new Promise<string | null>((resolve) => {
     pendingNativeDates.set(id, resolve);
-    postNativeMessage({ type: 'date_picker_open', payload: { id, ...options } });
+    postNativeMessage({
+      type: 'date_picker_open',
+      payload: { id, ...options },
+    });
   });
 }
 

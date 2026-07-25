@@ -38,13 +38,12 @@ export function SubPageShell({
   const handleBack = onBack ?? ((): void => router.back());
   return (
     <div className="min-h-screen w-full">
-      <MobileHeader
-        title={title}
-        onBack={handleBack}
-        right={headerAction}
-      />
+      <MobileHeader title={title} onBack={handleBack} right={headerAction} />
 
-      <section className="mx-auto w-full max-w-[980px] p-4 lg:p-6">
+      <section
+        data-native-subpage-content
+        className="mx-auto w-full max-w-[980px] p-4 lg:p-6"
+      >
         {/* 데스크탑 헤더 */}
         <header
           className={cn(
@@ -69,7 +68,9 @@ export function SubPageShell({
           {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
         </header>
 
-        <div className="mt-6">{children}</div>
+        <div data-native-subpage-body className="mt-6">
+          {children}
+        </div>
       </section>
     </div>
   );

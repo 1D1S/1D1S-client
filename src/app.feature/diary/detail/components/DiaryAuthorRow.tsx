@@ -2,6 +2,7 @@
 
 import { CircleAvatar, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -21,7 +22,10 @@ export function DiaryAuthorRow({
   const router = useRouter();
   const handleClick = (): void => {
     if (authorId) {
-      router.push(`/member/${authorId}`);
+      const path = `/member/${authorId}`;
+      if (!requestNativePushRoute(path)) {
+        router.push(path);
+      }
     }
   };
 

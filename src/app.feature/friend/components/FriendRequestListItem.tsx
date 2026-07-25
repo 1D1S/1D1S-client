@@ -3,6 +3,7 @@
 import { CircleAvatar, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { getDateTimestamp } from '@module/utils/date';
+import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -28,7 +29,12 @@ export function FriendRequestListItem({
     >
       <button
         type="button"
-        onClick={() => router.push(`/member/${request.memberId}`)}
+        onClick={() => {
+          const path = `/member/${request.memberId}`;
+          if (!requestNativePushRoute(path)) {
+            router.push(path);
+          }
+        }}
         className="flex flex-1 items-center gap-3 text-left"
       >
         <CircleAvatar size="md" imageUrl={request.profileUrl} tone="peach" />
@@ -38,9 +44,9 @@ export function FriendRequestListItem({
           </Text>
           {request.createdAt ? (
             <Text size="caption2" className="text-gray-400">
-              {new Date(
-                getDateTimestamp(request.createdAt)
-              ).toLocaleDateString('ko-KR')}
+              {new Date(getDateTimestamp(request.createdAt)).toLocaleDateString(
+                'ko-KR'
+              )}
             </Text>
           ) : null}
         </div>

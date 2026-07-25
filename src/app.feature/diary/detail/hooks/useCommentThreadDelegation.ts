@@ -1,5 +1,6 @@
 'use client';
 
+import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useRouter } from 'next/navigation';
 import React, { useRef } from 'react';
 
@@ -56,7 +57,10 @@ export function useCommentThreadDelegation({
       }
       event.stopPropagation();
       event.preventDefault();
-      router.push(`/member/${memberId}`);
+      const path = `/member/${memberId}`;
+      if (!requestNativePushRoute(path)) {
+        router.push(path);
+      }
       return;
     }
 

@@ -5,6 +5,7 @@ import { ProfileAlertBadge } from '@component/ProfileAlertBadge';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
 import { cn } from '@module/utils/cn';
+import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { Bell, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -127,10 +128,15 @@ export function MyPageProfileCard({
 }: MyPageProfileCardProps): React.ReactElement {
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
+  const navigate = (path: string): void => {
+    if (!requestNativePushRoute(path)) {
+      router.push(path);
+    }
+  };
   const goChallenges = challengeHref
-    ? () => router.push(challengeHref)
+    ? () => navigate(challengeHref)
     : undefined;
-  const goDiaries = diaryHref ? () => router.push(diaryHref) : undefined;
+  const goDiaries = diaryHref ? () => navigate(diaryHref) : undefined;
   const { data: unreadData } = useUnreadCount({ enabled: isLoggedIn });
   const hasUnread = isLoggedIn && (unreadData?.unreadCount ?? 0) > 0;
   const defaultActions = (
