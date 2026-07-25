@@ -80,6 +80,11 @@ export interface NativeModalOpenPayload {
   // 목록을 웹 스타일 리스트(썸네일+이름)로 렌더한다. 선택 결과는 항목의
   // challengeId 문자열로 resolve 하고, 취소는 buttons 의 cancel value 를 쓴다.
   challenges?: NativeModalChallengeItem[];
+  // 표시 전용 목표 리스트 모달용(예: 참여자 "OO님의 목표"). 지정 시 네이티브는
+  // 이 문자열들을 1., 2. … 번호 리스트 카드로 렌더한다. 선택 결과가 없는
+  // 표시 전용이므로 buttons 는 비워도 되고(닫기 X 로 dismiss), resolve 값은
+  // 무시한다.
+  goals?: string[];
 }
 
 // 메인 이벤트 팝업 한 장. 서버 ActivePopup 과 같은 모양.

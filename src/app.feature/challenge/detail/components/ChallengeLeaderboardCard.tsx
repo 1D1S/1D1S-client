@@ -11,8 +11,12 @@ import {
   Text,
 } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import {
+  isNativeModalAvailable,
+  openNativeModal,
+} from '@module/utils/nativeBridge';
 import { ListChecks, Pointer } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface LeaderboardEntryGoal {
   challengeGoalId: number;
@@ -225,6 +229,30 @@ export function ChallengeLeaderboardCard({
   const rows = entries.slice(0, maxRows);
   // 목표 보기 다이얼로그 — 선택된 참여자만 보관해 화면 상태와 분리한다.
   const [goalsOf, setGoalsOf] = useState<LeaderboardEntry | null>(null);
+  // 앱(네이티브 WebView)에서는 다른 모달과 동일하게 네이티브로 위임한다.
+  const nativeModalAvailable = isNativeModalAvailable();
+  const nativeGoalsInFlight = useRef(false);
+
+  // 참여자 목표는 표시 전용(선택 결과 없음). 네이티브가 웹처럼 번호 리스트
+  // 카드를 그리도록 goals 텍스트 배열을 실어 위임하고, 닫히면 상태를 비운다.
+  useEffect(() => {
+    if (!goalsOf) {
+      nativeGoalsInFlight.current = false;
+      return;
+    }
+    if (!nativeModalAvailable || nativeGoalsInFlight.current) {
+      return;
+    }
+    nativeGoalsInFlight.current = true;
+    void openNativeModal({
+      title: `${goalsOf.nickname}님의 목표`,
+      goals: (goalsOf.goals ?? []).map((goal) => goal.content),
+      buttons: [],
+    }).then(() => {
+      setGoalsOf(null);
+    });
+  }, [goalsOf, nativeModalAvailable]);
+
   const displayCount = totalCount ?? entries.length;
   // "전체 보기"는 전체 참여자 목록 화면으로 이동한다(onShowAll 제공 시에만).
   const canShowAll = Boolean(onShowAll) && displayCount > maxRows;
@@ -329,7 +357,7 @@ export function ChallengeLeaderboardCard({
       )}
 
       <Dialog
-        open={goalsOf !== null}
+        open={goalsOf !== null && !nativeModalAvailable}
         onOpenChange={(next) => {
           if (!next) {
             setGoalsOf(null);
