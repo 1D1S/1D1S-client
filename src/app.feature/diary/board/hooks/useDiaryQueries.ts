@@ -60,7 +60,13 @@ export function useDiaryList(
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
       lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.nextCursor : undefined,
-    ...FRESH_ON_RETURN,
+    // W12: 일지→챌린지→일지 뒤로가기 시 재요청/재로딩을 막는다. remount refetch
+    // 를 끄고 캐시를 그대로 보여준다. 새 일지/수정/삭제는 mutation 이
+    // DIARY_QUERY_KEYS.lists() 를 invalidate 하므로 목록 최신성은 유지된다.
+    // 다른 창/탭에서 돌아오면(window focus) 새로고침한다.
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: 'always',
+    refetchOnMount: false,
   });
 }
 
