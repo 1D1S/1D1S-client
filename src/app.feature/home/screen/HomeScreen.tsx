@@ -1,6 +1,6 @@
 'use client';
 
-import { PageWatermark } from '@1d1s/design-system';
+import { Icon, PageWatermark } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import Stories from '@feature/stories/components/Stories';
 import { useAuthStatus } from '@module/hooks/useAuthStatus';
@@ -33,8 +33,11 @@ function HomeLoginCta(): React.ReactElement {
           'cursor-pointer transition hover:brightness-105'
         )}
       >
-        <span aria-hidden className="animate-flame-flicker text-[40px]">
-          🔥
+        <span
+          aria-hidden
+          className="animate-flame-flicker inline-flex text-red-500"
+        >
+          <Icon name="Flame" size={40} />
         </span>
         <span className="text-[18px] font-extrabold tracking-tight text-gray-900">
           로그인하고 나의 오늘을 시작하세요
