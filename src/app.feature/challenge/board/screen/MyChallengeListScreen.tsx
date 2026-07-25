@@ -168,7 +168,15 @@ export function MyChallengeListScreen(): React.ReactElement {
       }
     >
       {!showSkeleton && hasAnyChallenge ? (
-        <div className="mt-4 flex flex-col gap-2.5 lg:mt-6">
+        // W15: 검색+필터를 상단 고정(챌린지 보드와 동일한 sticky 패턴).
+        // 스크롤해도 필터가 따라 올라가지 않는다. bg-white 로 카드가 비쳐
+        // 보이지 않게 하고, 좌우 -mx/px 로 컨테이너 패딩 경계까지 덮는다.
+        <div
+          className={cn(
+            'sticky top-0 z-20 -mx-5 mt-4 flex flex-col gap-2.5 bg-white',
+            'px-5 pt-1 pb-2 lg:-mx-8 lg:mt-6 lg:px-8'
+          )}
+        >
           <div className="w-full max-w-[480px]">
             <TextField
               className="w-full"

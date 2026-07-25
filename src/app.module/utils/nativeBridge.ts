@@ -181,10 +181,6 @@ export function isNativeBridgeAvailable(): boolean {
   return getNativeWindow()?.[CHANNEL_NAME] != null;
 }
 
-export function isNativeModalAvailable(): boolean {
-  return getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('modal');
-}
-
 /**
  * SPA 데이터 요청이 끝나기 전에 네이티브 화면을 먼저 연다. 앱이 아닌
  * 환경에서는 false를 반환하므로 호출자가 router.push로 폴백할 수 있다.

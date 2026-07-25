@@ -22,11 +22,7 @@ import {
 import { ChallengeListItem } from '@feature/challenge/shared/components/ChallengeListItem';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { cn } from '@module/utils/cn';
-import {
-  isNativeModalAvailable,
-  openNativeModal,
-} from '@module/utils/nativeBridge';
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 import type { ChallengeListItem as ChallengeListItemType } from '../../../challenge/board/type/challenge';
 
@@ -52,66 +48,8 @@ export function ChallengePicker({
       ),
     [challenges]
   );
-  const nativeModalAvailable = isNativeModalAvailable();
-  const nativeRequestInFlight = useRef(false);
 
-  useEffect(() => {
-    if (!open) {
-      nativeRequestInFlight.current = false;
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (
-      !open ||
-      isLoading ||
-      !nativeModalAvailable ||
-      nativeRequestInFlight.current
-    ) {
-      return;
-    }
-    nativeRequestInFlight.current = true;
-    const buttons =
-      ongoingChallenges.length === 0
-        ? [{ label: '확인', value: 'cancel', style: 'cancel' as const }]
-        : [
-            ...ongoingChallenges.map((challenge) => ({
-              label: challenge.title,
-              value: String(challenge.challengeId),
-              style: 'default' as const,
-            })),
-            { label: '취소', value: 'cancel', style: 'cancel' as const },
-          ];
-
-    void openNativeModal({
-      title: '챌린지 선택',
-      message:
-        ongoingChallenges.length === 0
-          ? '작성 가능한 진행 중 챌린지가 없어요.'
-          : '일지를 기록할 챌린지를 선택해 주세요.',
-      buttons,
-    }).then((value) => {
-      const selected = ongoingChallenges.find(
-        (challenge) => String(challenge.challengeId) === value
-      );
-      if (selected) {
-        onSelect?.(selected);
-      }
-      onOpenChange(false);
-    });
-  }, [
-    isLoading,
-    nativeModalAvailable,
-    onOpenChange,
-    onSelect,
-    ongoingChallenges,
-    open,
-  ]);
-
-  if (nativeModalAvailable) {
-    return null;
-  }
-
+  // 네이티브 앱에서도 iOS 기본 알림이 아니라 웹 스타일 모달을 그대로 쓴다.
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
