@@ -53,6 +53,12 @@ export interface NativeModalChallengeItem {
   thumbnailUrl: string | null;
   // 예: "기타". 카테고리가 없으면 빈 문자열.
   categoryLabel: string;
+  // 커버 이미지가 없을 때 그리는 Stripe 의 기준색(예: "#7c3aed").
+  // 색 테이블(CATEGORY_STRIPE_TONES)을 앱에 복제하지 않으려고 해석된 값을
+  // 넘긴다 — 카테고리가 추가돼도 앱은 그대로 따라간다.
+  categoryTone: string;
+  // DS IconName(예: "Code2"). 앱은 같은 이름의 lucide 아이콘으로 매핑한다.
+  categoryIconName: string | null;
   // 예: "진행 중" / "모집 중" / "종료됨".
   statusLabel: string;
   // 예: "자유 목표". goalType 이 없으면 "-".

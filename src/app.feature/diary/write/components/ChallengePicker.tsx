@@ -11,6 +11,7 @@ import {
 } from '@1d1s/design-system';
 import {
   CategoryIcon,
+  getCategoryIconName,
   getCategoryLabel,
   getCategoryStripeTone,
 } from '@constants/categories';
@@ -118,6 +119,8 @@ export function ChallengePicker({
           // 그리지 못해 플레이스홀더만 보인다. 웹 카드와 같은 변환을 태운다.
           thumbnailUrl: resolveDiaryImageUrl(challenge.thumbnailImage),
           categoryLabel: getCategoryLabel(challenge.category),
+          categoryTone: getCategoryStripeTone(challenge.category),
+          categoryIconName: getCategoryIconName(challenge.category),
           statusLabel: hasEnded ? '종료됨' : isOngoing ? '진행 중' : '모집 중',
           goalLabel: formatChallengeTypeLabel(challenge.goalType),
           dateLabel: isInfinite
