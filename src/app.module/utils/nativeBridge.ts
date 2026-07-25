@@ -39,13 +39,28 @@ export interface NativeModalButton {
   style?: 'default' | 'cancel' | 'destructive';
 }
 
-// 선택형 모달(예: 일지 작성 "챌린지 선택")에서 네이티브가 웹처럼 썸네일+이름
-// 리스트를 그릴 수 있도록 넘기는 항목. 사용자가 항목을 선택하면 modal 은
-// challengeId 를 문자열로 resolve 한다(buttons[].value 와 동일 규약).
+// 선택형 모달(예: 일지 작성 "챌린지 선택")에서 네이티브가 웹의
+// ChallengeListItem(variant="picker") 카드를 그대로 그릴 수 있도록 넘기는 항목.
+// 사용자가 항목을 선택하면 modal 은 challengeId 를 문자열로 resolve 한다
+// (buttons[].value 와 동일 규약).
+//
+// ⚠️ 라벨은 **완성된 문자열**로 넘긴다. 날짜 구간(무한 챌린지 처리 포함)이나
+// 참여 인원 표기를 Dart 에서 다시 조립하면 웹과 어긋나는 순간이 반드시 온다.
+// 포맷 규칙의 권위는 ChallengeListItem 하나로 유지한다.
 export interface NativeModalChallengeItem {
   challengeId: number;
   title: string;
   thumbnailUrl: string | null;
+  // 예: "기타". 카테고리가 없으면 빈 문자열.
+  categoryLabel: string;
+  // 예: "진행 중" / "모집 중" / "종료됨".
+  statusLabel: string;
+  // 예: "자유 목표". goalType 이 없으면 "-".
+  goalLabel: string;
+  // 예: "2026-07-20 ~ 2026-08-09", 무한 챌린지는 "2026-07-20 · 무한".
+  dateLabel: string;
+  // 예: "3/10명 참여중". 개인 챌린지(정원 1명 이하)는 null — 웹도 숨긴다.
+  participantLabel: string | null;
 }
 
 export interface NativeModalOpenPayload {
