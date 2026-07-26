@@ -7,6 +7,7 @@ import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { API_BASE_URL } from './config';
 import {
   isAuthPrincipalError,
+  isCanceledError,
   isForbiddenError,
   isInvalidRefreshTokenError,
   isRedirectError,
@@ -114,6 +115,13 @@ const shouldSkipToast = (error: unknown): boolean => {
 
 export const notifyApiError = (error: unknown): void => {
   if (typeof window === 'undefined') {
+    return;
+  }
+
+  // 취소/중단된 요청(로그아웃·페이지 전환 시 in-flight abort)은 사용자 잘못이
+  // 아니므로 토스트하지 않는다. 이걸 막지 않으면 로그아웃 순간 여러 요청이
+  // 동시에 abort 되며 "네트워크 오류" 토스트가 중복으로 뜬다.
+  if (isCanceledError(error)) {
     return;
   }
 

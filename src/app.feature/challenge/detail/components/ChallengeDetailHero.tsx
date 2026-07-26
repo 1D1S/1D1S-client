@@ -41,8 +41,11 @@ export function ChallengeDetailHero({
   return (
     <div
       className={cn(
-        'relative aspect-[21/9] w-full overflow-hidden',
-        'lg:max-h-[360px]',
+        // 모바일은 세로 비율을 키워(3:2) 히어로 존재감을 높이고, 앱에서
+        // 상단 세이프에어리어까지 풀블리드될 때 상태바에 가려지는 상단
+        // 여유분을 확보한다. 데스크톱은 기존 와이드 배너(21:9) 유지.
+        'relative aspect-[3/2] w-full overflow-hidden',
+        'lg:aspect-[21/9] lg:max-h-[360px]',
         !bleed && 'rounded-4'
       )}
       style={{ background: gradient }}

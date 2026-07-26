@@ -100,6 +100,10 @@ export function useLogout(): UseMutationResult<LogoutResponse, Error, void> {
   const clearLocalSession = (): void => {
     authStorage.clearTokens();
     clearCachedSidebar();
+    // 캐시를 비우기 전에 진행 중 요청을 취소한다. 토큰이 사라진 뒤 남은
+    // in-flight 요청이 401/abort 로 떨어지며 에러 토스트가 새는 걸 막는다
+    // (cancelQueries 는 silent 취소라 onError 로 전파되지 않는다).
+    void queryClient.cancelQueries();
     queryClient.clear();
   };
 

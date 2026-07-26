@@ -144,12 +144,26 @@ export function ChallengeDetailScreen({
   const handleBack = useSafeBack('/challenge');
 
   const tabParam = searchParams.get('tab');
-  const activeTab: ChallengeTabId = isChallengeTab(tabParam)
+  const urlTab: ChallengeTabId = isChallengeTab(tabParam)
     ? tabParam
     : 'overview';
+  // 탭 전환을 즉시 반영한다. activeTab 을 URL(useSearchParams)에서 직접
+  // 파생하면 router.replace 가 App Router 네비게이션(RSC 왕복)을 마칠 때까지
+  // 값이 안 바뀌어, 탭 인디케이터가 "데이터 로딩 후에야" 움직인다. 로컬
+  // 상태로 클릭 즉시 전환하고 콘텐츠는 각 패널 스켈레톤이 채운다. URL 은
+  // 딥링크/뒤로가기용으로 계속 동기화한다.
+  const [activeTab, setActiveTab] = useState<ChallengeTabId>(urlTab);
+  useEffect(() => {
+    // 뒤로가기·딥링크로 URL 탭이 바뀌면 상태를 맞춘다(클릭 경로는 no-op).
+    setActiveTab(urlTab);
+  }, [urlTab]);
+
   const diaryDate = searchParams.get('date') ?? undefined;
 
   const handleTabChange = (nextId: string): void => {
+    if (isChallengeTab(nextId)) {
+      setActiveTab(nextId);
+    }
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', nextId);
     // 일지 탭을 떠나면 날짜 필터를 흘려보내지 않는다.

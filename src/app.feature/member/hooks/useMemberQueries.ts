@@ -105,12 +105,15 @@ export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
 }
 
 export function useMemberProfile(
-  memberId: number
+  memberId: number,
+  enabled = true
 ): UseQueryResult<MemberProfileData, Error> {
   return useQuery({
     queryKey: MEMBER_QUERY_KEYS.profile(memberId),
     queryFn: () => memberApi.getMemberProfile(memberId),
-    enabled: memberId > 0,
+    // 비로그인이면 요청 자체를 막는다 — /member/profile 은 인증 필수라
+    // 로그아웃 상태에서 호출하면 제네릭 에러가 뜬다(로그인 모달로 유도).
+    enabled: enabled && memberId > 0,
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
   });
