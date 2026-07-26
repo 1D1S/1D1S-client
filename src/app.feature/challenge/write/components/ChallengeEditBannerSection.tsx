@@ -7,11 +7,11 @@ import {
   ToggleGroupItem,
 } from '@1d1s/design-system';
 import { ImageCropDialog } from '@component/ImageCropDialog';
+import { CATEGORY_OPTIONS } from '@constants/categories';
 import {
   CHALLENGE_THUMBNAIL_ASPECT,
   CHALLENGE_THUMBNAIL_SIZE,
 } from '@feature/challenge/detail/consts/heroLayout';
-import { CATEGORY_OPTIONS } from '@constants/categories';
 import { apiClient } from '@module/api/client';
 import { putToStorage } from '@module/api/presignedUpload';
 import { requestData } from '@module/api/request';
