@@ -40,6 +40,75 @@ const BACKGROUND_OPTIONS = [
   { value: '#111827', label: '검정' },
 ] as const;
 
+// 네이티브 편집기 미리보기용 축소본 장변(px). 최종 크롭은 원본 File 로 하므로
+// 이 값은 표시 품질/페이로드 크기 트레이드오프일 뿐 출력 화질과 무관하다.
+const NATIVE_PREVIEW_MAX_EDGE = 1200;
+
+// 편집 파라미터 결과 — 네이티브가 JSON 문자열로 돌려주는 값.
+interface CropResult {
+  mode: ImageCropMode;
+  zoom: number;
+  offsetX: number;
+  offsetY: number;
+  backgroundColor: string;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+// 원본 File 을 장변 maxEdge 로 축소해 data URL 로 만든다(표시 전용).
+async function createPreviewDataUrl(
+  file: File,
+  maxEdge: number
+): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  try {
+    const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      return '';
+    }
+    context.drawImage(bitmap, 0, 0, width, height);
+    return canvas.toDataURL('image/jpeg', 0.8);
+  } finally {
+    bitmap.close?.();
+  }
+}
+
+// 네이티브가 돌려준 편집 결과(JSON 문자열)를 안전하게 파싱·범위 보정한다.
+// 파싱 불가/형식 오류면 null(취소로 처리).
+function parseNativeCropResult(value: string): CropResult | null {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(value);
+  } catch {
+    return null;
+  }
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
+  const record = raw as Record<string, unknown>;
+  const mode: ImageCropMode = record.mode === 'contain' ? 'contain' : 'cover';
+  const zoom =
+    typeof record.zoom === 'number' ? clamp(record.zoom, 1, 3) : 1;
+  const offsetX =
+    typeof record.offsetX === 'number' ? clamp(record.offsetX, -1, 1) : 0;
+  const offsetY =
+    typeof record.offsetY === 'number' ? clamp(record.offsetY, -1, 1) : 0;
+  // 배경색은 contain 에서만 의미. 문자열 아니면 기본 흰색.
+  const backgroundColor =
+    typeof record.backgroundColor === 'string'
+      ? record.backgroundColor
+      : '#ffffff';
+  return { mode, zoom, offsetX, offsetY, backgroundColor };
+}
+
 function ModeButton({
   active,
   icon,
@@ -178,30 +247,23 @@ export function ImageCropDialog({
       return;
     }
     nativeRequestInFlight.current = true;
+    let cancelled = false;
 
-    void openNativeModal({
-      title,
-      message: '사진을 배너 비율에 맞추는 방식을 선택해 주세요.',
-      buttons: [
-        { label: '화면 채우기', value: 'cover' },
-        { label: '사진 전체 보기', value: 'contain' },
-        { label: '취소', value: 'cancel', style: 'cancel' },
-      ],
-    }).then(async (value) => {
-      if (value !== 'cover' && value !== 'contain') {
-        onOpenChange(false);
-        return;
-      }
+    // 결과 편집 파라미터로 원본을 크롭한다(출력은 웹이 100% 담당).
+    const applyCrop = async (result: CropResult): Promise<void> => {
       setIsProcessing(true);
       try {
         const croppedFile = await cropImageFile(file, {
-          mode: value,
+          mode: result.mode,
           outputSize,
-          zoom: 1,
-          offsetX: 0,
-          offsetY: 0,
-          backgroundColor: '#ffffff',
+          zoom: result.zoom,
+          offsetX: result.offsetX,
+          offsetY: result.offsetY,
+          backgroundColor: result.backgroundColor,
         });
+        if (cancelled) {
+          return;
+        }
         onApply(croppedFile);
         onOpenChange(false);
       } catch {
@@ -213,7 +275,72 @@ export function ImageCropDialog({
       } finally {
         setIsProcessing(false);
       }
-    });
+    };
+
+    void (async () => {
+      // 미리보기 축소본 생성(실패해도 앱은 buttons 폴백으로 동작).
+      let previewDataUrl = '';
+      try {
+        previewDataUrl = await createPreviewDataUrl(
+          file,
+          NATIVE_PREVIEW_MAX_EDGE
+        );
+      } catch {
+        previewDataUrl = '';
+      }
+      if (cancelled) {
+        return;
+      }
+
+      const value = await openNativeModal({
+        title,
+        message: '사진을 배너 비율에 맞추는 방식을 선택해 주세요.',
+        // 신버전 앱: 편집 UI. 실제 크롭은 웹이 원본으로 수행하므로 편집
+        // 파라미터만 회신받는다.
+        imageCrop: {
+          previewDataUrl,
+          outputSize,
+          backgroundOptions: BACKGROUND_OPTIONS.map((option) => option.value),
+        },
+        // 구버전 앱 폴백: imageCrop 을 모르면 이 3버튼으로 동작한다.
+        buttons: [
+          { label: '화면 채우기', value: 'cover' },
+          { label: '사진 전체 보기', value: 'contain' },
+          { label: '취소', value: 'cancel', style: 'cancel' },
+        ],
+      });
+      if (cancelled) {
+        return;
+      }
+
+      // 취소.
+      if (value === null || value === 'cancel') {
+        onOpenChange(false);
+        return;
+      }
+      // 구버전 앱(3버튼): 기본 파라미터로 크롭.
+      if (value === 'cover' || value === 'contain') {
+        await applyCrop({
+          mode: value,
+          zoom: 1,
+          offsetX: 0,
+          offsetY: 0,
+          backgroundColor: '#ffffff',
+        });
+        return;
+      }
+      // 신버전 앱: 편집 파라미터 JSON.
+      const parsed = parseNativeCropResult(value);
+      if (!parsed) {
+        onOpenChange(false);
+        return;
+      }
+      await applyCrop(parsed);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     file,
     nativeModalAvailable,

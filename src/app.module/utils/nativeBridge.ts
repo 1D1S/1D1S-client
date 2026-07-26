@@ -85,6 +85,25 @@ export interface NativeModalOpenPayload {
   // 표시 전용이므로 buttons 는 비워도 되고(닫기 X 로 dismiss), resolve 값은
   // 무시한다.
   goals?: string[];
+  // 이미지 크롭 편집 모달용(챌린지 사진 맞추기). 지정 시 네이티브가 미리보기+
+  // 옵션(cover/contain)+확대/가로/세로 슬라이더 편집 UI 를 그린다. 실제 크롭은
+  // 웹이 원본 File 로 수행하므로(출력 100% 일치), 네이티브는 편집 파라미터만
+  // JSON 문자열로 resolve 한다:
+  //   {"mode":"cover|contain","zoom":number,"offsetX":number,
+  //    "offsetY":number,"backgroundColor":"#ffffff"}
+  // 취소는 buttons 의 cancel value. imageCrop 을 모르는 구버전 앱은 buttons
+  // (cover/contain/취소)로 폴백한다.
+  imageCrop?: NativeImageCropRequest;
+}
+
+export interface NativeImageCropRequest {
+  // 편집 미리보기용 축소본(장변 ~1200px 권장). 최종 크롭은 웹이 원본으로 하므로
+  // 이 축소본은 표시 전용 — 화질 손실 없음.
+  previewDataUrl: string;
+  // 최종 출력(배너) 픽셀 크기. 편집기 미리보기 종횡비 기준.
+  outputSize: { width: number; height: number };
+  // contain 모드에서 여백을 채울 배경색 후보(선택).
+  backgroundOptions?: string[];
 }
 
 // 메인 이벤트 팝업 한 장. 서버 ActivePopup 과 같은 모양.
