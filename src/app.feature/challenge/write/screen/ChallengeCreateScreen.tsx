@@ -70,24 +70,10 @@ export default function ChallengeCreateScreen(): React.ReactElement {
         setCreatedChallengeId(data.challengeId);
         setCreatedIsPrivate(payload.challengeType === 'PRIVATE');
         setCreatedPassword(payload.password);
-        if (nativeModalAvailable) {
-          void openNativeModal({
-            title: '챌린지가 완성됐어요!',
-            message: '새 챌린지를 바로 확인하거나 홈으로 이동할 수 있어요.',
-            buttons: [
-              { label: '홈으로', value: 'home', style: 'cancel' },
-              { label: '챌린지 보기', value: 'detail' },
-            ],
-          }).then((value) => {
-            if (value === 'home') {
-              router.push('/');
-            } else if (value === 'detail') {
-              router.push(`/challenge/${data.challengeId}`);
-            }
-          });
-        } else {
-          setIsSuccessOpen(true);
-        }
+        // 앱에서도 웹과 같은 완료 다이얼로그를 쓴다. 네이티브 모달로 위임하면
+        // 제목·버튼 2개만 남아 성공 체크 애니메이션도, 참여 링크도, 카카오
+        // 공유도 사라진다 — 생성 직후 초대가 이 화면의 핵심 동선이다.
+        setIsSuccessOpen(true);
       },
       onError: () => {
         setIsErrorOpen(true);
@@ -279,7 +265,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
       )}
 
       <ChallengeCreateSuccessDialog
-        open={isSuccessOpen && !nativeModalAvailable}
+        open={isSuccessOpen}
         onOpenChange={setIsSuccessOpen}
         challengeId={createdChallengeId}
         isPrivate={createdIsPrivate}

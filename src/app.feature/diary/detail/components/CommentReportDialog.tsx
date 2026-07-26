@@ -11,6 +11,7 @@ import {
   Text,
 } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
+import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import {
   isNativeModalAvailable,
@@ -115,12 +116,11 @@ export function CommentReportDialog({
       reportMutation.mutate(
         { commentId, data },
         {
+          // 접수 피드백은 토스트로. 모달을 한 번 더 띄우면 신고 시트를
+          // 닫자마자 또 탭해야 하고, 앱에서는 "아무 일도 안 일어난 것처럼"
+          // 보인다는 피드백이 있었다.
           onSuccess: () => {
-            void openNativeModal({
-              title: '신고 접수 완료',
-              message: '신고가 접수되었습니다.',
-              buttons: [{ label: '확인', value: 'ok' }],
-            });
+            toast.success('신고가 접수되었습니다.');
             onOpenChange(false);
           },
           onError: () => {

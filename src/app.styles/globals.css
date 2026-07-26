@@ -123,9 +123,12 @@
      네이티브에서 그 헤더가 사라지므로 56px 아래 허공에 붙는다 — 챌린지
      상세 탭바가 그랬다. 이 마커를 달면 네이티브에서 top:0 으로 당겨진다. */
   html[data-native-app='true'] [data-native-top-0] {
-    /* 챌린지 상세의 Flutter compact AppBackBar는 WebView 위에 56px로
-       오버레이되므로 탭이 그 바로 아래에 붙게 한다. */
-    top: 3.5rem !important;
+    /* 챌린지 상세의 Flutter compact AppBackBar는 WebView 위에 오버레이되고,
+       그 WebView 는 배너 full-bleed 때문에 상태바 뒤까지 올라와 있다
+       (detail_web_screen: SafeArea top:false). 그래서 바의 실제 높이는
+       56px 이 아니라 56px + 상태바(safe-area-inset-top) 다. 이걸 빼먹으면
+       탭바가 바 뒤에 붙어 안 보여 "sticky 가 아니다"처럼 보인다. */
+    top: calc(3.5rem + env(safe-area-inset-top)) !important;
   }
 
   html[data-native-app='true'] [data-native-home-content] {

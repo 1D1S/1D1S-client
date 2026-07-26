@@ -7,6 +7,10 @@ import {
   ToggleGroupItem,
 } from '@1d1s/design-system';
 import { ImageCropDialog } from '@component/ImageCropDialog';
+import {
+  CHALLENGE_THUMBNAIL_ASPECT,
+  CHALLENGE_THUMBNAIL_SIZE,
+} from '@feature/challenge/detail/consts/heroLayout';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { apiClient } from '@module/api/client';
 import { putToStorage } from '@module/api/presignedUpload';
@@ -23,11 +27,6 @@ import {
 
 import { ChallengeEditFormValues } from '../hooks/useChallengeEditForm';
 import { ChallengeCreateSectionCard } from './ChallengeCreateSectionCard';
-
-const CHALLENGE_THUMBNAIL_SIZE = {
-  width: 2100,
-  height: 900,
-} as const;
 
 export function ChallengeEditBannerSection(): React.ReactElement {
   const { control, getValues, setValue, watch } =
@@ -107,9 +106,9 @@ export function ChallengeEditBannerSection(): React.ReactElement {
             onSelectFile={handleSelectFile}
             onClear={handleClear}
             placeholderTitle="간판 사진 업로드"
-            placeholderSubtitle="2100×900 권장 · JPG/PNG"
+            placeholderSubtitle="2100×1400 권장 · JPG/PNG"
             clearLabel="사진 제거"
-            dropZoneClassName="aspect-[21/9]"
+            dropZoneClassName={CHALLENGE_THUMBNAIL_ASPECT}
           />
           {isUploading ? (
             <Text size="caption1" weight="regular" className="text-gray-500">

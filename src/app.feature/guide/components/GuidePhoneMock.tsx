@@ -113,7 +113,7 @@ function MiniChallengeCard({ c }: { c: MiniChallenge }): React.ReactElement {
     >
       <div className="p-1.5 pb-0">
         <div
-          className="relative aspect-[21/9] overflow-hidden rounded-[7px]"
+          className="relative aspect-[3/2] overflow-hidden rounded-[7px]"
           style={{ background: hex }}
         >
           <div
@@ -535,7 +535,7 @@ function MockTogether(): React.ReactElement {
   ];
   return (
     <div>
-      <div className="relative aspect-[21/9]" style={{ background: '#ef4444' }}>
+      <div className="relative aspect-[3/2]" style={{ background: '#ef4444' }}>
         <div
           className={cn(
             'absolute inset-0',
