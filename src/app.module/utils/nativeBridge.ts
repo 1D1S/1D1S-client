@@ -203,6 +203,10 @@ export type NativeMessage =
       payload: { message: string };
     }
   | { type: 'progress_close' }
+  // 토스트를 네이티브가 그린다. WebView 안에 그리면 네이티브 헤더/바텀바
+  // 아래에 깔리고, 상세처럼 WebView 가 화면 일부만 차지할 때는 위치도
+  // 어긋난다. 앱은 화면 상단 중앙에 띄운다(웹은 top-right).
+  | { type: 'toast'; payload: NativeToastPayload }
   | { type: 'push_route'; payload: { path: string } }
   // 네이티브 다이얼로그 노출 요청. 응답은 native:modal_result CustomEvent
   // 로 비동기 도착. openNativeModal() 헬퍼가 id 매칭으로 Promise 화 한다.
@@ -239,6 +243,17 @@ function getNativeWindow(): NativeWindow | null {
 // 컨트롤이 된다. 응답이 필요한 새 위임은 이 플래그를 먼저 확인한다.
 function hasNativeFeature(name: string): boolean {
   return getNativeWindow()?.__1D1S_FEATURES__?.[name] === true;
+}
+
+export interface NativeToastPayload {
+  title: string;
+  body?: string;
+  // DS ToastTone — 'brand' | 'success' | 'danger' | 'info'.
+  tone?: string;
+  // DS IconName. 앱이 모르는 이름이면 tone 기본 아이콘으로 떨어진다.
+  icon?: string;
+  // ms. 0 이하면 자동 닫힘 없음.
+  duration?: number;
 }
 
 export function postNativeMessage(message: NativeMessage): void {
@@ -289,6 +304,19 @@ export function showNativeProgress(message: string): boolean {
     return false;
   }
   postNativeMessage({ type: 'progress_open', payload: { message } });
+  return true;
+}
+
+/**
+ * 네이티브 토스트로 위임한다. 성공하면 true — 호출자는 웹 토스트를
+ * 그리지 않는다. 구버전 쉘(toast 기능 없음)이면 false 라 웹 토스트로
+ * 폴백한다.
+ */
+export function showNativeToast(payload: NativeToastPayload): boolean {
+  if (getNativeWindow()?.[CHANNEL_NAME] == null || !hasNativeFeature('toast')) {
+    return false;
+  }
+  postNativeMessage({ type: 'toast', payload });
   return true;
 }
 
