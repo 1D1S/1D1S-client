@@ -15,12 +15,12 @@ import {
   openNativeModal,
 } from '@module/utils/nativeBridge';
 import { ImageIcon, Maximize2, Minimize2 } from 'lucide-react';
-import Image from 'next/image';
 import type { ReactElement, ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   cropImageFile,
+  getDrawMetrics,
   type ImageCropMode,
   type ImageCropSize,
 } from '@/app.lib/cropImage';
@@ -152,36 +152,8 @@ function ModeButton({
   );
 }
 
-function RangeControl({
-  label,
-  value,
-  min,
-  max,
-  step,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step: number;
-  onChange(value: number): void;
-}): ReactElement {
-  return (
-    <label className="block space-y-1.5">
-      <span className="text-xs font-bold text-gray-600">{label}</span>
-      <input
-        type="range"
-        value={value}
-        min={min}
-        max={max}
-        step={step}
-        onChange={(event) => onChange(Number(event.target.value))}
-        className="accent-main-800 w-full"
-      />
-    </label>
-  );
-}
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 3;
 
 export function ImageCropDialog({
   open,
@@ -192,6 +164,7 @@ export function ImageCropDialog({
   onApply,
 }: ImageCropDialogProps): ReactElement | null {
   const [previewUrl, setPreviewUrl] = useState('');
+  const [imageSize, setImageSize] = useState<ImageCropSize | null>(null);
   const [mode, setMode] = useState<ImageCropMode>('cover');
   const [zoom, setZoom] = useState(1);
   const [offsetX, setOffsetX] = useState(0);
@@ -201,24 +174,39 @@ export function ImageCropDialog({
   const [isProcessing, setIsProcessing] = useState(false);
   const nativeRequestInFlight = useRef(false);
   const nativeModalAvailable = isNativeModalAvailable();
-  const previewOffsetFactor = mode === 'cover' ? 1 : zoom - 1;
-  const imageTransform =
-    `translate(${offsetX * 18 * previewOffsetFactor}%, ` +
-    `${offsetY * 18 * previewOffsetFactor}%) ` +
-    `scale(${zoom})`;
+
+  // 제스처 상태. 미리보기 위 드래그=이동, 휠/핀치=확대. 슬라이더 없음.
+  const frameRef = useRef<HTMLDivElement>(null);
+  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const dragRef = useRef<{
+    x: number;
+    y: number;
+    offsetX: number;
+    offsetY: number;
+  } | null>(null);
+  const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
+
   const aspectRatio = useMemo(
     () => `${outputSize.width} / ${outputSize.height}`,
     [outputSize.height, outputSize.width]
   );
 
+  // 미리보기 = 출력. 실제 크롭과 같은 배치 수학(getDrawMetrics)으로 이미지
+  // 위치/크기를 프레임 대비 %로 그린다(WYSIWYG).
+  const metrics = imageSize
+    ? getDrawMetrics({ imageSize, outputSize, mode, zoom, offsetX, offsetY })
+    : null;
+
   useEffect(() => {
     if (!file) {
       setPreviewUrl('');
+      setImageSize(null);
       return;
     }
 
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
+    setImageSize(null);
     setMode('cover');
     setZoom(1);
     setOffsetX(0);
@@ -230,6 +218,129 @@ export function ImageCropDialog({
       URL.revokeObjectURL(objectUrl);
     };
   }, [file]);
+
+  // 휠 확대/축소 — passive:false 로 붙여 페이지 스크롤 대신 zoom 을 잡는다.
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) {
+      return;
+    }
+    const handleWheel = (event: WheelEvent): void => {
+      event.preventDefault();
+      setZoom((current) =>
+        clamp(current * (1 - event.deltaY * 0.0015), ZOOM_MIN, ZOOM_MAX)
+      );
+    };
+    frame.addEventListener('wheel', handleWheel, { passive: false });
+    return () => frame.removeEventListener('wheel', handleWheel);
+  }, [previewUrl]);
+
+  // 드래그 픽셀 → offset(-1..1) 역산. drawX = center - overflowX*offsetX/2 라
+  // 이미지를 오른쪽으로 끌면 offsetX 가 감소한다. overflow 가 없으면(꽉 안 참)
+  // 그 축은 이동하지 않는다 — cover 는 항상 프레임을 덮도록 자연히 clamp 된다.
+  const applyDrag = (
+    dx: number,
+    dy: number,
+    start: { offsetX: number; offsetY: number }
+  ): void => {
+    const frame = frameRef.current;
+    if (!frame || !imageSize) {
+      return;
+    }
+    const rect = frame.getBoundingClientRect();
+    const drawn = getDrawMetrics({
+      imageSize,
+      outputSize,
+      mode,
+      zoom,
+      offsetX: start.offsetX,
+      offsetY: start.offsetY,
+    });
+    const overflowX = Math.max(0, drawn.drawWidth - outputSize.width);
+    const overflowY = Math.max(0, drawn.drawHeight - outputSize.height);
+    if (overflowX > 0 && rect.width > 0) {
+      const next =
+        start.offsetX - (dx * 2 * outputSize.width) / (overflowX * rect.width);
+      setOffsetX(clamp(next, -1, 1));
+    }
+    if (overflowY > 0 && rect.height > 0) {
+      const next =
+        start.offsetY -
+        (dy * 2 * outputSize.height) / (overflowY * rect.height);
+      setOffsetY(clamp(next, -1, 1));
+    }
+  };
+
+  const handlePointerDown = (event: React.PointerEvent): void => {
+    frameRef.current?.setPointerCapture(event.pointerId);
+    pointersRef.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+    if (pointersRef.current.size >= 2) {
+      const [a, b] = [...pointersRef.current.values()];
+      pinchRef.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), zoom };
+      dragRef.current = null;
+    } else {
+      dragRef.current = {
+        x: event.clientX,
+        y: event.clientY,
+        offsetX,
+        offsetY,
+      };
+      pinchRef.current = null;
+    }
+  };
+
+  const handlePointerMove = (event: React.PointerEvent): void => {
+    if (!pointersRef.current.has(event.pointerId)) {
+      return;
+    }
+    pointersRef.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+    if (pointersRef.current.size >= 2 && pinchRef.current) {
+      const [a, b] = [...pointersRef.current.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinchRef.current.dist > 0) {
+        setZoom(
+          clamp(
+            pinchRef.current.zoom * (dist / pinchRef.current.dist),
+            ZOOM_MIN,
+            ZOOM_MAX
+          )
+        );
+      }
+      return;
+    }
+    if (dragRef.current) {
+      applyDrag(
+        event.clientX - dragRef.current.x,
+        event.clientY - dragRef.current.y,
+        dragRef.current
+      );
+    }
+  };
+
+  const handlePointerUp = (event: React.PointerEvent): void => {
+    pointersRef.current.delete(event.pointerId);
+    if (pointersRef.current.size < 2) {
+      pinchRef.current = null;
+    }
+    if (pointersRef.current.size === 1) {
+      // 핀치 → 드래그 전환: 남은 한 손가락 기준으로 드래그를 다시 시작한다.
+      const [remaining] = [...pointersRef.current.values()];
+      dragRef.current = {
+        x: remaining.x,
+        y: remaining.y,
+        offsetX,
+        offsetY,
+      };
+    } else if (pointersRef.current.size === 0) {
+      dragRef.current = null;
+    }
+  };
 
   useEffect(() => {
     if (!open) {
@@ -398,31 +509,64 @@ export function ImageCropDialog({
 
         <div className="min-h-0 flex-1 overflow-y-auto p-5">
           <div className="space-y-5">
-            <div
-              className={cn(
-                'relative w-full overflow-hidden rounded-xl',
-                'border border-gray-200 bg-gray-100'
-              )}
-              style={{ aspectRatio, backgroundColor }}
-            >
-              {previewUrl ? (
-                <Image
-                  src={previewUrl}
-                  alt="선택한 이미지 미리보기"
-                  fill
-                  unoptimized
-                  className={cn(
-                    mode === 'cover' ? 'object-cover' : 'object-contain'
-                  )}
-                  style={{
-                    transform: imageTransform,
-                  }}
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  <ImageIcon className="h-8 w-8 text-gray-400" />
-                </div>
-              )}
+            <div className="space-y-2">
+              <div
+                ref={frameRef}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+                className={cn(
+                  'relative w-full touch-none overflow-hidden rounded-xl',
+                  'border border-gray-200 bg-gray-100 select-none',
+                  previewUrl && 'cursor-grab active:cursor-grabbing'
+                )}
+                style={{ aspectRatio, backgroundColor }}
+              >
+                {previewUrl ? (
+                  /* 로컬 objectURL 미리보기를 크롭 metrics 기준 %로 직접
+                     배치해야 해 next/image 로는 표현 불가. 즉시 폐기되는
+                     편집용이라 최적화 불필요. */
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={previewUrl}
+                    alt="선택한 이미지 미리보기"
+                    draggable={false}
+                    onLoad={(event) =>
+                      setImageSize({
+                        width: event.currentTarget.naturalWidth,
+                        height: event.currentTarget.naturalHeight,
+                      })
+                    }
+                    className={cn(
+                      'pointer-events-none absolute max-w-none select-none'
+                    )}
+                    style={
+                      metrics
+                        ? {
+                            left: `${(metrics.drawX / outputSize.width) * 100}%`,
+                            top: `${
+                              (metrics.drawY / outputSize.height) * 100
+                            }%`,
+                            width: `${
+                              (metrics.drawWidth / outputSize.width) * 100
+                            }%`,
+                            height: `${
+                              (metrics.drawHeight / outputSize.height) * 100
+                            }%`,
+                          }
+                        : { inset: 0, width: '100%', height: '100%', opacity: 0 }
+                    }
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <ImageIcon className="h-8 w-8 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              <Text size="caption2" className="block text-center text-gray-500">
+                드래그해서 위치를 맞추고, 휠·손가락으로 확대·축소하세요
+              </Text>
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
@@ -434,6 +578,8 @@ export function ImageCropDialog({
                 onClick={() => {
                   setMode('cover');
                   setZoom(1);
+                  setOffsetX(0);
+                  setOffsetY(0);
                 }}
               />
               <ModeButton
@@ -444,34 +590,9 @@ export function ImageCropDialog({
                 onClick={() => {
                   setMode('contain');
                   setZoom(1);
+                  setOffsetX(0);
+                  setOffsetY(0);
                 }}
-              />
-            </div>
-
-            <div className="space-y-3">
-              <RangeControl
-                label="확대"
-                value={zoom}
-                min={1}
-                max={3}
-                step={0.01}
-                onChange={setZoom}
-              />
-              <RangeControl
-                label="가로 위치"
-                value={offsetX}
-                min={-1}
-                max={1}
-                step={0.01}
-                onChange={setOffsetX}
-              />
-              <RangeControl
-                label="세로 위치"
-                value={offsetY}
-                min={-1}
-                max={1}
-                step={0.01}
-                onChange={setOffsetY}
               />
             </div>
 

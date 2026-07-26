@@ -199,6 +199,17 @@ textarea,
   user-select: text;
 }
 
+/* 입력 필드 글자 한 단계 상향(text-sm 14px → 16px). 폼 입력(h-9~h-10 계열)이
+   작게 느껴진다는 피드백 반영. @layer 밖(unlayered)이라 Tailwind utilities
+   레이어의 text-sm 을 이긴다. 컴팩트 인풋(text-xs 12px, OTP·스텝퍼)과 이미
+   큰 인풋(text-base 16px)은 건드리지 않아 레이아웃 붕괴가 없다. iOS 포커스
+   자동 줌 방지(≥16px)도 함께 만족한다. */
+input.text-sm,
+textarea.text-sm,
+select.text-sm {
+  font-size: 1rem;
+}
+
 .allow-user-select,
 .allow-user-select * {
   -webkit-user-select: text;

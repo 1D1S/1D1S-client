@@ -12,10 +12,15 @@ import {
 } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
 import { cn } from '@module/utils/cn';
-import React, { useState } from 'react';
+import {
+  isNativeModalAvailable,
+  openNativeModal,
+} from '@module/utils/nativeBridge';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useReportComment } from '../hooks/useDiaryCommentMutations';
 import { CommentReportType, CreateCommentReportRequest } from '../type/comment';
+import { parseNativeReportResult } from '../utils/nativeReport';
 
 type ReportAlertState =
   | { kind: 'success'; message: string }
@@ -38,13 +43,102 @@ export function CommentReportDialog({
   commentId,
   open,
   onOpenChange,
-}: CommentReportDialogProps): React.ReactElement {
+}: CommentReportDialogProps): React.ReactElement | null {
   const [selectedType, setSelectedType] = useState<CommentReportType | null>(
     null
   );
   const [content, setContent] = useState('');
   const [alertState, setAlertState] = useState<ReportAlertState>(null);
   const reportMutation = useReportComment();
+  const nativeModalAvailable = isNativeModalAvailable();
+  const nativeRequestInFlight = useRef(false);
+
+  useEffect(() => {
+    if (!open) {
+      nativeRequestInFlight.current = false;
+    }
+  }, [open]);
+
+  // 앱(WebView): 웹 Dialog 대신 네이티브 신고 시트로 위임한다. 브라우저는
+  // 아래 웹 Dialog 폴백을 그대로 쓴다.
+  useEffect(() => {
+    if (
+      !open ||
+      commentId === null ||
+      !nativeModalAvailable ||
+      nativeRequestInFlight.current
+    ) {
+      return;
+    }
+    nativeRequestInFlight.current = true;
+    let cancelled = false;
+    const validTypes = REPORT_TYPES.map((rt) => rt.type);
+
+    void (async () => {
+      const value = await openNativeModal({
+        title: '댓글 신고하기',
+        message: '신고 사유를 선택해 주세요.',
+        report: {
+          reasons: REPORT_TYPES.map((rt) => ({
+            value: rt.type,
+            label: rt.label,
+          })),
+          detail: {
+            label: '상세 내용',
+            placeholder: '신고 사유를 상세히 적어주세요.',
+            requiredFor: ['ETC'],
+            alwaysShow: false,
+          },
+        },
+        buttons: [
+          ...REPORT_TYPES.map((rt) => ({ label: rt.label, value: rt.type })),
+          { label: '취소', value: 'cancel', style: 'cancel' as const },
+        ],
+      });
+      if (cancelled) {
+        return;
+      }
+      const parsed = parseNativeReportResult(value, validTypes, ['ETC']);
+      if (!parsed) {
+        onOpenChange(false);
+        return;
+      }
+      const data: CreateCommentReportRequest =
+        parsed.reportType === 'ETC'
+          ? { reportType: 'ETC', content: parsed.content }
+          : {
+              reportType: parsed.reportType as Exclude<
+                CommentReportType,
+                'ETC'
+              >,
+            };
+      reportMutation.mutate(
+        { commentId, data },
+        {
+          onSuccess: () => {
+            void openNativeModal({
+              title: '신고 접수 완료',
+              message: '신고가 접수되었습니다.',
+              buttons: [{ label: '확인', value: 'ok' }],
+            });
+            onOpenChange(false);
+          },
+          onError: () => {
+            void openNativeModal({
+              title: '신고 실패',
+              message: '신고 접수 중 오류가 발생했습니다.',
+              buttons: [{ label: '확인', value: 'ok' }],
+            });
+            onOpenChange(false);
+          },
+        }
+      );
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, commentId, nativeModalAvailable, onOpenChange, reportMutation]);
 
   const isEtc = selectedType === 'ETC';
   const isContentValid = !isEtc || content.trim().length > 0;
@@ -99,6 +193,11 @@ export function CommentReportDialog({
       handleClose();
     }
   };
+
+  // 네이티브에선 위 effect 가 OS 신고 시트를 띄우므로 웹 트리는 그리지 않는다.
+  if (nativeModalAvailable) {
+    return null;
+  }
 
   return (
     <>

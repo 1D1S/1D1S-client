@@ -2,6 +2,7 @@
 
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { Skeleton } from '@component/Skeleton';
+import { CHALLENGE_HERO_ASPECT } from '@feature/challenge/detail/consts/heroLayout';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -22,8 +23,8 @@ export function ChallengeDetailSkeleton(): React.ReactElement {
         <div className="relative">
           <div
             className={cn(
-              'relative aspect-[21/9] w-full overflow-hidden bg-gray-100',
-              'lg:max-h-[360px]'
+              'relative w-full overflow-hidden bg-gray-100',
+              CHALLENGE_HERO_ASPECT
             )}
           >
             <Skeleton shape="rect" className="absolute inset-0 rounded-none" />

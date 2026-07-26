@@ -94,6 +94,28 @@ export interface NativeModalOpenPayload {
   // 취소는 buttons 의 cancel value. imageCrop 을 모르는 구버전 앱은 buttons
   // (cover/contain/취소)로 폴백한다.
   imageCrop?: NativeImageCropRequest;
+  // 신고 모달용(일지/댓글 신고). 지정 시 네이티브가 사유 라디오 + 상세 내용
+  // 입력(textarea) + 제출 UI 를 그린다. 결과는 JSON 문자열로 resolve:
+  //   {"reportType":"<value>","content":"<상세내용>"}
+  // 취소는 buttons 의 cancel value. report 를 모르는 구버전 앱은 buttons
+  // (사유들 + 취소)로 폴백한다 — 이 경우 상세 입력이 없어 상세 필수 사유
+  // (detail.requiredFor)는 제출되지 않는다(웹이 취소 처리).
+  report?: NativeReportRequest;
+}
+
+export interface NativeReportRequest {
+  // 신고 사유 라디오 목록. value 는 서버 reportType 코드(예: 'SPAM').
+  reasons: Array<{ value: string; label: string }>;
+  // 상세 내용 입력 규칙.
+  detail: {
+    label: string;
+    placeholder: string;
+    // 이 사유들을 고르면 상세 내용 필수. 나머지는 상세 없이 제출 가능.
+    requiredFor: string[];
+    // 상세 입력란을 항상 노출할지(일지=true), 특정 사유에서만 펼칠지(댓글=false).
+    alwaysShow: boolean;
+    maxLength?: number;
+  };
 }
 
 export interface NativeImageCropRequest {

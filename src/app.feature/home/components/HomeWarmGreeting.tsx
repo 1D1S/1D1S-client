@@ -3,11 +3,38 @@
 import { Text } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { useHasMounted } from '@module/hooks/useHasMounted';
+import { cn } from '@module/utils/cn';
 import React from 'react';
 
-export default function HomeWarmGreeting(): React.ReactElement {
+interface HomeWarmGreetingProps {
+  /** 인증/사이드바 확정 전 — 이름 자리를 스켈레톤으로 예약한다. */
+  isLoading?: boolean;
+}
+
+export default function HomeWarmGreeting({
+  isLoading = false,
+}: HomeWarmGreetingProps): React.ReactElement {
   const hasMounted = useHasMounted();
   const { data: sidebar } = useSidebar();
+
+  // 로그인 셸 로딩 중에는 이름이 확정되기 전 "안녕하세요"만 떴다가 이름이
+  // 붙는 팝인이 보였다 — 로딩 동안 이름 줄을 스켈레톤으로 예약한다.
+  if (isLoading) {
+    return (
+      <div className="w-full">
+        <span
+          aria-hidden
+          className={cn(
+            'skeleton-pulse block h-7 w-44 rounded bg-gray-100'
+          )}
+        />
+        <span
+          aria-hidden
+          className="skeleton-pulse mt-1.5 block h-4 w-56 rounded bg-gray-100"
+        />
+      </div>
+    );
+  }
   // 홈 페이지는 `Prefetch` 에서 sidebar 를 prefetch 하지 않으므로 서버는 항상
   // nickname 이 없는 상태로 렌더한다. 반면 클라이언트는 브라우저 query cache
   // 에 사이드바 데이터가 남아 있으면 첫 렌더에 nickname 을 보여 hydration

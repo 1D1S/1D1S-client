@@ -14,10 +14,15 @@ import {
   TextArea,
 } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
-import React, { useState } from 'react';
+import {
+  isNativeModalAvailable,
+  openNativeModal,
+} from '@module/utils/nativeBridge';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { ReportType } from '../../board/type/diary';
 import { useCreateDiaryReport } from '../hooks/useDiaryMutations';
+import { parseNativeReportResult } from '../utils/nativeReport';
 
 type ReportAlertState =
   | { kind: 'success'; message: string }
@@ -40,11 +45,94 @@ export function DiaryReportDialog({
   diaryId,
   open,
   onOpenChange,
-}: DiaryReportDialogProps): React.ReactElement {
+}: DiaryReportDialogProps): React.ReactElement | null {
   const [selectedType, setSelectedType] = useState<ReportType | null>(null);
   const [content, setContent] = useState('');
   const [alertState, setAlertState] = useState<ReportAlertState>(null);
   const reportMutation = useCreateDiaryReport();
+  const nativeModalAvailable = isNativeModalAvailable();
+  const nativeRequestInFlight = useRef(false);
+
+  useEffect(() => {
+    if (!open) {
+      nativeRequestInFlight.current = false;
+    }
+  }, [open]);
+
+  // 앱(WebView): 웹 Dialog 대신 네이티브 신고 시트로 위임. 일지 신고는 모든
+  // 사유에 상세 내용이 필수라 detail.requiredFor 에 전 사유를 싣고 항상
+  // 노출(alwaysShow)한다. 브라우저는 아래 웹 Dialog 폴백을 쓴다.
+  useEffect(() => {
+    if (!open || !nativeModalAvailable || nativeRequestInFlight.current) {
+      return;
+    }
+    nativeRequestInFlight.current = true;
+    let cancelled = false;
+    const validTypes = REPORT_OPTIONS.map((option) => option.value);
+
+    void (async () => {
+      const value = await openNativeModal({
+        title: '일지 신고하기',
+        message: '신고 사유를 선택하고 상세 내용을 적어 주세요.',
+        report: {
+          reasons: REPORT_OPTIONS.map((option) => ({
+            value: option.value,
+            label: option.label,
+          })),
+          detail: {
+            label: '상세 내용',
+            placeholder: '신고 내용을 상세히 적어주세요.',
+            requiredFor: validTypes,
+            alwaysShow: true,
+          },
+        },
+        buttons: [
+          ...REPORT_OPTIONS.map((option) => ({
+            label: option.label,
+            value: option.value,
+          })),
+          { label: '취소', value: 'cancel', style: 'cancel' as const },
+        ],
+      });
+      if (cancelled) {
+        return;
+      }
+      const parsed = parseNativeReportResult(value, validTypes, validTypes);
+      if (!parsed) {
+        onOpenChange(false);
+        return;
+      }
+      reportMutation.mutate(
+        {
+          diaryId,
+          reportType: parsed.reportType as ReportType,
+          content: parsed.content,
+        },
+        {
+          onSuccess: () => {
+            void openNativeModal({
+              title: '신고 접수 완료',
+              message: '신고가 접수되었습니다.',
+              buttons: [{ label: '확인', value: 'ok' }],
+            });
+            onOpenChange(false);
+          },
+          onError: () => {
+            void openNativeModal({
+              title: '신고 실패',
+              message: '신고 접수 중 오류가 발생했습니다.',
+              buttons: [{ label: '확인', value: 'ok' }],
+            });
+            onOpenChange(false);
+          },
+        }
+      );
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, diaryId, nativeModalAvailable, onOpenChange, reportMutation]);
 
   const handleClose = (): void => {
     onOpenChange(false);
@@ -90,6 +178,11 @@ export function DiaryReportDialog({
       handleClose();
     }
   };
+
+  // 네이티브에선 위 effect 가 OS 신고 시트를 띄우므로 웹 트리는 그리지 않는다.
+  if (nativeModalAvailable) {
+    return null;
+  }
 
   return (
     <>

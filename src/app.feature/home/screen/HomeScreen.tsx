@@ -103,7 +103,7 @@ export default function HomeScreen(): React.ReactElement {
         {/* 모바일 인사 hero — 데스크탑/태블릿은 시안에 따라 생략.
             인사~스토리 간격이 과해 보여 모바일에서만 gap 을 좁힌다. */}
         <div className="-mb-2 lg:mb-0 lg:hidden">
-          <HomeWarmGreeting />
+          <HomeWarmGreeting isLoading={showLoggedInShell && isStreakLoading} />
         </div>
 
         {showLoggedInShell ? (
@@ -112,7 +112,7 @@ export default function HomeScreen(): React.ReactElement {
 
             {/* 배너/스트릭 — 모바일 세로 스택, lg 이상 1:1 좌우 배치 */}
             <div className="grid gap-3 lg:grid-cols-2">
-              <HomeWarmBanner />
+              <HomeWarmBanner isLoading={isStreakLoading} />
               <HomeStreakSlot
                 streakDays={streakDays}
                 isStreakLoading={isStreakLoading}

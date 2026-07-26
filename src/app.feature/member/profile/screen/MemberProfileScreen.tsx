@@ -2,6 +2,7 @@
 
 import { MobileHeader, Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import { MyPageSkeleton } from '@component/skeletons/MyPageSkeleton';
 import { MemberFriendActionButton } from '@feature/friend/components/MemberFriendActionButton';
 import { useMemberProfile } from '@feature/member/hooks/useMemberQueries';
 import { MyPageActiveChallenges } from '@feature/member/mypage/components/MyPageActiveChallenges';
@@ -57,17 +58,11 @@ export default function MemberProfileScreen({
     );
   }
 
+  // 실제 프로필 레이아웃과 1:1로 맞춘 스켈레톤 하나만 노출한다. 기존의 바
+  // "불러오는 중..." 텍스트는 라우트 loading.tsx(MyPageSkeleton)와 겹쳐
+  // 스켈레톤→텍스트 이중 로딩으로 보였다 — 같은 스켈레톤으로 통일한다.
   if (authStatus === 'unknown' || isLoading) {
-    return (
-      <div className="min-h-screen w-full bg-white">
-        <MobileBackHeader title="프로필" />
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <Text size="body1" weight="medium" className="text-gray-500">
-            불러오는 중...
-          </Text>
-        </div>
-      </div>
-    );
+    return <MyPageSkeleton />;
   }
 
   if (isError || !data) {

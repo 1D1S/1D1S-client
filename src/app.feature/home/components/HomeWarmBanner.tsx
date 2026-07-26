@@ -57,10 +57,13 @@ function fromServerBanner(banner: ServerBanner): CarouselBanner {
 interface HomeWarmBannerProps {
   /** 항상 캐러셀 맨 뒤에 고정되는 배너(디스코드·사용가이드·통계). */
   pinnedBanners?: HomeMainBanner[];
+  /** 인증/사이드바 확정 전 — 배너 자리를 스켈레톤으로 예약한다. */
+  isLoading?: boolean;
 }
 
 export default function HomeWarmBanner({
   pinnedBanners = PINNED_HOME_BANNERS,
+  isLoading = false,
 }: HomeWarmBannerProps): React.ReactElement | null {
   const router = useRouter();
   const { data: serverBanners } = useBanners();
@@ -127,6 +130,20 @@ export default function HomeWarmBanner({
       goTo(deltaX < 0 ? safeIndex + 1 : safeIndex - 1);
     }
   };
+
+  // 홈 로딩 중에는 배너 자리를 같은 종횡비 스켈레톤으로 예약해, 인사말·
+  // 스트릭과 함께 로딩 → 콘텐츠로 자연스럽게 전환되게 한다.
+  if (isLoading) {
+    return (
+      <div
+        aria-hidden
+        className={cn(
+          'skeleton-pulse rounded-4 aspect-[5/2] max-h-[240px] w-full',
+          'self-start bg-gray-100'
+        )}
+      />
+    );
+  }
 
   if (count === 0) {
     return null;

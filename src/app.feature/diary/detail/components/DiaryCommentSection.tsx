@@ -215,12 +215,6 @@ export function DiaryCommentSection({
             value={commentContent}
             onChange={(event) => setCommentContent(event.target.value)}
             placeholder="응원의 말을 남겨주세요"
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                handleCreateComment();
-              }
-            }}
           />
           <Button
             size="sm"
@@ -288,12 +282,6 @@ export function DiaryMobileCommentBar({
         value={content}
         onChange={(event) => setContent(event.target.value)}
         placeholder="응원의 말을 남겨주세요"
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            handleSubmit();
-          }
-        }}
       />
       <Button
         size="sm"
