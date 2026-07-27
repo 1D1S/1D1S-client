@@ -5,6 +5,8 @@
 //
 // 채널 이름은 Flutter 측 `kJsChannelName` 과 반드시 일치해야 한다.
 
+import type { IconName } from '@1d1s/design-system';
+
 const CHANNEL_NAME = 'OneDayOneStreakNative';
 const NAVIGATE_EVENT = 'native:navigate';
 const MODAL_RESULT_EVENT = 'native:modal_result';
@@ -76,6 +78,11 @@ export interface NativeModalOpenPayload {
   message?: string;
   // 1~3개 권장. 빈 배열이면 네이티브가 기본 "확인" 1개로 채운다.
   buttons: NativeModalButton[];
+  // DS ConfirmDialog 를 그대로 옮긴 상단 원형 아이콘 배지. icon 은 DS
+  // IconName(예: "Close"), tone 은 배지 색 계열. 둘 다 없으면 네이티브는
+  // 배지 없이 그린다 — 선택형/신고 모달 등 배지가 없는 요청과 같은 모습.
+  icon?: IconName;
+  tone?: 'brand' | 'danger' | 'mint';
   // 선택형 리스트 모달용. 지정 시 네이티브는 기본 알림 버튼 나열 대신 이
   // 목록을 웹 스타일 리스트(썸네일+이름)로 렌더한다. 선택 결과는 항목의
   // challengeId 문자열로 resolve 하고, 취소는 buttons 의 cancel value 를 쓴다.

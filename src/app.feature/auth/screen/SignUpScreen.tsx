@@ -1,8 +1,11 @@
 'use client';
 
-import { ConfirmDialog, Icon, StepIndicator, Text } from '@1d1s/design-system';
+import { Icon, StepIndicator, Text } from '@1d1s/design-system';
 import { Form } from '@component/ui/Form';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
+// 앱에서는 네이티브 다이얼로그로 위임하는 래퍼. DS ConfirmDialog 를 직접
+// 쓰면 앱 안에서 이 모달만 웹 UI 로 떠 있었다.
+import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
 import { getApiErrorCode } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { putToStorage } from '@module/api/presignedUpload';
@@ -182,6 +185,10 @@ export function SignUpScreen(): React.ReactElement {
         description="정보를 입력하지 않으면 서비스 사용이 어렵습니다."
         confirmLabel="확인"
         cancelLabel="계속 입력하기"
+        pendingLabel="처리 중..."
+        isPending={logout.isPending}
+        isDisabled={false}
+        onCancel={() => setShowExitDialog(false)}
         onConfirm={handleExitConfirm}
       />
 
