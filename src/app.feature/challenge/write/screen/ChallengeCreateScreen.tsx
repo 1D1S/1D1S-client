@@ -22,10 +22,7 @@ import { ChallengeCreatePeriodSection } from '@feature/challenge/write/component
 import { ChallengeCreatePhotoSection } from '@feature/challenge/write/components/ChallengeCreatePhotoSection';
 import { ChallengeCreatePostEndWriteSection } from '@feature/challenge/write/components/ChallengeCreatePostEndWriteSection';
 import { ChallengeCreatePreviewCard } from '@feature/challenge/write/components/ChallengeCreatePreviewCard';
-import {
-  ChallengeCreateSuccessDialog,
-  shareChallengeInviteToKakao,
-} from '@feature/challenge/write/components/ChallengeCreateSuccessDialog';
+import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/components/ChallengeCreateSuccessDialog';
 import { ChallengeCreateVisibilitySection } from '@feature/challenge/write/components/ChallengeCreateVisibilitySection';
 import {
   ChallengeCreateFormValues,
@@ -67,9 +64,9 @@ export default function ChallengeCreateScreen(): React.ReactElement {
     return hideNativeProgress;
   }, [createChallenge.isPending, nativeProgressAvailable]);
 
-  // 생성 완료 다이얼로그를 네이티브 모달로 띄운다. 앱 쉘이 이 모달을 웹과
-  // 같은 스펙(성공 체크 + 참여 링크 + 비밀번호 + 카카오/링크 복사)으로 그리고,
-  // 공유 SDK 가 웹에만 있는 카카오만 onAction 으로 되돌아온다.
+  // 생성 완료 다이얼로그를 네이티브 모달로 띄운다. 앱 쉘이 웹과 같은 스펙
+  // (성공 체크 + 참여 링크 + 비밀번호 + 카카오/링크 복사)으로 그리고, 복사와
+  // 카카오 공유까지 네이티브가 끝낸다.
   //
   // 웹 다이얼로그를 그대로 두면 WebView 안에 갇혀 네이티브 헤더/바텀바 아래에
   // 깔린다. 이 모달을 모르는 구버전 앱에서는 false 를 받아 웹 다이얼로그로
@@ -83,21 +80,14 @@ export default function ChallengeCreateScreen(): React.ReactElement {
       return false;
     }
     const shareLink = `${window.location.origin}/challenge/${challengeId}`;
-    void openNativeModal(
-      {
-        title: '챌린지 만들기가 완료되었습니다!',
-        buttons: [
-          { label: '홈', value: 'home', style: 'cancel' },
-          { label: '챌린지 확인하기', value: 'detail' },
-        ],
-        challengeCreated: { challengeId, shareLink, isPrivate, password },
-      },
-      (action) => {
-        if (action === 'kakao') {
-          void shareChallengeInviteToKakao({ shareLink, isPrivate, password });
-        }
-      }
-    ).then((result) => {
+    void openNativeModal({
+      title: '챌린지 만들기가 완료되었습니다!',
+      buttons: [
+        { label: '홈', value: 'home', style: 'cancel' },
+        { label: '챌린지 확인하기', value: 'detail' },
+      ],
+      challengeCreated: { challengeId, shareLink, isPrivate, password },
+    }).then((result) => {
       if (result === 'home') {
         router.push('/');
       } else if (result === 'detail') {

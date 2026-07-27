@@ -48,10 +48,11 @@ const KAKAO_BUTTON_CLASS = cn(
 );
 
 /**
- * 참여 링크 카카오 공유. 네이티브 완료 모달(ChallengeCreateScreen)도 같은
- * 함수를 쓴다 — 공유 문구/이미지/버튼 규칙이 두 벌로 갈리지 않게.
+ * 참여 링크 카카오 공유(웹 전용). 앱은 이 다이얼로그 대신 네이티브 완료
+ * 모달을 띄우고, 공유도 카카오 네이티브 SDK 로 한다 — JS SDK 는 WebView
+ * 안에서 공유 창(window.open) 이 막혀 아무 일도 일어나지 않는다.
  */
-export async function shareChallengeInviteToKakao({
+async function shareChallengeInviteToKakao({
   shareLink,
   isPrivate,
   password,

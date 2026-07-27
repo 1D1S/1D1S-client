@@ -10,7 +10,6 @@ import type { IconName } from '@1d1s/design-system';
 const CHANNEL_NAME = 'OneDayOneStreakNative';
 const NAVIGATE_EVENT = 'native:navigate';
 const MODAL_RESULT_EVENT = 'native:modal_result';
-const MODAL_ACTION_EVENT = 'native:modal_action';
 const POPUP_RESULT_EVENT = 'native:popup_result';
 const DATE_RESULT_EVENT = 'native:date_result';
 const TOKEN_REFRESH_RESULT_EVENT = 'native:token_refresh_result';
@@ -112,10 +111,10 @@ export interface NativeModalOpenPayload {
   // 챌린지 생성 완료 모달용. 지정 시 네이티브가 웹 ChallengeCreateSuccessDialog
   // 와 같은 화면(성공 체크 + 참여 링크 + 비밀번호 + 카카오/링크 복사 +
   // [홈][챌린지 확인하기])을 그린다. 결과는 'home' | 'detail'.
-  // 링크/비밀번호 복사는 네이티브가 끝내고 모달을 유지하며, 공유 SDK 가 웹에만
-  // 있는 카카오 공유만 modal_action('kakao') 으로 되돌아온다
-  // (openNativeModal 의 onAction 인자). challengeCreated 를 모르는 구버전
-  // 앱은 buttons([홈][챌린지 확인하기])로 폴백한다.
+  // 링크/비밀번호 복사와 카카오톡 공유는 네이티브가 끝내고 모달을 유지한다
+  // (앱은 카카오 네이티브 SDK 로 앱투앱 공유 — 웹 JS SDK 는 WebView 안에서
+  // 공유 창을 못 연다). challengeCreated 를 모르는 구버전 앱은
+  // buttons([홈][챌린지 확인하기])로 폴백한다.
   challengeCreated?: NativeChallengeCreatedRequest;
 }
 
@@ -509,29 +508,6 @@ function ensureModalResultListener(): void {
   modalResultListenerAttached = true;
 }
 
-// 모달이 떠 있는 동안 도착하는 중간 액션 핸들러. modal_result 가 오면 지운다.
-const pendingNativeModalActions = new Map<string, (action: string) => void>();
-let modalActionListenerAttached = false;
-
-function ensureModalActionListener(): void {
-  if (modalActionListenerAttached) {
-    return;
-  }
-  const win = getNativeWindow();
-  if (!win) {
-    return;
-  }
-  win.addEventListener(MODAL_ACTION_EVENT, (event: Event) => {
-    const detail = (event as CustomEvent<{ id?: string; action?: string }>)
-      .detail;
-    if (!detail?.id || !detail.action) {
-      return;
-    }
-    pendingNativeModalActions.get(detail.id)?.(detail.action);
-  });
-  modalActionListenerAttached = true;
-}
-
 function generateModalId(): string {
   return `m_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -713,10 +689,7 @@ export function openNativePopup(
 }
 
 export function openNativeModal(
-  options: Omit<NativeModalOpenPayload, 'id'>,
-  // 모달을 닫지 않는 중간 액션(챌린지 생성 완료 모달의 카카오 공유). 결과와
-  // 달리 여러 번 올 수 있고, Promise 를 resolve 하지 않는다.
-  onAction?: (action: string) => void
+  options: Omit<NativeModalOpenPayload, 'id'>
 ): Promise<string | null> {
   const win = getNativeWindow();
   if (!win) {
@@ -727,15 +700,8 @@ export function openNativeModal(
   }
   ensureModalResultListener();
   const id = generateModalId();
-  if (onAction) {
-    ensureModalActionListener();
-    pendingNativeModalActions.set(id, onAction);
-  }
   return new Promise<string | null>((resolve) => {
-    pendingNativeModals.set(id, (value) => {
-      pendingNativeModalActions.delete(id);
-      resolve(value);
-    });
+    pendingNativeModals.set(id, resolve);
     postNativeMessage({
       type: 'modal_open',
       payload: { id, ...options },
