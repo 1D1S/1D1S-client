@@ -11,6 +11,7 @@ import HomeWarmBanner from '@feature/home/components/HomeWarmBanner';
 import { useHomeRandomData } from '@feature/home/hooks/useHomeRandomData';
 import { useHomeRandomDiaryLike } from '@feature/home/hooks/useHomeRandomDiaryLike';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
+import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
 import { cn } from '@module/utils/cn';
 import { useRouter } from 'next/navigation';
 import React, { useCallback } from 'react';
@@ -53,6 +54,12 @@ export default function ExploreScreen(): React.ReactElement {
     isError: isOfficialError,
     errorMessage: officialErrorMessage,
   } = useExploreOfficialChallenges();
+
+  // 스플래시 dismiss 신호: 탐색 3개 섹션(공식/추천 챌린지/추천 일지)이 모두
+  // 로드(성공 또는 에러 확정)된 뒤 1회 발화.
+  useSignalAppReady(
+    !isOfficialLoading && !isChallengesLoading && !isDiariesLoading
+  );
 
   return (
     <>

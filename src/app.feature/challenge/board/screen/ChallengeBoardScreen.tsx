@@ -16,6 +16,7 @@ import {
 } from '@constants/categories';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
+import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
 import { cn } from '@module/utils/cn';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -230,6 +231,10 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     () => data?.pages?.flatMap((page) => page?.items ?? []) ?? [],
     [data]
   );
+
+  // 스플래시 dismiss 신호: 챌린지 목록 첫 페이지가 로드(성공/에러 확정)된 뒤
+  // 1회 발화 — 스켈레톤 그리드가 아니라 실제 목록이 렌더된 시점.
+  useSignalAppReady(!isLoading);
 
   return (
     <BoardScreenLayout

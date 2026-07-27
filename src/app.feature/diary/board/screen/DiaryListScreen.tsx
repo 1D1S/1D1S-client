@@ -13,6 +13,7 @@ import { normalizeApiError } from '@module/api/error';
 import { useDedupedInfinitePages } from '@module/hooks/useDedupedInfinitePages';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { useLoginRequiredParam } from '@module/hooks/useLoginRequiredParam';
+import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
 import { cn } from '@module/utils/cn';
 import { formatMonthDayKR, getDateTimestamp } from '@module/utils/date';
 import {
@@ -173,6 +174,9 @@ export default function DiaryListScreen(): React.ReactElement {
     isFetchingNextPage,
   } = useDiaryList({ size: 12 });
   const showSkeleton = useMinimumLoading(isLoading);
+  // 스플래시 dismiss 신호: 일지 목록 첫 페이지가 로드된 뒤 1회 발화
+  // (스켈레톤 그리드가 걷힌 시점).
+  useSignalAppReady(!showSkeleton);
   const { ref } = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,

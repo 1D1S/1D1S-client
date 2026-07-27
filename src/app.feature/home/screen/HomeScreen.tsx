@@ -5,6 +5,7 @@ import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import Stories from '@feature/stories/components/Stories';
 import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useHasMounted } from '@module/hooks/useHasMounted';
+import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
@@ -89,6 +90,11 @@ export default function HomeScreen(): React.ReactElement {
   const isStreakLoading =
     showLoggedInShell &&
     (!hasMounted || isSidebarLoading || isSidebarFetching || !sidebar);
+
+  // 스플래시 dismiss 신호: 홈 핵심 콘텐츠(스트릭/오늘의 기록 or 게스트 CTA)가
+  // 스켈레톤이 아니라 실제로 렌더된 시점에 1회 발화. 게스트는 isStreakLoading
+  // 이 false 라 CTA 렌더 직후, 로그인 사용자는 사이드바 로드 후.
+  useSignalAppReady(!isStreakLoading);
 
   return (
     <>
