@@ -123,7 +123,25 @@
      네이티브에서 그 헤더가 사라지므로 56px 아래 허공에 붙는다 — 챌린지
      상세 탭바가 그랬다. 이 마커를 달면 네이티브에서 top:0 으로 당겨진다. */
   html[data-native-app='true'] [data-native-top-0] {
-    top: 0 !important;
+    /* 챌린지 상세의 Flutter compact AppBackBar는 WebView 위에 오버레이되고,
+       그 WebView 는 배너 full-bleed 때문에 상태바 뒤까지 올라와 있다
+       (detail_web_screen: SafeArea top:false). 그래서 바의 실제 높이는
+       56px 이 아니라 56px + 상태바(safe-area-inset-top) 다. 이걸 빼먹으면
+       탭바가 바 뒤에 붙어 안 보여 "sticky 가 아니다"처럼 보인다. */
+    top: calc(3.5rem + env(safe-area-inset-top)) !important;
+  }
+
+  html[data-native-app='true'] [data-native-home-content] {
+    padding-top: 0.875rem !important;
+  }
+
+  html[data-native-app='true'] [data-native-subpage-content] {
+    padding-top: 0.5rem !important;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  html[data-native-app='true'] [data-native-subpage-body] {
+    margin-top: 0.5rem !important;
   }
 
   /* 네이티브 쉘에서만 보이는 요소. 숨겨지는 웹 헤더 안의 액션(알림의
@@ -138,8 +156,7 @@
 
   /* 숨겨진 웹 헤더를 전제로 잡혀 있던 상단 여백 제거. 네이티브 헤더가
      이미 그 공간을 차지하므로 py-* / mt-* 의 top 만 0 으로 누른다. */
-  html[data-native-app='true']
-    :is([data-native-flush-top], .native-flush-top) {
+  html[data-native-app='true'] :is([data-native-flush-top], .native-flush-top) {
     padding-top: 0 !important;
     margin-top: 0 !important;
   }
@@ -183,6 +200,17 @@ textarea,
 [contenteditable] {
   -webkit-user-select: text;
   user-select: text;
+}
+
+/* 입력 필드 글자 한 단계 상향(text-sm 14px → 16px). 폼 입력(h-9~h-10 계열)이
+   작게 느껴진다는 피드백 반영. @layer 밖(unlayered)이라 Tailwind utilities
+   레이어의 text-sm 을 이긴다. 컴팩트 인풋(text-xs 12px, OTP·스텝퍼)과 이미
+   큰 인풋(text-base 16px)은 건드리지 않아 레이아웃 붕괴가 없다. iOS 포커스
+   자동 줌 방지(≥16px)도 함께 만족한다. */
+input.text-sm,
+textarea.text-sm,
+select.text-sm {
+  font-size: 1rem;
 }
 
 .allow-user-select,

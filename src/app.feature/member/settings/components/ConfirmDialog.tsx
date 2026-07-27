@@ -16,6 +16,7 @@ interface ConfirmDialogProps {
   title: string;
   description: string;
   confirmLabel: string;
+  cancelLabel?: string;
   pendingLabel: string;
   isPending: boolean;
   isDisabled: boolean;
@@ -31,6 +32,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
+  cancelLabel = '취소',
   pendingLabel,
   isPending,
   isDisabled,
@@ -55,8 +57,12 @@ export function ConfirmDialog({
       const result = await openNativeModal({
         title,
         message: description,
+        // 아이콘 배지까지 넘겨 네이티브가 DS ConfirmDialog 와 같은 모습으로
+        // 그린다. 구버전 쉘은 모르는 필드를 무시하므로 배지만 빠진다.
+        icon,
+        tone,
         buttons: [
-          { label: '취소', value: 'cancel', style: 'cancel' },
+          { label: cancelLabel, value: 'cancel', style: 'cancel' },
           {
             label: confirmLabel,
             value: 'confirm',
@@ -104,7 +110,7 @@ export function ConfirmDialog({
       title={title}
       description={description}
       confirmLabel={isPending ? pendingLabel : confirmLabel}
-      cancelLabel="취소"
+      cancelLabel={cancelLabel}
       onConfirm={isPending || isDisabled ? () => undefined : onConfirm}
       onCancel={onCancel}
     />

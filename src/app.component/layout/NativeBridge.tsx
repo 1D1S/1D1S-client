@@ -6,19 +6,13 @@ import {
   postNativeMessage,
 } from '@module/utils/nativeBridge';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import type { AuthLayoutState } from './useAuthLayoutState';
 
 interface NativeBridgeProps {
   authState: AuthLayoutState;
 }
-
-// 첫 페인트가 시각적으로 안정될 때까지 두는 grace. Flutter 쉘은 home 탭의
-// 첫 onPageFinished 또는 app_ready 중 빠른 쪽으로 스플래시를 dismiss
-// 한다. grace 가 0 이면 React hydration 직전 빈 컨테이너가 잠시 노출될
-// 수 있어 작게 둔다.
-const APP_READY_GRACE_MS = 400;
 
 /**
  * Flutter 네이티브 쉘이 띄운 WebView 내부에서만 마운트되는 동기화 컴포넌트.
@@ -32,7 +26,6 @@ const APP_READY_GRACE_MS = 400;
  *   같은 탭 안의 sub-route 이동(예: `/challenge/123`) 에 쓰인다. 다른 탭으로
  *   가는 cross-tab 이동은 Flutter 의 BottomNav 가 IndexedStack 인덱스를
  *   바꾸는 식으로 처리해서 SPA 라우팅을 사용하지 않는다.
- * - 페이지 hydrate 후 `app_ready` 1회 송신 → 스플래시 dismiss 트리거.
  * - pathname 변경 시 `nav_state` → 활성 탭/back bar 가시성 결정용.
  * - 인증/사이드바/알림 변경 시 `auth_state` → 네이티브 헤더 동기화.
  * - 스크롤 방향 전환 시 `scroll_dir` → /challenge sliver AppBar 트리거.
@@ -56,22 +49,9 @@ export default function NativeBridge({
     [router]
   );
 
-  // useRef 가드로 SPA 전환 / 백그라운드 복귀에서도 1회만 발화. 각 WebView
-  // 마다 자기 인스턴스의 1회를 보장한다 (이 컴포넌트 인스턴스가 unmount 되지
-  // 않는 한). Flutter 측은 어느 탭의 app_ready 든 받으면 home 탭이면
-  // 스플래시 dismiss 트리거로, 나머지 탭이면 무시한다.
-  const hasSignaledReady = useRef(false);
-  useEffect(() => {
-    if (hasSignaledReady.current) {
-      return;
-    }
-    hasSignaledReady.current = true;
-    const handle = window.setTimeout(() => {
-      postNativeMessage({ type: 'app_ready' });
-    }, APP_READY_GRACE_MS);
-    return () => window.clearTimeout(handle);
-  }, []);
-
+  // app_ready(스플래시 dismiss)는 여기서 보내지 않는다. 첫 페인트/hydration
+  // 시점이라 홈 데이터 렌더 전에 걷히던 문제가 있었다. 이제 각 랜딩 루트
+  // 화면이 자기 핵심 콘텐츠가 렌더된 뒤 useSignalAppReady 로 1회 발화한다.
   useEffect(() => {
     postNativeMessage({
       type: 'nav_state',

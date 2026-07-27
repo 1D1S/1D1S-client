@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, SectionHeader } from '@1d1s/design-system';
+import { Button, Icon, SectionHeader } from '@1d1s/design-system';
 import {
   CategoryIcon,
   getCategoryLabel,
@@ -293,8 +293,14 @@ export default function HomeTodayRecordSection({
             'data-fade-in'
           )}
         >
-          <span className="text-[14px] font-medium text-gray-800">
-            오늘 기록을 모두 마쳤어요 🎉 {doneCount}개 완료
+          <span
+            className={cn(
+              'flex items-center gap-1.5 text-[14px] font-medium',
+              'text-gray-800'
+            )}
+          >
+            <Icon name="Trophy" size={16} className="text-main-800" aria-hidden />
+            오늘 기록을 모두 마쳤어요 · {doneCount}개 완료
           </span>
           <Link href="/explore" className="text-brand text-[13px] font-bold">
             새로운 챌린지 둘러보기 →

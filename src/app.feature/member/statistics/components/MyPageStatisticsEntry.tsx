@@ -4,19 +4,17 @@ import { Icon, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 // BarChart3 는 DS Icon 에 대응 아이콘이 없어 lucide 유지.
 import { BarChart3 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import React from 'react';
 
 /**
  * 마이페이지에서 통계 화면으로 진입하는 카드.
  */
 export function MyPageStatisticsEntry(): React.ReactElement {
-  const router = useRouter();
-
   return (
-    <button
-      type="button"
-      onClick={() => router.push('/mypage/statistics')}
+    <Link
+      href="/mypage/statistics"
+      prefetch
       className={cn(
         'group flex w-full items-center gap-3 rounded-[14px]',
         'border border-gray-200 bg-white px-4 py-4 text-left',
@@ -46,6 +44,6 @@ export function MyPageStatisticsEntry(): React.ReactElement {
         className="shrink-0 text-gray-400"
         aria-hidden
       />
-    </button>
+    </Link>
   );
 }

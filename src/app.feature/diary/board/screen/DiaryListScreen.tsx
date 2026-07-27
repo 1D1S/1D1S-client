@@ -13,6 +13,7 @@ import { normalizeApiError } from '@module/api/error';
 import { useDedupedInfinitePages } from '@module/hooks/useDedupedInfinitePages';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { useLoginRequiredParam } from '@module/hooks/useLoginRequiredParam';
+import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
 import { cn } from '@module/utils/cn';
 import { formatMonthDayKR, getDateTimestamp } from '@module/utils/date';
 import {
@@ -173,6 +174,9 @@ export default function DiaryListScreen(): React.ReactElement {
     isFetchingNextPage,
   } = useDiaryList({ size: 12 });
   const showSkeleton = useMinimumLoading(isLoading);
+  // 스플래시 dismiss 신호: 일지 목록 첫 페이지가 로드된 뒤 1회 발화
+  // (스켈레톤 그리드가 걷힌 시점).
+  useSignalAppReady(!showSkeleton);
   const { ref } = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,
@@ -199,8 +203,7 @@ export default function DiaryListScreen(): React.ReactElement {
   }, []);
 
   const handleLikeToggle = useCallback(
-    (diary: DiaryItem): void =>
-      toggleLike(diary.id, diary.likeInfo.likedByMe),
+    (diary: DiaryItem): void => toggleLike(diary.id, diary.likeInfo.likedByMe),
     [toggleLike]
   );
 
@@ -262,11 +265,11 @@ export default function DiaryListScreen(): React.ReactElement {
       />
 
       {showSkeleton ? (
-        <DiaryCardSkeletonGrid count={12} className="data-fade-in native-flush-top mt-6" />
+        <DiaryCardSkeletonGrid count={12} className="data-fade-in mt-6" />
       ) : null}
 
       {isError && !hasLoadedDiaries ? (
-        <div className="native-flush-top mt-10 flex w-full justify-center py-10">
+        <div className="mt-10 flex w-full justify-center py-10">
           <Text size="body1" weight="medium" className="text-red-600">
             {error
               ? normalizeApiError(error).message
@@ -276,7 +279,7 @@ export default function DiaryListScreen(): React.ReactElement {
       ) : null}
 
       {!showSkeleton && hasLoadedDiaries ? (
-        <MasonryColumns className="data-fade-in native-flush-top mt-6">
+        <MasonryColumns className="data-fade-in mt-6">
           {sortedDiaries.map((item) => (
             <DiaryListItem
               key={item.id}

@@ -1,6 +1,7 @@
 import {
   ChallengeListParams,
   MemberChallengesParams,
+  MyChallengeScope,
   ParticipantListParams,
   RandomChallengesParams,
 } from '../type/challenge';
@@ -18,6 +19,9 @@ export const CHALLENGE_QUERY_KEYS = {
   members: () => [...CHALLENGE_QUERY_KEYS.all, 'member'] as const,
   memberChallenges: (params: MemberChallengesParams) =>
     [...CHALLENGE_QUERY_KEYS.members(), params] as const,
+  // 내 챌린지 전체보기(self) — scope 별로 캐시 분리.
+  myChallenges: (scope: MyChallengeScope) =>
+    [...CHALLENGE_QUERY_KEYS.all, 'my', scope] as const,
   checkWrite: (challengeId: number) =>
     [...CHALLENGE_QUERY_KEYS.all, 'check-write', challengeId] as const,
   challengeDiaries: () => [...CHALLENGE_QUERY_KEYS.all, 'diaries'] as const,

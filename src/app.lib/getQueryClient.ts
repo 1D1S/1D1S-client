@@ -43,7 +43,15 @@ function makeQueryClient(): QueryClient {
       },
     }),
     mutationCache: new MutationCache({
-      onError: (error) => {
+      onError: (error, _variables, _context, mutation) => {
+        // 실패해도 사용자에게 알릴 필요 없는 mutation(예: 로그아웃)은 제외한다.
+        // 앱 컨텍스트에서 로그아웃 POST 가 네트워크 실패해 "네트워크 연결…"
+        // 토스트가 반복되던 문제 — 브라우저는 성공하므로 영향 없다. 시간 창
+        // (beginLogoutSuppression)과 달리 POST 가 오래 매달렸다 실패해도 확실히
+        // 억제된다.
+        if (mutation?.meta?.skipGlobalErrorToast === true) {
+          return;
+        }
         notifyOnClient(error);
       },
     }),

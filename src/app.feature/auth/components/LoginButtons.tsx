@@ -83,7 +83,7 @@ export function LoginButton({
             'font-extrabold tracking-wide text-white shadow-sm'
           )}
         >
-          최근 사용 ✨
+          최근 사용
         </span>
       )}
     </div>

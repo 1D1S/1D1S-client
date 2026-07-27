@@ -50,7 +50,10 @@ function getOutputFileName(fileName: string): string {
   return `${baseName || 'image'}-cropped.jpg`;
 }
 
-function getDrawMetrics({
+// 미리보기(ImageCropDialog)와 실제 크롭이 동일한 배치 수학을 쓰도록 export
+// 한다. 드래그/확대 제스처를 이 metrics 기준으로 offset/zoom 에 역산해
+// WYSIWYG(미리보기 = 출력)를 보장한다.
+export function getDrawMetrics({
   imageSize,
   outputSize,
   mode,

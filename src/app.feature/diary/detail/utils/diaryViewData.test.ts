@@ -129,7 +129,6 @@ describe('mapDiaryToViewData', () => {
     expect(view.title).toBe('제목 없는 일지');
     expect(view.feeling).toBe('HAPPY');
     expect(view.feelingLabel).toBe('아주 좋음');
-    expect(view.feelingEmoji).toBe('😊');
     expect(view.achievementPercent).toBe(100);
     expect(view.likedByMe).toBe(true);
     expect(view.likeCount).toBe(7);

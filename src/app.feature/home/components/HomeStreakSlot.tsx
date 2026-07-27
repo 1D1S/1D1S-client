@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@1d1s/design-system';
 import { CountUp } from '@component/CountUp';
 import { cn } from '@module/utils/cn';
 import { useRouter } from 'next/navigation';
@@ -113,10 +114,10 @@ export default function HomeStreakSlot({
         <span
           className={cn(
             'absolute inset-0 flex items-center justify-center',
-            'animate-flame-flicker text-[28px] leading-none'
+            'animate-flame-flicker text-main-700'
           )}
         >
-          🔥
+          <Icon name="Flame" size={28} aria-hidden />
         </span>
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
@@ -155,8 +156,8 @@ export default function HomeStreakSlot({
           {isStreakLoading
             ? ' '
             : remaining === 0
-              ? `${goalLabel} 달성! 🎉`
-              : `${remaining}일 후 ${goalLabel} 달성! 🎉`}
+              ? `${goalLabel} 달성!`
+              : `${remaining}일 후 ${goalLabel} 달성!`}
         </span>
       </div>
       <button

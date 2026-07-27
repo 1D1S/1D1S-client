@@ -5,6 +5,8 @@
 //
 // 채널 이름은 Flutter 측 `kJsChannelName` 과 반드시 일치해야 한다.
 
+import type { IconName } from '@1d1s/design-system';
+
 const CHANNEL_NAME = 'OneDayOneStreakNative';
 const NAVIGATE_EVENT = 'native:navigate';
 const MODAL_RESULT_EVENT = 'native:modal_result';
@@ -39,6 +41,36 @@ export interface NativeModalButton {
   style?: 'default' | 'cancel' | 'destructive';
 }
 
+// 선택형 모달(예: 일지 작성 "챌린지 선택")에서 네이티브가 웹의
+// ChallengeListItem(variant="picker") 카드를 그대로 그릴 수 있도록 넘기는 항목.
+// 사용자가 항목을 선택하면 modal 은 challengeId 를 문자열로 resolve 한다
+// (buttons[].value 와 동일 규약).
+//
+// ⚠️ 라벨은 **완성된 문자열**로 넘긴다. 날짜 구간(무한 챌린지 처리 포함)이나
+// 참여 인원 표기를 Dart 에서 다시 조립하면 웹과 어긋나는 순간이 반드시 온다.
+// 포맷 규칙의 권위는 ChallengeListItem 하나로 유지한다.
+export interface NativeModalChallengeItem {
+  challengeId: number;
+  title: string;
+  thumbnailUrl: string | null;
+  // 예: "기타". 카테고리가 없으면 빈 문자열.
+  categoryLabel: string;
+  // 커버 이미지가 없을 때 그리는 Stripe 의 기준색(예: "#7c3aed").
+  // 색 테이블(CATEGORY_STRIPE_TONES)을 앱에 복제하지 않으려고 해석된 값을
+  // 넘긴다 — 카테고리가 추가돼도 앱은 그대로 따라간다.
+  categoryTone: string;
+  // DS IconName(예: "Code2"). 앱은 같은 이름의 lucide 아이콘으로 매핑한다.
+  categoryIconName: string | null;
+  // 예: "진행 중" / "모집 중" / "종료됨".
+  statusLabel: string;
+  // 예: "자유 목표". goalType 이 없으면 "-".
+  goalLabel: string;
+  // 예: "2026-07-20 ~ 2026-08-09", 무한 챌린지는 "2026-07-20 · 무한".
+  dateLabel: string;
+  // 예: "3/10명 참여중". 개인 챌린지(정원 1명 이하)는 null — 웹도 숨긴다.
+  participantLabel: string | null;
+}
+
 export interface NativeModalOpenPayload {
   // 같은 모달 요청을 식별. 응답이 돌아오는 modal_result 의 id 와 매칭.
   id: string;
@@ -46,6 +78,77 @@ export interface NativeModalOpenPayload {
   message?: string;
   // 1~3개 권장. 빈 배열이면 네이티브가 기본 "확인" 1개로 채운다.
   buttons: NativeModalButton[];
+  // DS ConfirmDialog 를 그대로 옮긴 상단 원형 아이콘 배지. icon 은 DS
+  // IconName(예: "Close"), tone 은 배지 색 계열. 둘 다 없으면 네이티브는
+  // 배지 없이 그린다 — 선택형/신고 모달 등 배지가 없는 요청과 같은 모습.
+  icon?: IconName;
+  tone?: 'brand' | 'danger' | 'mint';
+  // 선택형 리스트 모달용. 지정 시 네이티브는 기본 알림 버튼 나열 대신 이
+  // 목록을 웹 스타일 리스트(썸네일+이름)로 렌더한다. 선택 결과는 항목의
+  // challengeId 문자열로 resolve 하고, 취소는 buttons 의 cancel value 를 쓴다.
+  challenges?: NativeModalChallengeItem[];
+  // 표시 전용 목표 리스트 모달용(예: 참여자 "OO님의 목표"). 지정 시 네이티브는
+  // 이 문자열들을 1., 2. … 번호 리스트 카드로 렌더한다. 선택 결과가 없는
+  // 표시 전용이므로 buttons 는 비워도 되고(닫기 X 로 dismiss), resolve 값은
+  // 무시한다.
+  goals?: string[];
+  // 이미지 크롭 편집 모달용(챌린지 사진 맞추기). 지정 시 네이티브가 미리보기+
+  // 옵션(cover/contain)+확대/가로/세로 슬라이더 편집 UI 를 그린다. 실제 크롭은
+  // 웹이 원본 File 로 수행하므로(출력 100% 일치), 네이티브는 편집 파라미터만
+  // JSON 문자열로 resolve 한다:
+  //   {"mode":"cover|contain","zoom":number,"offsetX":number,
+  //    "offsetY":number,"backgroundColor":"#ffffff"}
+  // 취소는 buttons 의 cancel value. imageCrop 을 모르는 구버전 앱은 buttons
+  // (cover/contain/취소)로 폴백한다.
+  imageCrop?: NativeImageCropRequest;
+  // 신고 모달용(일지/댓글 신고). 지정 시 네이티브가 사유 라디오 + 상세 내용
+  // 입력(textarea) + 제출 UI 를 그린다. 결과는 JSON 문자열로 resolve:
+  //   {"reportType":"<value>","content":"<상세내용>"}
+  // 취소는 buttons 의 cancel value. report 를 모르는 구버전 앱은 buttons
+  // (사유들 + 취소)로 폴백한다 — 이 경우 상세 입력이 없어 상세 필수 사유
+  // (detail.requiredFor)는 제출되지 않는다(웹이 취소 처리).
+  report?: NativeReportRequest;
+  // 챌린지 생성 완료 모달용. 지정 시 네이티브가 웹 ChallengeCreateSuccessDialog
+  // 와 같은 화면(성공 체크 + 참여 링크 + 비밀번호 + 카카오/링크 복사 +
+  // [홈][챌린지 확인하기])을 그린다. 결과는 'home' | 'detail'.
+  // 링크/비밀번호 복사와 카카오톡 공유는 네이티브가 끝내고 모달을 유지한다
+  // (앱은 카카오 네이티브 SDK 로 앱투앱 공유 — 웹 JS SDK 는 WebView 안에서
+  // 공유 창을 못 연다). challengeCreated 를 모르는 구버전 앱은
+  // buttons([홈][챌린지 확인하기])로 폴백한다.
+  challengeCreated?: NativeChallengeCreatedRequest;
+}
+
+export interface NativeChallengeCreatedRequest {
+  challengeId: number;
+  // 참여 링크 전문(origin 포함). 네이티브가 조립하지 않는다.
+  shareLink: string;
+  isPrivate: boolean;
+  password?: string;
+}
+
+export interface NativeReportRequest {
+  // 신고 사유 라디오 목록. value 는 서버 reportType 코드(예: 'SPAM').
+  reasons: Array<{ value: string; label: string }>;
+  // 상세 내용 입력 규칙.
+  detail: {
+    label: string;
+    placeholder: string;
+    // 이 사유들을 고르면 상세 내용 필수. 나머지는 상세 없이 제출 가능.
+    requiredFor: string[];
+    // 상세 입력란을 항상 노출할지(일지=true), 특정 사유에서만 펼칠지(댓글=false).
+    alwaysShow: boolean;
+    maxLength?: number;
+  };
+}
+
+export interface NativeImageCropRequest {
+  // 편집 미리보기용 축소본(장변 ~1200px 권장). 최종 크롭은 웹이 원본으로 하므로
+  // 이 축소본은 표시 전용 — 화질 손실 없음.
+  previewDataUrl: string;
+  // 최종 출력(배너) 픽셀 크기. 편집기 미리보기 종횡비 기준.
+  outputSize: { width: number; height: number };
+  // contain 모드에서 여백을 채울 배경색 후보(선택).
+  backgroundOptions?: string[];
 }
 
 // 메인 이벤트 팝업 한 장. 서버 ActivePopup 과 같은 모양.
@@ -118,6 +221,16 @@ export type NativeMessage =
   | { type: 'oauth_open'; payload: { url: string } }
   | { type: 'token_refresh'; payload: { id: string } }
   | { type: 'logout' }
+  | {
+      type: 'progress_open';
+      payload: { message: string };
+    }
+  | { type: 'progress_close' }
+  // 토스트를 네이티브가 그린다. WebView 안에 그리면 네이티브 헤더/바텀바
+  // 아래에 깔리고, 상세처럼 WebView 가 화면 일부만 차지할 때는 위치도
+  // 어긋난다. 앱은 화면 상단 중앙에 띄운다(웹은 top-right).
+  | { type: 'toast'; payload: NativeToastPayload }
+  | { type: 'push_route'; payload: { path: string } }
   // 네이티브 다이얼로그 노출 요청. 응답은 native:modal_result CustomEvent
   // 로 비동기 도착. openNativeModal() 헬퍼가 id 매칭으로 Promise 화 한다.
   | { type: 'modal_open'; payload: NativeModalOpenPayload }
@@ -143,7 +256,6 @@ interface NativeWindow extends Window {
   __1D1S_FEATURES__?: Partial<Record<string, boolean>>;
 }
 
-
 function getNativeWindow(): NativeWindow | null {
   if (typeof window === 'undefined') {
     return null;
@@ -156,6 +268,16 @@ function hasNativeFeature(name: string): boolean {
   return getNativeWindow()?.__1D1S_FEATURES__?.[name] === true;
 }
 
+export interface NativeToastPayload {
+  title: string;
+  body?: string;
+  // DS ToastTone — 'brand' | 'success' | 'danger' | 'info'.
+  tone?: string;
+  // DS IconName. 앱이 모르는 이름이면 tone 기본 아이콘으로 떨어진다.
+  icon?: string;
+  // ms. 0 이하면 자동 닫힘 없음.
+  duration?: number;
+}
 
 export function postNativeMessage(message: NativeMessage): void {
   const win = getNativeWindow();
@@ -177,6 +299,63 @@ export function isNativeBridgeAvailable(): boolean {
   return getNativeWindow()?.[CHANNEL_NAME] != null;
 }
 
+export function isNativeModalAvailable(): boolean {
+  return getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('modal');
+}
+
+/**
+ * SPA 데이터 요청이 끝나기 전에 네이티브 화면을 먼저 연다. 앱이 아닌
+ * 환경에서는 false를 반환하므로 호출자가 router.push로 폴백할 수 있다.
+ */
+export function requestNativePushRoute(path: string): boolean {
+  if (
+    !path.startsWith('/') ||
+    getNativeWindow()?.[CHANNEL_NAME] == null ||
+    !hasNativeFeature('pushRoute')
+  ) {
+    return false;
+  }
+  postNativeMessage({ type: 'push_route', payload: { path } });
+  return true;
+}
+
+export function showNativeProgress(message: string): boolean {
+  if (
+    getNativeWindow()?.[CHANNEL_NAME] == null ||
+    !hasNativeFeature('progress')
+  ) {
+    return false;
+  }
+  postNativeMessage({ type: 'progress_open', payload: { message } });
+  return true;
+}
+
+/**
+ * 네이티브 토스트로 위임한다. 성공하면 true — 호출자는 웹 토스트를
+ * 그리지 않는다. 구버전 쉘(toast 기능 없음)이면 false 라 웹 토스트로
+ * 폴백한다.
+ */
+export function showNativeToast(payload: NativeToastPayload): boolean {
+  if (getNativeWindow()?.[CHANNEL_NAME] == null || !hasNativeFeature('toast')) {
+    return false;
+  }
+  postNativeMessage({ type: 'toast', payload });
+  return true;
+}
+
+export function isNativeProgressAvailable(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('progress')
+  );
+}
+
+export function hideNativeProgress(): void {
+  if (getNativeWindow()?.[CHANNEL_NAME] == null) {
+    return;
+  }
+  postNativeMessage({ type: 'progress_close' });
+}
+
 export function markNativeOAuth(codeChallenge: string): void {
   window.sessionStorage.setItem(NATIVE_OAUTH_MARKER, codeChallenge);
 }
@@ -195,12 +374,29 @@ export function peekNativeOAuth(): string | null {
 
 interface PendingTokenRefresh {
   resolve(): void;
-  reject(): void;
+  reject(reason: Error): void;
   timeout: number;
 }
 
 const pendingTokenRefreshes = new Map<string, PendingTokenRefresh>();
 let tokenRefreshListenerAttached = false;
+
+/**
+ * 네이티브 토큰 갱신 실패. 예전엔 `reject()` 를 인자 없이 불러 rejection
+ * 이유가 `undefined` 였다 — 이게 그대로 흘러가면 normalizeApiError 가
+ * 기본 메시지("요청 처리 중 오류가 발생했습니다")로 토스트하고,
+ * shouldSkipToast 의 WeakSet 중복 제거도 객체가 아니라 못 걸어서 로그아웃
+ * 때마다 같은 토스트가 여러 번 떴다.
+ *
+ * 세션 만료는 사용자 잘못이 아니라 조용히 정리할 일이므로, 이 타입은
+ * notifyApiError 가 토스트 없이 인증 처리로 흘려보낸다.
+ */
+export class NativeTokenRefreshError extends Error {
+  constructor(message = '네이티브 토큰 갱신 실패') {
+    super(message);
+    this.name = 'NativeTokenRefreshError';
+  }
+}
 
 function ensureTokenRefreshListener(): void {
   if (tokenRefreshListenerAttached) {
@@ -224,7 +420,7 @@ function ensureTokenRefreshListener(): void {
     if (detail.ok) {
       pending.resolve();
     } else {
-      pending.reject();
+      pending.reject(new NativeTokenRefreshError());
     }
   });
   tokenRefreshListenerAttached = true;
@@ -242,7 +438,7 @@ export function requestNativeTokenRefresh(): Promise<void> | null {
   return new Promise<void>((resolve, reject) => {
     const timeout = window.setTimeout(() => {
       pendingTokenRefreshes.delete(id);
-      reject();
+      reject(new NativeTokenRefreshError('네이티브 토큰 갱신 응답 없음'));
     }, 15_000);
     pendingTokenRefreshes.set(id, { resolve, reject, timeout });
     try {
@@ -252,7 +448,7 @@ export function requestNativeTokenRefresh(): Promise<void> | null {
     } catch {
       window.clearTimeout(timeout);
       pendingTokenRefreshes.delete(id);
-      reject();
+      reject(new NativeTokenRefreshError('네이티브 채널 전송 실패'));
     }
   });
 }
@@ -434,7 +630,6 @@ export function onNativeStoryViewed(
   return () => win.removeEventListener('native:story_viewed', listener);
 }
 
-
 /** 현재 쉘이 날짜 피커 위임을 지원하는지. 오버레이 렌더 여부 판정용. */
 export function isNativeDatePickerAvailable(): boolean {
   return (
@@ -453,7 +648,10 @@ export function openNativeDatePicker(
   const id = generateModalId();
   return new Promise<string | null>((resolve) => {
     pendingNativeDates.set(id, resolve);
-    postNativeMessage({ type: 'date_picker_open', payload: { id, ...options } });
+    postNativeMessage({
+      type: 'date_picker_open',
+      payload: { id, ...options },
+    });
   });
 }
 
@@ -509,4 +707,11 @@ export function openNativeModal(
       payload: { id, ...options },
     });
   });
+}
+
+export function isNativeChallengeCreatedModalAvailable(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null &&
+    hasNativeFeature('challengeCreatedModal')
+  );
 }

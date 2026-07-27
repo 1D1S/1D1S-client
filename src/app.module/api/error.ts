@@ -110,6 +110,12 @@ export const isUnauthorizedError = (error: unknown): boolean =>
 export const isRedirectError = (error: unknown): boolean =>
   isAxiosErrorLike(error) && error.response?.status === 302;
 
+// 취소/중단된 요청. 로그아웃·페이지 전환으로 in-flight 요청이 abort 되면
+// axios 가 code 'ERR_CANCELED' 로 reject 한다. response 가 없어 인증 계열
+// 판정에 걸리지 않고 "네트워크 오류" 토스트로 새어 나가므로 별도로 잡는다.
+export const isCanceledError = (error: unknown): boolean =>
+  isAxiosErrorLike(error) && error.code === 'ERR_CANCELED';
+
 // 403. 리프레시/인증 요청이 서버에서 명시적으로 거부된(세션 복구 불가) 경우.
 // 회전형 refresh 재사용 감지로 family 가 무효화되면 401 대신 403 으로 응답할 수
 // 있어 401 과 동일하게 취급한다. 5xx·429·408·네트워크 오류(일시적)와는 구분한다.

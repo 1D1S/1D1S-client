@@ -1,10 +1,11 @@
 'use client';
 
-import { PageWatermark } from '@1d1s/design-system';
+import { Icon, PageWatermark } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import Stories from '@feature/stories/components/Stories';
 import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useHasMounted } from '@module/hooks/useHasMounted';
+import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
@@ -33,8 +34,11 @@ function HomeLoginCta(): React.ReactElement {
           'cursor-pointer transition hover:brightness-105'
         )}
       >
-        <span aria-hidden className="animate-flame-flicker text-[40px]">
-          🔥
+        <span
+          aria-hidden
+          className="animate-flame-flicker inline-flex text-red-500"
+        >
+          <Icon name="Flame" size={40} />
         </span>
         <span className="text-[18px] font-extrabold tracking-tight text-gray-900">
           로그인하고 나의 오늘을 시작하세요
@@ -87,11 +91,16 @@ export default function HomeScreen(): React.ReactElement {
     showLoggedInShell &&
     (!hasMounted || isSidebarLoading || isSidebarFetching || !sidebar);
 
+  // 스플래시 dismiss 신호: 홈 핵심 콘텐츠(스트릭/오늘의 기록 or 게스트 CTA)가
+  // 스켈레톤이 아니라 실제로 렌더된 시점에 1회 발화. 게스트는 isStreakLoading
+  // 이 false 라 CTA 렌더 직후, 로그인 사용자는 사이드바 로드 후.
+  useSignalAppReady(!isStreakLoading);
+
   return (
     <>
       <HomePopup enabled={isLoggedIn} />
       <div
-        data-native-flush-top
+        data-native-home-content
         className={cn(
           'mx-auto flex w-full max-w-[1200px] flex-col gap-4 lg:gap-6',
           'px-5 py-7 lg:px-8 lg:py-10'
@@ -100,7 +109,7 @@ export default function HomeScreen(): React.ReactElement {
         {/* 모바일 인사 hero — 데스크탑/태블릿은 시안에 따라 생략.
             인사~스토리 간격이 과해 보여 모바일에서만 gap 을 좁힌다. */}
         <div className="-mb-2 lg:mb-0 lg:hidden">
-          <HomeWarmGreeting />
+          <HomeWarmGreeting isLoading={showLoggedInShell && isStreakLoading} />
         </div>
 
         {showLoggedInShell ? (
@@ -109,7 +118,7 @@ export default function HomeScreen(): React.ReactElement {
 
             {/* 배너/스트릭 — 모바일 세로 스택, lg 이상 1:1 좌우 배치 */}
             <div className="grid gap-3 lg:grid-cols-2">
-              <HomeWarmBanner />
+              <HomeWarmBanner isLoading={isStreakLoading} />
               <HomeStreakSlot
                 streakDays={streakDays}
                 isStreakLoading={isStreakLoading}

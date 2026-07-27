@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  Card,
-  CircleAvatar,
-  MobileHeader,
-  Text,
-} from '@1d1s/design-system';
+import { Card, CircleAvatar, MobileHeader, Text } from '@1d1s/design-system';
 import EmptyState from '@component/EmptyState';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
@@ -13,6 +8,7 @@ import { normalizeApiError } from '@module/api/error';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
+import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
@@ -38,8 +34,7 @@ function ParticipantRow({
   participant: Participant;
   onClick(): void;
 }): React.ReactElement {
-  const hasRank =
-    typeof participant.rank === 'number' && participant.rank > 0;
+  const hasRank = typeof participant.rank === 'number' && participant.rank > 0;
   const isHost = participant.status === 'HOST';
 
   return (
@@ -73,11 +68,7 @@ function ParticipantRow({
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-1.5">
-          <Text
-            size="body2"
-            weight="bold"
-            className="truncate text-gray-800"
-          >
+          <Text size="body2" weight="bold" className="truncate text-gray-800">
             {participant.nickname}
           </Text>
           {isHost ? (
@@ -218,9 +209,12 @@ export function ChallengeParticipantListScreen({
                 <li key={participant.participantId}>
                   <ParticipantRow
                     participant={participant}
-                    onClick={() =>
-                      router.push(`/member/${participant.memberId}`)
-                    }
+                    onClick={() => {
+                      const path = `/member/${participant.memberId}`;
+                      if (!requestNativePushRoute(path)) {
+                        router.push(path);
+                      }
+                    }}
                   />
                 </li>
               ))}

@@ -8,6 +8,7 @@ import {
   Text,
 } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
+import { CHALLENGE_THUMBNAIL_ASPECT } from '@feature/challenge/detail/consts/heroLayout';
 import { resolveDiaryImageUrl } from '@module/utils/diaryImageUrl';
 import { createActivationKeydownHandler } from '@module/utils/event';
 
@@ -94,10 +95,13 @@ export function ChallengeListItem({
     >
       <div
         className={cn(
+          // 썸네일 비율은 배너(챌린지 상세 히어로)와 같은 3:2 — 카드/배너와
+          // 다른 비율이면 같은 이미지가 여기서만 다르게 잘린다.
           'bg-main-100 relative shrink-0 overflow-hidden rounded-[10px]',
+          CHALLENGE_THUMBNAIL_ASPECT,
           isPicker
-            ? 'h-[72px] w-[124px] sm:h-[80px] sm:w-[138px]'
-            : 'aspect-video w-[126px] self-center sm:w-[154px]'
+            ? 'w-[124px] sm:w-[138px]'
+            : 'w-[126px] self-center sm:w-[154px]'
         )}
       >
         {resolvedImageUrl ? (

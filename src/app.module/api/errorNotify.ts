@@ -2,11 +2,13 @@
 
 import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
+import { NativeTokenRefreshError } from '@module/utils/nativeBridge';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 
 import { API_BASE_URL } from './config';
 import {
   isAuthPrincipalError,
+  isCanceledError,
   isForbiddenError,
   isInvalidRefreshTokenError,
   isRedirectError,
@@ -23,6 +25,18 @@ import {
 
 const TOASTED_ERRORS = new WeakSet<object>();
 let isRedirecting = false;
+
+// 로그아웃 진행 창(window). 로그아웃은 토큰을 지운 뒤 로그아웃 POST·잔여
+// in-flight 요청들이 401/네트워크로 무더기로 떨어진다 — 전부 사용자가 의도한
+// 정리라, 이 창 동안은 에러 토스트를 통째로 억제한다. ERR_CANCELED/
+// NativeTokenRefreshError 로 안 잡히는 "네트워크 연결…"(응답 없는 실패)까지 커버.
+let logoutSuppressUntil = 0;
+
+export const beginLogoutSuppression = (durationMs = 5000): void => {
+  logoutSuppressUntil = Date.now() + durationMs;
+};
+
+const isLogoutSuppressed = (): boolean => Date.now() < logoutSuppressUntil;
 
 const PROTECTED_PATH_PREFIXES = [
   '/mypage',
@@ -95,6 +109,25 @@ export const handleAuthError = (error: unknown): void => {
   }
 };
 
+// 객체가 아닌 에러(문자열·undefined 등)는 WeakSet 에 못 담는다. 그대로 두면
+// 같은 실패가 여러 번 토스트된다 — 메시지 기준으로 짧게 중복을 막는다.
+const recentMessages = new Map<string, number>();
+const DUPLICATE_WINDOW_MS = 3000;
+
+const isDuplicateMessage = (message: string): boolean => {
+  const now = Date.now();
+  for (const [key, at] of recentMessages) {
+    if (now - at > DUPLICATE_WINDOW_MS) {
+      recentMessages.delete(key);
+    }
+  }
+  if (recentMessages.has(message)) {
+    return true;
+  }
+  recentMessages.set(message, now);
+  return false;
+};
+
 const shouldSkipToast = (error: unknown): boolean => {
   if (!error || typeof error !== 'object') {
     return false;
@@ -117,12 +150,31 @@ export const notifyApiError = (error: unknown): void => {
     return;
   }
 
+  // 로그아웃 진행 중 — 로그아웃 POST 실패("네트워크 연결…")·잔여 요청 401 등을
+  // 전부 억제한다. 사용자가 나가는 중이라 어떤 에러도 띄울 이유가 없다.
+  if (isLogoutSuppressed()) {
+    return;
+  }
+
+  // 취소/중단된 요청(로그아웃·페이지 전환 시 in-flight abort)은 사용자 잘못이
+  // 아니므로 토스트하지 않는다. 이걸 막지 않으면 로그아웃 순간 여러 요청이
+  // 동시에 abort 되며 "네트워크 오류" 토스트가 중복으로 뜬다.
+  if (isCanceledError(error)) {
+    return;
+  }
+
   // 인증 계열 에러는 토스트로 노출하지 않고 조용히 처리한다. 비로그인/세션 만료는
   // 사용자에게 "잘못된 시큐리티 프린시플" 같은 원문 에러를 보여줄 게 아니라,
   // 세션 힌트를 정리하고 (보호 경로면) 로그인으로 유도해야 한다.
   //   - 401: 토큰 없음/만료
   //   - AUTH-001/AUTH-002: 익명/무효 principal 로 인증 필수 API 호출(400)
   //   - AUTH-006/AUTH-012: refresh token 무효
+  // 네이티브 토큰 갱신 실패 = 세션 만료. 로그아웃 직후 살아 있던 요청들이
+  // 여기로 몰리는데, 사용자에게 보여줄 성질의 오류가 아니다.
+  if (error instanceof NativeTokenRefreshError) {
+    return;
+  }
+
   if (
     isUnauthorizedError(error) ||
     isAuthPrincipalError(error) ||
@@ -137,5 +189,8 @@ export const notifyApiError = (error: unknown): void => {
   }
 
   const normalizedError = normalizeApiError(error);
+  if (isDuplicateMessage(normalizedError.message)) {
+    return;
+  }
   toast.error(normalizedError.message);
 };

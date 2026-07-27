@@ -15,6 +15,7 @@ import { useSafeBack } from '@module/hooks/useSafeBack';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { formatDateISO } from '@module/utils/date';
+import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import {
   ArrowLeft,
@@ -143,12 +144,26 @@ export function ChallengeDetailScreen({
   const handleBack = useSafeBack('/challenge');
 
   const tabParam = searchParams.get('tab');
-  const activeTab: ChallengeTabId = isChallengeTab(tabParam)
+  const urlTab: ChallengeTabId = isChallengeTab(tabParam)
     ? tabParam
     : 'overview';
+  // 탭 전환을 즉시 반영한다. activeTab 을 URL(useSearchParams)에서 직접
+  // 파생하면 router.replace 가 App Router 네비게이션(RSC 왕복)을 마칠 때까지
+  // 값이 안 바뀌어, 탭 인디케이터가 "데이터 로딩 후에야" 움직인다. 로컬
+  // 상태로 클릭 즉시 전환하고 콘텐츠는 각 패널 스켈레톤이 채운다. URL 은
+  // 딥링크/뒤로가기용으로 계속 동기화한다.
+  const [activeTab, setActiveTab] = useState<ChallengeTabId>(urlTab);
+  useEffect(() => {
+    // 뒤로가기·딥링크로 URL 탭이 바뀌면 상태를 맞춘다(클릭 경로는 no-op).
+    setActiveTab(urlTab);
+  }, [urlTab]);
+
   const diaryDate = searchParams.get('date') ?? undefined;
 
   const handleTabChange = (nextId: string): void => {
+    if (isChallengeTab(nextId)) {
+      setActiveTab(nextId);
+    }
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', nextId);
     // 일지 탭을 떠나면 날짜 필터를 흘려보내지 않는다.
@@ -237,7 +252,6 @@ export function ChallengeDetailScreen({
     Math.round(
       Math.min(100, Math.max(0, detail?.participationRate ?? 0)) * 10
     ) / 10;
-
 
   const myStatus = detail?.myStatus ?? 'NONE';
   const isHost = myStatus === 'HOST';
@@ -757,8 +771,8 @@ export function ChallengeDetailScreen({
             {/* 메인 콘텐츠: 탭(소개 / 일지 / 참여자) */}
             <div className="flex min-w-0 flex-col">
               {/* 모바일에선 compact 헤더(h-14) 아래에 sticky 로 붙인다.
-                  네이티브 앱은 그 헤더를 숨기므로(data-native-hide) top-14
-                  가 허공을 가리킨다 — data-native-top-0 이 top:0 으로 보정. */}
+                  네이티브 앱은 웹 헤더 대신 Flutter compact 헤더를 오버레이하므로
+                  data-native-top-0 이 같은 56px 오프셋을 유지한다. */}
               <div
                 data-native-top-0
                 className={cn(
@@ -983,9 +997,12 @@ export function ChallengeDetailScreen({
                               goals={
                                 isFreeChallenge ? participant.goals : undefined
                               }
-                              onProfileClick={() =>
-                                router.push(`/member/${participant.memberId}`)
-                              }
+                              onProfileClick={() => {
+                                const path = `/member/${participant.memberId}`;
+                                if (!requestNativePushRoute(path)) {
+                                  router.push(path);
+                                }
+                              }}
                               onAccept={() =>
                                 handleAcceptParticipant(
                                   participant.participantId
@@ -1007,33 +1024,36 @@ export function ChallengeDetailScreen({
                     ) : null}
 
                     <ChallengeLeaderboardCard
-                    maxRows={PARTICIPANT_PREVIEW_SIZE}
-                    entries={previewParticipants.map((participant) => ({
-                      participantId: participant.participantId,
-                      memberId: participant.memberId,
-                      nickname: participant.nickname,
-                      profileImg: participant.profileImg,
-                      isHost: participant.status === 'HOST',
-                      // 고정 목표는 전원 공통이라 참여자별로 볼 의미가 없다.
-                      goals: isFreeChallenge ? participant.goals : undefined,
-                      rank: participant.rank,
-                      streak: participant.streak,
-                      completedGoalCount: participant.completedGoalCount,
-                    }))}
-                    totalCount={summaryParticipantCnt}
-                    onShowAll={() =>
-                      router.push(`/challenge/${id}/participants`)
-                    }
-                    onMemberClick={(memberId) =>
-                      router.push(`/member/${memberId}`)
-                    }
-                    canPoke={canPokeMembers}
-                    currentMemberId={currentMemberId}
-                    currentNickname={currentNickname}
-                    onPoke={handlePokeMember}
-                    pokingMemberId={pokingMemberId}
-                    pokedMemberIds={pokedMemberIds}
-                  />
+                      maxRows={PARTICIPANT_PREVIEW_SIZE}
+                      entries={previewParticipants.map((participant) => ({
+                        participantId: participant.participantId,
+                        memberId: participant.memberId,
+                        nickname: participant.nickname,
+                        profileImg: participant.profileImg,
+                        isHost: participant.status === 'HOST',
+                        // 고정 목표는 전원 공통이라 참여자별로 볼 의미가 없다.
+                        goals: isFreeChallenge ? participant.goals : undefined,
+                        rank: participant.rank,
+                        streak: participant.streak,
+                        completedGoalCount: participant.completedGoalCount,
+                      }))}
+                      totalCount={summaryParticipantCnt}
+                      onShowAll={() =>
+                        router.push(`/challenge/${id}/participants`)
+                      }
+                      onMemberClick={(memberId) => {
+                        const path = `/member/${memberId}`;
+                        if (!requestNativePushRoute(path)) {
+                          router.push(path);
+                        }
+                      }}
+                      canPoke={canPokeMembers}
+                      currentMemberId={currentMemberId}
+                      currentNickname={currentNickname}
+                      onPoke={handlePokeMember}
+                      pokingMemberId={pokingMemberId}
+                      pokedMemberIds={pokedMemberIds}
+                    />
                   </>
                 ) : null}
               </div>

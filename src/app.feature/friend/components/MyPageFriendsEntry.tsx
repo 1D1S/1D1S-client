@@ -3,7 +3,7 @@
 import { Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { ChevronRight, Users } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import React from 'react';
 
 import {
@@ -16,7 +16,6 @@ import {
  * 친구 수와 받은 신청 건수를 함께 노출한다.
  */
 export function MyPageFriendsEntry(): React.ReactElement {
-  const router = useRouter();
   const { data: friends } = useFriendList();
   const { data: received } = useReceivedFriendRequests();
 
@@ -24,9 +23,9 @@ export function MyPageFriendsEntry(): React.ReactElement {
   const receivedCount = received?.length ?? 0;
 
   return (
-    <button
-      type="button"
-      onClick={() => router.push('/mypage/friend')}
+    <Link
+      href="/mypage/friend"
+      prefetch
       className={cn(
         'group flex w-full items-center gap-3 rounded-[14px]',
         'border border-gray-200 bg-white px-4 py-4 text-left',
@@ -63,6 +62,6 @@ export function MyPageFriendsEntry(): React.ReactElement {
         </span>
       ) : null}
       <ChevronRight className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
-    </button>
+    </Link>
   );
 }

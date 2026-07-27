@@ -10,13 +10,17 @@ import {
   Text,
 } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import {
+  isNativeModalAvailable,
+  openNativeModal,
+} from '@module/utils/nativeBridge';
 import { ImageIcon, Maximize2, Minimize2 } from 'lucide-react';
-import Image from 'next/image';
 import type { ReactElement, ReactNode } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   cropImageFile,
+  getDrawMetrics,
   type ImageCropMode,
   type ImageCropSize,
 } from '@/app.lib/cropImage';
@@ -35,6 +39,75 @@ const BACKGROUND_OPTIONS = [
   { value: '#f3f4f6', label: '회색' },
   { value: '#111827', label: '검정' },
 ] as const;
+
+// 네이티브 편집기 미리보기용 축소본 장변(px). 최종 크롭은 원본 File 로 하므로
+// 이 값은 표시 품질/페이로드 크기 트레이드오프일 뿐 출력 화질과 무관하다.
+const NATIVE_PREVIEW_MAX_EDGE = 1200;
+
+// 편집 파라미터 결과 — 네이티브가 JSON 문자열로 돌려주는 값.
+interface CropResult {
+  mode: ImageCropMode;
+  zoom: number;
+  offsetX: number;
+  offsetY: number;
+  backgroundColor: string;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+// 원본 File 을 장변 maxEdge 로 축소해 data URL 로 만든다(표시 전용).
+async function createPreviewDataUrl(
+  file: File,
+  maxEdge: number
+): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  try {
+    const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      return '';
+    }
+    context.drawImage(bitmap, 0, 0, width, height);
+    return canvas.toDataURL('image/jpeg', 0.8);
+  } finally {
+    bitmap.close?.();
+  }
+}
+
+// 네이티브가 돌려준 편집 결과(JSON 문자열)를 안전하게 파싱·범위 보정한다.
+// 파싱 불가/형식 오류면 null(취소로 처리).
+function parseNativeCropResult(value: string): CropResult | null {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(value);
+  } catch {
+    return null;
+  }
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
+  const record = raw as Record<string, unknown>;
+  const mode: ImageCropMode = record.mode === 'contain' ? 'contain' : 'cover';
+  const zoom =
+    typeof record.zoom === 'number' ? clamp(record.zoom, 1, 3) : 1;
+  const offsetX =
+    typeof record.offsetX === 'number' ? clamp(record.offsetX, -1, 1) : 0;
+  const offsetY =
+    typeof record.offsetY === 'number' ? clamp(record.offsetY, -1, 1) : 0;
+  // 배경색은 contain 에서만 의미. 문자열 아니면 기본 흰색.
+  const backgroundColor =
+    typeof record.backgroundColor === 'string'
+      ? record.backgroundColor
+      : '#ffffff';
+  return { mode, zoom, offsetX, offsetY, backgroundColor };
+}
 
 function ModeButton({
   active,
@@ -79,36 +152,8 @@ function ModeButton({
   );
 }
 
-function RangeControl({
-  label,
-  value,
-  min,
-  max,
-  step,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step: number;
-  onChange(value: number): void;
-}): ReactElement {
-  return (
-    <label className="block space-y-1.5">
-      <span className="text-xs font-bold text-gray-600">{label}</span>
-      <input
-        type="range"
-        value={value}
-        min={min}
-        max={max}
-        step={step}
-        onChange={(event) => onChange(Number(event.target.value))}
-        className="accent-main-800 w-full"
-      />
-    </label>
-  );
-}
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 3;
 
 export function ImageCropDialog({
   open,
@@ -117,8 +162,9 @@ export function ImageCropDialog({
   outputSize,
   onOpenChange,
   onApply,
-}: ImageCropDialogProps): ReactElement {
+}: ImageCropDialogProps): ReactElement | null {
   const [previewUrl, setPreviewUrl] = useState('');
+  const [imageSize, setImageSize] = useState<ImageCropSize | null>(null);
   const [mode, setMode] = useState<ImageCropMode>('cover');
   const [zoom, setZoom] = useState(1);
   const [offsetX, setOffsetX] = useState(0);
@@ -126,24 +172,41 @@ export function ImageCropDialog({
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const previewOffsetFactor = mode === 'cover' ? 1 : zoom - 1;
-  const imageTransform =
-    `translate(${offsetX * 18 * previewOffsetFactor}%, ` +
-    `${offsetY * 18 * previewOffsetFactor}%) ` +
-    `scale(${zoom})`;
+  const nativeRequestInFlight = useRef(false);
+  const nativeModalAvailable = isNativeModalAvailable();
+
+  // 제스처 상태. 미리보기 위 드래그=이동, 휠/핀치=확대. 슬라이더 없음.
+  const frameRef = useRef<HTMLDivElement>(null);
+  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const dragRef = useRef<{
+    x: number;
+    y: number;
+    offsetX: number;
+    offsetY: number;
+  } | null>(null);
+  const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
+
   const aspectRatio = useMemo(
     () => `${outputSize.width} / ${outputSize.height}`,
     [outputSize.height, outputSize.width]
   );
 
+  // 미리보기 = 출력. 실제 크롭과 같은 배치 수학(getDrawMetrics)으로 이미지
+  // 위치/크기를 프레임 대비 %로 그린다(WYSIWYG).
+  const metrics = imageSize
+    ? getDrawMetrics({ imageSize, outputSize, mode, zoom, offsetX, offsetY })
+    : null;
+
   useEffect(() => {
     if (!file) {
       setPreviewUrl('');
+      setImageSize(null);
       return;
     }
 
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
+    setImageSize(null);
     setMode('cover');
     setZoom(1);
     setOffsetX(0);
@@ -155,6 +218,253 @@ export function ImageCropDialog({
       URL.revokeObjectURL(objectUrl);
     };
   }, [file]);
+
+  // 휠 확대/축소 — passive:false 로 붙여 페이지 스크롤 대신 zoom 을 잡는다.
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) {
+      return;
+    }
+    const handleWheel = (event: WheelEvent): void => {
+      event.preventDefault();
+      setZoom((current) =>
+        clamp(current * (1 - event.deltaY * 0.0015), ZOOM_MIN, ZOOM_MAX)
+      );
+    };
+    frame.addEventListener('wheel', handleWheel, { passive: false });
+    return () => frame.removeEventListener('wheel', handleWheel);
+  }, [previewUrl]);
+
+  // 드래그 픽셀 → offset(-1..1) 역산. drawX = center - overflowX*offsetX/2 라
+  // 이미지를 오른쪽으로 끌면 offsetX 가 감소한다. overflow 가 없으면(꽉 안 참)
+  // 그 축은 이동하지 않는다 — cover 는 항상 프레임을 덮도록 자연히 clamp 된다.
+  const applyDrag = (
+    dx: number,
+    dy: number,
+    start: { offsetX: number; offsetY: number }
+  ): void => {
+    const frame = frameRef.current;
+    if (!frame || !imageSize) {
+      return;
+    }
+    const rect = frame.getBoundingClientRect();
+    const drawn = getDrawMetrics({
+      imageSize,
+      outputSize,
+      mode,
+      zoom,
+      offsetX: start.offsetX,
+      offsetY: start.offsetY,
+    });
+    const overflowX = Math.max(0, drawn.drawWidth - outputSize.width);
+    const overflowY = Math.max(0, drawn.drawHeight - outputSize.height);
+    if (overflowX > 0 && rect.width > 0) {
+      const next =
+        start.offsetX - (dx * 2 * outputSize.width) / (overflowX * rect.width);
+      setOffsetX(clamp(next, -1, 1));
+    }
+    if (overflowY > 0 && rect.height > 0) {
+      const next =
+        start.offsetY -
+        (dy * 2 * outputSize.height) / (overflowY * rect.height);
+      setOffsetY(clamp(next, -1, 1));
+    }
+  };
+
+  const handlePointerDown = (event: React.PointerEvent): void => {
+    frameRef.current?.setPointerCapture(event.pointerId);
+    pointersRef.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+    if (pointersRef.current.size >= 2) {
+      const [a, b] = [...pointersRef.current.values()];
+      pinchRef.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), zoom };
+      dragRef.current = null;
+    } else {
+      dragRef.current = {
+        x: event.clientX,
+        y: event.clientY,
+        offsetX,
+        offsetY,
+      };
+      pinchRef.current = null;
+    }
+  };
+
+  const handlePointerMove = (event: React.PointerEvent): void => {
+    if (!pointersRef.current.has(event.pointerId)) {
+      return;
+    }
+    pointersRef.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+    if (pointersRef.current.size >= 2 && pinchRef.current) {
+      const [a, b] = [...pointersRef.current.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinchRef.current.dist > 0) {
+        setZoom(
+          clamp(
+            pinchRef.current.zoom * (dist / pinchRef.current.dist),
+            ZOOM_MIN,
+            ZOOM_MAX
+          )
+        );
+      }
+      return;
+    }
+    if (dragRef.current) {
+      applyDrag(
+        event.clientX - dragRef.current.x,
+        event.clientY - dragRef.current.y,
+        dragRef.current
+      );
+    }
+  };
+
+  const handlePointerUp = (event: React.PointerEvent): void => {
+    pointersRef.current.delete(event.pointerId);
+    if (pointersRef.current.size < 2) {
+      pinchRef.current = null;
+    }
+    if (pointersRef.current.size === 1) {
+      // 핀치 → 드래그 전환: 남은 한 손가락 기준으로 드래그를 다시 시작한다.
+      const [remaining] = [...pointersRef.current.values()];
+      dragRef.current = {
+        x: remaining.x,
+        y: remaining.y,
+        offsetX,
+        offsetY,
+      };
+    } else if (pointersRef.current.size === 0) {
+      dragRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (!open) {
+      nativeRequestInFlight.current = false;
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (
+      !open ||
+      !file ||
+      !nativeModalAvailable ||
+      nativeRequestInFlight.current
+    ) {
+      return;
+    }
+    nativeRequestInFlight.current = true;
+    let cancelled = false;
+
+    // 결과 편집 파라미터로 원본을 크롭한다(출력은 웹이 100% 담당).
+    const applyCrop = async (result: CropResult): Promise<void> => {
+      setIsProcessing(true);
+      try {
+        const croppedFile = await cropImageFile(file, {
+          mode: result.mode,
+          outputSize,
+          zoom: result.zoom,
+          offsetX: result.offsetX,
+          offsetY: result.offsetY,
+          backgroundColor: result.backgroundColor,
+        });
+        if (cancelled) {
+          return;
+        }
+        onApply(croppedFile);
+        onOpenChange(false);
+      } catch {
+        setErrorMessage(
+          '이미지를 편집하지 못했습니다. 다른 사진을 선택해주세요.'
+        );
+        nativeRequestInFlight.current = false;
+        onOpenChange(false);
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    void (async () => {
+      // 미리보기 축소본 생성(실패해도 앱은 buttons 폴백으로 동작).
+      let previewDataUrl = '';
+      try {
+        previewDataUrl = await createPreviewDataUrl(
+          file,
+          NATIVE_PREVIEW_MAX_EDGE
+        );
+      } catch {
+        previewDataUrl = '';
+      }
+      if (cancelled) {
+        return;
+      }
+
+      const value = await openNativeModal({
+        title,
+        message: '사진을 배너 비율에 맞추는 방식을 선택해 주세요.',
+        // 신버전 앱: 편집 UI. 실제 크롭은 웹이 원본으로 수행하므로 편집
+        // 파라미터만 회신받는다.
+        imageCrop: {
+          previewDataUrl,
+          outputSize,
+          backgroundOptions: BACKGROUND_OPTIONS.map((option) => option.value),
+        },
+        // 구버전 앱 폴백: imageCrop 을 모르면 이 3버튼으로 동작한다.
+        buttons: [
+          { label: '화면 채우기', value: 'cover' },
+          { label: '사진 전체 보기', value: 'contain' },
+          { label: '취소', value: 'cancel', style: 'cancel' },
+        ],
+      });
+      if (cancelled) {
+        return;
+      }
+
+      // 취소.
+      if (value === null || value === 'cancel') {
+        onOpenChange(false);
+        return;
+      }
+      // 구버전 앱(3버튼): 기본 파라미터로 크롭.
+      if (value === 'cover' || value === 'contain') {
+        await applyCrop({
+          mode: value,
+          zoom: 1,
+          offsetX: 0,
+          offsetY: 0,
+          backgroundColor: '#ffffff',
+        });
+        return;
+      }
+      // 신버전 앱: 편집 파라미터 JSON.
+      const parsed = parseNativeCropResult(value);
+      if (!parsed) {
+        onOpenChange(false);
+        return;
+      }
+      await applyCrop(parsed);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    file,
+    nativeModalAvailable,
+    onApply,
+    onOpenChange,
+    open,
+    outputSize,
+    title,
+  ]);
+
+  if (nativeModalAvailable) {
+    return null;
+  }
 
   const handleApply = async (): Promise<void> => {
     if (!file || isProcessing) {
@@ -176,7 +486,9 @@ export function ImageCropDialog({
       onApply(croppedFile);
       onOpenChange(false);
     } catch {
-      setErrorMessage('이미지를 편집하지 못했습니다. 다른 사진을 선택해주세요.');
+      setErrorMessage(
+        '이미지를 편집하지 못했습니다. 다른 사진을 선택해주세요.'
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -197,31 +509,64 @@ export function ImageCropDialog({
 
         <div className="min-h-0 flex-1 overflow-y-auto p-5">
           <div className="space-y-5">
-            <div
-              className={cn(
-                'relative w-full overflow-hidden rounded-xl',
-                'border border-gray-200 bg-gray-100'
-              )}
-              style={{ aspectRatio, backgroundColor }}
-            >
-              {previewUrl ? (
-                <Image
-                  src={previewUrl}
-                  alt="선택한 이미지 미리보기"
-                  fill
-                  unoptimized
-                  className={cn(
-                    mode === 'cover' ? 'object-cover' : 'object-contain'
-                  )}
-                  style={{
-                    transform: imageTransform,
-                  }}
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  <ImageIcon className="h-8 w-8 text-gray-400" />
-                </div>
-              )}
+            <div className="space-y-2">
+              <div
+                ref={frameRef}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+                className={cn(
+                  'relative w-full touch-none overflow-hidden rounded-xl',
+                  'border border-gray-200 bg-gray-100 select-none',
+                  previewUrl && 'cursor-grab active:cursor-grabbing'
+                )}
+                style={{ aspectRatio, backgroundColor }}
+              >
+                {previewUrl ? (
+                  /* 로컬 objectURL 미리보기를 크롭 metrics 기준 %로 직접
+                     배치해야 해 next/image 로는 표현 불가. 즉시 폐기되는
+                     편집용이라 최적화 불필요. */
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={previewUrl}
+                    alt="선택한 이미지 미리보기"
+                    draggable={false}
+                    onLoad={(event) =>
+                      setImageSize({
+                        width: event.currentTarget.naturalWidth,
+                        height: event.currentTarget.naturalHeight,
+                      })
+                    }
+                    className={cn(
+                      'pointer-events-none absolute max-w-none select-none'
+                    )}
+                    style={
+                      metrics
+                        ? {
+                            left: `${(metrics.drawX / outputSize.width) * 100}%`,
+                            top: `${
+                              (metrics.drawY / outputSize.height) * 100
+                            }%`,
+                            width: `${
+                              (metrics.drawWidth / outputSize.width) * 100
+                            }%`,
+                            height: `${
+                              (metrics.drawHeight / outputSize.height) * 100
+                            }%`,
+                          }
+                        : { inset: 0, width: '100%', height: '100%', opacity: 0 }
+                    }
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <ImageIcon className="h-8 w-8 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              <Text size="caption2" className="block text-center text-gray-500">
+                드래그해서 위치를 맞추고, 휠·손가락으로 확대·축소하세요
+              </Text>
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
@@ -233,6 +578,8 @@ export function ImageCropDialog({
                 onClick={() => {
                   setMode('cover');
                   setZoom(1);
+                  setOffsetX(0);
+                  setOffsetY(0);
                 }}
               />
               <ModeButton
@@ -243,34 +590,9 @@ export function ImageCropDialog({
                 onClick={() => {
                   setMode('contain');
                   setZoom(1);
+                  setOffsetX(0);
+                  setOffsetY(0);
                 }}
-              />
-            </div>
-
-            <div className="space-y-3">
-              <RangeControl
-                label="확대"
-                value={zoom}
-                min={1}
-                max={3}
-                step={0.01}
-                onChange={setZoom}
-              />
-              <RangeControl
-                label="가로 위치"
-                value={offsetX}
-                min={-1}
-                max={1}
-                step={0.01}
-                onChange={setOffsetX}
-              />
-              <RangeControl
-                label="세로 위치"
-                value={offsetY}
-                min={-1}
-                max={1}
-                step={0.01}
-                onChange={setOffsetY}
               />
             </div>
 

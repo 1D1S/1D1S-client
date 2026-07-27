@@ -59,7 +59,7 @@ export function ChallengePreviewCardView({
         'rounded-3 overflow-hidden border border-gray-200 bg-white'
       )}
     >
-      <div className="relative aspect-[21/9] w-full">
+      <div className="relative aspect-[3/2] w-full">
         {thumbnailPreviewUrl ? (
           <Image
             src={thumbnailPreviewUrl}

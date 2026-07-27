@@ -30,9 +30,17 @@ import {
 } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { formatFormValues } from '@feature/challenge/write/utils/challengeCreatePayload';
 import { cn } from '@module/utils/cn';
-import { Check, Lightbulb, Loader2 } from 'lucide-react';
+import {
+  hideNativeProgress,
+  isNativeChallengeCreatedModalAvailable,
+  isNativeModalAvailable,
+  isNativeProgressAvailable,
+  openNativeModal,
+  showNativeProgress,
+} from '@module/utils/nativeBridge';
+import { Check, Lightbulb } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ChallengeCreateScreen(): React.ReactElement {
   const router = useRouter();
@@ -44,15 +52,70 @@ export default function ChallengeCreateScreen(): React.ReactElement {
   const [createdIsPrivate, setCreatedIsPrivate] = useState(false);
   const [createdPassword, setCreatedPassword] = useState<string>();
   const [isErrorOpen, setIsErrorOpen] = useState(false);
+  const nativeModalAvailable = isNativeModalAvailable();
+  const nativeProgressAvailable = isNativeProgressAvailable();
+
+  useEffect(() => {
+    if (!createChallenge.isPending || !nativeProgressAvailable) {
+      hideNativeProgress();
+      return;
+    }
+    showNativeProgress('챌린지를 만들고 있어요...');
+    return hideNativeProgress;
+  }, [createChallenge.isPending, nativeProgressAvailable]);
+
+  // 생성 완료 다이얼로그를 네이티브 모달로 띄운다. 앱 쉘이 웹과 같은 스펙
+  // (성공 체크 + 참여 링크 + 비밀번호 + 카카오/링크 복사)으로 그리고, 복사와
+  // 카카오 공유까지 네이티브가 끝낸다.
+  //
+  // 웹 다이얼로그를 그대로 두면 WebView 안에 갇혀 네이티브 헤더/바텀바 아래에
+  // 깔린다. 이 모달을 모르는 구버전 앱에서는 false 를 받아 웹 다이얼로그로
+  // 폴백한다.
+  const openNativeSuccessModal = (
+    challengeId: number,
+    isPrivate: boolean,
+    password?: string
+  ): boolean => {
+    if (!isNativeChallengeCreatedModalAvailable()) {
+      return false;
+    }
+    const shareLink = `${window.location.origin}/challenge/${challengeId}`;
+    void openNativeModal({
+      title: '챌린지 만들기가 완료되었습니다!',
+      buttons: [
+        { label: '홈', value: 'home', style: 'cancel' },
+        { label: '챌린지 확인하기', value: 'detail' },
+      ],
+      challengeCreated: { challengeId, shareLink, isPrivate, password },
+    }).then((result) => {
+      if (result === 'home') {
+        router.push('/');
+      } else if (result === 'detail') {
+        router.push(`/challenge/${challengeId}`);
+      }
+    });
+    return true;
+  };
 
   const onSubmit = (values: ChallengeCreateFormValues): void => {
     const payload = formatFormValues(values);
     createChallenge.mutate(payload, {
       onSuccess: (data) => {
+        const isPrivate = payload.challengeType === 'PRIVATE';
         setCreatedChallengeId(data.challengeId);
-        setCreatedIsPrivate(payload.challengeType === 'PRIVATE');
+        setCreatedIsPrivate(isPrivate);
         setCreatedPassword(payload.password);
-        setIsSuccessOpen(true);
+        // 네이티브가 같은 모달을 그리지 못하면(브라우저/구버전 앱) 웹
+        // 다이얼로그로 폴백한다 — 생성 직후 초대가 이 화면의 핵심 동선이라
+        // 제목·버튼만 남는 일반 버튼 모달로는 대체할 수 없다.
+        const delegated = openNativeSuccessModal(
+          data.challengeId,
+          isPrivate,
+          payload.password
+        );
+        if (!delegated) {
+          setIsSuccessOpen(true);
+        }
       },
       onError: () => {
         setIsErrorOpen(true);
@@ -61,6 +124,23 @@ export default function ChallengeCreateScreen(): React.ReactElement {
   };
 
   const canSubmit = form.formState.isValid && !createChallenge.isPending;
+  const handleCreateRequest = async (): Promise<void> => {
+    if (!nativeModalAvailable) {
+      form.handleSubmit(onSubmit)();
+      return;
+    }
+    const result = await openNativeModal({
+      title: '이 챌린지를 만들까요?',
+      message: '입력한 내용으로 챌린지를 생성합니다.',
+      buttons: [
+        { label: '취소', value: 'cancel', style: 'cancel' },
+        { label: '만들기', value: 'confirm' },
+      ],
+    });
+    if (result === 'confirm') {
+      form.handleSubmit(onSubmit)();
+    }
+  };
 
   return (
     <div className={cn('pb-mobile-action-bar min-h-screen w-full')}>
@@ -170,20 +250,35 @@ export default function ChallengeCreateScreen(): React.ReactElement {
               )}
             </Text>
             <div className="w-full lg:ml-auto lg:w-auto">
-              <ChallengeCreateDialog
-                onConfirm={() => form.handleSubmit(onSubmit)()}
-                disabled={!canSubmit}
-                triggerText={
-                  canSubmit ? '챌린지 만들기' : '제목 · 내 목표를 입력해 주세요'
-                }
-                triggerClassName="w-full lg:w-auto"
-              />
+              {nativeModalAvailable ? (
+                <Button
+                  type="button"
+                  disabled={!canSubmit}
+                  className="w-full lg:w-auto"
+                  onClick={() => void handleCreateRequest()}
+                >
+                  {canSubmit
+                    ? '챌린지 만들기'
+                    : '제목 · 내 목표를 입력해 주세요'}
+                </Button>
+              ) : (
+                <ChallengeCreateDialog
+                  onConfirm={() => form.handleSubmit(onSubmit)()}
+                  disabled={!canSubmit}
+                  triggerText={
+                    canSubmit
+                      ? '챌린지 만들기'
+                      : '제목 · 내 목표를 입력해 주세요'
+                  }
+                  triggerClassName="w-full lg:w-auto"
+                />
+              )}
             </div>
           </div>
         </MobileBottomActionBar>
       </Form>
 
-      {createChallenge.isPending && (
+      {createChallenge.isPending && !nativeProgressAvailable && (
         <div
           className={cn(
             'fixed inset-0 z-[60] flex items-center justify-center',
@@ -198,7 +293,12 @@ export default function ChallengeCreateScreen(): React.ReactElement {
               'px-8 py-7 shadow-xl'
             )}
           >
-            <Loader2 className="text-main-700 h-8 w-8 animate-spin" />
+            <span
+              className={cn(
+                'border-main-700 h-8 w-8 animate-spin rounded-full',
+                'border-2 border-t-transparent'
+              )}
+            />
             <Text size="body2" weight="medium" className="text-gray-600">
               챌린지를 만들고 있어요...
             </Text>

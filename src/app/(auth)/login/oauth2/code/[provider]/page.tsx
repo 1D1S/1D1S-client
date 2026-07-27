@@ -1,5 +1,6 @@
 'use client';
 
+import { LoginProcessingScreen } from '@feature/auth/components/LoginProcessingScreen';
 import { useSocialLogin } from '@feature/auth/hooks/useAuthQueries';
 import { OAuthProvider } from '@feature/auth/type/auth';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
@@ -89,9 +90,7 @@ function OAuthCallbackContent(): React.ReactElement {
 
   return (
     <>
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-500">로그인 처리 중...</p>
-      </div>
+      <LoginProcessingScreen />
       <NotificationOptInPrompt active={optInActive} onComplete={finishLogin} />
     </>
   );
@@ -99,13 +98,7 @@ function OAuthCallbackContent(): React.ReactElement {
 
 export default function OAuthCallbackPage(): React.ReactElement {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <p className="text-gray-500">로그인 처리 중...</p>
-        </div>
-      }
-    >
+    <Suspense fallback={<LoginProcessingScreen />}>
       <OAuthCallbackContent />
     </Suspense>
   );

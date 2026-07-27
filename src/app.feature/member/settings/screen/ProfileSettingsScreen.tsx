@@ -3,6 +3,7 @@
 import {
   AvatarImagePicker,
   Button,
+  Icon,
   Text,
   TextField,
 } from '@1d1s/design-system';
@@ -15,6 +16,7 @@ import {
   useUpdateProfileImage,
 } from '@feature/member/hooks/useMemberMutations';
 import { useMyPage } from '@feature/member/hooks/useMemberQueries';
+import { getProviderConfig } from '@feature/member/settings/consts/providerConfig';
 import { getApiErrorCode, normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
 import { validateNickname } from '@module/utils/nickname';
@@ -26,27 +28,6 @@ import {
 } from '@module/utils/phoneNumber';
 import Image from 'next/image';
 import React, { useState } from 'react';
-
-const PROVIDER_CONFIG = {
-  KAKAO: {
-    label: '카카오',
-    bg: 'bg-[#FEE500]',
-    textColor: 'text-black',
-    icon: '/images/kakao-logo.png',
-  },
-  NAVER: {
-    label: '네이버',
-    bg: 'bg-[#03C75A]',
-    textColor: 'text-white',
-    icon: '/images/naver-logo.png',
-  },
-  GOOGLE: {
-    label: '구글',
-    bg: 'bg-white border border-gray-300',
-    textColor: 'text-gray-700',
-    icon: null,
-  },
-} as const;
 
 export default function ProfileSettingsScreen(): React.ReactElement {
   const { data } = useMyPage();
@@ -234,9 +215,11 @@ export default function ProfileSettingsScreen(): React.ReactElement {
                 <Text
                   size="caption1"
                   weight="regular"
-                  className="text-green-600"
+                  as="div"
+                  className="flex items-center gap-1 text-green-600"
                 >
-                  ✅ 사용 가능한 닉네임이에요
+                  <Icon name="Check" size={14} aria-hidden />
+                  사용 가능한 닉네임이에요
                 </Text>
               ) : null}
             </div>
@@ -305,7 +288,8 @@ export default function ProfileSettingsScreen(): React.ReactElement {
                 </Text>
                 <div className="flex items-center gap-2">
                   {(() => {
-                    const config = PROVIDER_CONFIG[data.provider];
+                    // 미등록 프로바이더도 폴백으로 안전하게 그린다.
+                    const config = getProviderConfig(data.provider);
                     return (
                       <span
                         className={cn(

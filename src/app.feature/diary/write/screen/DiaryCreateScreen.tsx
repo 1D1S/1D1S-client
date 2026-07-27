@@ -1,16 +1,16 @@
 'use client';
 
-import {
-  Button,
-  MobileHeader,
-  Text,
-} from '@1d1s/design-system';
+import { Button, MobileHeader, Text } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { NativeDatePicker } from '@component/NativeDatePicker';
 import { cn } from '@module/utils/cn';
+import {
+  hideNativeProgress,
+  isNativeProgressAvailable,
+  showNativeProgress,
+} from '@module/utils/nativeBridge';
 import { startOfToday, subDays } from 'date-fns';
-import { Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo } from 'react';
@@ -80,6 +80,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
     closeCreateUnavailableDialog,
     handleSubmit,
   } = useDiaryCreateForm();
+  const nativeProgressAvailable = isNativeProgressAvailable();
 
   // 저장 중 오버레이가 떠 있는 동안 뒤 화면 스크롤을 잠근다.
   useEffect(() => {
@@ -93,6 +94,17 @@ export default function DiaryCreateScreen(): React.ReactElement {
       document.body.style.overflow = prevOverflow;
     };
   }, [isSubmitting]);
+
+  useEffect(() => {
+    if (!isSubmitting || !nativeProgressAvailable) {
+      hideNativeProgress();
+      return;
+    }
+    showNativeProgress(
+      isEditMode ? '일지를 수정하고 있어요...' : '일지를 올리고 있어요...'
+    );
+    return hideNativeProgress;
+  }, [isEditMode, isSubmitting, nativeProgressAvailable]);
 
   const totalGoalCount = isSelectedChallengeConfirmed ? goals.length : 0;
   const achievedGoalCount = isSelectedChallengeConfirmed
@@ -281,7 +293,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
               )}
             >
               {isHundredPercent
-                ? '🎉 오늘 목표 완료!'
+                ? '오늘 목표 완료!'
                 : `${achievedGoalCount}/${totalGoalCount} 달성 · ${percent}%`}
             </Text>
           ) : null}
@@ -298,7 +310,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
         </div>
       </MobileBottomActionBar>
 
-      {isSubmitting && (
+      {isSubmitting && !nativeProgressAvailable && (
         <div
           className={cn(
             'fixed inset-0 z-[60] flex items-center justify-center',
@@ -313,7 +325,12 @@ export default function DiaryCreateScreen(): React.ReactElement {
               'px-8 py-7 shadow-xl'
             )}
           >
-            <Loader2 className="text-main-700 h-8 w-8 animate-spin" />
+            <span
+              className={cn(
+                'border-main-700 h-8 w-8 animate-spin rounded-full',
+                'border-2 border-t-transparent'
+              )}
+            />
             <Text size="body2" weight="medium" className="text-gray-600">
               {isEditMode
                 ? '일지를 수정하고 있어요...'

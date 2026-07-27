@@ -47,6 +47,47 @@ const KAKAO_BUTTON_CLASS = cn(
   'hover:bg-[#F2DC00]'
 );
 
+/**
+ * 참여 링크 카카오 공유(웹 전용). 앱은 이 다이얼로그 대신 네이티브 완료
+ * 모달을 띄우고, 공유도 카카오 네이티브 SDK 로 한다 — JS SDK 는 WebView
+ * 안에서 공유 창(window.open) 이 막혀 아무 일도 일어나지 않는다.
+ */
+async function shareChallengeInviteToKakao({
+  shareLink,
+  isPrivate,
+  password,
+}: {
+  shareLink: string;
+  isPrivate?: boolean;
+  password?: string;
+}): Promise<void> {
+  if (!shareLink) {
+    return;
+  }
+  const description =
+    isPrivate && password
+      ? `비공개 챌린지에 초대합니다! 비밀번호: ${password}`
+      : '챌린지에 함께 도전해요!';
+  const link = { mobileWebUrl: shareLink, webUrl: shareLink };
+  try {
+    const kakao = await getKakao();
+    kakao.Share.sendDefault({
+      objectType: 'feed',
+      content: {
+        title: '챌린지 초대',
+        description,
+        imageUrl: `${window.location.origin}/images/open-graph.png`,
+        link,
+      },
+      buttons: [{ title: '챌린지 보러가기', link }],
+    });
+  } catch (error) {
+    // 실패 원인(키 누락/도메인 미등록/SDK 로드 실패 등)을 콘솔에 남긴다.
+    console.error('[KakaoShare] 공유 실패:', error);
+    toast.error('카카오 공유를 사용할 수 없어요. 링크를 복사해 주세요.');
+  }
+}
+
 export function ChallengeCreateSuccessDialog({
   challengeId,
   isPrivate = false,
@@ -76,33 +117,8 @@ export function ChallengeCreateSuccessDialog({
     }
   };
 
-  const handleKakaoShare = async (): Promise<void> => {
-    if (!shareLink) {
-      return;
-    }
-    const description =
-      isPrivate && password
-        ? `비공개 챌린지에 초대합니다! 비밀번호: ${password}`
-        : '챌린지에 함께 도전해요!';
-    const link = { mobileWebUrl: shareLink, webUrl: shareLink };
-    try {
-      const kakao = await getKakao();
-      kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: '챌린지 초대',
-          description,
-          imageUrl: `${window.location.origin}/images/open-graph.png`,
-          link,
-        },
-        buttons: [{ title: '챌린지 보러가기', link }],
-      });
-    } catch (error) {
-      // 실패 원인(키 누락/도메인 미등록/SDK 로드 실패 등)을 콘솔에 남긴다.
-      console.error('[KakaoShare] 공유 실패:', error);
-      toast.error('카카오 공유를 사용할 수 없어요. 링크를 복사해 주세요.');
-    }
-  };
+  const handleKakaoShare = (): Promise<void> =>
+    shareChallengeInviteToKakao({ shareLink, isPrivate, password });
 
   return (
     <Dialog onOpenChange={onOpenChange} {...props}>

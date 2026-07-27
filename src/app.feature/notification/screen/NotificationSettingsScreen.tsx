@@ -125,6 +125,28 @@ export function NotificationSettingsScreen(): React.ReactElement {
   const { data, isLoading } = useNotificationPreferences();
   const { mutate: updatePreferences } = useUpdateNotificationPreferences();
   const { status, subscribe } = useWebPushSubscription();
+  const migratedLegacyPreference = React.useRef(false);
+
+  React.useEffect(() => {
+    if (
+      status !== 'subscribed' ||
+      !data ||
+      migratedLegacyPreference.current ||
+      data.pushEnabled ||
+      data.friendEnabled ||
+      data.diaryEnabled ||
+      data.challengeEnabled
+    ) {
+      return;
+    }
+    migratedLegacyPreference.current = true;
+    updatePreferences({
+      pushEnabled: true,
+      friendEnabled: true,
+      diaryEnabled: true,
+      challengeEnabled: true,
+    });
+  }, [data, status, updatePreferences]);
 
   function handleChange(
     key: keyof NotificationPreferences,

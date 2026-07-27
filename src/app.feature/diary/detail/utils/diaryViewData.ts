@@ -36,13 +36,6 @@ export const FEELING_LABEL_MAP: Record<Feeling, string> = {
   NONE: '-',
 };
 
-export const FEELING_EMOJI_MAP: Record<Feeling, string> = {
-  HAPPY: '😊',
-  NORMAL: '😌',
-  SAD: '🥲',
-  NONE: '😐',
-};
-
 export interface DiaryDetailViewData {
   id: number;
   title: string;
@@ -50,7 +43,6 @@ export interface DiaryDetailViewData {
   relativeDateLabel: string;
   feeling: Feeling;
   feelingLabel: string;
-  feelingEmoji: string;
   feelingMoodImage: { src: string; alt: string } | null;
   achievementPercent: number;
   connectedChallengeId: number | null;
@@ -295,7 +287,6 @@ export function mapDiaryToViewData(
     relativeDateLabel,
     feeling,
     feelingLabel: FEELING_LABEL_MAP[feeling],
-    feelingEmoji: FEELING_EMOJI_MAP[feeling],
     feelingMoodImage: feelingToMoodImage(feeling),
     achievementPercent,
     connectedChallengeId:

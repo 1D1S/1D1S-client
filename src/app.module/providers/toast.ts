@@ -1,4 +1,5 @@
 import type { ToastOptions } from '@1d1s/design-system';
+import { showNativeToast } from '@module/utils/nativeBridge';
 import type { ReactNode } from 'react';
 
 /**
@@ -45,7 +46,40 @@ export function registerToast(next: ToastHandle): () => void {
   };
 }
 
+// 앱(WebView)에서는 네이티브가 그린다 — WebView 안의 토스트는 네이티브
+// 헤더/바텀바 아래에 깔리고, 상세처럼 WebView 가 화면 일부만 차지하는
+// 화면에서는 위치도 어긋난다. 디자인은 앱이 DS Toast 를 그대로 복제했고
+// 위치만 상단 중앙이다.
+//
+// title/body 가 ReactNode 라 문자열이 아닐 수 있다(아이콘 포함 JSX 등).
+// 그 경우 직렬화할 수 없으므로 웹 토스트로 그대로 둔다.
+function toPlainText(value: ReactNode): string | undefined {
+  if (typeof value === 'string') {return value;}
+  if (typeof value === 'number') {return String(value);}
+  return undefined;
+}
+
 function show(options: ToastOptions): number {
+  const title = toPlainText(options.title);
+  const body = toPlainText(options.body);
+  const canDelegate =
+    title !== undefined &&
+    (options.body === undefined || body !== undefined) &&
+    // 액션 버튼이 달린 토스트는 콜백이 웹에 있으므로 위임하지 않는다.
+    options.action === undefined;
+  if (
+    canDelegate &&
+    showNativeToast({
+      title,
+      body,
+      tone: options.tone,
+      icon: options.icon,
+      duration: options.duration,
+    })
+  ) {
+    // 네이티브가 스스로 닫으므로 dismiss 대상 id 가 없다.
+    return -1;
+  }
   if (!handle) {
     pending.push(options);
     return -1;

@@ -45,7 +45,11 @@ export function headersMiddleware(res: NextResponse): void {
   const scriptSrcValue =
     `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://t1.kakaocdn.net ${appleScriptOrigin} https://vercel.live https://*.vercel.live;`;
   // 애플 SDK 가 인증 처리에 iframe 을 쓰는 경우가 있어 frame-src 를 명시한다.
-  const frameSrcValue = `frame-src 'self' ${appleAuthOrigin};`;
+  // vercel.live 는 이미 script-src/connect-src 에서 허용 중인 Vercel 프리뷰
+  // 툴바다. frame-src 명시 전에는 default-src 'self' 폴백으로 막혀 있었고,
+  // 같은 의도를 유지하려 여기서도 함께 허용한다(프리뷰 툴바 iframe 용).
+  const frameSrcValue =
+    `frame-src 'self' ${appleAuthOrigin} https://vercel.live https://*.vercel.live;`;
 
   // const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const cspHeader = `

@@ -19,7 +19,7 @@ export function ChallengeCardSkeleton({
       <div className="px-3 pt-3">
         <div
           className={cn(
-            'relative aspect-[21/9] overflow-hidden rounded-lg bg-gray-100'
+            'relative aspect-[3/2] overflow-hidden rounded-lg bg-gray-100'
           )}
         >
           <Skeleton shape="rect" className="absolute inset-0 rounded-none" />
