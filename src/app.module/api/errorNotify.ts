@@ -26,6 +26,18 @@ import {
 const TOASTED_ERRORS = new WeakSet<object>();
 let isRedirecting = false;
 
+// 로그아웃 진행 창(window). 로그아웃은 토큰을 지운 뒤 로그아웃 POST·잔여
+// in-flight 요청들이 401/네트워크로 무더기로 떨어진다 — 전부 사용자가 의도한
+// 정리라, 이 창 동안은 에러 토스트를 통째로 억제한다. ERR_CANCELED/
+// NativeTokenRefreshError 로 안 잡히는 "네트워크 연결…"(응답 없는 실패)까지 커버.
+let logoutSuppressUntil = 0;
+
+export const beginLogoutSuppression = (durationMs = 5000): void => {
+  logoutSuppressUntil = Date.now() + durationMs;
+};
+
+const isLogoutSuppressed = (): boolean => Date.now() < logoutSuppressUntil;
+
 const PROTECTED_PATH_PREFIXES = [
   '/mypage',
   '/diary/create',
@@ -135,6 +147,12 @@ const shouldSkipToast = (error: unknown): boolean => {
 
 export const notifyApiError = (error: unknown): void => {
   if (typeof window === 'undefined') {
+    return;
+  }
+
+  // 로그아웃 진행 중 — 로그아웃 POST 실패("네트워크 연결…")·잔여 요청 401 등을
+  // 전부 억제한다. 사용자가 나가는 중이라 어떤 에러도 띄울 이유가 없다.
+  if (isLogoutSuppressed()) {
     return;
   }
 

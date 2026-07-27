@@ -98,12 +98,12 @@ export default function SettingsScreen(): React.ReactElement {
   const isAnySending = logout.isPending || deleteMember.isPending;
 
   const confirmLogout = (): void => {
-    logout.mutate(undefined, {
-      onSettled: () => {
-        setIsLogoutDialogOpen(false);
-        router.replace('/login');
-      },
-    });
+    // 세션 정리는 mutate 의 onMutate 에서 즉시 끝난다. 로그아웃 POST 응답을
+    // 기다리지 않고 바로 닫고 이동한다 — POST 가 느리거나 멈춰도 이전 정보가
+    // 남거나 화면이 멈추지 않게.
+    setIsLogoutDialogOpen(false);
+    logout.mutate();
+    router.replace('/login');
   };
 
   const confirmWithdraw = (): void => {

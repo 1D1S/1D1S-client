@@ -1,5 +1,6 @@
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import { clearCachedSidebar } from '@feature/member/hooks/useMemberQueries';
+import { beginLogoutSuppression } from '@module/api/errorNotify';
 import { authStorage } from '@module/utils/auth';
 import { peekNativeOAuth, postNativeMessage } from '@module/utils/nativeBridge';
 import {
@@ -97,25 +98,28 @@ export function useAppleLogin(): AppleLoginController {
 export function useLogout(): UseMutationResult<LogoutResponse, Error, void> {
   const queryClient = useQueryClient();
 
-  const clearLocalSession = (): void => {
-    authStorage.clearTokens();
-    clearCachedSidebar();
-    // 캐시를 비우기 전에 진행 중 요청을 취소한다. 토큰이 사라진 뒤 남은
-    // in-flight 요청이 401/abort 로 떨어지며 에러 토스트가 새는 걸 막는다
-    // (cancelQueries 는 silent 취소라 onError 로 전파되지 않는다).
-    void queryClient.cancelQueries();
-    queryClient.clear();
-  };
-
   return useMutation({
+    // 세션 정리는 로그아웃 POST 응답을 기다리지 않고 즉시(onMutate) 한다.
+    // 응답에 의존하면 POST 가 느리거나 멈출 때(네이티브 WebView 쿠키 이슈 등)
+    // 이전 사용자 정보가 화면에 남는다("잔존" 버그). onMutate 는 mutationFn
+    // 실행 직전에 돌아 서버 결과와 무관하게 항상 실행된다.
+    onMutate: () => {
+      // 로그아웃 창을 열어 이후 발생하는 에러 토스트를 억제한다
+      // (로그아웃 POST 실패 "네트워크 연결…" · 잔여 in-flight 401 등).
+      beginLogoutSuppression();
+      // 인증 상태 → guest (구독자 즉시 재렌더), 힌트/플래그 쿠키 정리.
+      authStorage.clearTokens();
+      clearCachedSidebar();
+      // 진행 중 쿼리 취소 + 모든 쿼리(사용자 데이터) 제거 → 재로그인·게스트
+      // 진입 시 이전 정보가 보이지 않는다. removeQueries 는 쿼리 캐시만
+      // 비워 진행 중인 이 로그아웃 mutation 의 생명주기는 건드리지 않는다.
+      void queryClient.cancelQueries();
+      queryClient.removeQueries();
+    },
     mutationFn: () => authApi.logout(),
-    onSuccess: clearLocalSession,
-    onError: clearLocalSession,
-    // 네이티브 쉘에는 로컬 정리가 끝난 뒤에 알린다. 쉘은 이 신호를 받으면
-    // 살아 있는 탭들을 리로드하는데, localStorage 의 로그인 힌트와 사이드바
-    // 캐시는 origin 단위로 공유되므로 아직 남아 있으면 새로 뜬 문서가 그걸
-    // 읽고 로그인 상태로 되돌아간다 (프로필 사진이 그대로 보이고, 로그아웃을
-    // 두 번 눌러야 했다). onSettled 는 onSuccess/onError 뒤에 돈다.
+    // 네이티브 쉘에는 정리가 끝난 뒤 알린다. 쉘은 이 신호로 살아 있는 탭을
+    // 리로드하며, localStorage/힌트 쿠키는 onMutate 에서 이미 지워졌으므로
+    // 새 문서가 로그인 상태로 되돌아가지 않는다.
     onSettled: () => postNativeMessage({ type: 'logout' }),
   });
 }
