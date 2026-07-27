@@ -4,6 +4,7 @@ import { Button } from '@1d1s/design-system';
 import { AddToHomeScreenPrompt } from '@feature/install/components/AddToHomeScreenPrompt';
 import { usePhoneNumberMissing } from '@feature/member/hooks/usePhoneNumberMissing';
 import { BrowserPermissionPrompt } from '@feature/notification/components/BrowserPermissionPrompt';
+import VoteFloatingScreen from '@feature/vote/screen/VoteFloatingScreen';
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { useServiceWorkerNavigation } from '@module/hooks/useServiceWorkerNavigation';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
@@ -259,6 +260,10 @@ export default function AppLayoutShell({
 
       {!isLoginPage && !isNativeApp ? <BrowserPermissionPrompt /> : null}
       {!isLoginPage && !isNativeApp ? <AddToHomeScreenPrompt /> : null}
+      <VoteFloatingScreen
+        enabled={isLoggedIn && !isLoginPage}
+        hasBottomNav={showBottomNav && !isNativeApp}
+      />
       {isNativeApp ? <NativeBridge authState={authState} /> : null}
     </div>
   );
