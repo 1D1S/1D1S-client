@@ -351,12 +351,29 @@ export function peekNativeOAuth(): string | null {
 
 interface PendingTokenRefresh {
   resolve(): void;
-  reject(): void;
+  reject(reason: Error): void;
   timeout: number;
 }
 
 const pendingTokenRefreshes = new Map<string, PendingTokenRefresh>();
 let tokenRefreshListenerAttached = false;
+
+/**
+ * 네이티브 토큰 갱신 실패. 예전엔 `reject()` 를 인자 없이 불러 rejection
+ * 이유가 `undefined` 였다 — 이게 그대로 흘러가면 normalizeApiError 가
+ * 기본 메시지("요청 처리 중 오류가 발생했습니다")로 토스트하고,
+ * shouldSkipToast 의 WeakSet 중복 제거도 객체가 아니라 못 걸어서 로그아웃
+ * 때마다 같은 토스트가 여러 번 떴다.
+ *
+ * 세션 만료는 사용자 잘못이 아니라 조용히 정리할 일이므로, 이 타입은
+ * notifyApiError 가 토스트 없이 인증 처리로 흘려보낸다.
+ */
+export class NativeTokenRefreshError extends Error {
+  constructor(message = '네이티브 토큰 갱신 실패') {
+    super(message);
+    this.name = 'NativeTokenRefreshError';
+  }
+}
 
 function ensureTokenRefreshListener(): void {
   if (tokenRefreshListenerAttached) {
@@ -380,7 +397,7 @@ function ensureTokenRefreshListener(): void {
     if (detail.ok) {
       pending.resolve();
     } else {
-      pending.reject();
+      pending.reject(new NativeTokenRefreshError());
     }
   });
   tokenRefreshListenerAttached = true;
@@ -398,7 +415,7 @@ export function requestNativeTokenRefresh(): Promise<void> | null {
   return new Promise<void>((resolve, reject) => {
     const timeout = window.setTimeout(() => {
       pendingTokenRefreshes.delete(id);
-      reject();
+      reject(new NativeTokenRefreshError('네이티브 토큰 갱신 응답 없음'));
     }, 15_000);
     pendingTokenRefreshes.set(id, { resolve, reject, timeout });
     try {
@@ -408,7 +425,7 @@ export function requestNativeTokenRefresh(): Promise<void> | null {
     } catch {
       window.clearTimeout(timeout);
       pendingTokenRefreshes.delete(id);
-      reject();
+      reject(new NativeTokenRefreshError('네이티브 채널 전송 실패'));
     }
   });
 }

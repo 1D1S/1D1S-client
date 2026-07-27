@@ -2,6 +2,7 @@
 
 import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
+import { NativeTokenRefreshError } from '@module/utils/nativeBridge';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 
 import { API_BASE_URL } from './config';
@@ -96,6 +97,25 @@ export const handleAuthError = (error: unknown): void => {
   }
 };
 
+// 객체가 아닌 에러(문자열·undefined 등)는 WeakSet 에 못 담는다. 그대로 두면
+// 같은 실패가 여러 번 토스트된다 — 메시지 기준으로 짧게 중복을 막는다.
+const recentMessages = new Map<string, number>();
+const DUPLICATE_WINDOW_MS = 3000;
+
+const isDuplicateMessage = (message: string): boolean => {
+  const now = Date.now();
+  for (const [key, at] of recentMessages) {
+    if (now - at > DUPLICATE_WINDOW_MS) {
+      recentMessages.delete(key);
+    }
+  }
+  if (recentMessages.has(message)) {
+    return true;
+  }
+  recentMessages.set(message, now);
+  return false;
+};
+
 const shouldSkipToast = (error: unknown): boolean => {
   if (!error || typeof error !== 'object') {
     return false;
@@ -131,6 +151,12 @@ export const notifyApiError = (error: unknown): void => {
   //   - 401: 토큰 없음/만료
   //   - AUTH-001/AUTH-002: 익명/무효 principal 로 인증 필수 API 호출(400)
   //   - AUTH-006/AUTH-012: refresh token 무효
+  // 네이티브 토큰 갱신 실패 = 세션 만료. 로그아웃 직후 살아 있던 요청들이
+  // 여기로 몰리는데, 사용자에게 보여줄 성질의 오류가 아니다.
+  if (error instanceof NativeTokenRefreshError) {
+    return;
+  }
+
   if (
     isUnauthorizedError(error) ||
     isAuthPrincipalError(error) ||
@@ -145,5 +171,8 @@ export const notifyApiError = (error: unknown): void => {
   }
 
   const normalizedError = normalizeApiError(error);
+  if (isDuplicateMessage(normalizedError.message)) {
+    return;
+  }
   toast.error(normalizedError.message);
 };
