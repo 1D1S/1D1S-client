@@ -79,9 +79,7 @@ export function BrandPanel({
             'rounded-full border border-white/30 bg-white/15 backdrop-blur-md'
           )}
         >
-          <span aria-hidden className="text-[56px] leading-none">
-            🔥
-          </span>
+          <Icon name="Flame" size={56} className="text-white" aria-hidden />
           <span
             className={cn(
               'text-main-800 absolute -right-1 -bottom-2 rounded-full',

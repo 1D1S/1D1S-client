@@ -293,7 +293,7 @@ export default function DiaryCreateScreen(): React.ReactElement {
               )}
             >
               {isHundredPercent
-                ? '🎉 오늘 목표 완료!'
+                ? '오늘 목표 완료!'
                 : `${achievedGoalCount}/${totalGoalCount} 달성 · ${percent}%`}
             </Text>
           ) : null}

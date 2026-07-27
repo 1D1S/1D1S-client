@@ -411,11 +411,7 @@ function DiaryDetailView({
                   className="h-6 w-6"
                   unoptimized
                 />
-              ) : (
-                <span className="text-xl leading-none" aria-hidden>
-                  {diaryData.feelingEmoji}
-                </span>
-              )}
+              ) : null}
               <Text
                 size="caption1"
                 weight="semibold"

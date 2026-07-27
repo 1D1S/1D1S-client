@@ -3,6 +3,7 @@
 import {
   AvatarImagePicker,
   Button,
+  Icon,
   Text,
   TextField,
 } from '@1d1s/design-system';
@@ -214,9 +215,11 @@ export default function ProfileSettingsScreen(): React.ReactElement {
                 <Text
                   size="caption1"
                   weight="regular"
-                  className="text-green-600"
+                  as="div"
+                  className="flex items-center gap-1 text-green-600"
                 >
-                  ✅ 사용 가능한 닉네임이에요
+                  <Icon name="Check" size={14} aria-hidden />
+                  사용 가능한 닉네임이에요
                 </Text>
               ) : null}
             </div>

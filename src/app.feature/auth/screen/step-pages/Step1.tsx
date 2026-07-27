@@ -1,5 +1,6 @@
 'use client';
 
+import type { IconName } from '@1d1s/design-system';
 import {
   Button,
   Icon,
@@ -38,15 +39,10 @@ interface Step1Props {
   onNext(): void;
 }
 
-const GENDER_EMOJI: Record<string, string> = {
-  FEMALE: '👩',
-  MALE: '👨',
-  ETC: '🤷',
-};
-
-const JOB_EMOJI: Record<string, string> = {
-  WORKER: '💼',
-  STUDENT: '📚',
+// 성별은 DS 아이콘 세트에 구분되는 픽토그램이 없어 라벨만 쓴다.
+const JOB_ICON: Record<string, IconName> = {
+  WORKER: 'Laptop',
+  STUDENT: 'BookOpen',
 };
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -159,9 +155,11 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
                 <Text
                   size="caption1"
                   weight="regular"
-                  className="mt-1 text-green-600"
+                  as="div"
+                  className="mt-1 flex items-center gap-1 text-green-600"
                 >
-                  ✅ 사용 가능한 닉네임이에요
+                  <Icon name="Check" size={14} aria-hidden />
+                  사용 가능한 닉네임이에요
                 </Text>
               ) : showError ? (
                 <Text
@@ -207,12 +205,15 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
 
         <div>
           <FieldLabel required>생년월일</FieldLabel>
+          {/* DS SelectTrigger 는 min-w-[150px] 이라 3열이면 모바일 폭을
+              넘겨 오른쪽으로 잘린다. 각 트리거에 min-w-0 을 줘서 fr 비율이
+              실제로 먹도록 한다. */}
           <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-2">
             <FormField
               control={form.control}
               name="year"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="min-w-0">
                   <FormControl>
                     <Select
                       value={field.value ?? ''}
@@ -224,7 +225,7 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
                         }
                       }}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full min-w-0 px-3">
                         <SelectValue placeholder="연도" />
                       </SelectTrigger>
                       <SelectContent>
@@ -244,7 +245,7 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
               control={form.control}
               name="month"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="min-w-0">
                   <FormControl>
                     <Select
                       value={field.value ?? ''}
@@ -256,7 +257,7 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
                         }
                       }}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full min-w-0 px-3">
                         <SelectValue placeholder="월" />
                       </SelectTrigger>
                       <SelectContent>
@@ -276,13 +277,13 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
               control={form.control}
               name="day"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="min-w-0">
                   <FormControl>
                     <Select
                       value={field.value ?? ''}
                       onValueChange={field.onChange}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full min-w-0 px-3">
                         <SelectValue placeholder="일" />
                       </SelectTrigger>
                       <SelectContent>
@@ -335,9 +336,6 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
                       shape="square"
                       className="h-[52px] w-full justify-center px-0 text-[13px]"
                     >
-                      <span className="text-base leading-none">
-                        {GENDER_EMOJI[option.value]}
-                      </span>
                       {option.label}
                     </ToggleGroupItem>
                   ))}
@@ -374,9 +372,11 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
                       shape="square"
                       className="h-[52px] w-full justify-center px-0 text-[13px]"
                     >
-                      <span className="text-base leading-none">
-                        {JOB_EMOJI[option.value]}
-                      </span>
+                      <Icon
+                        name={JOB_ICON[option.value]}
+                        size={16}
+                        aria-hidden
+                      />
                       {option.label}
                     </ToggleGroupItem>
                   ))}

@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import React, { useState } from 'react';
 
@@ -80,7 +81,7 @@ function LikeBurst({
             className="like-burst-particle"
             style={getParticleStyle(index, particleCount)}
           >
-            ❤
+            <Icon name="HeartFilled" size={9} className="block" />
           </span>
         ))}
       </span>

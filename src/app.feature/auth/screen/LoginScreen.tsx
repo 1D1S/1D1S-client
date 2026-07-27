@@ -135,7 +135,7 @@ export function LoginScreen(): React.ReactElement {
               as="p"
               className="mt-3 block text-gray-500"
             >
-              {`${streakDay}일 스트릭이 기다리고 있어요 🔥`}
+              {`${streakDay}일 스트릭이 기다리고 있어요`}
               <br />
               가입할 때 사용한 SNS로 로그인해주세요.
             </Text>
