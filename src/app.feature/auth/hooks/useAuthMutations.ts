@@ -117,6 +117,11 @@ export function useLogout(): UseMutationResult<LogoutResponse, Error, void> {
       queryClient.removeQueries();
     },
     mutationFn: () => authApi.logout(),
+    // 로그아웃 POST 는 best-effort 다. 실패해도(앱 네트워크/네이티브 경로에서
+    // 응답 없이 떨어지는 경우 포함) 사용자에게 알릴 게 아니므로 전역
+    // MutationCache.onError 토스트에서 제외한다(getQueryClient 참조). 시간 창
+    // 억제와 별개로, POST 가 오래 매달렸다 실패하는 케이스까지 확실히 막는다.
+    meta: { skipGlobalErrorToast: true },
     // 네이티브 쉘에는 정리가 끝난 뒤 알린다. 쉘은 이 신호로 살아 있는 탭을
     // 리로드하며, localStorage/힌트 쿠키는 onMutate 에서 이미 지워졌으므로
     // 새 문서가 로그인 상태로 되돌아가지 않는다.
