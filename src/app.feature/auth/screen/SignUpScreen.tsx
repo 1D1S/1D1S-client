@@ -6,6 +6,7 @@ import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import { getApiErrorCode } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { putToStorage } from '@module/api/presignedUpload';
+import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
 import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
@@ -21,6 +22,7 @@ import React from 'react';
 
 import { authApi } from '../api/authApi';
 import { BrandPanel } from '../components/BrandPanel';
+import { useLogout } from '../hooks/useAuthMutations';
 import { SignupFormValues, useSignUpForm } from '../hooks/useSignUpForm';
 import { getLaunchStreakDay } from '../utils/streakDay';
 import { Step1 } from './step-pages/Step1';
@@ -56,10 +58,16 @@ export function SignUpScreen(): React.ReactElement {
   const router = useRouter();
   const queryClient = useQueryClient();
   const form = useSignUpForm();
+  const logout = useLogout();
   const [step, setStep] = React.useState<Step>(1);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showExitDialog, setShowExitDialog] = React.useState(false);
   const [streakDay] = React.useState<number>(() => getLaunchStreakDay());
+
+  // 신규 가입은 앱이 부트스트랩 직후 여기로 바로 보낸다(홈을 거치지 않는다).
+  // 그동안 네이티브 스플래시가 덮고 있으므로 이 화면도 랜딩 루트처럼
+  // app_ready 를 쏴야 걷힌다. 폼은 서버 데이터 없이 즉시 그려진다.
+  useSignalAppReady(true);
 
   const onSubmit = async (values: SignupFormValues): Promise<void> => {
     if (!authStorage.hasTokens()) {
@@ -129,8 +137,12 @@ export function SignUpScreen(): React.ReactElement {
   };
 
   const handleExitConfirm = (): void => {
+    // 토큰만 지우면 **웹에서만** 로그아웃된 상태가 된다. 앱은 네이티브 세션을
+    // 따로 들고 있어(HybridShell) 곧바로 웹 세션을 복구해 버려 로그아웃이
+    // 되돌아왔다. 설정 화면과 같은 로그아웃 경로를 탄다 — 서버 세션 정리와
+    // 네이티브 쉘 통지(postNativeMessage({type:'logout'}))가 함께 돈다.
     setShowExitDialog(false);
-    authStorage.clearTokens();
+    logout.mutate();
     router.replace('/');
   };
 
