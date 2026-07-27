@@ -22,7 +22,10 @@ import { ChallengeCreatePeriodSection } from '@feature/challenge/write/component
 import { ChallengeCreatePhotoSection } from '@feature/challenge/write/components/ChallengeCreatePhotoSection';
 import { ChallengeCreatePostEndWriteSection } from '@feature/challenge/write/components/ChallengeCreatePostEndWriteSection';
 import { ChallengeCreatePreviewCard } from '@feature/challenge/write/components/ChallengeCreatePreviewCard';
-import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/components/ChallengeCreateSuccessDialog';
+import {
+  ChallengeCreateSuccessDialog,
+  shareChallengeInviteToKakao,
+} from '@feature/challenge/write/components/ChallengeCreateSuccessDialog';
 import { ChallengeCreateVisibilitySection } from '@feature/challenge/write/components/ChallengeCreateVisibilitySection';
 import {
   ChallengeCreateFormValues,
@@ -32,6 +35,7 @@ import { formatFormValues } from '@feature/challenge/write/utils/challengeCreate
 import { cn } from '@module/utils/cn';
 import {
   hideNativeProgress,
+  isNativeChallengeCreatedModalAvailable,
   isNativeModalAvailable,
   isNativeProgressAvailable,
   openNativeModal,
@@ -63,17 +67,65 @@ export default function ChallengeCreateScreen(): React.ReactElement {
     return hideNativeProgress;
   }, [createChallenge.isPending, nativeProgressAvailable]);
 
+  // 생성 완료 다이얼로그를 네이티브 모달로 띄운다. 앱 쉘이 이 모달을 웹과
+  // 같은 스펙(성공 체크 + 참여 링크 + 비밀번호 + 카카오/링크 복사)으로 그리고,
+  // 공유 SDK 가 웹에만 있는 카카오만 onAction 으로 되돌아온다.
+  //
+  // 웹 다이얼로그를 그대로 두면 WebView 안에 갇혀 네이티브 헤더/바텀바 아래에
+  // 깔린다. 이 모달을 모르는 구버전 앱에서는 false 를 받아 웹 다이얼로그로
+  // 폴백한다.
+  const openNativeSuccessModal = (
+    challengeId: number,
+    isPrivate: boolean,
+    password?: string
+  ): boolean => {
+    if (!isNativeChallengeCreatedModalAvailable()) {
+      return false;
+    }
+    const shareLink = `${window.location.origin}/challenge/${challengeId}`;
+    void openNativeModal(
+      {
+        title: '챌린지 만들기가 완료되었습니다!',
+        buttons: [
+          { label: '홈', value: 'home', style: 'cancel' },
+          { label: '챌린지 확인하기', value: 'detail' },
+        ],
+        challengeCreated: { challengeId, shareLink, isPrivate, password },
+      },
+      (action) => {
+        if (action === 'kakao') {
+          void shareChallengeInviteToKakao({ shareLink, isPrivate, password });
+        }
+      }
+    ).then((result) => {
+      if (result === 'home') {
+        router.push('/');
+      } else if (result === 'detail') {
+        router.push(`/challenge/${challengeId}`);
+      }
+    });
+    return true;
+  };
+
   const onSubmit = (values: ChallengeCreateFormValues): void => {
     const payload = formatFormValues(values);
     createChallenge.mutate(payload, {
       onSuccess: (data) => {
+        const isPrivate = payload.challengeType === 'PRIVATE';
         setCreatedChallengeId(data.challengeId);
-        setCreatedIsPrivate(payload.challengeType === 'PRIVATE');
+        setCreatedIsPrivate(isPrivate);
         setCreatedPassword(payload.password);
-        // 앱에서도 웹과 같은 완료 다이얼로그를 쓴다. 네이티브 모달로 위임하면
-        // 제목·버튼 2개만 남아 성공 체크 애니메이션도, 참여 링크도, 카카오
-        // 공유도 사라진다 — 생성 직후 초대가 이 화면의 핵심 동선이다.
-        setIsSuccessOpen(true);
+        // 네이티브가 같은 모달을 그리지 못하면(브라우저/구버전 앱) 웹
+        // 다이얼로그로 폴백한다 — 생성 직후 초대가 이 화면의 핵심 동선이라
+        // 제목·버튼만 남는 일반 버튼 모달로는 대체할 수 없다.
+        const delegated = openNativeSuccessModal(
+          data.challengeId,
+          isPrivate,
+          payload.password
+        );
+        if (!delegated) {
+          setIsSuccessOpen(true);
+        }
       },
       onError: () => {
         setIsErrorOpen(true);
