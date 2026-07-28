@@ -59,6 +59,10 @@ import { ChallengeStatisticsSection } from '../components/ChallengeStatisticsSec
 import { ExpandableText } from '../components/ExpandableText';
 import { OfficialChallengeGuideBanner } from '../components/OfficialChallengeGuideBanner';
 import { PendingMemberItem } from '../components/PendingMemberItem';
+import {
+  type ChallengeTabId,
+  isChallengeTab,
+} from '../consts/challengeTabs';
 import { useChallengeStatistics } from '../hooks/useChallengeDiaryQueries';
 import { useChallengeGoalEditors } from '../hooks/useChallengeGoalEditors';
 import {
@@ -99,20 +103,6 @@ const FREE_GOAL_REQUIRED_CODE = 'CHALLENGE_022';
 // 10명까지 보여주려면 참여자 목록 API 를 size=10 으로 별도 조회한다.
 // "전체 보기"는 전체 참여자 수(summaryParticipantCnt)가 이 수를 넘을 때만 뜬다.
 const PARTICIPANT_PREVIEW_SIZE = 10;
-
-// 상세 탭 뷰 — URL ?tab= 으로 보존. 기본은 소개.
-const CHALLENGE_TAB_IDS = [
-  'overview',
-  'stats',
-  'diary',
-  'participants',
-] as const;
-type ChallengeTabId = (typeof CHALLENGE_TAB_IDS)[number];
-
-function isChallengeTab(value: string | null): value is ChallengeTabId {
-  const ids: readonly string[] = CHALLENGE_TAB_IDS;
-  return value !== null && ids.includes(value);
-}
 
 // 탭 라벨 옆 카운트 배지 — 원형 배경. 활성 탭은 브랜드 톤.
 function renderTabCountBadge(
