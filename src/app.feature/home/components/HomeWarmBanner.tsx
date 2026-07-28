@@ -54,16 +54,29 @@ function fromServerBanner(banner: ServerBanner): CarouselBanner {
   };
 }
 
+// 배너 높이/비율 클래스. 컨테이너별로 다르게 넘긴다:
+// - 홈(grid-cols-2, 스트릭 카드와 한 행): 5:2 + max-h-240 + **min-h-0**.
+//   배너 래퍼는 grid 자식이라 CSS 기본 min-height:auto(=aspect 로 전이된
+//   높이 W*2/5)가 max-height 를 이겨(min>max 규칙) 넓은/태블릿 뷰에서 240 을
+//   뚫고 커졌다. min-h-0 으로 그 바닥을 없애야 max-h-240 이 실제로 캡한다.
+//   고정 높이(h-[200px] 등)를 쓰면 grid 행/스트릭 카드 관계가 깨져(회귀) 쓰지
+//   않고, aspect+max-h+min-h-0 로만 캡한다.
+// - 탐색(flex-col, 단독 상단 배너): md+ 고정 높이로 상한(동일하게 min-h-0).
+const DEFAULT_HEIGHT_CLASS = 'aspect-[5/2] max-h-[240px] min-h-0';
+
 interface HomeWarmBannerProps {
   /** 항상 캐러셀 맨 뒤에 고정되는 배너(디스코드·사용가이드·통계). */
   pinnedBanners?: HomeMainBanner[];
   /** 인증/사이드바 확정 전 — 배너 자리를 스켈레톤으로 예약한다. */
   isLoading?: boolean;
+  /** 배너 높이/비율 제어 클래스(컨테이너별). 미지정 시 홈 기본값. */
+  heightClassName?: string;
 }
 
 export default function HomeWarmBanner({
   pinnedBanners = PINNED_HOME_BANNERS,
   isLoading = false,
+  heightClassName = DEFAULT_HEIGHT_CLASS,
 }: HomeWarmBannerProps): React.ReactElement | null {
   const router = useRouter();
   const { data: serverBanners } = useBanners();
@@ -138,8 +151,9 @@ export default function HomeWarmBanner({
       <div
         aria-hidden
         className={cn(
-          'skeleton-pulse rounded-4 aspect-[5/2] max-h-[240px] w-full',
-          'self-start bg-gray-100'
+          // 실제 배너와 동일한 높이 규칙(컨테이너별 heightClassName).
+          'skeleton-pulse rounded-4 w-full self-start bg-gray-100',
+          heightClassName
         )}
       />
     );
@@ -169,12 +183,10 @@ export default function HomeWarmBanner({
   );
 
   return (
-    // 배너 종횡비 5:2(2.5:1) 고정 — 서버 이미지 배너(cover)와 그라디언트 배너
-    // 모두 일관. 모바일은 폭에 맞춰 비율 유지, 폭이 넓은 데스크톱에서는
-    // max-h 로 상한을 둬 너무 커지지 않게 한다. self-start 로 grid/flex 부모의
-    // stretch 가 비율을 깨지 않게 막는다(내부 Banner 는 h-full 로 채움).
+    // 높이/비율은 컨테이너별 heightClassName 으로 제어(홈 기본 5:2+max-h,
+    // 탐색은 md+ 고정 높이 상한). self-start 로 부모 grid/flex stretch 방지.
     <div
-      className="relative aspect-[5/2] max-h-[240px] w-full self-start"
+      className={cn('relative w-full self-start', heightClassName)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >

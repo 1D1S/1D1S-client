@@ -3,7 +3,6 @@
 import { Button, Card, Tabs, Tag, Text } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
-import LikeBurst from '@component/LikeBurst';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSkeleton';
 import { getCategoryLabel } from '@constants/categories';
@@ -17,18 +16,7 @@ import { cn } from '@module/utils/cn';
 import { formatDateISO } from '@module/utils/date';
 import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import {
-  ArrowLeft,
-  Calendar,
-  Camera,
-  CircleAlert,
-  Clock,
-  Heart,
-  type LucideIcon,
-  PenLine,
-  Target,
-  Users,
-} from 'lucide-react';
+import { ArrowLeft, CircleAlert } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 
@@ -43,14 +31,15 @@ import {
   isChallengeEndedOrArchived,
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
-  POST_END_WRITE_GRACE_DAYS,
 } from '../../board/utils/challengePeriod';
 import { ChallengeDetailCompactHeader } from '../components/ChallengeDetailCompactHeader';
 import { ChallengeDetailHero } from '../components/ChallengeDetailHero';
+import { ChallengeDetailMobileHeader } from '../components/ChallengeDetailMobileHeader';
 import { ChallengeDiaryCalendar } from '../components/ChallengeDiaryCalendar';
 import { ChallengeDiaryDateFilter } from '../components/ChallengeDiaryDateFilter';
 import { ChallengeDiaryList } from '../components/ChallengeDiaryList';
 import { ChallengeGoalModals } from '../components/ChallengeGoalModals';
+import { ChallengeInfoCard } from '../components/ChallengeInfoCard';
 import { ChallengeLeaderboardCard } from '../components/ChallengeLeaderboardCard';
 import { ChallengePasswordDialog } from '../components/ChallengePasswordDialog';
 import { ChallengeProgressCard } from '../components/ChallengeProgressCard';
@@ -59,6 +48,11 @@ import { ChallengeStatisticsSection } from '../components/ChallengeStatisticsSec
 import { ExpandableText } from '../components/ExpandableText';
 import { OfficialChallengeGuideBanner } from '../components/OfficialChallengeGuideBanner';
 import { PendingMemberItem } from '../components/PendingMemberItem';
+import { TabCountBadge } from '../components/TabCountBadge';
+import {
+  type ChallengeTabId,
+  isChallengeTab,
+} from '../consts/challengeTabs';
 import { useChallengeStatistics } from '../hooks/useChallengeDiaryQueries';
 import { useChallengeGoalEditors } from '../hooks/useChallengeGoalEditors';
 import {
@@ -99,39 +93,6 @@ const FREE_GOAL_REQUIRED_CODE = 'CHALLENGE_022';
 // 10명까지 보여주려면 참여자 목록 API 를 size=10 으로 별도 조회한다.
 // "전체 보기"는 전체 참여자 수(summaryParticipantCnt)가 이 수를 넘을 때만 뜬다.
 const PARTICIPANT_PREVIEW_SIZE = 10;
-
-// 상세 탭 뷰 — URL ?tab= 으로 보존. 기본은 소개.
-const CHALLENGE_TAB_IDS = [
-  'overview',
-  'stats',
-  'diary',
-  'participants',
-] as const;
-type ChallengeTabId = (typeof CHALLENGE_TAB_IDS)[number];
-
-function isChallengeTab(value: string | null): value is ChallengeTabId {
-  const ids: readonly string[] = CHALLENGE_TAB_IDS;
-  return value !== null && ids.includes(value);
-}
-
-// 탭 라벨 옆 카운트 배지 — 원형 배경. 활성 탭은 브랜드 톤.
-function renderTabCountBadge(
-  value: number,
-  active: boolean
-): React.ReactElement {
-  return (
-    <span
-      className={cn(
-        'inline-flex aspect-square h-[1.125rem] min-w-[1.125rem]',
-        'items-center justify-center rounded-full px-1',
-        'text-[11px] leading-none font-bold',
-        active ? 'bg-main-100 text-main-800' : 'bg-gray-100 text-gray-500'
-      )}
-    >
-      {value}
-    </span>
-  );
-}
 
 export function ChallengeDetailScreen({
   id,
@@ -565,46 +526,24 @@ export function ChallengeDetailScreen({
       id: 'diary',
       label: <span className="whitespace-nowrap">일지</span>,
       badge:
-        diaryCount !== undefined
-          ? renderTabCountBadge(diaryCount, activeTab === 'diary')
-          : undefined,
+        diaryCount !== undefined ? (
+          <TabCountBadge value={diaryCount} active={activeTab === 'diary'} />
+        ) : undefined,
     },
     {
       id: 'participants',
       label: <span className="whitespace-nowrap">참여자</span>,
       badge:
-        summaryParticipantCnt > 0
-          ? renderTabCountBadge(
-              summaryParticipantCnt,
-              activeTab === 'participants'
-            )
-          : undefined,
+        summaryParticipantCnt > 0 ? (
+          <TabCountBadge
+            value={summaryParticipantCnt}
+            active={activeTab === 'participants'}
+          />
+        ) : undefined,
     },
   ];
 
   // 소개 탭 하단 "챌린지 정보" — 히어로/진행률과 겹치지 않는 규칙·옵션 위주.
-  const infoRows: Array<{ label: string; value: string; icon: LucideIcon }> = [
-    { label: '기간', value: dateRangeText, icon: Calendar },
-    { label: '인원', value: participantsLabel, icon: Users },
-    {
-      label: '방식',
-      value: `${formatChallengeTypeLabel(summary.goalType)} 목표 · ${
-        isGroupChallenge ? '단체' : '개인'
-      }`,
-      icon: Target,
-    },
-    {
-      label: '인증샷',
-      value: detail.photoRequired ? '필수' : '자유',
-      icon: Camera,
-    },
-    {
-      label: '중도 참여',
-      value: allowMidJoin ? '가능' : '불가',
-      icon: Clock,
-    },
-  ];
-
   return (
     <>
       <ChallengeDetailCompactHeader
@@ -668,90 +607,17 @@ export function ChallengeDetailScreen({
         </div>
 
         {/* 모바일 컨텐츠 헤더 — 히어로 위로 오버레이. 탭 위 고정 노출. */}
-        <div
-          className={cn(
-            'relative z-10 -mt-5 rounded-t-[20px] bg-white px-5 pt-5 pb-1',
-            'lg:hidden'
-          )}
-        >
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Tag tone="brand" size="sm">
-              {getCategoryLabel(summary.category)}
-            </Tag>
-            <Tag tone="gray" size="sm">
-              {formatChallengeTypeLabel(summary.goalType)}
-            </Tag>
-          </div>
-          <Text
-            as="h1"
-            size="heading1"
-            weight="extrabold"
-            className="mt-2.5 block tracking-[-0.5px] break-keep text-gray-900"
-          >
-            {summary.title}
-          </Text>
-          <div className="mt-1.5 flex items-center justify-between gap-2">
-            <Text
-              size="caption1"
-              weight="regular"
-              className="min-w-0 flex-1 text-gray-500"
-            >
-              {heroMetaLabel}
-            </Text>
-            <button
-              type="button"
-              onClick={handleToggleLike}
-              disabled={isActionLoading}
-              aria-label={summary.likeInfo.likedByMe ? '좋아요 취소' : '좋아요'}
-              className={cn(
-                'relative flex shrink-0 cursor-pointer items-center gap-1',
-                'rounded-full border px-2.5 py-1 text-[12px] font-bold',
-                'transition-colors disabled:cursor-default disabled:opacity-50',
-                summary.likeInfo.likedByMe
-                  ? 'border-main-800 bg-main-100 text-main-800'
-                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-              )}
-            >
-              <LikeBurst liked={summary.likeInfo.likedByMe} />
-              <Heart
-                className={cn(
-                  'h-3.5 w-3.5',
-                  summary.likeInfo.likedByMe && 'fill-current'
-                )}
-              />
-              {summary.likeInfo.likeCnt}
-            </button>
-          </div>
-
-          {/* 모바일 진행률 요약 — 우측 rail 대신 컴팩트 바 */}
-          <div
-            className={cn(
-              'mt-3.5 flex items-center gap-2.5 rounded-[12px]',
-              'border-main-300 bg-main-100 border px-3.5 py-2.5'
-            )}
-          >
-            <Text
-              size="caption1"
-              weight="bold"
-              className="shrink-0 text-gray-600"
-            >
-              진행률
-            </Text>
-            <div className="h-[7px] flex-1 overflow-hidden rounded-full bg-white">
-              <div
-                className="bg-main-800 h-full rounded-full"
-                style={{ width: `${participationRate}%` }}
-              />
-            </div>
-            <Text
-              size="body2"
-              weight="extrabold"
-              className="text-main-800 shrink-0 tabular-nums"
-            >
-              {participationRate}%
-            </Text>
-          </div>
-        </div>
+        <ChallengeDetailMobileHeader
+          categoryLabel={getCategoryLabel(summary.category)}
+          typeLabel={formatChallengeTypeLabel(summary.goalType)}
+          title={summary.title}
+          metaLabel={heroMetaLabel}
+          likedByMe={summary.likeInfo.likedByMe}
+          likeCnt={summary.likeInfo.likeCnt}
+          isLikePending={isActionLoading}
+          onToggleLike={handleToggleLike}
+          participationRate={participationRate}
+        />
 
         <div
           className={cn(
@@ -839,87 +705,15 @@ export function ChallengeDetailScreen({
                       onEdit={rulesOnEdit}
                     />
 
-                    <section
-                      className={cn(
-                        'rounded-[14px] border border-gray-200 bg-white',
-                        'p-4 sm:p-5 lg:p-6'
-                      )}
-                    >
-                      <Text
-                        as="h2"
-                        size="heading2"
-                        weight="extrabold"
-                        className="mb-3 block tracking-[-0.3px] text-gray-900"
-                      >
-                        챌린지 정보
-                      </Text>
-                      <div
-                        className={cn(
-                          'grid grid-cols-1 gap-1.5 sm:grid-cols-2'
-                        )}
-                      >
-                        {infoRows.map((row) => (
-                          <div
-                            key={row.label}
-                            className={cn(
-                              'flex items-center gap-2.5 rounded-[10px]',
-                              'bg-gray-50 px-3.5 py-2.5'
-                            )}
-                          >
-                            <row.icon
-                              className="size-4 shrink-0 text-gray-400"
-                              strokeWidth={2}
-                              aria-hidden
-                            />
-                            <Text
-                              size="caption1"
-                              weight="medium"
-                              className={cn(
-                                'shrink-0 whitespace-nowrap text-gray-600'
-                              )}
-                            >
-                              {row.label}
-                            </Text>
-                            <Text
-                              size="caption1"
-                              weight="semibold"
-                              className={cn(
-                                'min-w-0 flex-1 truncate text-right',
-                                'text-gray-900'
-                              )}
-                            >
-                              {row.value}
-                            </Text>
-                          </div>
-                        ))}
-                      </div>
-                      {summary.postEndWriteAllowed ? (
-                        <div
-                          className={cn(
-                            'border-main-300 bg-main-100 mt-2 flex',
-                            'items-center gap-2.5 rounded-[10px] border',
-                            'px-3.5 py-3'
-                          )}
-                        >
-                          <PenLine
-                            className="text-main-800 size-4 shrink-0"
-                            strokeWidth={2}
-                            aria-hidden
-                          />
-                          <Text
-                            size="caption1"
-                            weight="bold"
-                            className="text-gray-700"
-                          >
-                            종료 후{' '}
-                            <b className="text-main-800">
-                              {POST_END_WRITE_GRACE_DAYS}일
-                            </b>
-                            까지 일지 작성 가능
-                          </Text>
-                        </div>
-                      ) : null}
-                    </section>
+                    <ChallengeInfoCard
+                      dateRangeText={dateRangeText}
+                      participantsLabel={participantsLabel}
+                      typeLabel={formatChallengeTypeLabel(summary.goalType)}
+                      isGroup={isGroupChallenge}
+                      photoRequired={detail.photoRequired}
+                      allowMidJoin={allowMidJoin}
+                      postEndWriteAllowed={summary.postEndWriteAllowed}
+                    />
 
                     {statsData && statsData.diaryTrend.length > 0 ? (
                       <section

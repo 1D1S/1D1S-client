@@ -1,0 +1,112 @@
+name: Discord Deploy Notify
+
+# 웹은 Vercel Git 연동으로 배포된다(서버처럼 GitHub Actions 배포 잡이 아님).
+# Vercel[bot] 이 배포마다 GitHub Deployments + deployment_status 를 생성하므로,
+# 그 이벤트를 트리거로 삼아 디스코드 봇(웹훅 아님)으로 배포 완료/실패를 알린다.
+#
+# ⚠️ 기본 브랜치 제약: deployment_status 워크플로는 GitHub 규칙상 "레포 기본
+#    브랜치"의 워크플로 정의로만 실행된다. 이 레포 기본 브랜치는 develop 이므로
+#    이 파일이 develop 에 있으면 발화한다. (기본 브랜치가 main 으로 바뀌면 main
+#    에도 이 파일을 반영해야 발화한다.)
+#
+# ⚠️ 필요 시크릿: DISCORD_BOT_TOKEN — 현재 server-v2 레포에만 있다. 이 client
+#    레포의 Settings > Secrets and variables > Actions 에 **동일 값**으로 추가해야
+#    동작한다. (봇이 아래 채널에 메시지 쓰기 권한을 가져야 함)
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    # 성공/실패/에러 상태에서만 알림(pending·in_progress·queued 는 무시).
+    if: >-
+      github.event.deployment_status.state == 'success' ||
+      github.event.deployment_status.state == 'failure' ||
+      github.event.deployment_status.state == 'error'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord
+        uses: actions/github-script@v7
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          # 알림 채널 ID(server-dev/PR 알림과 공유). WEB(ENV) 접두어로 구분한다.
+          # 별도 채널을 원하면 이 값만 교체하면 된다.
+          CHANNEL_ID: '1351796500279197757'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const token = process.env.DISCORD_BOT_TOKEN;
+            const channelId = process.env.CHANNEL_ID;
+            if (!token) {
+              core.setFailed(
+                'DISCORD_BOT_TOKEN 시크릿이 없습니다. client 레포에 동일 값 등록 필요.'
+              );
+              return;
+            }
+
+            const ds = context.payload.deployment_status || {};
+            const deployment = context.payload.deployment || {};
+            const state = ds.state; // success | failure | error
+            const rawEnv = ds.environment || deployment.environment || '';
+            const targetUrl = ds.target_url || ds.environment_url || '';
+            const sha = deployment.sha || context.sha;
+            const shortSha = sha ? sha.slice(0, 7) : '(unknown)';
+
+            // 환경 라벨: Production→PROD, Preview→DEV, 그 외(staging 등)는 대문자.
+            let envLabel;
+            if (rawEnv === 'Production') {
+              envLabel = 'PROD';
+            } else if (rawEnv === 'Preview') {
+              envLabel = 'DEV';
+            } else {
+              envLabel = (rawEnv || 'UNKNOWN').toUpperCase();
+            }
+
+            // 커밋 메시지 첫 줄 + 작성자 — 이벤트 payload 엔 없어 API 로 조회.
+            let commitTitle = '';
+            let actor = '';
+            try {
+              const { data: commit } = await github.rest.repos.getCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: sha,
+              });
+              commitTitle = (commit.commit.message || '').split('\n')[0];
+              actor =
+                (commit.author && commit.author.login) ||
+                (commit.commit.author && commit.commit.author.name) ||
+                '';
+            } catch (error) {
+              core.warning(`커밋 조회 실패: ${error.message}`);
+            }
+
+            // 서버 메시지와 동일한 4줄 형식(성공 ✅ / 실패·에러 ❌).
+            const icon = state === 'success' ? '✅' : '❌';
+            const verb = state === 'success' ? '배포 완료' : '배포 실패';
+            const content = [
+              `${icon} WEB(${envLabel}) ${verb}`,
+              `\`${shortSha}\`${actor ? ` by ${actor}` : ''}`,
+              commitTitle,
+              targetUrl,
+            ]
+              .filter(Boolean)
+              .join('\n');
+
+            const res = await fetch(
+              `https://discord.com/api/v10/channels/${channelId}/messages`,
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bot ${token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content }),
+              }
+            );
+            if (!res.ok) {
+              const text = await res.text();
+              core.setFailed(`Discord POST 실패: ${res.status} ${text}`);
+            }

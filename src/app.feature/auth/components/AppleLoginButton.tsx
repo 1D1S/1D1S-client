@@ -68,7 +68,7 @@ export function AppleLoginButton({
           className
         )}
       >
-        <span className="absolute left-5 inline-flex">
+        <span className="absolute top-1/2 left-5 inline-flex -translate-y-1/2 items-center">
           <AppleLogo />
         </span>
         Apple로 계속하기

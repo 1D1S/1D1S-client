@@ -1,11 +1,11 @@
 'use client';
 
 import { Icon, StreakHero } from '@1d1s/design-system';
+import FadeInImage from '@component/FadeInImage';
 import { ProfileAlertBadge } from '@component/ProfileAlertBadge';
 import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useCallback, useMemo } from 'react';
@@ -200,7 +200,7 @@ export default function AppRightRail({
                   )}
                 >
                   {profileImageUrl ? (
-                    <Image
+                    <FadeInImage
                       src={profileImageUrl}
                       alt={nickname}
                       width={48}
