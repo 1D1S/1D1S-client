@@ -70,7 +70,7 @@ export function LoginButton({
         onClick={() => handleSocialLogin(provider)}
         className={cn('relative', className)}
       >
-        <span className="absolute left-5 inline-flex">
+        <span className="absolute top-1/2 left-5 inline-flex -translate-y-1/2 items-center">
           <Image src={img} alt={text} width={20} height={20} />
         </span>
         {text}

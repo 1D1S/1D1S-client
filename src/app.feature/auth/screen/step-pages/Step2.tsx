@@ -97,7 +97,11 @@ export function Step2({
                     }}
                     width="100%"
                     className={cn(
-                      'rounded-3 aspect-square w-full min-w-0 px-2',
+                      // aspect-square 가 각 셀을 (너비=높이) 큰 정사각형으로
+                      // 강제해 3줄이 쌓이면 컨테이너가 불필요하게 길어졌다.
+                      // 콘텐츠(아이콘+라벨)에 맞는 세로 패딩으로 대체해 높이를
+                      // 줄인다 — 한 화면에 들어오도록.
+                      'rounded-3 w-full min-w-0 px-2 py-3.5',
                       'flex flex-col items-center justify-center gap-1.5',
                       'transition-colors',
                       checked ? tone : 'bg-gray-50'
