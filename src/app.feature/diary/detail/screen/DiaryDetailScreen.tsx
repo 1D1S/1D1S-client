@@ -1,7 +1,6 @@
 'use client';
 
 import { Button, MobileHeader, Text } from '@1d1s/design-system';
-import LikeBurst from '@component/LikeBurst';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { normalizeApiError } from '@module/api/error';
@@ -9,7 +8,7 @@ import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import { Flag, Heart, MessageCircle, Share2 } from 'lucide-react';
+import { Flag } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
@@ -19,6 +18,7 @@ import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
 import { useSidebar } from '../../../member/hooks/useMemberQueries';
 import { useDiaryDetail } from '../../board/hooks/useDiaryQueries';
 import { DiaryContentRenderer } from '../../shared/components/DiaryContentRenderer';
+import { DiaryActionToolbar } from '../components/DiaryActionToolbar';
 import { DiaryAuthorRow } from '../components/DiaryAuthorRow';
 import {
   DiaryCommentSection,
@@ -64,67 +64,6 @@ function getFeelingTextClass(feeling: DiaryDetailViewData['feeling']): string {
     return 'text-blue-600';
   }
   return 'text-gray-500';
-}
-
-function DiaryActionToolbar({
-  diaryData,
-  totalCommentCount,
-  isLikePending,
-  onLikeToggle,
-  onShare,
-}: {
-  diaryData: DiaryDetailViewData;
-  totalCommentCount: number;
-  isLikePending: boolean;
-  onLikeToggle(): void;
-  onShare(): void;
-}): React.ReactElement {
-  const pillClass = cn(
-    'inline-flex items-center gap-1.5 rounded-full border',
-    'px-4 py-2 text-[13px] font-bold transition-colors'
-  );
-
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        aria-label="좋아요"
-        onClick={onLikeToggle}
-        disabled={isLikePending}
-        className={cn(
-          pillClass,
-          'relative disabled:opacity-60',
-          diaryData.likedByMe
-            ? 'border-main-800 bg-main-100 text-main-800'
-            : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-        )}
-      >
-        <LikeBurst liked={diaryData.likedByMe} />
-        <Heart
-          className={cn('h-3.5 w-3.5', diaryData.likedByMe && 'fill-current')}
-        />
-        {diaryData.likeCount}
-      </button>
-      <span
-        aria-label={`댓글 ${totalCommentCount}개`}
-        className={cn(pillClass, 'border-gray-200 bg-white text-gray-700')}
-      >
-        <MessageCircle className="h-3.5 w-3.5" />
-        {totalCommentCount}
-      </span>
-      <button
-        type="button"
-        aria-label="공유"
-        onClick={onShare}
-        className={cn(
-          pillClass,
-          'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-        )}
-      >
-        <Share2 className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  );
 }
 
 function DiaryDetailView({
