@@ -59,6 +59,7 @@ import { ChallengeStatisticsSection } from '../components/ChallengeStatisticsSec
 import { ExpandableText } from '../components/ExpandableText';
 import { OfficialChallengeGuideBanner } from '../components/OfficialChallengeGuideBanner';
 import { PendingMemberItem } from '../components/PendingMemberItem';
+import { TabCountBadge } from '../components/TabCountBadge';
 import {
   type ChallengeTabId,
   isChallengeTab,
@@ -103,25 +104,6 @@ const FREE_GOAL_REQUIRED_CODE = 'CHALLENGE_022';
 // 10명까지 보여주려면 참여자 목록 API 를 size=10 으로 별도 조회한다.
 // "전체 보기"는 전체 참여자 수(summaryParticipantCnt)가 이 수를 넘을 때만 뜬다.
 const PARTICIPANT_PREVIEW_SIZE = 10;
-
-// 탭 라벨 옆 카운트 배지 — 원형 배경. 활성 탭은 브랜드 톤.
-function renderTabCountBadge(
-  value: number,
-  active: boolean
-): React.ReactElement {
-  return (
-    <span
-      className={cn(
-        'inline-flex aspect-square h-[1.125rem] min-w-[1.125rem]',
-        'items-center justify-center rounded-full px-1',
-        'text-[11px] leading-none font-bold',
-        active ? 'bg-main-100 text-main-800' : 'bg-gray-100 text-gray-500'
-      )}
-    >
-      {value}
-    </span>
-  );
-}
 
 export function ChallengeDetailScreen({
   id,
@@ -555,20 +537,20 @@ export function ChallengeDetailScreen({
       id: 'diary',
       label: <span className="whitespace-nowrap">일지</span>,
       badge:
-        diaryCount !== undefined
-          ? renderTabCountBadge(diaryCount, activeTab === 'diary')
-          : undefined,
+        diaryCount !== undefined ? (
+          <TabCountBadge value={diaryCount} active={activeTab === 'diary'} />
+        ) : undefined,
     },
     {
       id: 'participants',
       label: <span className="whitespace-nowrap">참여자</span>,
       badge:
-        summaryParticipantCnt > 0
-          ? renderTabCountBadge(
-              summaryParticipantCnt,
-              activeTab === 'participants'
-            )
-          : undefined,
+        summaryParticipantCnt > 0 ? (
+          <TabCountBadge
+            value={summaryParticipantCnt}
+            active={activeTab === 'participants'}
+          />
+        ) : undefined,
     },
   ];
 
