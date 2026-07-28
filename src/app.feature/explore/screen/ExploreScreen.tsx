@@ -18,6 +18,11 @@ import React, { useCallback } from 'react';
 
 import { useExploreOfficialChallenges } from '../hooks/useExploreOfficialChallenges';
 
+// 탐색 상단 배너 높이. 모바일 5:2, md+ 는 고정 높이로 상한(넓은 뷰 과대높이
+// 방지). min-h-0 로 flex 부모의 min-content 바닥 제거.
+const EXPLORE_BANNER_HEIGHT =
+  'aspect-[5/2] min-h-0 md:aspect-auto md:h-[200px] lg:h-[220px]';
+
 // 탐색(/explore): 홈에서 분리한 "둘러보기" 콘텐츠. 배너는 제외하고 오늘 시작해볼
 // 챌린지·오늘의 응원(추천 일지)만 노출한다. 비로그인도 열람 가능하며, 카드
 // 클릭 시 로그인 유도 다이얼로그를 띄운다.
@@ -94,8 +99,11 @@ export default function ExploreScreen(): React.ReactElement {
         }
       >
         <div className="flex flex-col gap-10 pt-2 lg:pt-6">
-          {/* 프로모션 배너 — 탐색 페이지 맨 위에 노출 */}
-          <HomeWarmBanner />
+          {/* 프로모션 배너 — 탐색 페이지 맨 위에 노출. 탐색은 flex-col 단독
+              배치라 넓은 뷰에서 5:2 가 폭에 비례해 과대해진다. md+ 고정 높이로
+              상한을 두고 min-h-0 로 min-content 바닥을 없앤다(홈 grid 배치와
+              달라 컨테이너별 높이 클래스를 주입). */}
+          <HomeWarmBanner heightClassName={EXPLORE_BANNER_HEIGHT} />
 
           {/* 공지·문의 */}
           <div className="grid gap-3 lg:grid-cols-2">

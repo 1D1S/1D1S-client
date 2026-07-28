@@ -54,16 +54,26 @@ function fromServerBanner(banner: ServerBanner): CarouselBanner {
   };
 }
 
+// 배너 높이/비율 클래스. 컨테이너별로 다르게 넘긴다:
+// - 홈(grid-cols-2, 스트릭 카드와 한 행): 원래대로 5:2 + max-h-240. 고정 높이를
+//   쓰면 grid 행 높이/겹침 관계가 깨져 스트릭 카드와 충돌한다(회귀 원인).
+// - 탐색(flex-col, 단독 상단 배너): 넓은 뷰에서 5:2 가 폭에 비례해 과대해지므로
+//   md+ 고정 높이로 상한(min-h-0 로 min-content 바닥 제거).
+const DEFAULT_HEIGHT_CLASS = 'aspect-[5/2] max-h-[240px]';
+
 interface HomeWarmBannerProps {
   /** 항상 캐러셀 맨 뒤에 고정되는 배너(디스코드·사용가이드·통계). */
   pinnedBanners?: HomeMainBanner[];
   /** 인증/사이드바 확정 전 — 배너 자리를 스켈레톤으로 예약한다. */
   isLoading?: boolean;
+  /** 배너 높이/비율 제어 클래스(컨테이너별). 미지정 시 홈 기본값. */
+  heightClassName?: string;
 }
 
 export default function HomeWarmBanner({
   pinnedBanners = PINNED_HOME_BANNERS,
   isLoading = false,
+  heightClassName = DEFAULT_HEIGHT_CLASS,
 }: HomeWarmBannerProps): React.ReactElement | null {
   const router = useRouter();
   const { data: serverBanners } = useBanners();
@@ -138,9 +148,9 @@ export default function HomeWarmBanner({
       <div
         aria-hidden
         className={cn(
-          // 실제 배너와 동일한 높이 규칙(모바일 5:2 / md+ 고정 높이 상한).
+          // 실제 배너와 동일한 높이 규칙(컨테이너별 heightClassName).
           'skeleton-pulse rounded-4 w-full self-start bg-gray-100',
-          'aspect-[5/2] min-h-0 md:aspect-auto md:h-[200px] lg:h-[220px]'
+          heightClassName
         )}
       />
     );
@@ -170,16 +180,10 @@ export default function HomeWarmBanner({
   );
 
   return (
-    // 배너 높이 상한. 모바일(<md)은 기존 5:2 비율 유지. 태블릿/데스크톱(md+)
-    // 넓은 뷰에서는 5:2 를 그대로 두면 폭에 비례해 과도하게 커지고(수백 px),
-    // grid/flex 부모의 min-height:auto(=내부 콘텐츠 min-content)가 max-h 상한을
-    // 뚫어 텅 빈 거대 배너가 됐다. → md 이상에서 명시적 고정 높이로 상한을 두고,
-    // min-h-0 로 min-content 바닥을 없앤다. self-start 로 부모 stretch 도 방지.
+    // 높이/비율은 컨테이너별 heightClassName 으로 제어(홈 기본 5:2+max-h,
+    // 탐색은 md+ 고정 높이 상한). self-start 로 부모 grid/flex stretch 방지.
     <div
-      className={cn(
-        'relative w-full self-start',
-        'aspect-[5/2] min-h-0 md:aspect-auto md:h-[200px] lg:h-[220px]'
-      )}
+      className={cn('relative w-full self-start', heightClassName)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -193,7 +197,7 @@ export default function HomeWarmBanner({
         role="link"
         onClick={handleClick}
         className={cn(
-          'shadow-warm h-full min-h-0 cursor-pointer transition',
+          'shadow-warm h-full cursor-pointer transition',
           'data-fade-in px-12 hover:brightness-105'
         )}
       />
