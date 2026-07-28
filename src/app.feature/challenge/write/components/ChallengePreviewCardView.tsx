@@ -1,7 +1,7 @@
 import { Icon, Stripe, Tag, Text } from '@1d1s/design-system';
+import FadeInImage from '@component/FadeInImage';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { cn } from '@module/utils/cn';
-import Image from 'next/image';
 import React from 'react';
 
 const CATEGORY_TONE: Record<string, string> = {
@@ -61,7 +61,7 @@ export function ChallengePreviewCardView({
     >
       <div className="relative aspect-[3/2] w-full">
         {thumbnailPreviewUrl ? (
-          <Image
+          <FadeInImage
             src={thumbnailPreviewUrl}
             alt="챌린지 대표 사진 미리보기"
             fill

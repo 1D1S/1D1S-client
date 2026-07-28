@@ -1,8 +1,8 @@
 import { Icon, Tag, Text } from '@1d1s/design-system';
+import FadeInImage from '@component/FadeInImage';
 import { CATEGORY_OPTIONS } from '@constants/categories';
 import { format } from 'date-fns';
 import { Check } from 'lucide-react';
-import Image from 'next/image';
 import { useFormContext } from 'react-hook-form';
 
 import { isInfiniteChallengeEndDate } from '../../board/utils/challengePeriod';
@@ -48,7 +48,7 @@ export function ChallengeEditDialogContent({
     <div className="flex flex-col gap-4">
       {values.thumbnailPreviewUrl ? (
         <div className="rounded-2 relative aspect-[3/2] w-full overflow-hidden">
-          <Image
+          <FadeInImage
             src={values.thumbnailPreviewUrl}
             alt="챌린지 대표 사진"
             fill

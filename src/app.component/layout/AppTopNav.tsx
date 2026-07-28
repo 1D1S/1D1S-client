@@ -2,6 +2,7 @@
 
 import { Icon, StreakChip } from '@1d1s/design-system';
 import { ChallengeTrophyIcon } from '@component/ChallengeTrophyIcon';
+import FadeInImage from '@component/FadeInImage';
 import { ProfileAlertBadge } from '@component/ProfileAlertBadge';
 import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
@@ -10,7 +11,6 @@ import {
   loginUrlFromCurrentLocation,
 } from '@module/utils/returnTo';
 import { BookOpen, Compass, User } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -168,7 +168,7 @@ export default function AppTopNav({
                   )}
                 >
                   {profileImageUrl ? (
-                    <Image
+                    <FadeInImage
                       src={profileImageUrl}
                       alt="프로필"
                       width={36}
