@@ -138,8 +138,9 @@ export default function HomeWarmBanner({
       <div
         aria-hidden
         className={cn(
-          'skeleton-pulse rounded-4 aspect-[5/2] max-h-[240px] w-full',
-          'self-start bg-gray-100'
+          // 실제 배너와 동일한 높이 규칙(모바일 5:2 / md+ 고정 높이 상한).
+          'skeleton-pulse rounded-4 w-full self-start bg-gray-100',
+          'aspect-[5/2] min-h-0 md:aspect-auto md:h-[200px] lg:h-[220px]'
         )}
       />
     );
@@ -169,12 +170,16 @@ export default function HomeWarmBanner({
   );
 
   return (
-    // 배너 종횡비 5:2(2.5:1) 고정 — 서버 이미지 배너(cover)와 그라디언트 배너
-    // 모두 일관. 모바일은 폭에 맞춰 비율 유지, 폭이 넓은 데스크톱에서는
-    // max-h 로 상한을 둬 너무 커지지 않게 한다. self-start 로 grid/flex 부모의
-    // stretch 가 비율을 깨지 않게 막는다(내부 Banner 는 h-full 로 채움).
+    // 배너 높이 상한. 모바일(<md)은 기존 5:2 비율 유지. 태블릿/데스크톱(md+)
+    // 넓은 뷰에서는 5:2 를 그대로 두면 폭에 비례해 과도하게 커지고(수백 px),
+    // grid/flex 부모의 min-height:auto(=내부 콘텐츠 min-content)가 max-h 상한을
+    // 뚫어 텅 빈 거대 배너가 됐다. → md 이상에서 명시적 고정 높이로 상한을 두고,
+    // min-h-0 로 min-content 바닥을 없앤다. self-start 로 부모 stretch 도 방지.
     <div
-      className="relative aspect-[5/2] max-h-[240px] w-full self-start"
+      className={cn(
+        'relative w-full self-start',
+        'aspect-[5/2] min-h-0 md:aspect-auto md:h-[200px] lg:h-[220px]'
+      )}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -188,7 +193,7 @@ export default function HomeWarmBanner({
         role="link"
         onClick={handleClick}
         className={cn(
-          'shadow-warm h-full cursor-pointer transition',
+          'shadow-warm h-full min-h-0 cursor-pointer transition',
           'data-fade-in px-12 hover:brightness-105'
         )}
       />
