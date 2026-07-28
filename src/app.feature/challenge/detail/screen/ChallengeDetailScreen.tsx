@@ -16,17 +16,7 @@ import { cn } from '@module/utils/cn';
 import { formatDateISO } from '@module/utils/date';
 import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import {
-  ArrowLeft,
-  Calendar,
-  Camera,
-  CircleAlert,
-  Clock,
-  type LucideIcon,
-  PenLine,
-  Target,
-  Users,
-} from 'lucide-react';
+import { ArrowLeft, CircleAlert } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 
@@ -41,7 +31,6 @@ import {
   isChallengeEndedOrArchived,
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
-  POST_END_WRITE_GRACE_DAYS,
 } from '../../board/utils/challengePeriod';
 import { ChallengeDetailCompactHeader } from '../components/ChallengeDetailCompactHeader';
 import { ChallengeDetailHero } from '../components/ChallengeDetailHero';
@@ -50,6 +39,7 @@ import { ChallengeDiaryCalendar } from '../components/ChallengeDiaryCalendar';
 import { ChallengeDiaryDateFilter } from '../components/ChallengeDiaryDateFilter';
 import { ChallengeDiaryList } from '../components/ChallengeDiaryList';
 import { ChallengeGoalModals } from '../components/ChallengeGoalModals';
+import { ChallengeInfoCard } from '../components/ChallengeInfoCard';
 import { ChallengeLeaderboardCard } from '../components/ChallengeLeaderboardCard';
 import { ChallengePasswordDialog } from '../components/ChallengePasswordDialog';
 import { ChallengeProgressCard } from '../components/ChallengeProgressCard';
@@ -554,28 +544,6 @@ export function ChallengeDetailScreen({
   ];
 
   // 소개 탭 하단 "챌린지 정보" — 히어로/진행률과 겹치지 않는 규칙·옵션 위주.
-  const infoRows: Array<{ label: string; value: string; icon: LucideIcon }> = [
-    { label: '기간', value: dateRangeText, icon: Calendar },
-    { label: '인원', value: participantsLabel, icon: Users },
-    {
-      label: '방식',
-      value: `${formatChallengeTypeLabel(summary.goalType)} 목표 · ${
-        isGroupChallenge ? '단체' : '개인'
-      }`,
-      icon: Target,
-    },
-    {
-      label: '인증샷',
-      value: detail.photoRequired ? '필수' : '자유',
-      icon: Camera,
-    },
-    {
-      label: '중도 참여',
-      value: allowMidJoin ? '가능' : '불가',
-      icon: Clock,
-    },
-  ];
-
   return (
     <>
       <ChallengeDetailCompactHeader
@@ -737,87 +705,15 @@ export function ChallengeDetailScreen({
                       onEdit={rulesOnEdit}
                     />
 
-                    <section
-                      className={cn(
-                        'rounded-[14px] border border-gray-200 bg-white',
-                        'p-4 sm:p-5 lg:p-6'
-                      )}
-                    >
-                      <Text
-                        as="h2"
-                        size="heading2"
-                        weight="extrabold"
-                        className="mb-3 block tracking-[-0.3px] text-gray-900"
-                      >
-                        챌린지 정보
-                      </Text>
-                      <div
-                        className={cn(
-                          'grid grid-cols-1 gap-1.5 sm:grid-cols-2'
-                        )}
-                      >
-                        {infoRows.map((row) => (
-                          <div
-                            key={row.label}
-                            className={cn(
-                              'flex items-center gap-2.5 rounded-[10px]',
-                              'bg-gray-50 px-3.5 py-2.5'
-                            )}
-                          >
-                            <row.icon
-                              className="size-4 shrink-0 text-gray-400"
-                              strokeWidth={2}
-                              aria-hidden
-                            />
-                            <Text
-                              size="caption1"
-                              weight="medium"
-                              className={cn(
-                                'shrink-0 whitespace-nowrap text-gray-600'
-                              )}
-                            >
-                              {row.label}
-                            </Text>
-                            <Text
-                              size="caption1"
-                              weight="semibold"
-                              className={cn(
-                                'min-w-0 flex-1 truncate text-right',
-                                'text-gray-900'
-                              )}
-                            >
-                              {row.value}
-                            </Text>
-                          </div>
-                        ))}
-                      </div>
-                      {summary.postEndWriteAllowed ? (
-                        <div
-                          className={cn(
-                            'border-main-300 bg-main-100 mt-2 flex',
-                            'items-center gap-2.5 rounded-[10px] border',
-                            'px-3.5 py-3'
-                          )}
-                        >
-                          <PenLine
-                            className="text-main-800 size-4 shrink-0"
-                            strokeWidth={2}
-                            aria-hidden
-                          />
-                          <Text
-                            size="caption1"
-                            weight="bold"
-                            className="text-gray-700"
-                          >
-                            종료 후{' '}
-                            <b className="text-main-800">
-                              {POST_END_WRITE_GRACE_DAYS}일
-                            </b>
-                            까지 일지 작성 가능
-                          </Text>
-                        </div>
-                      ) : null}
-                    </section>
+                    <ChallengeInfoCard
+                      dateRangeText={dateRangeText}
+                      participantsLabel={participantsLabel}
+                      typeLabel={formatChallengeTypeLabel(summary.goalType)}
+                      isGroup={isGroupChallenge}
+                      photoRequired={detail.photoRequired}
+                      allowMidJoin={allowMidJoin}
+                      postEndWriteAllowed={summary.postEndWriteAllowed}
+                    />
 
                     {statsData && statsData.diaryTrend.length > 0 ? (
                       <section
