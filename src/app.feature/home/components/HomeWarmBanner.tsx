@@ -55,11 +55,14 @@ function fromServerBanner(banner: ServerBanner): CarouselBanner {
 }
 
 // 배너 높이/비율 클래스. 컨테이너별로 다르게 넘긴다:
-// - 홈(grid-cols-2, 스트릭 카드와 한 행): 원래대로 5:2 + max-h-240. 고정 높이를
-//   쓰면 grid 행 높이/겹침 관계가 깨져 스트릭 카드와 충돌한다(회귀 원인).
-// - 탐색(flex-col, 단독 상단 배너): 넓은 뷰에서 5:2 가 폭에 비례해 과대해지므로
-//   md+ 고정 높이로 상한(min-h-0 로 min-content 바닥 제거).
-const DEFAULT_HEIGHT_CLASS = 'aspect-[5/2] max-h-[240px]';
+// - 홈(grid-cols-2, 스트릭 카드와 한 행): 5:2 + max-h-240 + **min-h-0**.
+//   배너 래퍼는 grid 자식이라 CSS 기본 min-height:auto(=aspect 로 전이된
+//   높이 W*2/5)가 max-height 를 이겨(min>max 규칙) 넓은/태블릿 뷰에서 240 을
+//   뚫고 커졌다. min-h-0 으로 그 바닥을 없애야 max-h-240 이 실제로 캡한다.
+//   고정 높이(h-[200px] 등)를 쓰면 grid 행/스트릭 카드 관계가 깨져(회귀) 쓰지
+//   않고, aspect+max-h+min-h-0 로만 캡한다.
+// - 탐색(flex-col, 단독 상단 배너): md+ 고정 높이로 상한(동일하게 min-h-0).
+const DEFAULT_HEIGHT_CLASS = 'aspect-[5/2] max-h-[240px] min-h-0';
 
 interface HomeWarmBannerProps {
   /** 항상 캐러셀 맨 뒤에 고정되는 배너(디스코드·사용가이드·통계). */
