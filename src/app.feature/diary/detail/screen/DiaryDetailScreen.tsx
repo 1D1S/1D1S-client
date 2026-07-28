@@ -9,18 +9,10 @@ import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import {
-  Edit3,
-  Flag,
-  Heart,
-  MessageCircle,
-  MoreVertical,
-  Share2,
-  Trash2,
-} from 'lucide-react';
+import { Flag, Heart, MessageCircle, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { useChallengeDetail } from '../../../challenge/board/hooks/useChallengeQueries';
 import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
@@ -38,6 +30,7 @@ import {
 } from '../components/DiaryConnectedChallenge';
 import { DiaryGoalsCard } from '../components/DiaryGoalsCard';
 import { DiaryImageGallery } from '../components/DiaryImageGallery';
+import { DiaryOwnerMenu } from '../components/DiaryOwnerMenu';
 import { DiaryReportDialog } from '../components/DiaryReportDialog';
 import {
   COMMENT_LIST_PARAMS,
@@ -130,80 +123,6 @@ function DiaryActionToolbar({
       >
         <Share2 className="h-3.5 w-3.5" />
       </button>
-    </div>
-  );
-}
-
-function DiaryOwnerMenu({
-  onEdit,
-  onDelete,
-}: {
-  onEdit(): void;
-  onDelete(): void;
-}): React.ReactElement {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-    const handleClickOutside = (event: MouseEvent): void => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
-
-  return (
-    <div ref={menuRef} className="relative">
-      <Button
-        variant="secondary"
-        size="md"
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        <MoreVertical className="h-4 w-4" />
-      </Button>
-      {isOpen ? (
-        <div
-          className={cn(
-            'absolute top-full right-0 z-10 mt-1 w-32',
-            'overflow-hidden rounded-lg border border-gray-200',
-            'bg-white shadow-md'
-          )}
-        >
-          <button
-            type="button"
-            className={cn(
-              'flex w-full cursor-pointer items-center gap-2',
-              'px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50'
-            )}
-            onClick={() => {
-              setIsOpen(false);
-              onEdit();
-            }}
-          >
-            <Edit3 className="h-4 w-4" />
-            일지 수정
-          </button>
-          <button
-            type="button"
-            className={cn(
-              'flex w-full cursor-pointer items-center gap-2',
-              'px-4 py-2.5 text-left text-sm text-red-500 hover:bg-gray-50'
-            )}
-            onClick={() => {
-              setIsOpen(false);
-              onDelete();
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-            일지 삭제
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 }
