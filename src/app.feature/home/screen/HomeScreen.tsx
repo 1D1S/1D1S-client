@@ -76,20 +76,17 @@ export default function HomeScreen(): React.ReactElement {
   const showGuestCta =
     status === 'guest' || (status === 'unknown' && hasMounted && !hasAuthHint);
   const showLoggedInShell = !showGuestCta;
-  const {
-    data: sidebar,
-    isLoading: isSidebarLoading,
-    isFetching: isSidebarFetching,
-  } = useSidebar();
+  const { data: sidebar, isLoading: isSidebarLoading } = useSidebar();
 
   const streakDays = sidebar?.streakCount ?? 0;
-  // 로그인 셸을 그리는 동안(확인 중 포함) sidebar 가 도착하기 전까지 스트릭
-  // 스켈레톤을 노출해 0 → 실제 값 깜빡임을 막는다. `!hasMounted` 를 포함하는
-  // 이유: SSR/하이드레이션 첫 페인트를 항상 skeleton 으로 고정해 서버/클라
-  // 출력을 일치시키기 위함(hydration mismatch 방지).
+  // 스켈레톤은 "캐시된 데이터가 아직 없는 최초 로드"에만 노출한다.
+  // 예전엔 isFetching 을 포함해, 뮤테이션 후 invalidate·webview resume 등
+  // 배경 refetch 때마다 스켈레톤이 다시 떠 레이아웃 시프트가 났다. isLoading
+  // (v5: 데이터 없음 + fetching) + !sidebar 만 보면 배경 refetch 중에는
+  // 기존 캐시를 유지해 시프트가 없다. `!hasMounted` 는 SSR/하이드레이션 첫
+  // 페인트를 skeleton 으로 고정해 hydration mismatch 를 막기 위함(초기 한정).
   const isStreakLoading =
-    showLoggedInShell &&
-    (!hasMounted || isSidebarLoading || isSidebarFetching || !sidebar);
+    showLoggedInShell && (!hasMounted || isSidebarLoading || !sidebar);
 
   // 스플래시 dismiss 신호: 홈 핵심 콘텐츠(스트릭/오늘의 기록 or 게스트 CTA)가
   // 스켈레톤이 아니라 실제로 렌더된 시점에 1회 발화. 게스트는 isStreakLoading

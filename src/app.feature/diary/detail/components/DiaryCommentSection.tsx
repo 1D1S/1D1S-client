@@ -21,6 +21,44 @@ import {
 } from '../hooks/useDiaryCommentMutations';
 import { CommentReportDialog } from './CommentReportDialog';
 
+// 모바일에서 입력창(댓글·대댓글)이 키보드에 가리지 않게, 포커스 시 해당
+// 요소를 뷰포트 안으로 스크롤한다. React onFocus 는 버블링되므로 상위 래퍼
+// 한 곳에 달면 내부 DS CommentThread 의 대댓글 입력까지 함께 처리된다.
+//
+// 타이밍: 키보드로 visualViewport 가 줄어든 "뒤"에 계산해야 정확히 키보드 위로
+// 올라온다. 즉시 호출하면 아직 안 줄어든 뷰포트 기준이라 어긋난다. → 다음
+// visualViewport resize 를 1회 기다렸다가 scrollIntoView 하고, 리사이즈가
+// 안 오는 환경을 위해 타임아웃 폴백을 둔다.
+function handleCommentInputFocus(event: React.FocusEvent<HTMLElement>): void {
+  const target = event.target;
+  if (
+    !(target instanceof HTMLTextAreaElement) &&
+    !(target instanceof HTMLInputElement)
+  ) {
+    return;
+  }
+  const scrollIntoView = (): void => {
+    target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  };
+  const vv = window.visualViewport;
+  if (!vv) {
+    window.setTimeout(scrollIntoView, 300);
+    return;
+  }
+  let done = false;
+  const run = (): void => {
+    if (done) {
+      return;
+    }
+    done = true;
+    vv.removeEventListener('resize', run);
+    scrollIntoView();
+  };
+  vv.addEventListener('resize', run);
+  // 키보드가 이미 떠 있어 resize 가 안 오는 경우 대비 폴백.
+  window.setTimeout(run, 350);
+}
+
 interface DiaryCommentSectionProps {
   diaryId: number;
   currentMemberId: number | null;
@@ -150,6 +188,7 @@ export function DiaryCommentSection({
 
   return (
     <div
+      onFocus={handleCommentInputFocus}
       className={cn(
         'lg:rounded-[14px] lg:border lg:border-gray-200 lg:bg-white',
         'lg:sticky lg:top-[78px]'
@@ -190,6 +229,9 @@ export function DiaryCommentSection({
               className={cn(
                 '[&_button]:shrink-0 [&_button]:whitespace-nowrap',
                 '[&_ul]:!pl-1.5'
+                // 대댓글 입력 폭/높이 스톱갭은 제거했다: DS 2.11.1 이 근본적으로
+                // rows:2 + min-h + 폭(min-w-0) 을 처리한다. 클라 min-h-[44px] 는
+                // 오히려 DS 의 더 큰 min-h 를 깎아 충돌하므로 남기지 않는다.
               )}
             />
           </div>
@@ -281,6 +323,7 @@ export function DiaryMobileCommentBar({
         className="flex-1"
         value={content}
         onChange={(event) => setContent(event.target.value)}
+        onFocus={handleCommentInputFocus}
         placeholder="응원의 말을 남겨주세요"
       />
       <Button
