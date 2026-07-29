@@ -228,12 +228,10 @@ export function DiaryCommentSection({
               onReport={handleReportComment}
               className={cn(
                 '[&_button]:shrink-0 [&_button]:whitespace-nowrap',
-                '[&_ul]:!pl-1.5',
-                // 대댓글 입력창이 좁게 보이던 문제 — 스레드 내 textarea(=대댓글
-                // 입력, DS 내부)를 폭 꽉 채우고 최소 높이를 확보하는 클라이언트
-                // 스톱갭. 근본 크기(rows/기본폭)는 DS CommentThread 소관(보고).
-                '[&_textarea]:w-full [&_textarea]:min-w-0',
-                '[&_textarea]:min-h-[44px]'
+                '[&_ul]:!pl-1.5'
+                // 대댓글 입력 폭/높이 스톱갭은 제거했다: DS 2.11.1 이 근본적으로
+                // rows:2 + min-h + 폭(min-w-0) 을 처리한다. 클라 min-h-[44px] 는
+                // 오히려 DS 의 더 큰 min-h 를 깎아 충돌하므로 남기지 않는다.
               )}
             />
           </div>
