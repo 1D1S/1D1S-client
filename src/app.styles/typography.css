@@ -63,12 +63,17 @@
   }
 }
 
-/* 모바일 댓글 가독성 — DS CommentThread/TextField 내부의 text-xs(12px)가
-   모바일에서 너무 작아 13px로 키운다. 데스크톱(lg+)은 공간이 충분해 그대로 둔다.
+/* 모바일 댓글 가독성 — DS CommentThread/TextField 내부의 작은 폰트(text-xs
+   12px / text-2xs 10px)가 모바일에서 잘 안 보인다는 피드백으로 한 단계 이상
+   키운다. 데스크톱(lg+)은 공간이 충분해 그대로 둔다.
    `.comment-readable .text-xs` 는 Tailwind `.text-xs`(0,1,0)보다 우선한다(0,2,0). */
 @media (max-width: 1023px) {
   .comment-readable .text-xs {
-    font-size: 0.8125rem; /* 13px */
+    font-size: 0.9375rem; /* 15px (기존 13px → 상향) */
+    line-height: 1.55;
+  }
+  .comment-readable .text-2xs {
+    font-size: 0.8125rem; /* 13px (타임스탬프 등 초소형 라벨) */
     line-height: 1.5;
   }
 }

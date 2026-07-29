@@ -21,6 +21,24 @@ import {
 } from '../hooks/useDiaryCommentMutations';
 import { CommentReportDialog } from './CommentReportDialog';
 
+// 모바일에서 입력창(댓글·대댓글)이 키보드에 가리지 않게, 포커스 시 해당
+// 요소를 뷰포트 안으로 스크롤한다. 키보드가 올라오며 visualViewport 가 줄어드는
+// 데 시간이 걸려 약간 지연 후 실행한다. React onFocus 는 버블링되므로 상위
+// 래퍼 한 곳에 달면 내부 DS CommentThread 의 대댓글 입력까지 함께 처리된다.
+// (그래도 가려지면 웹뷰 리사이즈가 필요 — 앱 세션 병행.)
+function handleCommentInputFocus(event: React.FocusEvent<HTMLElement>): void {
+  const target = event.target;
+  if (
+    !(target instanceof HTMLTextAreaElement) &&
+    !(target instanceof HTMLInputElement)
+  ) {
+    return;
+  }
+  window.setTimeout(() => {
+    target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, 300);
+}
+
 interface DiaryCommentSectionProps {
   diaryId: number;
   currentMemberId: number | null;
@@ -150,6 +168,7 @@ export function DiaryCommentSection({
 
   return (
     <div
+      onFocus={handleCommentInputFocus}
       className={cn(
         'lg:rounded-[14px] lg:border lg:border-gray-200 lg:bg-white',
         'lg:sticky lg:top-[78px]'
@@ -189,7 +208,12 @@ export function DiaryCommentSection({
               onReport={handleReportComment}
               className={cn(
                 '[&_button]:shrink-0 [&_button]:whitespace-nowrap',
-                '[&_ul]:!pl-1.5'
+                '[&_ul]:!pl-1.5',
+                // 대댓글 입력창이 좁게 보이던 문제 — 스레드 내 textarea(=대댓글
+                // 입력, DS 내부)를 폭 꽉 채우고 최소 높이를 확보하는 클라이언트
+                // 스톱갭. 근본 크기(rows/기본폭)는 DS CommentThread 소관(보고).
+                '[&_textarea]:w-full [&_textarea]:min-w-0',
+                '[&_textarea]:min-h-[44px]'
               )}
             />
           </div>
@@ -281,6 +305,7 @@ export function DiaryMobileCommentBar({
         className="flex-1"
         value={content}
         onChange={(event) => setContent(event.target.value)}
+        onFocus={handleCommentInputFocus}
         placeholder="응원의 말을 남겨주세요"
       />
       <Button
