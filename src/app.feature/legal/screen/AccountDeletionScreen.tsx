@@ -4,6 +4,10 @@ import { LegalPageShell } from '../components/LegalPageShell';
 
 const EFFECTIVE_DATE = '2026년 7월 29일';
 const SUPPORT_EMAIL = 'onedayonestreak@gmail.com';
+const ACCOUNT_DELETION_FOOTER = [
+  'Account deletion requests are also accepted by email at',
+  `${SUPPORT_EMAIL}.`,
+].join(' ');
 
 const ACCOUNT_DELETION_SECTIONS: Array<{
   heading: string;
@@ -61,7 +65,7 @@ export default function AccountDeletionScreen(): React.ReactElement {
       description="1D1S 계정과 관련 데이터의 삭제를 요청하는 방법입니다."
       effectiveDate={EFFECTIVE_DATE}
       sections={ACCOUNT_DELETION_SECTIONS}
-      footer="Account deletion requests are also accepted by email at onedayonestreak@gmail.com."
+      footer={ACCOUNT_DELETION_FOOTER}
     />
   );
 }

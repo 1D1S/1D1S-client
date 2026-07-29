@@ -4,6 +4,11 @@ import { LegalPageShell } from '../components/LegalPageShell';
 
 const EFFECTIVE_DATE = '2026년 5월 20일';
 const SUPPORT_EMAIL = 'onedayonestreak@gmail.com';
+const PRIVACY_RIGHTS_GUIDANCE = [
+  '권리 행사는 서비스 내 설정 메뉴 또는',
+  `고객센터(${SUPPORT_EMAIL})를 통해 가능하며,`,
+  '운영자는 지체 없이 조치합니다.',
+].join(' ');
 
 const PRIVACY_SECTIONS: Array<{ heading: string; body: string }> = [
   {
@@ -65,7 +70,7 @@ const PRIVACY_SECTIONS: Array<{ heading: string; body: string }> = [
 다. 개인정보 처리 정지 요구
 라. 회원 탈퇴
 
-권리 행사는 서비스 내 설정 메뉴 또는 고객센터(${SUPPORT_EMAIL})를 통해 가능하며, 운영자는 지체 없이 조치합니다.`,
+${PRIVACY_RIGHTS_GUIDANCE}`,
   },
   {
     heading: '7. 개인정보의 파기 절차 및 방법',
