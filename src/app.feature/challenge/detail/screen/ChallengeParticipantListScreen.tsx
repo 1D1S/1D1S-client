@@ -1,7 +1,8 @@
 'use client';
 
-import { Card, CircleAvatar, MobileHeader, Text } from '@1d1s/design-system';
+import { Card, CircleAvatar, Text } from '@1d1s/design-system';
 import EmptyState from '@component/EmptyState';
+import { SubPageShell } from '@component/layout/SubPageShell';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
@@ -145,26 +146,19 @@ export function ChallengeParticipantListScreen({
     );
   }
 
+  // 다른 서브페이지(친구/알림/설정 등)와 동일하게 SubPageShell 을 쓴다.
+  // → 모바일 헤더(브라우저 back + safe-area, 네이티브에선 globals 규칙으로 숨김)
+  //   + data-native-subpage-content(네이티브 바텀/상단 오프셋) + 데스크톱 헤더.
+  //   기존엔 이 껍데기 없이 날것으로 그려 상태바 침범·web back 겹침이 났다.
   return (
-    <div className="min-h-screen w-full">
-      <MobileHeader title="참여자" onBack={handleBack} />
-
-      <div className={cn('mx-auto w-full max-w-[640px]', 'px-5 py-5 lg:py-10')}>
-        <header className="hidden flex-col gap-1.5 lg:flex">
-          <Text
-            size="pageTitle"
-            weight="extrabold"
-            className="tracking-tight text-gray-900"
-          >
-            참여자
-          </Text>
-          <Text size="body2" weight="regular" className="text-gray-500">
-            챌린지에 참여 중인 멤버와 등수입니다.
-          </Text>
-        </header>
-
+    <SubPageShell
+      title="참여자"
+      description="챌린지에 참여 중인 멤버와 등수입니다."
+      onBack={handleBack}
+    >
+      <div className="mx-auto w-full max-w-[640px]">
         {/* 정렬 토글 — 참여순 / 등수순 */}
-        <div className="mt-4 flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <Text size="caption1" weight="medium" className="text-gray-500">
             총 {total}명
           </Text>
@@ -250,6 +244,6 @@ export function ChallengeParticipantListScreen({
           ) : null}
         </div>
       </div>
-    </div>
+    </SubPageShell>
   );
 }
