@@ -22,10 +22,13 @@ import {
 import { CommentReportDialog } from './CommentReportDialog';
 
 // 모바일에서 입력창(댓글·대댓글)이 키보드에 가리지 않게, 포커스 시 해당
-// 요소를 뷰포트 안으로 스크롤한다. 키보드가 올라오며 visualViewport 가 줄어드는
-// 데 시간이 걸려 약간 지연 후 실행한다. React onFocus 는 버블링되므로 상위
-// 래퍼 한 곳에 달면 내부 DS CommentThread 의 대댓글 입력까지 함께 처리된다.
-// (그래도 가려지면 웹뷰 리사이즈가 필요 — 앱 세션 병행.)
+// 요소를 뷰포트 안으로 스크롤한다. React onFocus 는 버블링되므로 상위 래퍼
+// 한 곳에 달면 내부 DS CommentThread 의 대댓글 입력까지 함께 처리된다.
+//
+// 타이밍: 키보드로 visualViewport 가 줄어든 "뒤"에 계산해야 정확히 키보드 위로
+// 올라온다. 즉시 호출하면 아직 안 줄어든 뷰포트 기준이라 어긋난다. → 다음
+// visualViewport resize 를 1회 기다렸다가 scrollIntoView 하고, 리사이즈가
+// 안 오는 환경을 위해 타임아웃 폴백을 둔다.
 function handleCommentInputFocus(event: React.FocusEvent<HTMLElement>): void {
   const target = event.target;
   if (
@@ -34,9 +37,26 @@ function handleCommentInputFocus(event: React.FocusEvent<HTMLElement>): void {
   ) {
     return;
   }
-  window.setTimeout(() => {
+  const scrollIntoView = (): void => {
     target.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  }, 300);
+  };
+  const vv = window.visualViewport;
+  if (!vv) {
+    window.setTimeout(scrollIntoView, 300);
+    return;
+  }
+  let done = false;
+  const run = (): void => {
+    if (done) {
+      return;
+    }
+    done = true;
+    vv.removeEventListener('resize', run);
+    scrollIntoView();
+  };
+  vv.addEventListener('resize', run);
+  // 키보드가 이미 떠 있어 resize 가 안 오는 경우 대비 폴백.
+  window.setTimeout(run, 350);
 }
 
 interface DiaryCommentSectionProps {

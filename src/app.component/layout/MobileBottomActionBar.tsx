@@ -1,3 +1,6 @@
+'use client';
+
+import { useKeyboardInsetOffset } from '@module/hooks/useKeyboardInsetOffset';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 
@@ -25,16 +28,27 @@ export function MobileBottomActionBar({
   hideOnDesktop = true,
   hidden = false,
 }: MobileBottomActionBarProps): React.ReactElement | null {
+  // 소프트 키보드가 가리는 높이만큼 하단 바를 위로 올린다(WKWebView 대응).
+  // 키보드가 없으면 0 → 기존과 동일하게 bottom:0. transform 은 fixed 요소의
+  // 뷰포트 기준 위치를 바꾸지 않고 시각적으로만 이동시킨다.
+  const keyboardOffset = useKeyboardInsetOffset();
+
   if (hidden) {
     return null;
   }
   return (
     <div
+      style={
+        keyboardOffset > 0
+          ? { transform: `translateY(-${keyboardOffset}px)` }
+          : undefined
+      }
       className={cn(
         'fixed right-0 bottom-0 left-0 z-20',
         'border-t border-gray-100 bg-white/95 backdrop-blur',
         'px-5 pt-3',
         'pb-[calc(1.75rem+env(safe-area-inset-bottom))]',
+        'transition-transform duration-150 ease-out',
         hideOnDesktop && 'lg:hidden',
         className
       )}
