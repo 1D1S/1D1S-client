@@ -7,7 +7,7 @@ import React from 'react';
 
 interface LegalSection {
   heading: string;
-  body: string;
+  body: React.ReactNode;
 }
 
 interface LegalPageShellProps {
