@@ -3,6 +3,7 @@ import React from 'react';
 import { LegalPageShell } from '../components/LegalPageShell';
 
 const EFFECTIVE_DATE = '2026년 5월 20일';
+const SUPPORT_EMAIL = 'onedayonestreak@gmail.com';
 
 const PRIVACY_SECTIONS: Array<{ heading: string; body: string }> = [
   {
@@ -64,7 +65,7 @@ const PRIVACY_SECTIONS: Array<{ heading: string; body: string }> = [
 다. 개인정보 처리 정지 요구
 라. 회원 탈퇴
 
-권리 행사는 서비스 내 설정 메뉴 또는 고객센터(onedayonestreak@gmail.com)를 통해 가능하며, 운영자는 지체 없이 조치합니다.`,
+권리 행사는 서비스 내 설정 메뉴 또는 고객센터(${SUPPORT_EMAIL})를 통해 가능하며, 운영자는 지체 없이 조치합니다.`,
   },
   {
     heading: '7. 개인정보의 파기 절차 및 방법',
@@ -88,7 +89,7 @@ const PRIVACY_SECTIONS: Array<{ heading: string; body: string }> = [
     body: `운영자는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한 정보주체의 불만 처리 및 피해 구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.
 
 - 개인정보 보호책임자: 1Day 1Streak 운영팀
-- 연락처: onedayonestreak@gmail.com`,
+- 연락처: ${SUPPORT_EMAIL}`,
   },
   {
     heading: '10. 권익침해 구제방법',
