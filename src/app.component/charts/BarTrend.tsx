@@ -44,6 +44,21 @@ export function getTrendWindow(
   };
 }
 
+/**
+ * 강조(피크)할 막대 인덱스. 값이 0 초과인 항목 중 최댓값을 고르되, 동률이면
+ * 더 뒤(최신) 항목이 이긴다(`>=`). 데이터는 과거→최신(왼→오른) 순이라
+ * 동률 시 가장 최근 막대가 강조된다. 전부 0(또는 빈 배열)이면 -1(강조 없음).
+ */
+export function getPeakIndex(items: ReadonlyArray<{ count: number }>): number {
+  let idx = -1;
+  items.forEach((datum, index) => {
+    if (datum.count > 0 && (idx < 0 || datum.count >= items[idx].count)) {
+      idx = index;
+    }
+  });
+  return idx;
+}
+
 function NavButton({
   direction,
   disabled,
@@ -107,16 +122,8 @@ export function BarTrend({
     [data]
   );
 
-  // 현재 페이지에서 최댓값 막대의 인덱스 — 강조 대상.
-  const peakIndex = useMemo(() => {
-    let idx = -1;
-    visible.forEach((datum, index) => {
-      if (datum.count > 0 && (idx < 0 || datum.count > visible[idx].count)) {
-        idx = index;
-      }
-    });
-    return idx;
-  }, [visible]);
+  // 현재 페이지에서 강조할 막대 인덱스(동률 시 최신 우선 — getPeakIndex 참조).
+  const peakIndex = useMemo(() => getPeakIndex(visible), [visible]);
 
   if (data.length === 0) {
     return null;
