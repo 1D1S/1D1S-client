@@ -31,6 +31,16 @@ function resolveNotificationUrl(data) {
   return '/notification';
 }
 
+// 딥링크 URL 에 notifId 쿼리를 붙여, 웹 클라이언트가 진입 시 해당 알림을
+// 읽음 처리할 수 있게 한다(useMarkReadFromDeepLink). id 가 없으면 원본 URL 그대로.
+function appendNotifId(url, notifId) {
+  if (notifId === null || notifId === undefined) {
+    return url;
+  }
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}notifId=${notifId}`;
+}
+
 self.addEventListener('push', (event) => {
   console.log('[SW] push event received', event.data?.text());
 
@@ -53,7 +63,16 @@ self.addEventListener('push', (event) => {
     icon: '/images/logo.png',
     badge: '/images/logo.png',
     // 클릭 시 이동할 딥링크를 미리 계산해 저장한다.
-    data: { url: resolveNotificationUrl(data) },
+    data: {
+      url: resolveNotificationUrl(data),
+      // 서버가 알림 id 를 실어주면 클릭 시 읽음 처리에 사용한다(없으면 null).
+      notificationId:
+        typeof data.notificationId === 'number'
+          ? data.notificationId
+          : typeof data.id === 'number'
+            ? data.id
+            : null,
+    },
   };
 
   console.log('[SW] showNotification', title, options);
@@ -62,7 +81,9 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = event.notification.data?.url ?? '/notification';
+  const baseUrl = event.notification.data?.url ?? '/notification';
+  // notifId 를 딥링크에 실어, 진입한 웹 클라이언트가 해당 알림을 읽음 처리한다.
+  const url = appendNotifId(baseUrl, event.notification.data?.notificationId);
 
   event.waitUntil(
     clients

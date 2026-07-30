@@ -1,96 +1,84 @@
 name: Discord Deploy Notify
 
-# 웹은 Vercel Git 연동으로 배포된다(서버처럼 GitHub Actions 배포 잡이 아님).
-# Vercel[bot] 이 배포마다 GitHub Deployments + deployment_status 를 생성하므로,
-# 그 이벤트를 트리거로 삼아 디스코드 봇(웹훅 아님)으로 배포 완료/실패를 알린다.
+# 웹은 Vercel Git 연동으로 배포된다. 이전엔 on: deployment_status 로 배포 완료를
+# 잡으려 했으나, Vercel 이 GitHub Deployment 이벤트를 뿌리지 않아 워크플로가
+# 절대 발화하지 않았다. → PR 알림(discord-pr-notification)과 동일하게 push 이벤트
+# + 봇 토큰 직접 POST 로 바꾼다. push 는 Vercel 의존 없이 항상 발화한다.
 #
-# ⚠️ 기본 브랜치 제약: deployment_status 워크플로는 GitHub 규칙상 "레포 기본
-#    브랜치"의 워크플로 정의로만 실행된다. 이 레포 기본 브랜치는 develop 이므로
-#    이 파일이 develop 에 있으면 발화한다. (기본 브랜치가 main 으로 바뀌면 main
-#    에도 이 파일을 반영해야 발화한다.)
+# push = "Vercel 배포 트리거" 시점이라(완료/성공 개념 없음), 문구는 "배포 트리거"
+# 로 정직하게 쓴다. develop push → WEB(DEV), main push → WEB(PROD) 로 구분.
 #
-# ⚠️ 필요 시크릿: DISCORD_BOT_TOKEN — 현재 server-v2 레포에만 있다. 이 client
-#    레포의 Settings > Secrets and variables > Actions 에 **동일 값**으로 추가해야
-#    동작한다. (봇이 아래 채널에 메시지 쓰기 권한을 가져야 함)
+# ⚠️ on: push 워크플로는 "푸시된 브랜치/커밋에 있는 정의"로 실행된다. 따라서
+#    main 라벨 알림은 이 파일이 main 에 반영된 이후(다음 승격)부터 동작한다.
+#    develop 은 이 파일이 있는 즉시 동작.
+#
+# ⚠️ 필요 시크릿: DISCORD_BOT_TOKEN — 이 client 레포의
+#    Settings > Secrets and variables > Actions 에 등록돼 있어야 한다(서버 레포의
+#    값과 동일). 레포 간 시크릿은 공유되지 않으므로 별도 등록 필요. 봇은 아래
+#    채널에 메시지 쓰기 권한이 있어야 한다.
 
 on:
-  deployment_status:
+  push:
+    branches: [develop, main]
 
 permissions:
   contents: read
 
 jobs:
   notify:
-    # 성공/실패/에러 상태에서만 알림(pending·in_progress·queued 는 무시).
-    if: >-
-      github.event.deployment_status.state == 'success' ||
-      github.event.deployment_status.state == 'failure' ||
-      github.event.deployment_status.state == 'error'
     runs-on: ubuntu-latest
     steps:
       - name: Notify Discord
         uses: actions/github-script@v7
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-          # 알림 채널 ID(server-dev/PR 알림과 공유). WEB(ENV) 접두어로 구분한다.
-          # 별도 채널을 원하면 이 값만 교체하면 된다.
+          # 알림 채널 ID(PR 알림/서버 알림과 공유). WEB(ENV) 접두어로 구분.
+          # 별도 채널을 원하면 이 값만 교체.
           CHANNEL_ID: '1351796500279197757'
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const token = process.env.DISCORD_BOT_TOKEN;
             const channelId = process.env.CHANNEL_ID;
             if (!token) {
               core.setFailed(
-                'DISCORD_BOT_TOKEN 시크릿이 없습니다. client 레포에 동일 값 등록 필요.'
+                'DISCORD_BOT_TOKEN 시크릿이 없습니다. client 레포에 등록 필요.'
               );
               return;
             }
 
-            const ds = context.payload.deployment_status || {};
-            const deployment = context.payload.deployment || {};
-            const state = ds.state; // success | failure | error
-            const rawEnv = ds.environment || deployment.environment || '';
-            const targetUrl = ds.target_url || ds.environment_url || '';
-            const sha = deployment.sha || context.sha;
+            // push 페이로드의 tip 커밋. 브랜치 삭제/특수 push 로 없으면 스킵.
+            const head = context.payload.head_commit;
+            if (!head) {
+              core.info('head_commit 없음 — 알림 스킵');
+              return;
+            }
+
+            const branch = context.ref.replace('refs/heads/', '');
+            const envLabel =
+              branch === 'main'
+                ? 'PROD'
+                : branch === 'develop'
+                  ? 'DEV'
+                  : branch.toUpperCase();
+
+            const sha = head.id || context.sha;
             const shortSha = sha ? sha.slice(0, 7) : '(unknown)';
+            const title = (head.message || '').split('\n')[0];
+            const actor =
+              context.actor ||
+              (head.author && (head.author.username || head.author.name)) ||
+              '';
+            const url =
+              head.url ||
+              `https://github.com/${context.repo.owner}/` +
+                `${context.repo.repo}/commit/${sha}`;
 
-            // 환경 라벨: Production→PROD, Preview→DEV, 그 외(staging 등)는 대문자.
-            let envLabel;
-            if (rawEnv === 'Production') {
-              envLabel = 'PROD';
-            } else if (rawEnv === 'Preview') {
-              envLabel = 'DEV';
-            } else {
-              envLabel = (rawEnv || 'UNKNOWN').toUpperCase();
-            }
-
-            // 커밋 메시지 첫 줄 + 작성자 — 이벤트 payload 엔 없어 API 로 조회.
-            let commitTitle = '';
-            let actor = '';
-            try {
-              const { data: commit } = await github.rest.repos.getCommit({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: sha,
-              });
-              commitTitle = (commit.commit.message || '').split('\n')[0];
-              actor =
-                (commit.author && commit.author.login) ||
-                (commit.commit.author && commit.commit.author.name) ||
-                '';
-            } catch (error) {
-              core.warning(`커밋 조회 실패: ${error.message}`);
-            }
-
-            // 서버 메시지와 동일한 4줄 형식(성공 ✅ / 실패·에러 ❌).
-            const icon = state === 'success' ? '✅' : '❌';
-            const verb = state === 'success' ? '배포 완료' : '배포 실패';
+            // push=배포 트리거 시점(완료 아님) → "배포 트리거" 로 정직하게.
             const content = [
-              `${icon} WEB(${envLabel}) ${verb}`,
+              `🚀 WEB(${envLabel}) 배포 트리거`,
               `\`${shortSha}\`${actor ? ` by ${actor}` : ''}`,
-              commitTitle,
-              targetUrl,
+              title,
+              url,
             ]
               .filter(Boolean)
               .join('\n');
