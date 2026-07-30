@@ -5,6 +5,7 @@ import { AddToHomeScreenPrompt } from '@feature/install/components/AddToHomeScre
 import { usePhoneNumberMissing } from '@feature/member/hooks/usePhoneNumberMissing';
 import { BrowserPermissionPrompt } from '@feature/notification/components/BrowserPermissionPrompt';
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
+import { useMarkReadFromDeepLink } from '@module/hooks/useMarkReadFromDeepLink';
 import { useServiceWorkerNavigation } from '@module/hooks/useServiceWorkerNavigation';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
 import { buildLoginUrl } from '@module/utils/returnTo';
@@ -136,6 +137,7 @@ export default function AppLayoutShell({
   useTokenRefreshOnResume();
   // 알림 클릭 시 서비스워커가 보낸 딥링크를 라우터 push 로 처리(뒤로가기 보존).
   useServiceWorkerNavigation();
+  useMarkReadFromDeepLink();
 
   // 인증/사이드바 상태는 별도 hook 으로 묶었다. shell 은 라우트 가시성 판단과
   // 핸들러 안정화에만 집중한다.
