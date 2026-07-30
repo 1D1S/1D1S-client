@@ -203,8 +203,12 @@ export function SignUpScreen(): React.ReactElement {
       <section className="relative flex min-h-screen flex-col">
         <header
           className={cn(
+            // 앱(웹뷰)에선 네이티브 back bar 가 상단/뒤로가기를 대신하므로 이 웹
+            // 모바일 헤더는 숨긴다(native-hide). 다른 화면(TopNav/BottomNav)과
+            // 동일 규칙. 브라우저(비앱)·모바일에선 그대로 노출, 데스크톱은
+            // lg:hidden. 진행 표시는 본문 StepIndicator 가 계속 담당.
             'flex h-14 items-center justify-between border-b border-gray-100',
-            'bg-white px-4 lg:hidden'
+            'native-hide bg-white px-4 lg:hidden'
           )}
         >
           <button
