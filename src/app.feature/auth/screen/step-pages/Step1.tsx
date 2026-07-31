@@ -183,7 +183,7 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
             <FormItem>
               <FormControl>
                 <TextField
-                  label="전화번호"
+                  label="전화번호 (선택)"
                   placeholder="010-1234-5678"
                   inputMode="numeric"
                   maxLength={13}
@@ -204,7 +204,10 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
         />
 
         <div>
-          <FieldLabel required>생년월일</FieldLabel>
+          <FieldLabel>
+            생년월일{' '}
+            <span className="font-normal text-gray-400">(선택)</span>
+          </FieldLabel>
           {/* DS SelectTrigger 는 min-w-[150px] 이라 3열이면 모바일 폭을
               넘겨 오른쪽으로 잘린다. 각 트리거에 min-w-0 을 줘서 fr 비율이
               실제로 먹도록 한다. */}
@@ -311,7 +314,9 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
         </div>
 
         <div>
-          <FieldLabel required>성별</FieldLabel>
+          <FieldLabel>
+            성별 <span className="font-normal text-gray-400">(선택)</span>
+          </FieldLabel>
           <FormField
             control={form.control}
             name="gender"

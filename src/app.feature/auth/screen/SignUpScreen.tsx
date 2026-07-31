@@ -79,7 +79,11 @@ export function SignUpScreen(): React.ReactElement {
       return;
     }
 
-    const birth = `${values.year}-${values.month.padStart(2, '0')}-${values.day.padStart(2, '0')}`;
+    // 생년월일은 선택 항목 — 세 값이 모두 있을 때만 전송한다(부분 입력은 미전송).
+    const birth =
+      values.year && values.month && values.day
+        ? `${values.year}-${values.month.padStart(2, '0')}-${values.day.padStart(2, '0')}`
+        : undefined;
 
     setIsSubmitting(true);
     try {
@@ -96,7 +100,10 @@ export function SignUpScreen(): React.ReactElement {
 
       await authApi.completeSignUpInfo({
         nickname: values.nickname,
-        phoneNumber: normalizePhoneNumber(values.phoneNumber),
+        // 선택 항목은 미입력 시 키를 넣지 않는다(undefined → JSON 에서 제외).
+        phoneNumber: values.phoneNumber
+          ? normalizePhoneNumber(values.phoneNumber)
+          : undefined,
         job: values.job,
         birth,
         gender: values.gender,

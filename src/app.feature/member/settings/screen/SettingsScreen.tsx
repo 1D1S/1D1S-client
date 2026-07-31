@@ -14,6 +14,7 @@ import {
   ChevronRight,
   HelpCircle,
   LogOut,
+  Trash2,
   Trophy,
   User,
 } from 'lucide-react';
@@ -182,22 +183,18 @@ export default function SettingsScreen(): React.ReactElement {
             disabled={isAnySending}
             withChevron={false}
           />
-        </section>
-
-        <div className="flex justify-end">
-          <button
-            type="button"
+          <div className="h-px w-full bg-gray-100" />
+          {/* App Store 5.1.1(v): 계정 삭제는 앱 안에서 명확히 도달 가능해야
+              한다. 눈에 띄는 행으로 노출한다(기존엔 흐린 텍스트 링크였음). */}
+          <SettingsRow
+            icon={<Trash2 className="h-5 w-5" />}
+            label={deleteMember.isPending ? '탈퇴 처리 중...' : '회원 탈퇴'}
+            description="계정과 모든 데이터를 영구 삭제해요"
+            tone="danger"
             onClick={() => setIsWithdrawDialogOpen(true)}
             disabled={isAnySending}
-            className={cn(
-              'text-[13px] text-gray-400 underline-offset-2',
-              'transition-colors hover:text-gray-600 hover:underline',
-              'disabled:opacity-50'
-            )}
-          >
-            회원 탈퇴
-          </button>
-        </div>
+          />
+        </section>
       </div>
 
       <ConfirmDialog
@@ -221,7 +218,7 @@ export default function SettingsScreen(): React.ReactElement {
         tone="danger"
         icon="Close"
         title="회원 탈퇴 하시겠어요?"
-        description="회원 탈퇴 요청 후 계정 삭제는 7일 뒤 처리됩니다."
+        description="탈퇴하면 계정과 모든 데이터가 즉시 영구 삭제되며 복구할 수 없습니다."
         confirmLabel="회원 탈퇴"
         pendingLabel="처리 중..."
         isPending={deleteMember.isPending}

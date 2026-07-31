@@ -1,5 +1,6 @@
 import { clearCachedSidebar } from '@feature/member/hooks/useMemberQueries';
 import { authStorage } from '@module/utils/auth';
+import { postNativeMessage } from '@module/utils/nativeBridge';
 import {
   useMutation,
   UseMutationResult,
@@ -82,6 +83,10 @@ export function useDeleteMember(): UseMutationResult<
       authStorage.clearTokens();
       clearCachedSidebar();
       queryClient.clear();
+      // 앱(웹뷰)은 네이티브 세션을 따로 들고 있어, 토큰만 지우면 쉘이 곧
+      // 웹 세션을 복구해 버린다(로그아웃 버그와 동일). 로그아웃과 같은
+      // 신호를 보내 쉘 세션까지 정리한다 — 탈퇴 후 완전히 로그아웃된다.
+      postNativeMessage({ type: 'logout' });
     },
   });
 }

@@ -37,11 +37,13 @@ export interface AppleLoginRequest {
 
 export interface SignUpInfoRequest {
   nickname: string;
-  phoneNumber: string;
+  // 전화번호·생년월일·성별은 선택 항목(App Store 5.1.1(v)). 미입력 시
+  // 아예 전송하지 않는다(서버도 optional 처리).
+  phoneNumber?: string;
   profileImageKey?: string;
   job: JobType;
-  birth: string; // yyyy-MM-dd format
-  gender: GenderType;
+  birth?: string; // yyyy-MM-dd format
+  gender?: GenderType;
   isPublic: boolean;
   category: CategoryType[];
 }
