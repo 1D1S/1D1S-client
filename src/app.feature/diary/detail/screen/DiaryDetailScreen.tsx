@@ -4,9 +4,13 @@ import { Button, MobileHeader, Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { normalizeApiError } from '@module/api/error';
+import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
-import { requestNativePushRoute } from '@module/utils/nativeBridge';
+import {
+  isNativeCommentInputAvailable,
+  requestNativePushRoute,
+} from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { Flag } from 'lucide-react';
 import Image from 'next/image';
@@ -82,6 +86,9 @@ function DiaryDetailView({
   onRequireLogin(): void;
 }): React.ReactElement {
   const router = useRouter();
+  // 앱(웹뷰)에선 네이티브 댓글 입력바가 뜨므로 하단 spacer 를 제거한다(8-2).
+  const commentNativeActive =
+    useIsNativeApp(false) && isNativeCommentInputAvailable();
   // 알림 딥링크/콜드 스타트로 진입해 history 가 없을 때 일지 목록으로 보낸다.
   const handleBack = useSafeBack('/diary');
   const { data: sidebarData } = useSidebar();
@@ -150,7 +157,7 @@ function DiaryDetailView({
       className={cn(
         'allow-user-select',
         'detail-fade-in min-h-screen w-full bg-white',
-        'pb-mobile-action-bar-tall sm:pb-0'
+        commentNativeActive ? 'sm:pb-0' : 'pb-mobile-action-bar-tall sm:pb-0'
       )}
     >
       <MobileHeader title="일지" onBack={handleBack} />

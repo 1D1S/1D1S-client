@@ -21,8 +21,12 @@ export interface UseCommentTreeResult {
   threadComments: CommentNode[];
   /** DFS 순서로 평탄화한 작성자 id (아바타 클릭 위임용) */
   flatCommentAuthors: Array<{ id: string }>;
-  /** <li> 문서 순서와 일치하는 원본 comment 메타 (삭제 행 클릭 차단용) */
-  flatCommentMeta: Array<{ id: number; isDeleted: boolean }>;
+  /** <li> 문서 순서와 일치하는 원본 comment 메타 (삭제 행 클릭 차단·답글 대상) */
+  flatCommentMeta: Array<{
+    id: number;
+    isDeleted: boolean;
+    authorNickname: string;
+  }>;
   deletedCommentIds: Set<number>;
   /** 대댓글 id → 루트(원본) 댓글 id */
   replyTargetRootIdMap: Map<number, number>;
@@ -130,14 +134,26 @@ export function useCommentTree(
   // 평탄화. DS 가 comment 당 <li> 하나를 렌더하므로 querySelectorAll('li') 의
   // 문서 순서와 일치한다.
   const flatCommentMeta = useMemo<
-    Array<{ id: number; isDeleted: boolean }>
+    Array<{ id: number; isDeleted: boolean; authorNickname: string }>
   >(() => {
-    const out: Array<{ id: number; isDeleted: boolean }> = [];
+    const out: Array<{
+      id: number;
+      isDeleted: boolean;
+      authorNickname: string;
+    }> = [];
     for (const comment of commentItems) {
-      out.push({ id: comment.id, isDeleted: comment.isDeleted });
+      out.push({
+        id: comment.id,
+        isDeleted: comment.isDeleted,
+        authorNickname: comment.author.nickname || '익명',
+      });
       const replies = sortedRepliesMap.get(comment.id) ?? [];
       for (const reply of replies) {
-        out.push({ id: reply.id, isDeleted: reply.isDeleted });
+        out.push({
+          id: reply.id,
+          isDeleted: reply.isDeleted,
+          authorNickname: reply.author.nickname || '익명',
+        });
       }
     }
     return out;
