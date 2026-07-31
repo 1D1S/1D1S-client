@@ -30,6 +30,7 @@ import {
   useChallengeEditForm,
 } from '@feature/challenge/write/hooks/useChallengeEditForm';
 import { useAuthStatus } from '@module/hooks/useAuthStatus';
+import { useNativeSubmitBar } from '@module/hooks/useNativeSubmitBar';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { Check, Lightbulb } from 'lucide-react';
@@ -203,8 +204,20 @@ function ChallengeEditScreenContent({
 
   const canSubmit = form.formState.isValid && !updateChallenge.isPending;
 
+  // 앱(웹뷰)에선 하단 CTA 를 네이티브 고정 바로 위임한다(8-1).
+  const nativeCtaDelegated = useNativeSubmitBar(
+    '수정 완료',
+    !canSubmit,
+    () => form.handleSubmit(onSubmit)()
+  );
+
   return (
-    <div className="pb-mobile-action-bar min-h-screen w-full">
+    <div
+      className={cn(
+        'min-h-screen w-full',
+        !nativeCtaDelegated && 'pb-mobile-action-bar'
+      )}
+    >
       <MobileHeader title="챌린지 수정하기" onBack={() => router.back()} />
 
       <Form {...form}>
@@ -283,7 +296,11 @@ function ChallengeEditScreenContent({
           </form>
         </div>
 
-        <MobileBottomActionBar hideOnDesktop={false} className="lg:px-8">
+        <MobileBottomActionBar
+          hideOnDesktop={false}
+          hidden={nativeCtaDelegated}
+          className="lg:px-8"
+        >
           <div
             className={cn(
               'mx-auto flex w-full max-w-[1200px] items-center gap-3'

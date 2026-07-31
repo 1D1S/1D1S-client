@@ -242,7 +242,15 @@ export type NativeMessage =
   | { type: 'date_picker_open'; payload: NativeDatePickerPayload }
   // 네이티브 스토리 뷰어. 진행/이동/닫기는 네이티브가 처리하고, 읽음
   // 처리용 native:story_viewed 이벤트만 웹으로 돌아온다.
-  | { type: 'story_open'; payload: NativeStoryOpenPayload };
+  | { type: 'story_open'; payload: NativeStoryOpenPayload }
+  // 폼 하단 CTA("제출"/"다음")를 네이티브 고정 바로 위임. label 없으면 해제.
+  | {
+      type: 'form_cta';
+      label?: string;
+      disabled?: boolean;
+      step?: number;
+      steps?: number;
+    };
 
 interface NativeChannel {
   postMessage(payload: string): void;
@@ -714,4 +722,64 @@ export function isNativeChallengeCreatedModalAvailable(): boolean {
     getNativeWindow()?.[CHANNEL_NAME] != null &&
     hasNativeFeature('challengeCreatedModal')
   );
+}
+
+// ── 폼 하단 CTA 위임 (일지 작성/수정·챌린지 생성) ────────────────────────
+// 웹 하단 sticky 버튼은 본문 흐름 안에 있어 스크롤하면 밀려 올라간다.
+// 네이티브 쉘은 하단 고정 바를 대신 그리고, 라벨/비활성 상태는 웹이 계속
+// 갱신한다(유효성 규칙의 권위는 웹). 앱→웹은 native:form_cta_action 이벤트로
+// primary(제출)/back(이전 단계)을 돌려준다.
+
+export interface NativeFormCtaPayload {
+  label: string;
+  disabled?: boolean;
+  // 단계 표시(선택). 회원가입처럼 다단계 폼에서만 쓴다.
+  step?: number;
+  steps?: number;
+}
+
+export type NativeFormCtaAction = 'primary' | 'back';
+
+/**
+ * 폼 하단 CTA 상태를 네이티브 바로 전송한다. payload 가 null 이면 label 없이
+ * 보내 앱이 바를 해제한다. 전송 중에는 disabled:true 로 보내 연타를 막는다
+ * (연타 방지 권위는 웹). 채널이 없으면(브라우저) postNativeMessage 가 no-op.
+ */
+export function sendNativeFormCta(payload: NativeFormCtaPayload | null): void {
+  if (payload === null) {
+    postNativeMessage({ type: 'form_cta' });
+    return;
+  }
+  postNativeMessage({
+    type: 'form_cta',
+    label: payload.label,
+    disabled: payload.disabled,
+    step: payload.step,
+    steps: payload.steps,
+  });
+}
+
+/** 네이티브 폼 CTA 바 지원 여부(채널 + form_cta 피처). 아니면 웹 버튼 유지. */
+export function isNativeFormCtaAvailable(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('form_cta')
+  );
+}
+
+/** 네이티브 폼 CTA 바의 primary/back 탭 이벤트 구독. cleanup 반환. */
+export function onNativeFormCtaAction(
+  handler: (action: NativeFormCtaAction) => void
+): () => void {
+  const win = getNativeWindow();
+  if (!win) {
+    return () => {};
+  }
+  const listener = (event: Event): void => {
+    const detail = (event as CustomEvent<{ action?: string }>).detail;
+    if (detail?.action === 'primary' || detail?.action === 'back') {
+      handler(detail.action);
+    }
+  };
+  win.addEventListener('native:form_cta_action', listener);
+  return () => win.removeEventListener('native:form_cta_action', listener);
 }
