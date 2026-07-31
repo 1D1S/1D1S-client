@@ -68,16 +68,19 @@ function FieldLabel({
   children: React.ReactNode;
   required?: boolean;
 }): React.ReactElement {
+  // DS TextField 내장 label 과 동일한 타이포·상단 간격으로 맞춘다
+  // (mb-1.5 text-2xs font-bold text-gray-700). 닉네임/전화(내장 label)와
+  // 생년월일/성별/직업(이 라벨)의 스타일을 일치시킨다. 필수(*) 로직은 유지.
   return (
-    <Text
-      size="caption1"
-      weight="bold"
-      as="div"
-      className="mb-1.5 flex items-center gap-1 text-gray-700"
+    <span
+      className={cn(
+        'mb-1.5 flex items-center gap-1',
+        'text-2xs font-bold text-gray-700'
+      )}
     >
       {children}
       {required && <span className="text-main-800">*</span>}
-    </Text>
+    </span>
   );
 }
 

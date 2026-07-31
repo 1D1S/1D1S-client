@@ -33,7 +33,10 @@ export default function MyPageScreen(): React.ReactElement | null {
   const isGuest = status === 'guest';
   const { data, isLoading } = useMyPage();
   const { data: myDiariesData } = useMyDiaries(5);
-  const showSkeleton = useMinimumLoading(isLoading);
+  // 스켈레톤 최소 표시를 250ms 로 낮춘다(기본 550ms). 깜빡임은 여전히
+  // 막으면서, 캐시된 웜 로드에서 최대 ~300ms 의 인위적 지연을 줄인다.
+  // MyPage 에만 적용(공용 기본값 미변경 → 타 화면 영향 없음).
+  const showSkeleton = useMinimumLoading(isLoading, 250);
 
   // 스플래시 dismiss 신호: 마이페이지 핵심 데이터가 로드돼 실제 프로필이
   // 렌더된 시점(스켈레톤 아님)에 1회 발화. (게스트는 /login 으로 리다이렉트
