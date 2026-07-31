@@ -26,11 +26,6 @@ export interface NativeNavPayload {
   pathname: string;
 }
 
-export interface NativeScrollDirPayload {
-  dir: 'up' | 'down';
-  y: number;
-}
-
 export interface NativeModalButton {
   // 사용자에게 보여줄 라벨.
   label: string;
@@ -214,10 +209,6 @@ export type NativeMessage =
   // 네이티브 쉘은 이 신호를 받기 전까진 스플래시를 유지해, 사용자에게
   // 빈 컨테이너나 절반만 로드된 UI 가 노출되지 않게 한다.
   | { type: 'app_ready' }
-  // 스크롤 방향이 바뀔 때만 1회. 네이티브 쉘이 sliver-style AppBar 를
-  // collapse/expand 하는 용도. 매 프레임 보내는 대신 방향 전환에만 발화해
-  // JS 채널 트래픽을 최소화한다.
-  | { type: 'scroll_dir'; payload: NativeScrollDirPayload }
   | { type: 'oauth_open'; payload: { url: string } }
   | { type: 'token_refresh'; payload: { id: string } }
   | { type: 'logout' }
@@ -261,7 +252,10 @@ export type NativeMessage =
       replyingTo?: string | null;
       submitting?: boolean;
       clear?: boolean;
-    };
+    }
+  // 댓글 목록을 네이티브 바텀시트로 열어 달라는 요청. 경로는 웹이 정한다 —
+  // 앱이 규칙을 추측해 만들면 라우트가 바뀔 때 조용히 404 를 띄운다.
+  | { type: 'comment_sheet_open'; path: string };
 
 interface NativeChannel {
   postMessage(payload: string): void;
@@ -828,6 +822,24 @@ export function sendNativeCommentContext(
     submitting: payload.submitting,
     clear: payload.clear,
   });
+}
+
+/** 댓글 목록을 네이티브 바텀시트로 여는 것을 셸이 지원하는지. */
+export function isNativeCommentSheetAvailable(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('comment_sheet')
+  );
+}
+
+/**
+ * 댓글 목록을 네이티브 바텀시트로 연다.
+ *
+ * 본문과 댓글이 한 화면에 있으면 댓글을 쓰려고 키보드를 올리는 순간 본문이
+ * 밀려 올라가 맥락이 사라진다. 목록을 시트로 떼어 내면 목록과 입력이 같은
+ * 레이어에 있고, 시트 안에서도 네이티브 입력 바가 그대로 동작한다.
+ */
+export function sendNativeCommentSheetOpen(path: string): void {
+  postNativeMessage({ type: 'comment_sheet_open', path });
 }
 
 /** 네이티브 댓글 입력 지원 여부(채널 + comment_input 피처). 아니면 웹 입력 유지. */

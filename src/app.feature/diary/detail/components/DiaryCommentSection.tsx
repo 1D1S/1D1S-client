@@ -13,9 +13,11 @@ import { useNativeCapability } from '@module/hooks/useNativeCapability';
 import { cn } from '@module/utils/cn';
 import {
   isNativeCommentInputAvailable,
+  isNativeCommentSheetAvailable,
   onNativeCommentReplyCancel,
   onNativeCommentSubmit,
   sendNativeCommentContext,
+  sendNativeCommentSheetOpen,
 } from '@module/utils/nativeBridge';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -70,6 +72,9 @@ const COMMENT_PLACEHOLDER = '응원의 말을 남겨주세요';
 
 interface DiaryCommentSectionProps {
   diaryId: number;
+  // 앱에서 상세 본문에 놓일 때 true — 목록·입력을 그리지 않고 "댓글 N개 보기"
+  // 버튼만 둔다. 목록은 네이티브 바텀시트(/diary/{id}/comments)가 맡는다.
+  sheetEntryOnly?: boolean;
   currentMemberId: number | null;
   currentUserNickname: string | null;
   isLoggedIn: boolean;
@@ -78,6 +83,7 @@ interface DiaryCommentSectionProps {
 
 export function DiaryCommentSection({
   diaryId,
+  sheetEntryOnly = false,
   currentMemberId,
   currentUserNickname,
   isLoggedIn,
@@ -94,6 +100,9 @@ export function DiaryCommentSection({
   const commentNativeActive = useNativeCapability(
     isNativeCommentInputAvailable
   );
+  // 셸이 댓글 시트를 지원하는지. 지원 안 하는 구버전 앱에서는 버튼만 두면
+  // 눌러도 아무 일이 없으므로, 기존처럼 인라인 목록을 그대로 그린다.
+  const commentSheetActive = useNativeCapability(isNativeCommentSheetAvailable);
   const [replyTarget, setReplyTarget] = useState<{
     parentId: number;
     replyingTo: string;
@@ -290,6 +299,28 @@ export function DiaryCommentSection({
     });
   };
 
+  // 앱 상세 본문 — 목록 대신 진입 버튼만. 목록·입력은 시트가 맡는다.
+  if (sheetEntryOnly && commentSheetActive) {
+    return (
+      <button
+        type="button"
+        onClick={() => sendNativeCommentSheetOpen(`/diary/${diaryId}/comments`)}
+        className={cn(
+          'flex w-full items-center justify-between rounded-[14px]',
+          'border border-gray-200 bg-white px-4 py-3.5 text-left',
+          'active:bg-gray-50'
+        )}
+      >
+        <Text size="body1" weight="bold" className="text-gray-900">
+          응원 댓글 {totalCommentCount}개
+        </Text>
+        <Text size="caption1" weight="medium" className="text-gray-500">
+          {totalCommentCount === 0 ? '첫 댓글 남기기' : '전체 보기'} ›
+        </Text>
+      </button>
+    );
+  }
+
   return (
     <div
       onFocus={handleCommentInputFocus}
@@ -391,9 +422,12 @@ export function DiaryMobileCommentBar({
   onRequireLogin,
 }: DiaryMobileCommentBarProps): React.ReactElement {
   // 앱(웹뷰)에선 네이티브 입력바가 대신 뜨므로 웹 입력바를 숨긴다(8-2).
+  // 시트를 지원하는 셸에서는 상세 본문에 입력바 자체를 두지 않는다 — 입력은
+  // 시트 안에서 한다.
   const commentNativeActive = useNativeCapability(
     isNativeCommentInputAvailable
   );
+  const commentSheetActive = useNativeCapability(isNativeCommentSheetAvailable);
   const [content, setContent] = useState('');
   const createComment = useCreateDiaryComment(diaryId);
   const disabled = createComment.isPending || !content.trim();
@@ -421,7 +455,7 @@ export function DiaryMobileCommentBar({
 
   return (
     <MobileBottomActionBar
-      hidden={commentNativeActive}
+      hidden={commentNativeActive || commentSheetActive}
       className={cn(
         'comment-readable flex items-end gap-2 bg-white px-4 pt-2.5',
         'sm:hidden'

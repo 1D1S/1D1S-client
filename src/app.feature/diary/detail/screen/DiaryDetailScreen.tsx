@@ -352,6 +352,7 @@ function DiaryDetailView({
           <aside>
             <DiaryCommentSection
               diaryId={diaryData.id}
+              sheetEntryOnly
               currentMemberId={currentMemberId}
               currentUserNickname={currentUserNickname}
               isLoggedIn={isLoggedIn}
