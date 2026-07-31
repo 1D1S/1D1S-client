@@ -26,6 +26,11 @@ export interface NativeNavPayload {
   pathname: string;
 }
 
+export interface NativeScrollDirPayload {
+  dir: 'up' | 'down';
+  y: number;
+}
+
 export interface NativeModalButton {
   // 사용자에게 보여줄 라벨.
   label: string;
@@ -209,6 +214,10 @@ export type NativeMessage =
   // 네이티브 쉘은 이 신호를 받기 전까진 스플래시를 유지해, 사용자에게
   // 빈 컨테이너나 절반만 로드된 UI 가 노출되지 않게 한다.
   | { type: 'app_ready' }
+  // 스크롤 방향이 바뀔 때만 1회. 네이티브 쉘이 sliver-style AppBar 를
+  // collapse/expand 하는 용도. 매 프레임 보내는 대신 방향 전환에만 발화해
+  // JS 채널 트래픽을 최소화한다.
+  | { type: 'scroll_dir'; payload: NativeScrollDirPayload }
   | { type: 'oauth_open'; payload: { url: string } }
   | { type: 'token_refresh'; payload: { id: string } }
   | { type: 'logout' }
