@@ -9,6 +9,9 @@ interface DiaryActionToolbarProps {
   diaryData: DiaryDetailViewData;
   totalCommentCount: number;
   isLikePending: boolean;
+  // 앱에서 댓글 시트를 열 수 있을 때만 넘어온다. 없으면 카운터는 그대로
+  // 표시 전용(span)이라 웹 동작이 바뀌지 않는다.
+  onCommentTap?(): void;
   onLikeToggle(): void;
   onShare(): void;
 }
@@ -19,6 +22,7 @@ export function DiaryActionToolbar({
   diaryData,
   totalCommentCount,
   isLikePending,
+  onCommentTap,
   onLikeToggle,
   onShare,
 }: DiaryActionToolbarProps): React.ReactElement {
@@ -48,13 +52,28 @@ export function DiaryActionToolbar({
         />
         {diaryData.likeCount}
       </button>
-      <span
-        aria-label={`댓글 ${totalCommentCount}개`}
-        className={cn(pillClass, 'border-gray-200 bg-white text-gray-700')}
-      >
-        <MessageCircle className="h-3.5 w-3.5" />
-        {totalCommentCount}
-      </span>
+      {onCommentTap ? (
+        <button
+          type="button"
+          aria-label={`댓글 ${totalCommentCount}개 보기`}
+          onClick={onCommentTap}
+          className={cn(
+            pillClass,
+            'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+          )}
+        >
+          <MessageCircle className="h-3.5 w-3.5" />
+          {totalCommentCount}
+        </button>
+      ) : (
+        <span
+          aria-label={`댓글 ${totalCommentCount}개`}
+          className={cn(pillClass, 'border-gray-200 bg-white text-gray-700')}
+        >
+          <MessageCircle className="h-3.5 w-3.5" />
+          {totalCommentCount}
+        </span>
+      )}
       <button
         type="button"
         aria-label="공유"

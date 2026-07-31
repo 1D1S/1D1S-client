@@ -103,6 +103,11 @@ export function DiaryCommentSection({
   // 셸이 댓글 시트를 지원하는지. 지원 안 하는 구버전 앱에서는 버튼만 두면
   // 눌러도 아무 일이 없으므로, 기존처럼 인라인 목록을 그대로 그린다.
   const commentSheetActive = useNativeCapability(isNativeCommentSheetAvailable);
+  // 상세 본문의 진입 버튼 모드에서는 입력 자체를 위임하지 않는다. 위임하면
+  // 목록도 입력창도 없는 화면 아래에 네이티브 입력 바만 덩그러니 남는다 —
+  // 댓글은 시트 안에서만 단다.
+  const delegateInput =
+    commentNativeActive && !(sheetEntryOnly && commentSheetActive);
   const [replyTarget, setReplyTarget] = useState<{
     parentId: number;
     replyingTo: string;
@@ -175,7 +180,7 @@ export function DiaryCommentSection({
   // 변화마다 재전송. 전송 실패 시 pending 이 false 로 돌아오며 submitting:false
   // 가 재전송돼 앱 입력이 다시 활성화된다(내용은 그대로).
   useEffect(() => {
-    if (!commentNativeActive) {
+    if (!delegateInput) {
       return;
     }
     sendNativeCommentContext({
@@ -187,19 +192,19 @@ export function DiaryCommentSection({
       replyingTo: replyTarget?.replyingTo ?? null,
       submitting: isCommentPending,
     });
-  }, [commentNativeActive, replyTarget, isCommentPending]);
+  }, [delegateInput, replyTarget, isCommentPending]);
 
   // 화면을 벗어나면 네이티브 입력을 해제한다.
   useEffect(() => {
-    if (!commentNativeActive) {
+    if (!delegateInput) {
       return;
     }
     return () => sendNativeCommentContext({ visible: false });
-  }, [commentNativeActive]);
+  }, [delegateInput]);
 
   // 앱→웹 제출 수신 → 댓글/대댓글 생성. 답글 취소 → 최상위로 복귀.
   useEffect(() => {
-    if (!commentNativeActive) {
+    if (!delegateInput) {
       return;
     }
     const offSubmit = onNativeCommentSubmit((payload) =>
@@ -210,7 +215,7 @@ export function DiaryCommentSection({
       offSubmit();
       offCancel();
     };
-  }, [commentNativeActive]);
+  }, [delegateInput]);
 
   const requireAuthAction = (action: () => void): void => {
     if (!isLoggedIn) {
@@ -383,7 +388,7 @@ export function DiaryCommentSection({
         />
 
         {/* 앱: 데스크톱 입력창도 네이티브로 위임되면 숨긴다(태블릿 웹뷰 대비). */}
-        {!commentNativeActive && (
+        {!delegateInput && (
           <div className="mt-3 hidden items-end gap-1.5 sm:flex">
             <TextField
               id="diary-comment-content"
