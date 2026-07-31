@@ -23,6 +23,7 @@ import {
 import { NicknameCheckButton } from '@feature/member/components/NicknameCheckButton';
 import { useCheckNickname } from '@feature/member/hooks/useMemberMutations';
 import { normalizeApiError } from '@module/api/error';
+import { cn } from '@module/utils/cn';
 import { NICKNAME_REGEX } from '@module/utils/nickname';
 import { formatPhoneNumber } from '@module/utils/phoneNumber';
 import React from 'react';
@@ -339,7 +340,10 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
                       key={option.value}
                       value={option.value}
                       shape="square"
-                      className="h-[52px] w-full justify-center px-0 text-[13px]"
+                      className={cn(
+                        'flex h-[52px] w-full items-center justify-center',
+                        'px-0 text-[13px]'
+                      )}
                     >
                       {option.label}
                     </ToggleGroupItem>
@@ -375,7 +379,10 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
                       key={option.value}
                       value={option.value}
                       shape="square"
-                      className="h-[52px] w-full justify-center px-0 text-[13px]"
+                      className={cn(
+                        'flex h-[52px] w-full items-center justify-center',
+                        'gap-1.5 px-0 text-[13px]'
+                      )}
                     >
                       <Icon
                         name={JOB_ICON[option.value]}

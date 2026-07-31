@@ -16,14 +16,15 @@ const COMPRESSION_OPTIONS = {
  * orientation 은 라이브러리가 보정하므로 iOS 세로 사진이 눕는 문제도
  * 방지된다. 압축이 실패하면 원본을 그대로 반환해 업로드 자체는 막지
  * 않는다.
+ *
+ * 색공간 정규화: 라이브러리는 내부적으로 canvas 로 다시 그리는데, 2D
+ * canvas 의 기본 색공간이 sRGB 라 iOS 의 Display P3(광색역) 사진도 sRGB 로
+ * 변환된다. 예전엔 1MB 이하 파일을 그대로 통과시켜, 작은 P3 사진만
+ * 프로필이 박힌 채 올라가 다른 이미지보다 과하게 쨍하게 보였다. 이제
+ * 모든 이미지를 canvas 경유로 정규화해 표시 색감을 일관되게 맞춘다.
  */
 export async function compressImageFile(file: File): Promise<File> {
   if (!file.type.startsWith('image/')) {
-    return file;
-  }
-
-  // 이미 목표 용량 이하면 재인코딩으로 품질만 떨어뜨리지 않도록 통과.
-  if (file.size <= COMPRESSION_OPTIONS.maxSizeMB * 1024 * 1024) {
     return file;
   }
 

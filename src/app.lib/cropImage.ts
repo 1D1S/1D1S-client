@@ -102,7 +102,9 @@ export async function cropImageFile(
   canvas.width = options.outputSize.width;
   canvas.height = options.outputSize.height;
 
-  const context = canvas.getContext('2d');
+  // colorSpace 'srgb' 명시 — 기본값이지만, iOS Display P3(광색역) 원본을
+  // sRGB 로 확실히 정규화해 다른 이미지와 색감을 일관되게 유지한다.
+  const context = canvas.getContext('2d', { colorSpace: 'srgb' });
 
   if (!context) {
     throw new Error('이미지 편집을 시작하지 못했습니다.');

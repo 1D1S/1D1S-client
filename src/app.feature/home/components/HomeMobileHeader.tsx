@@ -17,7 +17,8 @@ export default function HomeMobileHeader(): React.ReactElement {
       className={cn(
         'sticky top-0 z-30 flex shrink-0 items-center justify-between',
         'h-14-safe pt-safe-top',
-        'border-b border-gray-200 bg-white px-4 lg:hidden'
+        // px-5 로 탐색·챌린지·일지 모바일 헤더와 좌우 패딩을 통일한다.
+        'border-b border-gray-200 bg-white px-5 lg:hidden'
       )}
     >
       <Link href="/" className="flex shrink-0 items-center gap-2.5">

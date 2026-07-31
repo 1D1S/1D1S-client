@@ -10,6 +10,7 @@ import type {
   ChallengeStatus,
   ChallengeTypeFilter,
 } from '../type/challenge';
+import { FilterDisclosure } from './FilterDisclosure';
 
 const TYPE_OPTIONS: ReadonlyArray<{
   value: ChallengeTypeFilter | 'ALL';
@@ -109,59 +110,62 @@ export function ChallengeBoardFilters({
         </ToggleGroup>
       </div>
 
-      <div className={ROW_CLASS}>
-        <span className={GROUP_LABEL_CLASS}>종류</span>
-        <ToggleGroup
-          type="single"
-          value={challengeType}
-          aria-label="챌린지 종류"
-          onValueChange={(value) => {
-            if (value) {
-              onChallengeTypeChange(value as ChallengeTypeFilter | 'ALL');
+      {/* 카테고리 외 세부 필터(종류·상태)는 기본 접힘 — 상단 영역 높이 축소. */}
+      <FilterDisclosure>
+        <div className={ROW_CLASS}>
+          <span className={GROUP_LABEL_CLASS}>종류</span>
+          <ToggleGroup
+            type="single"
+            value={challengeType}
+            aria-label="챌린지 종류"
+            onValueChange={(value) => {
+              if (value) {
+                onChallengeTypeChange(value as ChallengeTypeFilter | 'ALL');
+              }
+            }}
+            className="flex shrink-0 items-center gap-1.5"
+          >
+            {TYPE_OPTIONS.map((option) => (
+              <ToggleGroupItem
+                key={option.value}
+                value={option.value}
+                size="sm"
+                shape="rounded"
+                className="shrink-0"
+              >
+                {option.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+
+          <span className="mx-1 h-4 w-px shrink-0 bg-gray-200" aria-hidden />
+
+          <span className={GROUP_LABEL_CLASS}>상태</span>
+          <ToggleGroup
+            type="multiple"
+            value={statuses}
+            aria-label="진행 상태 (복수 선택)"
+            onValueChange={(values) =>
+              onStatusesChange(
+                STATUS_ORDER.filter((status) => values.includes(status))
+              )
             }
-          }}
-          className="flex shrink-0 items-center gap-1.5"
-        >
-          {TYPE_OPTIONS.map((option) => (
-            <ToggleGroupItem
-              key={option.value}
-              value={option.value}
-              size="sm"
-              shape="rounded"
-              className="shrink-0"
-            >
-              {option.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-
-        <span className="mx-1 h-4 w-px shrink-0 bg-gray-200" aria-hidden />
-
-        <span className={GROUP_LABEL_CLASS}>상태</span>
-        <ToggleGroup
-          type="multiple"
-          value={statuses}
-          aria-label="진행 상태 (복수 선택)"
-          onValueChange={(values) =>
-            onStatusesChange(
-              STATUS_ORDER.filter((status) => values.includes(status))
-            )
-          }
-          className="flex shrink-0 items-center gap-1.5"
-        >
-          {STATUS_OPTIONS.map((option) => (
-            <ToggleGroupItem
-              key={option.value}
-              value={option.value}
-              size="sm"
-              shape="rounded"
-              className="shrink-0"
-            >
-              {option.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
+            className="flex shrink-0 items-center gap-1.5"
+          >
+            {STATUS_OPTIONS.map((option) => (
+              <ToggleGroupItem
+                key={option.value}
+                value={option.value}
+                size="sm"
+                shape="rounded"
+                className="shrink-0"
+              >
+                {option.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </div>
+      </FilterDisclosure>
     </div>
   );
 }

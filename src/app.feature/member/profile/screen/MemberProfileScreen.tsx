@@ -145,7 +145,11 @@ export default function MemberProfileScreen({
             </div>
 
             <div className="mt-8">
-              <MyPageStatSection streak={streak} />
+              <MyPageStatSection
+                streak={streak}
+                isMe={false}
+                memberName={nickname}
+              />
             </div>
 
             <div className="mt-8">

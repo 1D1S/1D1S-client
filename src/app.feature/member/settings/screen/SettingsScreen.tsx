@@ -183,9 +183,15 @@ export default function SettingsScreen(): React.ReactElement {
             disabled={isAnySending}
             withChevron={false}
           />
-          <div className="h-px w-full bg-gray-100" />
-          {/* App Store 5.1.1(v): 계정 삭제는 앱 안에서 명확히 도달 가능해야
-              한다. 눈에 띄는 행으로 노출한다(기존엔 흐린 텍스트 링크였음). */}
+        </section>
+
+        {/* App Store 5.1.1(v): 계정 삭제는 앱 안에서 명확히 도달 가능해야
+            한다. 붉은 톤의 독립 카드로 분리해 눈에 띄게 하되 과하지 않게. */}
+        <section
+          className={cn(
+            'overflow-hidden rounded-[14px] border border-red-200 bg-red-50/50'
+          )}
+        >
           <SettingsRow
             icon={<Trash2 className="h-5 w-5" />}
             label={deleteMember.isPending ? '탈퇴 처리 중...' : '회원 탈퇴'}

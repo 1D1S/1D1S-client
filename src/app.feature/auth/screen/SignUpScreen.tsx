@@ -72,6 +72,31 @@ export function SignUpScreen(): React.ReactElement {
   // app_ready 를 쏴야 걷힌다. 폼은 서버 데이터 없이 즉시 그려진다.
   useSignalAppReady(true);
 
+  // 뒤로가기(브라우저 back 버튼·앱 웹뷰 history back)를 가로채 회원가입 이탈
+  // 확인 모달을 띄운다. 웹 헤더의 back 버튼(handleBack)은 앱에선 native-hide 라
+  // 안 보이고, 브라우저 back 은 원래 이 화면 로직을 안 타 모달 없이 그냥
+  // 나가졌다. 마운트 시 센티넬 히스토리 항목을 쌓고 popstate 마다 다시 쌓아
+  // 페이지에 머무르며, step2→step1, step1→로그아웃 확인 모달로 보낸다.
+  // (앱 네이티브 back 바가 native 네비게이션으로 직접 나가는 경로는 앱 세션에서
+  //  웹뷰 history back 으로 태워야 이 가드가 함께 동작한다.)
+  const stepRef = React.useRef(step);
+  React.useEffect(() => {
+    stepRef.current = step;
+  }, [step]);
+  React.useEffect(() => {
+    window.history.pushState(null, '', window.location.href);
+    const onPopState = (): void => {
+      window.history.pushState(null, '', window.location.href);
+      if (stepRef.current === 2) {
+        setStep(1);
+        return;
+      }
+      setShowExitDialog(true);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
   const onSubmit = async (values: SignupFormValues): Promise<void> => {
     if (!authStorage.hasTokens()) {
       toast.error('로그인이 필요합니다.');
