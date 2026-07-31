@@ -4,7 +4,7 @@ import { Button, MobileHeader, Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { normalizeApiError } from '@module/api/error';
-import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
+import { useNativeCapability } from '@module/hooks/useNativeCapability';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import {
@@ -87,8 +87,10 @@ function DiaryDetailView({
 }): React.ReactElement {
   const router = useRouter();
   // 앱(웹뷰)에선 네이티브 댓글 입력바가 뜨므로 하단 spacer 를 제거한다(8-2).
-  const commentNativeActive =
-    useIsNativeApp(false) && isNativeCommentInputAvailable();
+  // native:ready 로 피처가 늦게 주입돼도 재평가되도록 반응형으로 읽는다.
+  const commentNativeActive = useNativeCapability(
+    isNativeCommentInputAvailable
+  );
   // 알림 딥링크/콜드 스타트로 진입해 history 가 없을 때 일지 목록으로 보낸다.
   const handleBack = useSafeBack('/diary');
   const { data: sidebarData } = useSidebar();

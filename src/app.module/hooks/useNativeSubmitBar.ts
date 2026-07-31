@@ -1,6 +1,6 @@
 'use client';
 
-import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
+import { useNativeCapability } from '@module/hooks/useNativeCapability';
 import {
   isNativeFormCtaAvailable,
   onNativeFormCtaAction,
@@ -26,8 +26,8 @@ export function useNativeSubmitBar(
   disabled: boolean,
   onPrimary: () => void
 ): boolean {
-  const isNative = useIsNativeApp(false);
-  const delegated = isNative && isNativeFormCtaAvailable();
+  // native:ready 로 form_cta 피처가 늦게 주입돼도 재평가되도록 반응형으로 읽는다.
+  const delegated = useNativeCapability(isNativeFormCtaAvailable);
 
   // 핸들러는 매 렌더 바뀌지만(클로저) 구독은 한 번만 걸도록 ref 로 최신화한다.
   const primaryRef = useRef(onPrimary);

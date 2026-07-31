@@ -9,7 +9,7 @@ import {
 } from '@1d1s/design-system';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleton';
-import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
+import { useNativeCapability } from '@module/hooks/useNativeCapability';
 import { cn } from '@module/utils/cn';
 import {
   isNativeCommentInputAvailable,
@@ -90,8 +90,10 @@ export function DiaryCommentSection({
 
   // 앱(웹뷰)에선 댓글 입력을 네이티브 입력바로 위임한다(8-2). 답글 대상은
   // 웹이 관리해 context 로 전달한다(parentId=루트 댓글, replyingTo=표시명).
-  const commentNativeActive =
-    useIsNativeApp(false) && isNativeCommentInputAvailable();
+  // native:ready 로 comment_input 피처가 늦게 주입돼도 재평가되도록 반응형.
+  const commentNativeActive = useNativeCapability(
+    isNativeCommentInputAvailable
+  );
   const [replyTarget, setReplyTarget] = useState<{
     parentId: number;
     replyingTo: string;
@@ -389,8 +391,9 @@ export function DiaryMobileCommentBar({
   onRequireLogin,
 }: DiaryMobileCommentBarProps): React.ReactElement {
   // 앱(웹뷰)에선 네이티브 입력바가 대신 뜨므로 웹 입력바를 숨긴다(8-2).
-  const commentNativeActive =
-    useIsNativeApp(false) && isNativeCommentInputAvailable();
+  const commentNativeActive = useNativeCapability(
+    isNativeCommentInputAvailable
+  );
   const [content, setContent] = useState('');
   const createComment = useCreateDiaryComment(diaryId);
   const disabled = createComment.isPending || !content.trim();
