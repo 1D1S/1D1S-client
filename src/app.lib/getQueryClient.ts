@@ -38,7 +38,13 @@ function notifyOnClient(error: unknown): void {
 function makeQueryClient(): QueryClient {
   return new QueryClient({
     queryCache: new QueryCache({
-      onError: (error) => {
+      onError: (error, query) => {
+        // 실패해도 토스트가 필요 없는 쿼리(예: 소셜 로그인)는 제외한다.
+        // 소셜 로그인 실패는 콜백이 이미 조용히 /login 으로 돌려보낸다 —
+        // 탈퇴 계정 재로그인 등 서버 메시지를 사용자에게 띄울 이유가 없다.
+        if (query?.meta?.skipGlobalErrorToast === true) {
+          return;
+        }
         notifyOnClient(error);
       },
     }),
