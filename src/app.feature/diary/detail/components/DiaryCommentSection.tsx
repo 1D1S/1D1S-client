@@ -26,9 +26,10 @@ import { CommentReportDialog } from './CommentReportDialog';
 // 한 곳에 달면 내부 DS CommentThread 의 대댓글 입력까지 함께 처리된다.
 //
 // 타이밍: 키보드로 visualViewport 가 줄어든 "뒤"에 계산해야 정확히 키보드 위로
-// 올라온다. 즉시 호출하면 아직 안 줄어든 뷰포트 기준이라 어긋난다. → 다음
-// visualViewport resize 를 1회 기다렸다가 scrollIntoView 하고, 리사이즈가
-// 안 오는 환경을 위해 타임아웃 폴백을 둔다.
+// 올라온다. iOS 웹뷰는 키보드가 떠도 레이아웃을 리사이즈하지 않아, 한 번만
+// 스크롤하면 이후 키보드 show/hide/전환에서 다시 가려진다. → 포커스 동안
+// visualViewport 'resize'(키보드 높이 변동)를 계속 구독해 그때마다 입력을 다시
+// 보이게 유지하고, blur 에서 정리한다. 초기 1회 폴백도 둔다.
 function handleCommentInputFocus(event: React.FocusEvent<HTMLElement>): void {
   const target = event.target;
   if (
@@ -45,18 +46,22 @@ function handleCommentInputFocus(event: React.FocusEvent<HTMLElement>): void {
     window.setTimeout(scrollIntoView, 300);
     return;
   }
-  let done = false;
-  const run = (): void => {
-    if (done) {
-      return;
-    }
-    done = true;
-    vv.removeEventListener('resize', run);
-    scrollIntoView();
+  // 리사이즈가 몰아칠 때 rAF 로 합쳐 한 프레임에 한 번만 스크롤한다.
+  let raf = 0;
+  const onViewportResize = (): void => {
+    window.cancelAnimationFrame(raf);
+    raf = window.requestAnimationFrame(scrollIntoView);
   };
-  vv.addEventListener('resize', run);
-  // 키보드가 이미 떠 있어 resize 가 안 오는 경우 대비 폴백.
-  window.setTimeout(run, 350);
+  vv.addEventListener('resize', onViewportResize);
+  const cleanup = (): void => {
+    vv.removeEventListener('resize', onViewportResize);
+    target.removeEventListener('blur', cleanup);
+    window.cancelAnimationFrame(raf);
+  };
+  target.addEventListener('blur', cleanup, { once: true });
+  // 키보드가 올라와 resize 가 온 뒤 정확히 보이도록 + resize 가 안 오는 환경
+  // 대비 초기 1회 보정.
+  window.setTimeout(scrollIntoView, 300);
 }
 
 const COMMENT_PLACEHOLDER = '응원의 말을 남겨주세요';
