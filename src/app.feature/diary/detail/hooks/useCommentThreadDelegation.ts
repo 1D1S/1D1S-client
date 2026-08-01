@@ -18,16 +18,15 @@ export interface UseCommentThreadDelegationResult {
   ): void;
 }
 
-// DS 인라인 답글 입력이 열린 뒤(리렌더) 그 댓글의 입력에 포커스를 맞춘다. DS
-// 가 자동 포커스를 잡지 못해 포커스가 엉뚱한 곳에 남던 버그를 웹에서 보정한다.
-// 입력이 아직 안 그려졌을 수 있어 몇 프레임 재시도한다. 키보드 위로 스크롤하는
-// 것은 입력의 onFocus(handleCommentInputFocus)가 visualViewport 기준으로 맡는다.
-function focusReplyInputSoon(li: Element): void {
+// "답글 달기" 탭 흐름에서 열린 답글 입력에 포커스를 맞춘다(iOS 웹뷰 키보드
+// 확실히 띄우기용 — DS 2.11.2 autoFocusReply 와 별개로 웹이 한 번 더 잡는다).
+// DS 2.11.2: 열린 입력만 `[data-reply-input]` 을 달고, 닫힌 입력은 inert 라
+// 셀렉터가 항상 "열려 있는 하나"만 가리킨다 — <li> 스코프/텍스트영역 탐색 같은
+// 방어용 우회가 필요 없다. 입력이 아직 안 그려졌을 수 있어 몇 프레임 재시도한다.
+function focusOpenReplyInputSoon(): void {
   let tries = 0;
   const tryFocus = (): void => {
-    const input = li.querySelector<HTMLElement>(
-      'textarea, [contenteditable="true"]'
-    );
+    const input = document.querySelector<HTMLElement>('[data-reply-input]');
     if (input) {
       input.focus();
       return;
@@ -71,10 +70,7 @@ export function useCommentThreadDelegation({
       commentWrapperRef.current.contains(replyButton) &&
       replyButton.textContent?.trim() === '답글 달기'
     ) {
-      const replyLi = replyButton.closest('li');
-      if (replyLi) {
-        focusReplyInputSoon(replyLi);
-      }
+      focusOpenReplyInputSoon();
       return;
     }
 

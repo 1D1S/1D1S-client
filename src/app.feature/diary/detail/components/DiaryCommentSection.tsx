@@ -310,9 +310,9 @@ export function DiaryMobileCommentBar({
   const isSubmittingRef = useRef(false);
 
   // DS 인라인 답글 입력이 열리면 이 고정 메인 입력바를 숨긴다 — 안 그러면
-  // 답글 입력과 메인 입력바가 겹쳐 보인다(증상B). 댓글 영역([data-diary-comments])
-  // 안에 메인 데스크톱 composer(#diary-comment-content) 외의 textarea 가 생기면
-  // = 답글 입력이 열린 것. MutationObserver 로 열림/닫힘을 반영한다.
+  // 답글 입력과 메인 입력바가 겹쳐 보인다(증상B). DS 2.11.2 는 열린 답글 입력
+  // 에만 `[data-reply-input]` 을 달므로(닫힌 입력은 inert) 그 존재 = 답글 열림.
+  // MutationObserver 로 열림/닫힘을 반영한다.
   const [isReplyOpen, setIsReplyOpen] = useState(false);
   useEffect(() => {
     const root = document.querySelector('[data-diary-comments]');
@@ -320,9 +320,7 @@ export function DiaryMobileCommentBar({
       return;
     }
     const check = (): void => {
-      setIsReplyOpen(
-        root.querySelector('textarea:not(#diary-comment-content)') !== null
-      );
+      setIsReplyOpen(root.querySelector('[data-reply-input]') !== null);
     };
     check();
     const observer = new MutationObserver(check);
