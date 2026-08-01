@@ -48,6 +48,14 @@ function handleCommentInputFocus(event: React.FocusEvent<HTMLElement>): void {
   ) {
     return;
   }
+  // 앱 웹뷰는 키보드 시 웹뷰 자체가 줄고(resizeToAvoidBottomInset, 확인됨),
+  // 브라우저 기본 포커스 스크롤이 입력을 보이게 한다. 여기서 scrollIntoView
+  // (특히 visualViewport resize 마다 반복)까지 하면 앱 리플로우와 겹쳐 "계단식"
+  // 점프가 난다(버그A). → 앱에선 수동 보정을 생략한다. 순수 모바일 웹(웹뷰
+  // 리사이즈 없음)만 visualViewport 로 입력을 키보드 위로 올린다.
+  if (document.documentElement.getAttribute('data-native-app') === 'true') {
+    return;
+  }
   const scrollIntoView = (): void => {
     target.scrollIntoView({ block: 'center', behavior: 'smooth' });
   };

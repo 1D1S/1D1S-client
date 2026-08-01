@@ -100,6 +100,14 @@ export function useCommentThreadDelegation({
       return;
     }
 
+    // 삭제된 댓글 행의 "본문" 클릭만 차단한다. 그 행에 열린 답글 composer 의
+    // 버튼(취소/등록)·입력([data-reply-input])은 통과시켜야 한다 — 마지막
+    // 대댓글이 삭제된 스레드에서 답글을 열고 "취소"로 닫을 수 있어야 메인
+    // composer 가 복귀한다(버그B). 삭제 행 안에 열린 composer 버튼까지 막으면
+    // 취소가 안 먹어 답글 모드에 갇힌다.
+    if (target.closest('button') || target.closest('[data-reply-input]')) {
+      return;
+    }
     // 삭제된 댓글 행 클릭은 DS 의 답글 입력 오픈 핸들러로 전달되지 않게 차단.
     const li = target.closest('li');
     if (!li || !commentWrapperRef.current.contains(li)) {
