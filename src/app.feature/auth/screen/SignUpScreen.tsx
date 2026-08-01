@@ -318,7 +318,10 @@ export function SignUpScreen(): React.ReactElement {
               </Text>
 
               {step === 1 ? (
-                <Step1 onNext={handleNextStep} />
+                <Step1
+                  onNext={handleNextStep}
+                  onExit={() => setShowExitDialog(true)}
+                />
               ) : (
                 <Step2
                   onPrev={() => setStep(1)}

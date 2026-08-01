@@ -39,6 +39,8 @@ import type { GenderType } from '../../type/auth';
 
 interface Step1Props {
   onNext(): void;
+  // 스텝1에서 뒤로가기(네이티브 헤더 back = form_cta 'back') 시 이탈 확인 모달.
+  onExit(): void;
 }
 
 // 성별은 DS 아이콘 세트에 구분되는 픽토그램이 없어 라벨만 쓴다.
@@ -85,7 +87,7 @@ function FieldLabel({
   );
 }
 
-export function Step1({ onNext }: Step1Props): React.ReactElement {
+export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
   const form = useFormContext<SignupFormValues>();
   const checkNickname = useCheckNickname();
   const nicknameValue = form.watch('nickname') ?? '';
@@ -124,9 +126,11 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
   };
 
   // 앱(웹뷰)에선 "다음" CTA 를 네이티브 고정 바로 위임한다(스텝 1/2).
+  // back(네이티브 헤더/시스템 back → form_cta 'back')은 이탈 확인 모달로 잇는다.
   const ctaDelegated = useNativeSubmitBar('다음', !isVerified, handleNext, {
     step: 1,
     steps: 2,
+    onBack: onExit,
   });
 
   return (
