@@ -4,14 +4,9 @@ import { Button, MobileHeader, Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { normalizeApiError } from '@module/api/error';
-import { useNativeCapability } from '@module/hooks/useNativeCapability';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
-import {
-  isNativeCommentSheetAvailable,
-  requestNativePushRoute,
-  sendNativeCommentSheetOpen,
-} from '@module/utils/nativeBridge';
+import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { Flag } from 'lucide-react';
 import Image from 'next/image';
@@ -87,9 +82,6 @@ function DiaryDetailView({
   onRequireLogin(): void;
 }): React.ReactElement {
   const router = useRouter();
-  // 좋아요 옆 댓글 카운터도 시트 진입점으로 쓴다. 셸이 시트를 지원할 때만
-  // 눌리게 하고, 아니면 예전처럼 표시 전용이다.
-  const commentSheetActive = useNativeCapability(isNativeCommentSheetAvailable);
   // 알림 딥링크/콜드 스타트로 진입해 history 가 없을 때 일지 목록으로 보낸다.
   const handleBack = useSafeBack('/diary');
   const { data: sidebarData } = useSidebar();
@@ -255,14 +247,6 @@ function DiaryDetailView({
                   diaryData={diaryData}
                   totalCommentCount={totalCommentCount}
                   isLikePending={isLikePending}
-                  onCommentTap={
-                    commentSheetActive
-                      ? () =>
-                          sendNativeCommentSheetOpen(
-                            `/diary/${diaryData.id}/comments`
-                          )
-                      : undefined
-                  }
                   onLikeToggle={onLikeToggle}
                   onShare={() => void handleShare()}
                 />
@@ -361,7 +345,6 @@ function DiaryDetailView({
           <aside>
             <DiaryCommentSection
               diaryId={diaryData.id}
-              sheetEntryOnly
               currentMemberId={currentMemberId}
               currentUserNickname={currentUserNickname}
               isLoggedIn={isLoggedIn}

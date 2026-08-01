@@ -7,21 +7,8 @@ import React, { useRef } from 'react';
 interface UseCommentThreadDelegationParams {
   /** DFS 순서 작성자 id (아바타 클릭 → 멤버 프로필 이동) */
   flatCommentAuthors: Array<{ id: string }>;
-  /** <li> 문서 순서 메타 (삭제 행 클릭 차단·답글 대상) */
-  flatCommentMeta: Array<{
-    id: number;
-    isDeleted: boolean;
-    authorNickname: string;
-  }>;
-  /** 대댓글 id → 루트 댓글 id (답글은 항상 루트에 달림) */
-  replyTargetRootIdMap: Map<number, number>;
-  /**
-   * 앱(웹뷰): true 면 DS 인라인 답글 입력 대신 네이티브 입력으로 라우팅한다.
-   * "답글" 토글 탭을 가로채 DS 가 자체 입력을 열지 못하게 막고, 대상 댓글을
-   * onNativeReplyStart 로 알린다. false(브라우저)면 DS 기본 동작.
-   */
-  nativeReplyActive: boolean;
-  onNativeReplyStart?(parentId: number, replyingTo: string): void;
+  /** <li> 문서 순서 메타 (삭제 행 클릭 차단) */
+  flatCommentMeta: Array<{ id: number; isDeleted: boolean }>;
 }
 
 export interface UseCommentThreadDelegationResult {
@@ -39,9 +26,6 @@ export interface UseCommentThreadDelegationResult {
 export function useCommentThreadDelegation({
   flatCommentAuthors,
   flatCommentMeta,
-  replyTargetRootIdMap,
-  nativeReplyActive,
-  onNativeReplyStart,
 }: UseCommentThreadDelegationParams): UseCommentThreadDelegationResult {
   const router = useRouter();
   const commentWrapperRef = useRef<HTMLDivElement>(null);
@@ -52,32 +36,6 @@ export function useCommentThreadDelegation({
     const target = event.target as Element | null;
     if (!target || !commentWrapperRef.current) {
       return;
-    }
-
-    // 앱: "답글" 토글 탭을 가로채 네이티브 입력으로 라우팅한다. capture 단계
-    // stopPropagation 으로 DS 의 답글-열기 핸들러가 실행되지 않아 인라인 입력이
-    // 뜨지 않는다(삭제 행 차단과 동일한 기법).
-    if (nativeReplyActive) {
-      const replyButton = target.closest('button');
-      if (
-        replyButton &&
-        commentWrapperRef.current.contains(replyButton) &&
-        replyButton.textContent?.trim() === '답글'
-      ) {
-        const li = replyButton.closest('li');
-        const allLis = Array.from(
-          commentWrapperRef.current.querySelectorAll('li')
-        );
-        const liIndex = li ? allLis.indexOf(li) : -1;
-        const meta = liIndex >= 0 ? flatCommentMeta[liIndex] : undefined;
-        if (meta && !meta.isDeleted) {
-          event.stopPropagation();
-          event.preventDefault();
-          const parentId = replyTargetRootIdMap.get(meta.id) ?? meta.id;
-          onNativeReplyStart?.(parentId, meta.authorNickname);
-        }
-        return;
-      }
     }
 
     const avatar = target.closest('[data-slot="circle-avatar"]');

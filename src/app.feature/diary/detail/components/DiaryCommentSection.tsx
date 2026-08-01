@@ -9,17 +9,8 @@ import {
 } from '@1d1s/design-system';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleton';
-import { useNativeCapability } from '@module/hooks/useNativeCapability';
 import { cn } from '@module/utils/cn';
-import {
-  isNativeCommentInputAvailable,
-  isNativeCommentSheetAvailable,
-  onNativeCommentReplyCancel,
-  onNativeCommentSubmit,
-  sendNativeCommentContext,
-  sendNativeCommentSheetOpen,
-} from '@module/utils/nativeBridge';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { useCommentThreadDelegation } from '../hooks/useCommentThreadDelegation';
 import { useCommentTree } from '../hooks/useCommentTree';
@@ -72,9 +63,6 @@ const COMMENT_PLACEHOLDER = '응원의 말을 남겨주세요';
 
 interface DiaryCommentSectionProps {
   diaryId: number;
-  // 앱에서 상세 본문에 놓일 때 true — 목록·입력을 그리지 않고 "댓글 N개 보기"
-  // 버튼만 둔다. 목록은 네이티브 바텀시트(/diary/{id}/comments)가 맡는다.
-  sheetEntryOnly?: boolean;
   currentMemberId: number | null;
   currentUserNickname: string | null;
   isLoggedIn: boolean;
@@ -83,7 +71,6 @@ interface DiaryCommentSectionProps {
 
 export function DiaryCommentSection({
   diaryId,
-  sheetEntryOnly = false,
   currentMemberId,
   currentUserNickname,
   isLoggedIn,
@@ -93,25 +80,6 @@ export function DiaryCommentSection({
   const [reportTargetCommentId, setReportTargetCommentId] = useState<
     number | null
   >(null);
-
-  // 앱(웹뷰)에선 댓글 입력을 네이티브 입력바로 위임한다(8-2). 답글 대상은
-  // 웹이 관리해 context 로 전달한다(parentId=루트 댓글, replyingTo=표시명).
-  // native:ready 로 comment_input 피처가 늦게 주입돼도 재평가되도록 반응형.
-  const commentNativeActive = useNativeCapability(
-    isNativeCommentInputAvailable
-  );
-  // 셸이 댓글 시트를 지원하는지. 지원 안 하는 구버전 앱에서는 버튼만 두면
-  // 눌러도 아무 일이 없으므로, 기존처럼 인라인 목록을 그대로 그린다.
-  const commentSheetActive = useNativeCapability(isNativeCommentSheetAvailable);
-  // 상세 본문의 진입 버튼 모드에서는 입력 자체를 위임하지 않는다. 위임하면
-  // 목록도 입력창도 없는 화면 아래에 네이티브 입력 바만 덩그러니 남는다 —
-  // 댓글은 시트 안에서만 단다.
-  const delegateInput =
-    commentNativeActive && !(sheetEntryOnly && commentSheetActive);
-  const [replyTarget, setReplyTarget] = useState<{
-    parentId: number;
-    replyingTo: string;
-  } | null>(null);
 
   const {
     threadComments,
@@ -124,14 +92,7 @@ export function DiaryCommentSection({
     isCommentsError,
   } = useCommentTree(diaryId, currentMemberId, currentUserNickname);
   const { commentWrapperRef, handleCommentWrapperClickCapture } =
-    useCommentThreadDelegation({
-      flatCommentAuthors,
-      flatCommentMeta,
-      replyTargetRootIdMap,
-      nativeReplyActive: commentNativeActive,
-      onNativeReplyStart: (parentId, replyingTo) =>
-        setReplyTarget({ parentId, replyingTo }),
-    });
+    useCommentThreadDelegation({ flatCommentAuthors, flatCommentMeta });
 
   const createComment = useCreateDiaryComment(diaryId);
   const createReply = useCreateCommentReply(diaryId);
@@ -139,83 +100,6 @@ export function DiaryCommentSection({
   const isCommentPending =
     createComment.isPending || createReply.isPending || deleteComment.isPending;
   const isCommentSubmittingRef = useRef(false);
-
-  // ── 네이티브 댓글 입력 위임 (commentNativeActive 일 때만) ──────────────
-  // 최신 상태를 참조하도록 제출 핸들러를 ref 로 유지(구독은 1회).
-  const nativeSubmitRef = useRef<
-    (payload: { text: string; parentId: number | null }) => void
-  >(() => {});
-  useEffect(() => {
-    nativeSubmitRef.current = ({ text, parentId }): void => {
-      const content = text.trim();
-      if (!content || isCommentPending) {
-        return;
-      }
-      if (!isLoggedIn) {
-        onRequireLogin();
-        return;
-      }
-      const options = {
-        onSuccess: (): void => {
-          setReplyTarget(null);
-          // 전송 성공 시에만 입력을 비운다(실패 시 보존).
-          sendNativeCommentContext({
-            visible: true,
-            placeholder: COMMENT_PLACEHOLDER,
-            parentId: null,
-            replyingTo: null,
-            clear: true,
-          });
-        },
-      };
-      if (parentId) {
-        createReply.mutate({ commentId: parentId, content }, options);
-      } else {
-        createComment.mutate({ content }, options);
-      }
-    };
-  });
-
-  // 입력 컨텍스트 전송: 마운트·답글 시작/취소(replyTarget)·전송중(pending)
-  // 변화마다 재전송. 전송 실패 시 pending 이 false 로 돌아오며 submitting:false
-  // 가 재전송돼 앱 입력이 다시 활성화된다(내용은 그대로).
-  useEffect(() => {
-    if (!delegateInput) {
-      return;
-    }
-    sendNativeCommentContext({
-      visible: true,
-      placeholder: replyTarget
-        ? `${replyTarget.replyingTo}님에게 답글 남기기`
-        : COMMENT_PLACEHOLDER,
-      parentId: replyTarget?.parentId ?? null,
-      replyingTo: replyTarget?.replyingTo ?? null,
-      submitting: isCommentPending,
-    });
-  }, [delegateInput, replyTarget, isCommentPending]);
-
-  // 화면을 벗어나면 네이티브 입력을 해제한다.
-  useEffect(() => {
-    if (!delegateInput) {
-      return;
-    }
-    return () => sendNativeCommentContext({ visible: false });
-  }, [delegateInput]);
-
-  // 앱→웹 제출 수신 → 댓글/대댓글 생성. 답글 취소 → 최상위로 복귀.
-  useEffect(() => {
-    if (!delegateInput) {
-      return;
-    }
-    const offSubmit = onNativeCommentSubmit((payload) =>
-      nativeSubmitRef.current(payload)
-    );
-    const offCancel = onNativeCommentReplyCancel(() => setReplyTarget(null));
-    return () => {
-      offSubmit();
-      offCancel();
-    };
-  }, [delegateInput]);
 
   const requireAuthAction = (action: () => void): void => {
     if (!isLoggedIn) {
@@ -304,28 +188,6 @@ export function DiaryCommentSection({
     });
   };
 
-  // 앱 상세 본문 — 목록 대신 진입 버튼만. 목록·입력은 시트가 맡는다.
-  if (sheetEntryOnly && commentSheetActive) {
-    return (
-      <button
-        type="button"
-        onClick={() => sendNativeCommentSheetOpen(`/diary/${diaryId}/comments`)}
-        className={cn(
-          'flex w-full items-center justify-between rounded-[14px]',
-          'border border-gray-200 bg-white px-4 py-3.5 text-left',
-          'active:bg-gray-50'
-        )}
-      >
-        <Text size="body1" weight="bold" className="text-gray-900">
-          응원 댓글 {totalCommentCount}개
-        </Text>
-        <Text size="caption1" weight="medium" className="text-gray-500">
-          {totalCommentCount === 0 ? '첫 댓글 남기기' : '전체 보기'} ›
-        </Text>
-      </button>
-    );
-  }
-
   return (
     <div
       onFocus={handleCommentInputFocus}
@@ -387,29 +249,26 @@ export function DiaryCommentSection({
           }}
         />
 
-        {/* 앱: 데스크톱 입력창도 네이티브로 위임되면 숨긴다(태블릿 웹뷰 대비). */}
-        {!delegateInput && (
-          <div className="mt-3 hidden items-end gap-1.5 sm:flex">
-            <TextField
-              id="diary-comment-content"
-              size="sm"
-              multiline
-              rows={2}
-              className="flex-1"
-              value={commentContent}
-              onChange={(event) => setCommentContent(event.target.value)}
-              placeholder={COMMENT_PLACEHOLDER}
-            />
-            <Button
-              size="sm"
-              className="shrink-0 whitespace-nowrap"
-              onClick={handleCreateComment}
-              disabled={isCommentPending || !commentContent.trim()}
-            >
-              등록
-            </Button>
-          </div>
-        )}
+        <div className="mt-3 hidden items-end gap-1.5 sm:flex">
+          <TextField
+            id="diary-comment-content"
+            size="sm"
+            multiline
+            rows={2}
+            className="flex-1"
+            value={commentContent}
+            onChange={(event) => setCommentContent(event.target.value)}
+            placeholder={COMMENT_PLACEHOLDER}
+          />
+          <Button
+            size="sm"
+            className="shrink-0 whitespace-nowrap"
+            onClick={handleCreateComment}
+            disabled={isCommentPending || !commentContent.trim()}
+          >
+            등록
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -426,13 +285,6 @@ export function DiaryMobileCommentBar({
   isLoggedIn,
   onRequireLogin,
 }: DiaryMobileCommentBarProps): React.ReactElement {
-  // 앱(웹뷰)에선 네이티브 입력바가 대신 뜨므로 웹 입력바를 숨긴다(8-2).
-  // 시트를 지원하는 셸에서는 상세 본문에 입력바 자체를 두지 않는다 — 입력은
-  // 시트 안에서 한다.
-  const commentNativeActive = useNativeCapability(
-    isNativeCommentInputAvailable
-  );
-  const commentSheetActive = useNativeCapability(isNativeCommentSheetAvailable);
   const [content, setContent] = useState('');
   const createComment = useCreateDiaryComment(diaryId);
   const disabled = createComment.isPending || !content.trim();
@@ -460,7 +312,6 @@ export function DiaryMobileCommentBar({
 
   return (
     <MobileBottomActionBar
-      hidden={commentNativeActive || commentSheetActive}
       className={cn(
         'comment-readable flex items-end gap-2 bg-white px-4 pt-2.5',
         'sm:hidden'

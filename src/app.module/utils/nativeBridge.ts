@@ -250,21 +250,7 @@ export type NativeMessage =
       disabled?: boolean;
       step?: number;
       steps?: number;
-    }
-  // 댓글 입력 컨텍스트를 네이티브 입력바로 위임(일지 상세). parentId 있으면
-  // 대댓글, 없으면 최상위. visible:false 로 해제, clear:true 는 성공 시 1회.
-  | {
-      type: 'comment_context';
-      visible: boolean;
-      placeholder?: string;
-      parentId?: number | null;
-      replyingTo?: string | null;
-      submitting?: boolean;
-      clear?: boolean;
-    }
-  // 댓글 목록을 네이티브 바텀시트로 열어 달라는 요청. 경로는 웹이 정한다 —
-  // 앱이 규칙을 추측해 만들면 라우트가 바뀔 때 조용히 404 를 띄운다.
-  | { type: 'comment_sheet_open'; path: string };
+    };
 
 interface NativeChannel {
   postMessage(payload: string): void;
@@ -796,99 +782,4 @@ export function onNativeFormCtaAction(
   };
   win.addEventListener('native:form_cta_action', listener);
   return () => win.removeEventListener('native:form_cta_action', listener);
-}
-
-// ── 댓글 입력 위임 (일지 상세) ───────────────────────────────────────────
-// 앱은 하단 고정 입력을 직접 그린다. 웹은 입력 컨텍스트(placeholder/답글 대상/
-// 전송중)를 보내고, 앱→웹 native:comment_submit 으로 텍스트를 돌려받아 댓글/
-// 대댓글 API 를 호출한다(목록 갱신·성공 판정의 권위는 웹). native:
-// comment_reply_cancel 은 답글 취소 → 최상위 컨텍스트로 복귀.
-
-export interface NativeCommentContextPayload {
-  // 입력바 노출 여부. false 면 앱이 입력을 해제한다.
-  visible: boolean;
-  placeholder?: string;
-  // 대댓글이면 루트 댓글 id, 최상위면 null/미지정.
-  parentId?: number | null;
-  // 답글 대상 표시명(대댓글일 때).
-  replyingTo?: string | null;
-  // 전송 중이면 true — 앱이 입력/전송 버튼을 비활성화한다.
-  submitting?: boolean;
-  // 전송 성공 시 1회 true — 앱이 입력 내용을 비운다(실패 시 보존).
-  clear?: boolean;
-}
-
-/** 댓글 입력 컨텍스트를 네이티브 입력바로 전송. 채널 없으면 no-op. */
-export function sendNativeCommentContext(
-  payload: NativeCommentContextPayload
-): void {
-  postNativeMessage({
-    type: 'comment_context',
-    visible: payload.visible,
-    placeholder: payload.placeholder,
-    parentId: payload.parentId,
-    replyingTo: payload.replyingTo,
-    submitting: payload.submitting,
-    clear: payload.clear,
-  });
-}
-
-/** 댓글 목록을 네이티브 바텀시트로 여는 것을 셸이 지원하는지. */
-export function isNativeCommentSheetAvailable(): boolean {
-  return (
-    getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('comment_sheet')
-  );
-}
-
-/**
- * 댓글 목록을 네이티브 바텀시트로 연다.
- *
- * 본문과 댓글이 한 화면에 있으면 댓글을 쓰려고 키보드를 올리는 순간 본문이
- * 밀려 올라가 맥락이 사라진다. 목록을 시트로 떼어 내면 목록과 입력이 같은
- * 레이어에 있고, 시트 안에서도 네이티브 입력 바가 그대로 동작한다.
- */
-export function sendNativeCommentSheetOpen(path: string): void {
-  postNativeMessage({ type: 'comment_sheet_open', path });
-}
-
-/** 네이티브 댓글 입력 지원 여부(채널 + comment_input 피처). 아니면 웹 입력 유지. */
-export function isNativeCommentInputAvailable(): boolean {
-  return (
-    getNativeWindow()?.[CHANNEL_NAME] != null &&
-    hasNativeFeature('comment_input')
-  );
-}
-
-/** 네이티브 댓글 입력이 보낸 제출(텍스트+parentId) 구독. cleanup 반환. */
-export function onNativeCommentSubmit(
-  handler: (payload: { text: string; parentId: number | null }) => void
-): () => void {
-  const win = getNativeWindow();
-  if (!win) {
-    return () => {};
-  }
-  const listener = (event: Event): void => {
-    const detail = (
-      event as CustomEvent<{ text?: string; parentId?: number | null }>
-    ).detail;
-    if (typeof detail?.text !== 'string') {
-      return;
-    }
-    const parentId =
-      typeof detail.parentId === 'number' ? detail.parentId : null;
-    handler({ text: detail.text, parentId });
-  };
-  win.addEventListener('native:comment_submit', listener);
-  return () => win.removeEventListener('native:comment_submit', listener);
-}
-
-/** 네이티브 댓글 입력의 "답글 취소" 구독. cleanup 반환. */
-export function onNativeCommentReplyCancel(handler: () => void): () => void {
-  const win = getNativeWindow();
-  if (!win) {
-    return () => {};
-  }
-  const listener = (): void => handler();
-  win.addEventListener('native:comment_reply_cancel', listener);
-  return () => win.removeEventListener('native:comment_reply_cancel', listener);
 }
