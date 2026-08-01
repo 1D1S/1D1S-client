@@ -3,14 +3,15 @@
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { useEffect, useState } from 'react';
 
-// 모바일 소프트 키보드가 가리는 높이(px)를 visualViewport 로 추적한다.
+// 모바일 소프트 키보드가 하단 고정 입력바를 가리지 않게 올릴 높이(px).
 //
-// iOS WKWebView(앱 웹뷰)는 키보드가 뜰 때 네이티브 웹뷰를 줄여도 웹의 "레이아웃
-// 뷰포트"(=position:fixed·100vh 기준)는 그대로 두고 "비주얼 뷰포트"만 줄이는
-// 경우가 있다. 그러면 `fixed; bottom:0` 인 하단 입력바가 키보드 아래(가려짐)에
-// 남는다. window.innerHeight − visualViewport(height+offsetTop) 로 가려진 높이를
-// 구해, 그 값만큼 하단 바를 위로 올린다. 레이아웃 뷰포트가 이미 같이 줄어드는
-// 브라우저에선 이 값이 ~0 이라 이중 보정이 없다.
+// 순수 모바일 웹(브라우저): 키보드가 떠도 레이아웃 뷰포트는 안 줄어들고
+// visualViewport 만 줄어드니, window.innerHeight − visualViewport(height+offsetTop)
+// 만큼 바를 translateY 로 올린다.
+//
+// 앱 웹뷰: Scaffold.resizeToAvoidBottomInset:true 로 웹뷰 자체가 줄어드는 게
+// 확인됨 → 이미 줄어든 뷰포트에 fixed;bottom:0 이면 자연히 키보드 위. 여기서
+// translateY 까지 올리면 이중 보정으로 gap 이 생겨(증상A) 0 을 준다.
 //
 // URL 바 노출/숨김 같은 작은 변화(≤80px)는 키보드로 오검출하지 않는다.
 const KEYBOARD_MIN_OVERLAP_PX = 80;
@@ -30,24 +31,18 @@ export function useKeyboardInsetOffset(): number {
       return;
     }
     const update = (): void => {
-      const overlap = Math.max(
-        0,
-        window.innerHeight - vv.height - vv.offsetTop
-      );
-      // TEMP(빌드 확인용): 앱 웹뷰에서 innerHeight 가 리사이즈를 반영하는지
-      // (=이중 보정 여부) 판단용 로그. 확정되면 제거한다.
-      if (isNativeApp) {
-        console.log('[kbd-inset]', {
-          innerHeight: window.innerHeight,
-          vvHeight: Math.round(vv.height),
-          vvOffsetTop: Math.round(vv.offsetTop),
-          overlap: Math.round(overlap),
-        });
-      }
+      // 앱 웹뷰는 resizeToAvoidBottomInset:true 로 키보드 시 웹뷰 자체를 줄인다
+      // (앱 확인 완료). 이미 줄어든 뷰포트라 fixed;bottom:0 만으로 키보드 위에
+      // 붙으므로 translateY 보정을 끈다 — 안 그러면 이중 보정으로 gap(증상A).
       if (isNativeApp) {
         setOffset(0);
         return;
       }
+      // 웹뷰 리사이즈가 없는 순수 모바일 웹: visualViewport 로 가려진 만큼 올린다.
+      const overlap = Math.max(
+        0,
+        window.innerHeight - vv.height - vv.offsetTop
+      );
       setOffset(overlap > KEYBOARD_MIN_OVERLAP_PX ? overlap : 0);
     };
     update();
