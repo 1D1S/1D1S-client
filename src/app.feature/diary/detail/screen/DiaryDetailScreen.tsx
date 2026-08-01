@@ -8,7 +8,6 @@ import { useNativeCapability } from '@module/hooks/useNativeCapability';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import {
-  isNativeCommentInputAvailable,
   isNativeCommentSheetAvailable,
   requestNativePushRoute,
   sendNativeCommentSheetOpen,
@@ -88,11 +87,6 @@ function DiaryDetailView({
   onRequireLogin(): void;
 }): React.ReactElement {
   const router = useRouter();
-  // 앱(웹뷰)에선 네이티브 댓글 입력바가 뜨므로 하단 spacer 를 제거한다(8-2).
-  // native:ready 로 피처가 늦게 주입돼도 재평가되도록 반응형으로 읽는다.
-  const commentNativeActive = useNativeCapability(
-    isNativeCommentInputAvailable
-  );
   // 좋아요 옆 댓글 카운터도 시트 진입점으로 쓴다. 셸이 시트를 지원할 때만
   // 눌리게 하고, 아니면 예전처럼 표시 전용이다.
   const commentSheetActive = useNativeCapability(isNativeCommentSheetAvailable);
@@ -164,7 +158,9 @@ function DiaryDetailView({
       className={cn(
         'allow-user-select',
         'detail-fade-in min-h-screen w-full bg-white',
-        commentNativeActive ? 'sm:pb-0' : 'pb-mobile-action-bar-tall sm:pb-0'
+        // 하단 여백: 웹 댓글바(고정)든 앱 네이티브 입력바(오버레이)든 마지막
+        // 콘텐츠가 가리지 않도록 항상 확보한다(sm↑ 데스크톱은 0).
+        'pb-mobile-action-bar-tall sm:pb-0'
       )}
     >
       <MobileHeader title="일지" onBack={handleBack} />
