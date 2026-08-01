@@ -38,6 +38,16 @@ function handleCommentInputFocus(event: React.FocusEvent<HTMLElement>): void {
   ) {
     return;
   }
+  // 하단 고정 메인 composer(모바일 바/데스크톱)는 useKeyboardInsetOffset 로
+  // 이미 키보드 위에 고정된다. 여기에 scrollIntoView 를 걸면 고정 바를 기준으로
+  // 페이지가 재배치돼 섹션이 흘러내리듯 보인다(버그2). scrollIntoView 보정은
+  // DS 인라인 답글 입력에만 적용하고 메인 composer 는 제외한다.
+  if (
+    target.id === 'diary-comment-content' ||
+    target.id === 'diary-comment-content-mobile'
+  ) {
+    return;
+  }
   const scrollIntoView = (): void => {
     target.scrollIntoView({ block: 'center', behavior: 'smooth' });
   };
@@ -333,7 +343,6 @@ export function DiaryMobileCommentBar({
         className="flex-1"
         value={content}
         onChange={(event) => setContent(event.target.value)}
-        onFocus={handleCommentInputFocus}
         placeholder="응원의 말을 남겨주세요"
       />
       <Button
