@@ -142,16 +142,19 @@ export function DiaryCommentSection({
       return;
     }
 
-    if (deletedCommentIds.has(clickedCommentId)) {
-      return;
-    }
-
     if (!trimmedContent || isCommentPending) {
       return;
     }
 
+    // 답글은 항상 루트(원댓글)에 달린다. 클릭한 노드가 아니라 실제 타겟인
+    // 루트의 삭제 여부로 막는다 — 마지막 대댓글이 삭제돼 그 행에서 "답글 달기"
+    // 를 눌러도(루트는 살아있음) 답글이 정상 등록되게 한다.
     const rootCommentId =
       replyTargetRootIdMap.get(clickedCommentId) ?? clickedCommentId;
+
+    if (deletedCommentIds.has(rootCommentId)) {
+      return;
+    }
 
     requireAuthAction(() => {
       createReply.mutate({

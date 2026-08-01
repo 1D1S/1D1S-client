@@ -60,13 +60,16 @@ export function useCommentThreadDelegation({
       return;
     }
 
-    // "답글" 토글 클릭 → DS 가 해당 댓글 아래 인라인 입력을 연다. 그 입력에
-    // 정확히 포커스를 맞춘다. stopPropagation 하지 않아 DS 의 열기 동작은 그대로.
+    // "답글 달기" 토글 클릭 → DS 가 해당 댓글 아래 인라인 입력을 연다. 그
+    // 입력에 정확히 포커스를 맞춘다. stopPropagation 하지 않아 DS 의 열기
+    // 동작은 그대로. 여기서 return 하면 아래 "삭제 행 클릭 차단"을 타지 않아,
+    // 마지막 대댓글이 삭제돼 그 행에 "답글 달기" 가 달렸을 때도 답글을 열 수
+    // 있다(DS 기본 replyButtonLabel 은 "답글 달기").
     const replyButton = target.closest('button');
     if (
       replyButton &&
       commentWrapperRef.current.contains(replyButton) &&
-      replyButton.textContent?.trim() === '답글'
+      replyButton.textContent?.trim() === '답글 달기'
     ) {
       const replyLi = replyButton.closest('li');
       if (replyLi) {
