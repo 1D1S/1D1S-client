@@ -10,7 +10,7 @@ import {
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleton';
 import { cn } from '@module/utils/cn';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useCommentThreadDelegation } from '../hooks/useCommentThreadDelegation';
 import { useCommentTree } from '../hooks/useCommentTree';
@@ -208,6 +208,7 @@ export function DiaryCommentSection({
 
   return (
     <div
+      data-diary-comments
       onFocus={handleCommentInputFocus}
       className={cn(
         'lg:rounded-[14px] lg:border lg:border-gray-200 lg:bg-white',
@@ -308,6 +309,27 @@ export function DiaryMobileCommentBar({
   const disabled = createComment.isPending || !content.trim();
   const isSubmittingRef = useRef(false);
 
+  // DS 인라인 답글 입력이 열리면 이 고정 메인 입력바를 숨긴다 — 안 그러면
+  // 답글 입력과 메인 입력바가 겹쳐 보인다(증상B). 댓글 영역([data-diary-comments])
+  // 안에 메인 데스크톱 composer(#diary-comment-content) 외의 textarea 가 생기면
+  // = 답글 입력이 열린 것. MutationObserver 로 열림/닫힘을 반영한다.
+  const [isReplyOpen, setIsReplyOpen] = useState(false);
+  useEffect(() => {
+    const root = document.querySelector('[data-diary-comments]');
+    if (!root) {
+      return;
+    }
+    const check = (): void => {
+      setIsReplyOpen(
+        root.querySelector('textarea:not(#diary-comment-content)') !== null
+      );
+    };
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(root, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
   const handleSubmit = (): void => {
     if (!isLoggedIn) {
       onRequireLogin();
@@ -330,6 +352,7 @@ export function DiaryMobileCommentBar({
 
   return (
     <MobileBottomActionBar
+      hidden={isReplyOpen}
       className={cn(
         'comment-readable flex items-end gap-2 bg-white px-4 pt-2.5',
         'sm:hidden'

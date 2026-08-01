@@ -1,5 +1,6 @@
 'use client';
 
+import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { useEffect, useState } from 'react';
 
 // 모바일 소프트 키보드가 가리는 높이(px)를 visualViewport 로 추적한다.
@@ -15,6 +16,12 @@ import { useEffect, useState } from 'react';
 const KEYBOARD_MIN_OVERLAP_PX = 80;
 
 export function useKeyboardInsetOffset(): number {
+  // 앱(웹뷰)은 Scaffold.resizeToAvoidBottomInset:true 로 키보드만큼 웹뷰 자체를
+  // 줄인다. 그러면 `fixed; bottom:0`(+safe-area) 만으로 하단 바가 자연히 키보드
+  // 위에 놓인다. 여기서 translateY 까지 올리면 이중 보정으로 composer 와 키보드
+  // 사이에 큰 빈 공간이 생긴다(증상A). → 앱에선 translateY 를 끄고 0 을 준다.
+  // 브라우저는 레이아웃 뷰포트가 안 줄어드니 visualViewport 로 보정한다.
+  const isNativeApp = useIsNativeApp(false);
   const [offset, setOffset] = useState(0);
 
   useEffect(() => {
@@ -27,6 +34,20 @@ export function useKeyboardInsetOffset(): number {
         0,
         window.innerHeight - vv.height - vv.offsetTop
       );
+      // TEMP(빌드 확인용): 앱 웹뷰에서 innerHeight 가 리사이즈를 반영하는지
+      // (=이중 보정 여부) 판단용 로그. 확정되면 제거한다.
+      if (isNativeApp) {
+        console.log('[kbd-inset]', {
+          innerHeight: window.innerHeight,
+          vvHeight: Math.round(vv.height),
+          vvOffsetTop: Math.round(vv.offsetTop),
+          overlap: Math.round(overlap),
+        });
+      }
+      if (isNativeApp) {
+        setOffset(0);
+        return;
+      }
       setOffset(overlap > KEYBOARD_MIN_OVERLAP_PX ? overlap : 0);
     };
     update();
@@ -36,7 +57,7 @@ export function useKeyboardInsetOffset(): number {
       vv.removeEventListener('resize', update);
       vv.removeEventListener('scroll', update);
     };
-  }, []);
+  }, [isNativeApp]);
 
   return offset;
 }
