@@ -5,6 +5,7 @@ import { SubPageShell } from '@component/layout/SubPageShell';
 import { useLogout } from '@feature/auth/hooks/useAuthMutations';
 import { useDeleteMember } from '@feature/member/hooks/useMemberMutations';
 import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
+import { getApiErrorCode } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
@@ -115,6 +116,18 @@ export default function SettingsScreen(): React.ReactElement {
         router.replace('/login');
       },
       onError: (error) => {
+        // TEMP(탈퇴 실패 진단): 실기기에서 실제 status+body 확보용. DELETE /member
+        // 가 서버 즉시탈퇴 스펙과 맞는지 판단 후 제거한다.
+        const axiosLike = error as {
+          response?: { status?: number; data?: unknown };
+          message?: string;
+        };
+        console.error('[withdraw-fail]', {
+          status: axiosLike?.response?.status,
+          code: getApiErrorCode(error),
+          body: axiosLike?.response?.data,
+          message: axiosLike?.message,
+        });
         notifyApiError(error);
       },
     });

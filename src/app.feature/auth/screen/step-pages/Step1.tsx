@@ -23,6 +23,7 @@ import {
 import { NicknameCheckButton } from '@feature/member/components/NicknameCheckButton';
 import { useCheckNickname } from '@feature/member/hooks/useMemberMutations';
 import { normalizeApiError } from '@module/api/error';
+import { useNativeSubmitBar } from '@module/hooks/useNativeSubmitBar';
 import { cn } from '@module/utils/cn';
 import { NICKNAME_REGEX } from '@module/utils/nickname';
 import { formatPhoneNumber } from '@module/utils/phoneNumber';
@@ -122,6 +123,12 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
     onNext();
   };
 
+  // 앱(웹뷰)에선 "다음" CTA 를 네이티브 고정 바로 위임한다(스텝 1/2).
+  const ctaDelegated = useNativeSubmitBar('다음', !isVerified, handleNext, {
+    step: 1,
+    steps: 2,
+  });
+
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex flex-col gap-5">
@@ -130,9 +137,9 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
           name="nickname"
           render={({ field }) => (
             <FormItem>
+              <FieldLabel required>닉네임</FieldLabel>
               <FormControl>
                 <TextField
-                  label="닉네임"
                   placeholder="2~12자, 한글/영문/숫자"
                   iconLeft={<Icon name="Person" size={16} />}
                   iconRight={
@@ -185,9 +192,12 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
           name="phoneNumber"
           render={({ field }) => (
             <FormItem>
+              <FieldLabel>
+                전화번호{' '}
+                <span className="font-normal text-gray-400">(선택)</span>
+              </FieldLabel>
               <FormControl>
                 <TextField
-                  label="전화번호 (선택)"
                   placeholder="010-1234-5678"
                   inputMode="numeric"
                   maxLength={13}
@@ -382,16 +392,17 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
                       key={option.value}
                       value={option.value}
                       shape="square"
-                      className={cn(
-                        'flex h-[52px] w-full items-center justify-center',
-                        'gap-1.5 px-0 text-[13px]'
-                      )}
+                      // 아이콘은 DS `icon` prop 으로 넘겨 카테고리 칩과 동일한
+                      // 정렬을 쓴다(자식+수동 flex 는 두 옵션 정렬이 어긋났다).
+                      icon={
+                        <Icon
+                          name={JOB_ICON[option.value]}
+                          size={16}
+                          aria-hidden
+                        />
+                      }
+                      className="h-[52px] w-full justify-center px-0 text-[13px]"
                     >
-                      <Icon
-                        name={JOB_ICON[option.value]}
-                        size={16}
-                        aria-hidden
-                      />
                       {option.label}
                     </ToggleGroupItem>
                   ))}
@@ -403,17 +414,20 @@ export function Step1({ onNext }: Step1Props): React.ReactElement {
         </div>
       </div>
 
-      <div className="mt-8 flex justify-end">
-        <Button
-          type="button"
-          size="lg"
-          fullWidth
-          disabled={!isVerified}
-          onClick={handleNext}
-        >
-          다음 — 관심 카테고리
-        </Button>
-      </div>
+      {/* 앱에선 네이티브 고정 바가 대신 뜨므로 웹 버튼을 숨긴다. */}
+      {!ctaDelegated && (
+        <div className="mt-8 flex justify-end">
+          <Button
+            type="button"
+            size="lg"
+            fullWidth
+            disabled={!isVerified}
+            onClick={handleNext}
+          >
+            다음 — 관심 카테고리
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
