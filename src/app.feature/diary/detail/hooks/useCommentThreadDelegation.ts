@@ -18,6 +18,28 @@ export interface UseCommentThreadDelegationResult {
   ): void;
 }
 
+// DS 인라인 답글 입력이 열린 뒤(리렌더) 그 댓글의 입력에 포커스를 맞춘다. DS
+// 가 자동 포커스를 잡지 못해 포커스가 엉뚱한 곳에 남던 버그를 웹에서 보정한다.
+// 입력이 아직 안 그려졌을 수 있어 몇 프레임 재시도한다. 키보드 위로 스크롤하는
+// 것은 입력의 onFocus(handleCommentInputFocus)가 visualViewport 기준으로 맡는다.
+function focusReplyInputSoon(li: Element): void {
+  let tries = 0;
+  const tryFocus = (): void => {
+    const input = li.querySelector<HTMLElement>(
+      'textarea, [contenteditable="true"]'
+    );
+    if (input) {
+      input.focus();
+      return;
+    }
+    if (tries < 5) {
+      tries += 1;
+      requestAnimationFrame(tryFocus);
+    }
+  };
+  requestAnimationFrame(tryFocus);
+}
+
 /**
  * DS CommentThread 에 이벤트 위임을 붙이는 훅. 아바타 클릭은 멤버 프로필로
  * 이동시키고, 삭제된 댓글 행 클릭은 DS 의 답글 오픈 핸들러로 전달되지 않게
@@ -35,6 +57,21 @@ export function useCommentThreadDelegation({
   ): void => {
     const target = event.target as Element | null;
     if (!target || !commentWrapperRef.current) {
+      return;
+    }
+
+    // "답글" 토글 클릭 → DS 가 해당 댓글 아래 인라인 입력을 연다. 그 입력에
+    // 정확히 포커스를 맞춘다. stopPropagation 하지 않아 DS 의 열기 동작은 그대로.
+    const replyButton = target.closest('button');
+    if (
+      replyButton &&
+      commentWrapperRef.current.contains(replyButton) &&
+      replyButton.textContent?.trim() === '답글'
+    ) {
+      const replyLi = replyButton.closest('li');
+      if (replyLi) {
+        focusReplyInputSoon(replyLi);
+      }
       return;
     }
 
