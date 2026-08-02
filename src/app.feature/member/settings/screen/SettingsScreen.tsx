@@ -7,7 +7,6 @@ import { useDeleteMember } from '@feature/member/hooks/useMemberMutations';
 import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
 import { getApiErrorCode } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
-import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import {
   Bell,
@@ -111,10 +110,9 @@ export default function SettingsScreen(): React.ReactElement {
   const confirmWithdraw = (): void => {
     deleteMember.mutate(undefined, {
       onSuccess: () => {
+        // 성공 토스트는 useDeleteMember onSuccess 가 로그아웃 신호보다 먼저
+        // 보낸다(순서 보장). 여기서 또 띄우면 중복이라 다이얼로그 정리·이동만.
         setIsWithdrawDialogOpen(false);
-        // 즉시 영구 삭제로 전환됐다. 서버 message 에 옛 유예("일주일 후 삭제")
-        // 문구가 남아 있을 수 있어 그대로 노출하지 않고 완료 문구로 고정한다.
-        toast.success('회원 탈퇴가 완료되었습니다.');
         router.replace('/login');
       },
       onError: (error) => {

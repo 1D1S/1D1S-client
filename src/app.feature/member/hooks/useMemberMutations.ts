@@ -1,4 +1,5 @@
 import { clearCachedSidebar } from '@feature/member/hooks/useMemberQueries';
+import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
 import { postNativeMessage } from '@module/utils/nativeBridge';
 import {
@@ -82,6 +83,13 @@ export function useDeleteMember(): UseMutationResult<
   return useMutation({
     mutationFn: () => memberApi.deleteMember(),
     onSuccess: () => {
+      // 성공 토스트를 로그아웃 신호보다 "먼저" 보낸다. toast·logout 둘 다
+      // 네이티브 위임 메시지인데(같은 JS 채널), logout 이 먼저 가면 앱이
+      // 웹뷰·세션을 정리하는 사이 뒤이은 toast 메시지가 씹혔다(반복 신고).
+      // 서버 message 는 옛 유예 문구가 남을 수 있어 완료 문구로 고정한다.
+      // 순서 보장을 위해 컴포넌트가 아니라 여기(hook onSuccess, 항상 먼저 실행)
+      // 에서 토스트를 띄운다.
+      toast.success('회원 탈퇴가 완료되었습니다.');
       authStorage.clearTokens();
       clearCachedSidebar();
       queryClient.clear();
