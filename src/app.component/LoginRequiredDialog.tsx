@@ -70,6 +70,12 @@ export function LoginRequiredDialog({
       const result = await openNativeModal({
         title,
         message: description,
+        // 아래 웹 분기(ConfirmDialog / required 다이얼로그)와 같은 배지를
+        // 네이티브에도 실어 보낸다. 이걸 빼면 앱에서만 아이콘 없는 모달이
+        // 떠서, 같은 "로그인이 필요합니다"가 진입 경로에 따라 다르게 생긴다
+        // (네이티브 FAB 게이트는 배지가 있고, 웹 위임분은 없었다).
+        icon: 'LogIn',
+        tone: 'brand',
         buttons: [
           { label: '닫기', value: 'cancel', style: 'cancel' },
           { label: '로그인', value: 'login' },
