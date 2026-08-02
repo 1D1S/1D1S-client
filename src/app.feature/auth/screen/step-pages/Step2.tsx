@@ -2,6 +2,7 @@
 
 import { Button, CheckContainer, Icon, Text } from '@1d1s/design-system';
 import { FormField, FormItem, FormMessage } from '@component/ui/Form';
+import { useNativeSubmitBar } from '@module/hooks/useNativeSubmitBar';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -37,6 +38,14 @@ export function Step2({
 }: Step2Props): React.ReactElement {
   const form = useFormContext<SignupFormValues>();
   const selectedTopics = form.watch('topics') ?? [];
+
+  // 앱(웹뷰)에선 "가입 완료"/"이전" CTA 를 네이티브 고정 바로 위임한다(스텝 2/2).
+  const ctaDelegated = useNativeSubmitBar(
+    isSubmitting ? '처리 중...' : '가입 완료 · 첫 챌린지 보기',
+    isSubmitting || selectedTopics.length === 0,
+    onSubmit,
+    { step: 2, steps: 2, onBack: onPrev }
+  );
 
   return (
     <div className="flex flex-1 flex-col">
@@ -129,27 +138,30 @@ export function Step2({
         )}
       />
 
-      <div className="mt-8 flex items-center gap-2.5">
-        <Button
-          type="button"
-          size="lg"
-          variant="secondary"
-          disabled={isSubmitting}
-          onClick={onPrev}
-          className="w-[120px] flex-shrink-0"
-        >
-          이전
-        </Button>
-        <Button
-          type="button"
-          size="lg"
-          fullWidth
-          disabled={isSubmitting || selectedTopics.length === 0}
-          onClick={onSubmit}
-        >
-          {isSubmitting ? '처리 중...' : '가입 완료 · 첫 챌린지 보기'}
-        </Button>
-      </div>
+      {/* 앱에선 네이티브 고정 바가 대신 뜨므로 웹 버튼을 숨긴다. */}
+      {!ctaDelegated && (
+        <div className="mt-8 flex items-center gap-2.5">
+          <Button
+            type="button"
+            size="lg"
+            variant="secondary"
+            disabled={isSubmitting}
+            onClick={onPrev}
+            className="w-[120px] flex-shrink-0"
+          >
+            이전
+          </Button>
+          <Button
+            type="button"
+            size="lg"
+            fullWidth
+            disabled={isSubmitting || selectedTopics.length === 0}
+            onClick={onSubmit}
+          >
+            {isSubmitting ? '처리 중...' : '가입 완료 · 첫 챌린지 보기'}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

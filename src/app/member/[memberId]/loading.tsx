@@ -5,5 +5,9 @@ import React from 'react';
 // 내비게이션이 되지 않도록 마이페이지와 동일 계열 스켈레톤을 fallback
 // 으로 보여준다. 캐시가 warm 한 이동에서는 노출되지 않는다.
 export default function MemberProfileLoading(): React.ReactElement {
-  return <MyPageSkeleton />;
+  return (
+    <div data-native-hide className="contents">
+      <MyPageSkeleton />
+    </div>
+  );
 }

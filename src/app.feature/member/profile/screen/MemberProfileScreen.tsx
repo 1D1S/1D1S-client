@@ -16,6 +16,7 @@ import { MyPageStreakHeroCard } from '@feature/member/mypage/components/MyPageSt
 import { normalizeApiError } from '@module/api/error';
 import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useSafeBack } from '@module/hooks/useSafeBack';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 
@@ -38,6 +39,7 @@ export default function MemberProfileScreen({
     memberId,
     authStatus === 'authenticated'
   );
+  useSignalPageReady('member_profile', authStatus !== 'unknown' && !isLoading);
 
   // 확정된 비로그인 — 참여자(회원) 정보는 로그인 후에만 볼 수 있다. 제네릭
   // 에러 대신 로그인 유도 모달을 띄운다. 'unknown'(부팅 중)은 아직 판정
@@ -145,7 +147,11 @@ export default function MemberProfileScreen({
             </div>
 
             <div className="mt-8">
-              <MyPageStatSection streak={streak} />
+              <MyPageStatSection
+                streak={streak}
+                isMe={false}
+                memberName={nickname}
+              />
             </div>
 
             <div className="mt-8">

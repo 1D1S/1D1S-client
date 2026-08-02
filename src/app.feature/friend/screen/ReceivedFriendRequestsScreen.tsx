@@ -6,6 +6,7 @@ import { SubPageShell } from '@component/layout/SubPageShell';
 import { FriendRequestListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
@@ -21,6 +22,7 @@ import { useReceivedFriendRequests } from '../hooks/useFriendQueries';
 export default function ReceivedFriendRequestsScreen(): React.ReactElement {
   const { data, isLoading, isError, error } = useReceivedFriendRequests();
   const showSkeleton = useMinimumLoading(isLoading);
+  useSignalPageReady('friend_received', !showSkeleton);
   const acceptRequest = useAcceptFriendRequest();
   const rejectRequest = useRejectFriendRequest();
 

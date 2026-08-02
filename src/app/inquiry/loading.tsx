@@ -1,5 +1,9 @@
 import { SubPageRouteSkeleton } from '@component/skeletons/SubPageRouteSkeleton';
 
 export default function Loading(): React.ReactElement {
-  return <SubPageRouteSkeleton />;
+  return (
+    <div data-native-hide className="contents">
+      <SubPageRouteSkeleton />
+    </div>
+  );
 }

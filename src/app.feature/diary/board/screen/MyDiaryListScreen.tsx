@@ -12,6 +12,7 @@ import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { normalizeApiError } from '@module/api/error';
 import { useDedupedInfinitePages } from '@module/hooks/useDedupedInfinitePages';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -85,6 +86,7 @@ export function MyDiaryListScreen(): React.ReactElement {
     isFetchingNextPage,
   } = useMyDiariesInfinite(MY_DIARY_PAGE_SIZE);
   const showSkeleton = useMinimumLoading(isLoading);
+  useSignalPageReady('my_diary', !showSkeleton);
   const { ref } = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,

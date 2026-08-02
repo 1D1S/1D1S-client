@@ -29,6 +29,7 @@ import {
   useChallengeCreateForm,
 } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { formatFormValues } from '@feature/challenge/write/utils/challengeCreatePayload';
+import { useNativeSubmitBar } from '@module/hooks/useNativeSubmitBar';
 import { cn } from '@module/utils/cn';
 import {
   hideNativeProgress,
@@ -142,8 +143,20 @@ export default function ChallengeCreateScreen(): React.ReactElement {
     }
   };
 
+  // 앱(웹뷰)에선 하단 CTA 를 네이티브 고정 바로 위임한다(8-1).
+  const nativeCtaDelegated = useNativeSubmitBar(
+    '챌린지 만들기',
+    !canSubmit,
+    () => void handleCreateRequest()
+  );
+
   return (
-    <div className={cn('pb-mobile-action-bar min-h-screen w-full')}>
+    <div
+      className={cn(
+        'min-h-screen w-full',
+        !nativeCtaDelegated && 'pb-mobile-action-bar'
+      )}
+    >
       <MobileHeader title="챌린지 만들기" onBack={() => router.back()} />
 
       <Form {...form}>
@@ -221,6 +234,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
 
         <MobileBottomActionBar
           hideOnDesktop={false}
+          hidden={nativeCtaDelegated}
           className={cn(
             'border-gray-200 px-0 pt-0',
             'shadow-[0_-4px_20px_rgba(0,0,0,0.04)]'

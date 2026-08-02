@@ -5,6 +5,12 @@ const nextConfig = {
   compiler: {
     removeConsole: isDev ? false : { exclude: ['error', 'warn'] },
   },
+  // 클라이언트에 배포 식별자를 inline 한다. React Query persist buster 로 써,
+  // 배포(=새 커밋)마다 옛 localStorage 캐시를 무효화한다. Vercel 은 빌드에서
+  // VERCEL_GIT_COMMIT_SHA 를 제공. 로컬/비-Vercel 은 'dev'.
+  env: {
+    NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA || 'dev',
+  },
   experimental: {
     // Next.js 15+ 기본값은 dynamic: 0 이라 라우트 캐시(=RSC payload 클라이언트
     // 캐시) 가 즉시 stale 로 만료된다. router.prefetch 가 채워 둔 payload 도

@@ -4,6 +4,7 @@ import { Button, MobileHeader, Text } from '@1d1s/design-system';
 import { AlertDialog } from '@component/AlertDialog';
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { NativeDatePicker } from '@component/NativeDatePicker';
+import { useNativeSubmitBar } from '@module/hooks/useNativeSubmitBar';
 import { cn } from '@module/utils/cn';
 import {
   hideNativeProgress,
@@ -82,6 +83,13 @@ export default function DiaryCreateScreen(): React.ReactElement {
   } = useDiaryCreateForm();
   const nativeProgressAvailable = isNativeProgressAvailable();
 
+  // 앱(웹뷰)에선 하단 제출 CTA 를 네이티브 고정 바로 위임한다(8-1).
+  const nativeCtaDelegated = useNativeSubmitBar(
+    submitButtonLabel,
+    !canSubmit,
+    () => void handleSubmit()
+  );
+
   // 저장 중 오버레이가 떠 있는 동안 뒤 화면 스크롤을 잠근다.
   useEffect(() => {
     if (!isSubmitting) {
@@ -138,7 +146,12 @@ export default function DiaryCreateScreen(): React.ReactElement {
   );
 
   return (
-    <div className="pb-mobile-action-bar min-h-screen w-full">
+    <div
+      className={cn(
+        'min-h-screen w-full',
+        !nativeCtaDelegated && 'pb-mobile-action-bar'
+      )}
+    >
       <MobileHeader
         title={isEditMode ? '일지 수정' : '일지 작성'}
         onBack={() => router.back()}
@@ -277,7 +290,11 @@ export default function DiaryCreateScreen(): React.ReactElement {
         </div>
       </div>
 
-      <MobileBottomActionBar hideOnDesktop={false} className="lg:px-8">
+      <MobileBottomActionBar
+        hideOnDesktop={false}
+        hidden={nativeCtaDelegated}
+        className="lg:px-8"
+      >
         <div
           className={cn(
             'mx-auto flex w-full max-w-[1200px] items-center gap-3'

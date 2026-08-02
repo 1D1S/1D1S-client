@@ -1,5 +1,9 @@
 import { DiaryBoardSkeleton } from '@component/skeletons/DiaryBoardSkeleton';
 
 export default function Loading(): React.ReactElement {
-  return <DiaryBoardSkeleton />;
+  return (
+    <div data-native-hide className="contents">
+      <DiaryBoardSkeleton />
+    </div>
+  );
 }

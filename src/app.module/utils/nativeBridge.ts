@@ -220,7 +220,11 @@ export type NativeMessage =
   | { type: 'scroll_dir'; payload: NativeScrollDirPayload }
   | { type: 'oauth_open'; payload: { url: string } }
   | { type: 'token_refresh'; payload: { id: string } }
-  | { type: 'logout' }
+  // 일반 로그아웃은 successMessage 없이 보낸다. 회원 탈퇴만 successMessage 를
+  // 실어, 앱이 정리(푸시토큰 회수→네이티브 로그아웃→쿠키 삭제→홈 리로드)를
+  // 모두 마친 뒤 그 문구를 네이티브 토스트로 띄운다(빌드 126 계약). 정리 창에서
+  // 웹 토스트는 씹히므로 소유권을 앱에 넘긴다. 필드가 없으면 토스트 없음.
+  | { type: 'logout'; successMessage?: string }
   | {
       type: 'progress_open';
       payload: { message: string };
@@ -242,7 +246,18 @@ export type NativeMessage =
   | { type: 'date_picker_open'; payload: NativeDatePickerPayload }
   // 네이티브 스토리 뷰어. 진행/이동/닫기는 네이티브가 처리하고, 읽음
   // 처리용 native:story_viewed 이벤트만 웹으로 돌아온다.
-  | { type: 'story_open'; payload: NativeStoryOpenPayload };
+  | { type: 'story_open'; payload: NativeStoryOpenPayload }
+  // 폼 하단 CTA("제출"/"다음")를 네이티브 고정 바로 위임. label 없으면 해제.
+  | {
+      type: 'form_cta';
+      label?: string;
+      disabled?: boolean;
+      step?: number;
+      steps?: number;
+    }
+  // 화면 콘텐츠가 실제로 렌더된 시점. 앱이 해당 screen 의 네이티브 스켈레톤을
+  // 걷고 워치독을 해제한다(흰 화면 방지). route 는 경로 검증·중복 방지용.
+  | { type: 'page_ready'; screen: string; route: string };
 
 interface NativeChannel {
   postMessage(payload: string): void;
@@ -714,4 +729,82 @@ export function isNativeChallengeCreatedModalAvailable(): boolean {
     getNativeWindow()?.[CHANNEL_NAME] != null &&
     hasNativeFeature('challengeCreatedModal')
   );
+}
+
+// ── 폼 하단 CTA 위임 (일지 작성/수정·챌린지 생성) ────────────────────────
+// 웹 하단 sticky 버튼은 본문 흐름 안에 있어 스크롤하면 밀려 올라간다.
+// 네이티브 쉘은 하단 고정 바를 대신 그리고, 라벨/비활성 상태는 웹이 계속
+// 갱신한다(유효성 규칙의 권위는 웹). 앱→웹은 native:form_cta_action 이벤트로
+// primary(제출)/back(이전 단계)을 돌려준다.
+
+export interface NativeFormCtaPayload {
+  label: string;
+  disabled?: boolean;
+  // 단계 표시(선택). 회원가입처럼 다단계 폼에서만 쓴다.
+  step?: number;
+  steps?: number;
+}
+
+export type NativeFormCtaAction = 'primary' | 'back';
+
+/**
+ * 폼 하단 CTA 상태를 네이티브 바로 전송한다. payload 가 null 이면 label 없이
+ * 보내 앱이 바를 해제한다. 전송 중에는 disabled:true 로 보내 연타를 막는다
+ * (연타 방지 권위는 웹). 채널이 없으면(브라우저) postNativeMessage 가 no-op.
+ */
+export function sendNativeFormCta(payload: NativeFormCtaPayload | null): void {
+  if (payload === null) {
+    postNativeMessage({ type: 'form_cta' });
+    return;
+  }
+  postNativeMessage({
+    type: 'form_cta',
+    label: payload.label,
+    disabled: payload.disabled,
+    step: payload.step,
+    steps: payload.steps,
+  });
+}
+
+/** 네이티브 폼 CTA 바 지원 여부(채널 + form_cta 피처). 아니면 웹 버튼 유지. */
+export function isNativeFormCtaAvailable(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('form_cta')
+  );
+}
+
+/** 네이티브 폼 CTA 바의 primary/back 탭 이벤트 구독. cleanup 반환. */
+export function onNativeFormCtaAction(
+  handler: (action: NativeFormCtaAction) => void
+): () => void {
+  const win = getNativeWindow();
+  if (!win) {
+    return () => {};
+  }
+  const listener = (event: Event): void => {
+    const detail = (event as CustomEvent<{ action?: string }>).detail;
+    if (detail?.action === 'primary' || detail?.action === 'back') {
+      handler(detail.action);
+    }
+  };
+  win.addEventListener('native:form_cta_action', listener);
+  return () => win.removeEventListener('native:form_cta_action', listener);
+}
+
+// ── 화면 준비 신호 (page_ready) ──────────────────────────────────────────
+// app_ready(부팅 1회, 스플래시)와 별개로, 화면 진입마다 콘텐츠가 실제로
+// 렌더된 뒤 보낸다. 앱은 이 신호까지 네이티브 스켈레톤을 유지하다가 걷는다
+// (흰 화면 방지). native_skeleton 피처를 announce 한 앱에서만 동작한다.
+
+/** 네이티브 스켈레톤(page_ready 소비) 지원 여부. 아니면 emit 안 한다. */
+export function isNativeSkeletonAvailable(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null &&
+    hasNativeFeature('native_skeleton')
+  );
+}
+
+/** 화면 콘텐츠 렌더 완료를 네이티브에 알린다(screen id + 현재 route). */
+export function sendNativePageReady(screen: string, route: string): void {
+  postNativeMessage({ type: 'page_ready', screen, route });
 }

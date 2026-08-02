@@ -21,20 +21,22 @@ export const TOPIC_VALUES = [
 
 export const signupFormSchema = z.object({
   nickname: nicknameSchema,
-  phoneNumber: phoneNumberSchema,
+  // 전화번호·생년월일·성별은 핵심 기능과 무관해 선택 항목이다(App Store
+  // 5.1.1(v)). 비우면 통과하고, 값을 넣었을 때만 형식을 검증한다.
+  phoneNumber: z.union([z.literal(''), phoneNumberSchema]),
   year: z
     .string()
-    .nonempty('연도를 선택해 주세요.')
-    .regex(/^\d{4}$/, '올바른 연도를 선택해 주세요.'),
+    .regex(/^\d{4}$/, '올바른 연도를 선택해 주세요.')
+    .or(z.literal('')),
   month: z
     .string()
-    .nonempty('월을 선택해 주세요.')
-    .regex(/^([1-9]|1[0-2])$/, '올바른 월을 선택해주세요.'),
+    .regex(/^([1-9]|1[0-2])$/, '올바른 월을 선택해주세요.')
+    .or(z.literal('')),
   day: z
     .string()
-    .nonempty('일을 선택해 주세요.')
-    .regex(/^([1-9]|[12][0-9]|3[01])$/, '올바른 일을 선택해주세요.'),
-  gender: z.enum(GENDER_VALUES, { message: '성별을 선택해 주세요.' }),
+    .regex(/^([1-9]|[12][0-9]|3[01])$/, '올바른 일을 선택해주세요.')
+    .or(z.literal('')),
+  gender: z.enum(GENDER_VALUES).optional(),
   job: z.enum(JOB_VALUES, { message: '직업을 선택해 주세요.' }),
   isPublic: z.boolean(),
   topics: z

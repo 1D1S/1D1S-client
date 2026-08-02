@@ -10,7 +10,7 @@ import {
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { DiaryCommentsSkeleton } from '@component/skeletons/DiaryCommentsSkeleton';
 import { cn } from '@module/utils/cn';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useCommentThreadDelegation } from '../hooks/useCommentThreadDelegation';
 import { useCommentTree } from '../hooks/useCommentTree';
@@ -26,9 +26,10 @@ import { CommentReportDialog } from './CommentReportDialog';
 // 한 곳에 달면 내부 DS CommentThread 의 대댓글 입력까지 함께 처리된다.
 //
 // 타이밍: 키보드로 visualViewport 가 줄어든 "뒤"에 계산해야 정확히 키보드 위로
-// 올라온다. 즉시 호출하면 아직 안 줄어든 뷰포트 기준이라 어긋난다. → 다음
-// visualViewport resize 를 1회 기다렸다가 scrollIntoView 하고, 리사이즈가
-// 안 오는 환경을 위해 타임아웃 폴백을 둔다.
+// 올라온다. iOS 웹뷰는 키보드가 떠도 레이아웃을 리사이즈하지 않아, 한 번만
+// 스크롤하면 이후 키보드 show/hide/전환에서 다시 가려진다. → 포커스 동안
+// visualViewport 'resize'(키보드 높이 변동)를 계속 구독해 그때마다 입력을 다시
+// 보이게 유지하고, blur 에서 정리한다. 초기 1회 폴백도 둔다.
 function handleCommentInputFocus(event: React.FocusEvent<HTMLElement>): void {
   const target = event.target;
   if (
@@ -37,27 +38,68 @@ function handleCommentInputFocus(event: React.FocusEvent<HTMLElement>): void {
   ) {
     return;
   }
+  // 하단 고정 메인 composer(모바일 바/데스크톱)는 useKeyboardInsetOffset 로
+  // 이미 키보드 위에 고정된다. 여기에 scrollIntoView 를 걸면 고정 바를 기준으로
+  // 페이지가 재배치돼 섹션이 흘러내리듯 보인다(버그2). scrollIntoView 보정은
+  // DS 인라인 답글 입력에만 적용하고 메인 composer 는 제외한다.
+  if (
+    target.id === 'diary-comment-content' ||
+    target.id === 'diary-comment-content-mobile'
+  ) {
+    return;
+  }
   const scrollIntoView = (): void => {
     target.scrollIntoView({ block: 'center', behavior: 'smooth' });
   };
+  // 앱 웹뷰는 키보드 시 웹뷰 자체가 줄어(resizeToAvoidBottomInset, 확인됨)
+  // 문서 흐름의 인라인 답글 입력이 키보드 아래로 가려진다. 포커스는 DS
+  // autoFocusReply 가 소유하므로(이중 포커스 점프 제거, 7f76bb8) 여기선 스크롤만
+  // 한다. resize 마다 반복하면 앱 리플로우와 겹쳐 계단식 점프가 나므로(버그A)
+  // 웹뷰가 줄어든(=visualViewport resize 안정) 뒤 딱 1회만 올린다.
+  if (document.documentElement.getAttribute('data-native-app') === 'true') {
+    const vv = window.visualViewport;
+    if (!vv) {
+      window.setTimeout(scrollIntoView, 300);
+      return;
+    }
+    let settled = false;
+    const scrollOnce = (): void => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      vv.removeEventListener('resize', scrollOnce);
+      scrollIntoView();
+    };
+    vv.addEventListener('resize', scrollOnce);
+    // resize 가 안 오는 환경(키보드 이미 떠 있음) 대비 폴백 1회.
+    window.setTimeout(scrollOnce, 350);
+    return;
+  }
   const vv = window.visualViewport;
   if (!vv) {
     window.setTimeout(scrollIntoView, 300);
     return;
   }
-  let done = false;
-  const run = (): void => {
-    if (done) {
-      return;
-    }
-    done = true;
-    vv.removeEventListener('resize', run);
-    scrollIntoView();
+  // 리사이즈가 몰아칠 때 rAF 로 합쳐 한 프레임에 한 번만 스크롤한다.
+  let raf = 0;
+  const onViewportResize = (): void => {
+    window.cancelAnimationFrame(raf);
+    raf = window.requestAnimationFrame(scrollIntoView);
   };
-  vv.addEventListener('resize', run);
-  // 키보드가 이미 떠 있어 resize 가 안 오는 경우 대비 폴백.
-  window.setTimeout(run, 350);
+  vv.addEventListener('resize', onViewportResize);
+  const cleanup = (): void => {
+    vv.removeEventListener('resize', onViewportResize);
+    target.removeEventListener('blur', cleanup);
+    window.cancelAnimationFrame(raf);
+  };
+  target.addEventListener('blur', cleanup, { once: true });
+  // 키보드가 올라와 resize 가 온 뒤 정확히 보이도록 + resize 가 안 오는 환경
+  // 대비 초기 1회 보정.
+  window.setTimeout(scrollIntoView, 300);
 }
+
+const COMMENT_PLACEHOLDER = '응원의 말을 남겨주세요';
 
 interface DiaryCommentSectionProps {
   diaryId: number;
@@ -135,16 +177,19 @@ export function DiaryCommentSection({
       return;
     }
 
-    if (deletedCommentIds.has(clickedCommentId)) {
-      return;
-    }
-
     if (!trimmedContent || isCommentPending) {
       return;
     }
 
+    // 답글은 항상 루트(원댓글)에 달린다. 클릭한 노드가 아니라 실제 타겟인
+    // 루트의 삭제 여부로 막는다 — 마지막 대댓글이 삭제돼 그 행에서 "답글 달기"
+    // 를 눌러도(루트는 살아있음) 답글이 정상 등록되게 한다.
     const rootCommentId =
       replyTargetRootIdMap.get(clickedCommentId) ?? clickedCommentId;
+
+    if (deletedCommentIds.has(rootCommentId)) {
+      return;
+    }
 
     requireAuthAction(() => {
       createReply.mutate({
@@ -188,6 +233,7 @@ export function DiaryCommentSection({
 
   return (
     <div
+      data-diary-comments
       onFocus={handleCommentInputFocus}
       className={cn(
         'lg:rounded-[14px] lg:border lg:border-gray-200 lg:bg-white',
@@ -256,7 +302,7 @@ export function DiaryCommentSection({
             className="flex-1"
             value={commentContent}
             onChange={(event) => setCommentContent(event.target.value)}
-            placeholder="응원의 말을 남겨주세요"
+            placeholder={COMMENT_PLACEHOLDER}
           />
           <Button
             size="sm"
@@ -288,6 +334,25 @@ export function DiaryMobileCommentBar({
   const disabled = createComment.isPending || !content.trim();
   const isSubmittingRef = useRef(false);
 
+  // DS 인라인 답글 입력이 열리면 이 고정 메인 입력바를 숨긴다 — 안 그러면
+  // 답글 입력과 메인 입력바가 겹쳐 보인다(증상B). DS 2.11.2 는 열린 답글 입력
+  // 에만 `[data-reply-input]` 을 달므로(닫힌 입력은 inert) 그 존재 = 답글 열림.
+  // MutationObserver 로 열림/닫힘을 반영한다.
+  const [isReplyOpen, setIsReplyOpen] = useState(false);
+  useEffect(() => {
+    const root = document.querySelector('[data-diary-comments]');
+    if (!root) {
+      return;
+    }
+    const check = (): void => {
+      setIsReplyOpen(root.querySelector('[data-reply-input]') !== null);
+    };
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(root, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
   const handleSubmit = (): void => {
     if (!isLoggedIn) {
       onRequireLogin();
@@ -310,6 +375,7 @@ export function DiaryMobileCommentBar({
 
   return (
     <MobileBottomActionBar
+      hidden={isReplyOpen}
       className={cn(
         'comment-readable flex items-end gap-2 bg-white px-4 pt-2.5',
         'sm:hidden'
@@ -323,7 +389,6 @@ export function DiaryMobileCommentBar({
         className="flex-1"
         value={content}
         onChange={(event) => setContent(event.target.value)}
-        onFocus={handleCommentInputFocus}
         placeholder="응원의 말을 남겨주세요"
       />
       <Button

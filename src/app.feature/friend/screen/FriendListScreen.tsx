@@ -6,6 +6,7 @@ import { SubPageShell } from '@component/layout/SubPageShell';
 import { FriendListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
@@ -77,6 +78,7 @@ export default function FriendListScreen(): React.ReactElement {
 
   const { data: friends, isLoading, isError, error } = useFriendList();
   const showSkeleton = useMinimumLoading(isLoading);
+  useSignalPageReady('friend_list', !showSkeleton);
   const { data: received } = useReceivedFriendRequests();
   const { data: sent } = useSentFriendRequests();
   const removeFriend = useRemoveFriend();

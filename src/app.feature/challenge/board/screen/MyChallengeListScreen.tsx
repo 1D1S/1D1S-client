@@ -19,12 +19,14 @@ import {
   getCategoryLabel,
   getCategoryStripeTone,
 } from '@constants/categories';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 
+import { FilterDisclosure } from '../components/FilterDisclosure';
 import { useMyChallenges } from '../hooks/useChallengeQueries';
 import type { MyChallengeItem } from '../type/challenge';
 import {
@@ -131,6 +133,7 @@ export function MyChallengeListScreen(): React.ReactElement {
   // 재요청하지 않아 체감이 빠르고, 정렬도 한 번에 적용된다).
   const { data, isLoading } = useMyChallenges('ALL');
   const showSkeleton = useMinimumLoading(isLoading);
+  useSignalPageReady('my_challenge', !showSkeleton);
 
   const [category, setCategory] = useState<string>('ALL');
   const [stateFilter, setStateFilter] = useState<StateFilter>('ALL');
@@ -235,32 +238,34 @@ export function MyChallengeListScreen(): React.ReactElement {
             </ToggleGroup>
           </div>
 
-          {/* 상태 필터 — 진행중 / 종료 / 참여종료 */}
-          <div className={FILTER_ROW_CLASS}>
-            <span className={GROUP_LABEL_CLASS}>상태</span>
-            <ToggleGroup
-              type="single"
-              value={stateFilter}
-              aria-label="참여 상태"
-              onValueChange={(value) => {
-                if (value) {
-                  setStateFilter(value as StateFilter);
-                }
-              }}
-              className="flex shrink-0 items-center gap-1.5"
-            >
-              {STATE_OPTIONS.map((option) => (
-                <ToggleGroupItem
-                  key={option.value}
-                  value={option.value}
-                  size="sm"
-                  shape="rounded"
-                >
-                  {option.label}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </div>
+          {/* 상태 필터 — 진행중 / 종료 / 참여종료. 기본 접힘(높이 축소). */}
+          <FilterDisclosure>
+            <div className={FILTER_ROW_CLASS}>
+              <span className={GROUP_LABEL_CLASS}>상태</span>
+              <ToggleGroup
+                type="single"
+                value={stateFilter}
+                aria-label="참여 상태"
+                onValueChange={(value) => {
+                  if (value) {
+                    setStateFilter(value as StateFilter);
+                  }
+                }}
+                className="flex shrink-0 items-center gap-1.5"
+              >
+                {STATE_OPTIONS.map((option) => (
+                  <ToggleGroupItem
+                    key={option.value}
+                    value={option.value}
+                    size="sm"
+                    shape="rounded"
+                  >
+                    {option.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+          </FilterDisclosure>
         </div>
       ) : null}
 

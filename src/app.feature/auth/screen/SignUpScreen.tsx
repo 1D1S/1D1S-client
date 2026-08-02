@@ -10,6 +10,7 @@ import { getApiErrorCode } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { putToStorage } from '@module/api/presignedUpload';
 import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
@@ -71,6 +72,32 @@ export function SignUpScreen(): React.ReactElement {
   // 그동안 네이티브 스플래시가 덮고 있으므로 이 화면도 랜딩 루트처럼
   // app_ready 를 쏴야 걷힌다. 폼은 서버 데이터 없이 즉시 그려진다.
   useSignalAppReady(true);
+  useSignalPageReady('signup', true);
+
+  // 뒤로가기(브라우저 back 버튼·앱 웹뷰 history back)를 가로채 회원가입 이탈
+  // 확인 모달을 띄운다. 웹 헤더의 back 버튼(handleBack)은 앱에선 native-hide 라
+  // 안 보이고, 브라우저 back 은 원래 이 화면 로직을 안 타 모달 없이 그냥
+  // 나가졌다. 마운트 시 센티넬 히스토리 항목을 쌓고 popstate 마다 다시 쌓아
+  // 페이지에 머무르며, step2→step1, step1→로그아웃 확인 모달로 보낸다.
+  // (앱 네이티브 back 바가 native 네비게이션으로 직접 나가는 경로는 앱 세션에서
+  //  웹뷰 history back 으로 태워야 이 가드가 함께 동작한다.)
+  const stepRef = React.useRef(step);
+  React.useEffect(() => {
+    stepRef.current = step;
+  }, [step]);
+  React.useEffect(() => {
+    window.history.pushState(null, '', window.location.href);
+    const onPopState = (): void => {
+      window.history.pushState(null, '', window.location.href);
+      if (stepRef.current === 2) {
+        setStep(1);
+        return;
+      }
+      setShowExitDialog(true);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   const onSubmit = async (values: SignupFormValues): Promise<void> => {
     if (!authStorage.hasTokens()) {
@@ -79,7 +106,11 @@ export function SignUpScreen(): React.ReactElement {
       return;
     }
 
-    const birth = `${values.year}-${values.month.padStart(2, '0')}-${values.day.padStart(2, '0')}`;
+    // 생년월일은 선택 항목 — 세 값이 모두 있을 때만 전송한다(부분 입력은 미전송).
+    const birth =
+      values.year && values.month && values.day
+        ? `${values.year}-${values.month.padStart(2, '0')}-${values.day.padStart(2, '0')}`
+        : undefined;
 
     setIsSubmitting(true);
     try {
@@ -96,7 +127,10 @@ export function SignUpScreen(): React.ReactElement {
 
       await authApi.completeSignUpInfo({
         nickname: values.nickname,
-        phoneNumber: normalizePhoneNumber(values.phoneNumber),
+        // 선택 항목은 미입력 시 키를 넣지 않는다(undefined → JSON 에서 제외).
+        phoneNumber: values.phoneNumber
+          ? normalizePhoneNumber(values.phoneNumber)
+          : undefined,
         job: values.job,
         birth,
         gender: values.gender,
@@ -106,7 +140,12 @@ export function SignUpScreen(): React.ReactElement {
       });
 
       toast.success('가입이 완료되었습니다!');
-      await queryClient.invalidateQueries({
+      // 홈/탐색의 프로필 가드(AppLayoutShell)는 sidebar.nickname 으로 가입
+      // 완료를 판정한다. invalidateQueries(refetchType 기본 'active')는 /signup
+      // 에서 사이드바 옵저버가 없어 refetch 를 안 걸고 stale(nickname 없음) 캐시가
+      // 남아, 이동 시 다시 /signup 으로 튕겼다(버그). 이동 전에 refetch 로
+      // 완료된 프로필을 캐시에 확정해 가드가 통과하게 한다.
+      await queryClient.refetchQueries({
         queryKey: MEMBER_QUERY_KEYS.sidebar(),
       });
       // 로그인 → 프로필 설정으로 우회한 경우 원래 보던 경로로 복귀
@@ -257,7 +296,7 @@ export function SignUpScreen(): React.ReactElement {
                 steps={SIGN_UP_STEPS}
                 currentStep={step}
                 size="sm"
-                className="mb-6 w-full"
+                className="mb-5 w-full"
               />
 
               <Text
@@ -280,13 +319,16 @@ export function SignUpScreen(): React.ReactElement {
                 size="body2"
                 weight="regular"
                 as="p"
-                className="mt-2 mb-6 block text-gray-500"
+                className="mt-2 mb-5 block text-gray-500"
               >
                 {heading.sub}
               </Text>
 
               {step === 1 ? (
-                <Step1 onNext={handleNextStep} />
+                <Step1
+                  onNext={handleNextStep}
+                  onExit={() => setShowExitDialog(true)}
+                />
               ) : (
                 <Step2
                   onPrev={() => setStep(1)}

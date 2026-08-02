@@ -5,8 +5,8 @@ import { SubPageShell } from '@component/layout/SubPageShell';
 import { useLogout } from '@feature/auth/hooks/useAuthMutations';
 import { useDeleteMember } from '@feature/member/hooks/useMemberMutations';
 import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
+import { getApiErrorCode } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
-import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import {
   Bell,
@@ -14,6 +14,7 @@ import {
   ChevronRight,
   HelpCircle,
   LogOut,
+  Trash2,
   Trophy,
   User,
 } from 'lucide-react';
@@ -108,12 +109,25 @@ export default function SettingsScreen(): React.ReactElement {
 
   const confirmWithdraw = (): void => {
     deleteMember.mutate(undefined, {
-      onSuccess: (response) => {
+      onSuccess: () => {
+        // 성공 토스트는 useDeleteMember onSuccess 가 로그아웃 신호보다 먼저
+        // 보낸다(순서 보장). 여기서 또 띄우면 중복이라 다이얼로그 정리·이동만.
         setIsWithdrawDialogOpen(false);
-        toast.success(response.message ?? '회원 탈퇴가 완료되었습니다.');
         router.replace('/login');
       },
       onError: (error) => {
+        // TEMP(탈퇴 실패 진단): 실기기에서 실제 status+body 확보용. DELETE /member
+        // 가 서버 즉시탈퇴 스펙과 맞는지 판단 후 제거한다.
+        const axiosLike = error as {
+          response?: { status?: number; data?: unknown };
+          message?: string;
+        };
+        console.error('[withdraw-fail]', {
+          status: axiosLike?.response?.status,
+          code: getApiErrorCode(error),
+          body: axiosLike?.response?.data,
+          message: axiosLike?.message,
+        });
         notifyApiError(error);
       },
     });
@@ -184,20 +198,22 @@ export default function SettingsScreen(): React.ReactElement {
           />
         </section>
 
-        <div className="flex justify-end">
-          <button
-            type="button"
+        {/* App Store 5.1.1(v): 계정 삭제는 앱 안에서 명확히 도달 가능해야
+            한다. 붉은 톤의 독립 카드로 분리해 눈에 띄게 하되 과하지 않게. */}
+        <section
+          className={cn(
+            'overflow-hidden rounded-[14px] border border-red-200 bg-red-50/50'
+          )}
+        >
+          <SettingsRow
+            icon={<Trash2 className="h-5 w-5" />}
+            label={deleteMember.isPending ? '탈퇴 처리 중...' : '회원 탈퇴'}
+            description="계정과 모든 데이터를 영구 삭제해요"
+            tone="danger"
             onClick={() => setIsWithdrawDialogOpen(true)}
             disabled={isAnySending}
-            className={cn(
-              'text-[13px] text-gray-400 underline-offset-2',
-              'transition-colors hover:text-gray-600 hover:underline',
-              'disabled:opacity-50'
-            )}
-          >
-            회원 탈퇴
-          </button>
-        </div>
+          />
+        </section>
       </div>
 
       <ConfirmDialog
@@ -221,7 +237,7 @@ export default function SettingsScreen(): React.ReactElement {
         tone="danger"
         icon="Close"
         title="회원 탈퇴 하시겠어요?"
-        description="회원 탈퇴 요청 후 계정 삭제는 7일 뒤 처리됩니다."
+        description="탈퇴하면 계정과 모든 데이터가 즉시 영구 삭제되며 복구할 수 없습니다."
         confirmLabel="회원 탈퇴"
         pendingLabel="처리 중..."
         isPending={deleteMember.isPending}

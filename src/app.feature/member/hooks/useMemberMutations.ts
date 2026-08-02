@@ -1,10 +1,17 @@
 import { clearCachedSidebar } from '@feature/member/hooks/useMemberQueries';
+import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
+import {
+  isNativeBridgeAvailable,
+  postNativeMessage,
+} from '@module/utils/nativeBridge';
 import {
   useMutation,
   UseMutationResult,
   useQueryClient,
 } from '@tanstack/react-query';
+
+import { purgePersistedQueries } from '@/app.lib/queryPersist';
 
 import { memberApi } from '../api/memberApi';
 import { MEMBER_QUERY_KEYS } from '../consts/queryKeys';
@@ -82,6 +89,19 @@ export function useDeleteMember(): UseMutationResult<
       authStorage.clearTokens();
       clearCachedSidebar();
       queryClient.clear();
+      // 영속된 RQ 캐시(localStorage)도 비운다 — 탈퇴 후 개인 데이터 잔존 방지.
+      purgePersistedQueries();
+      // 완료 문구 고정(서버 유예 문구 잔존 방지).
+      const successMessage = '회원 탈퇴가 완료되었습니다.';
+      if (isNativeBridgeAvailable()) {
+        // 앱(웹뷰): 앱이 정리(푸시토큰 회수→네이티브 로그아웃→쿠키 삭제→홈
+        // 리로드)를 모두 마친 뒤 이 문구를 네이티브 토스트로 띄운다(빌드 126
+        // 계약). 정리 창에서 웹 토스트는 씹히므로 웹에선 띄우지 않는다.
+        postNativeMessage({ type: 'logout', successMessage });
+      } else {
+        // 브라우저: 앱 정리 흐름이 없으므로 웹 토스트를 그대로 띄운다.
+        toast.success(successMessage);
+      }
     },
   });
 }

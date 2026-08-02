@@ -24,6 +24,12 @@ export function DiaryCardSkeleton({
       {/* 제목 2줄 */}
       <Skeleton shape="text" className="mt-3 h-3.5 w-[90%]" />
       <Skeleton shape="text" className="mt-1.5 h-3.5 w-[60%]" />
+      {/* 썸네일(대부분의 일지 카드에 있음) — 실제 카드와 높이를 맞춰
+          로딩→콘텐츠 전환 시 레이아웃 시프트를 줄인다(DiaryCard 의
+          aspect-video 이미지 블록과 동일). */}
+      <div className="mt-3 aspect-video overflow-hidden rounded-[10px]">
+        <Skeleton shape="rect" className="h-full w-full rounded-none" />
+      </div>
       {/* 목표 체크 + 달성률 */}
       <div className="mt-3 flex items-start justify-between gap-3">
         <div className="flex flex-1 flex-col gap-2">

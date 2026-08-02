@@ -10,6 +10,13 @@ import { MyPageStatTile } from './MyPageStatTile';
 
 interface MyPageStatSectionProps {
   streak: MyPageStreak;
+  /**
+   * 내 마이페이지 여부. true(기본)면 "나의 활동" 표기 + 더보기(내 통계) 링크.
+   * 다른 멤버 프로필에선 false — 중립 라벨 + 더보기 숨김(통계는 내 것만 존재).
+   */
+  isMe?: boolean;
+  /** 다른 멤버 프로필에서 부제에 쓸 닉네임(isMe=false일 때). */
+  memberName?: string;
 }
 
 /**
@@ -17,26 +24,38 @@ interface MyPageStatSectionProps {
  */
 export function MyPageStatSection({
   streak,
+  isMe = true,
+  memberName,
 }: MyPageStatSectionProps): React.ReactElement {
   const longestGoalStreak = getLongestGoalStreakSummary(
     streak.longestGoalStreak
   );
 
+  const subtitle = isMe
+    ? '나의 활동 기록과 성장 지표'
+    : memberName
+      ? `${memberName}님의 활동 기록과 성장 지표`
+      : '활동 기록과 성장 지표';
+
   return (
     <section>
       <MyPageSectionHeader
         title="활동 통계"
-        subtitle="나의 활동 기록과 성장 지표"
+        subtitle={subtitle}
+        // 더보기는 내 통계 페이지(/mypage/statistics)로만 가므로 내
+        // 마이페이지에서만 노출한다. 다른 멤버에선 숨긴다.
         action={
-          <Link
-            href="/mypage/statistics"
-            className={cn(
-              'text-main-700 text-xs font-bold',
-              'transition-opacity hover:opacity-80'
-            )}
-          >
-            더보기 →
-          </Link>
+          isMe ? (
+            <Link
+              href="/mypage/statistics"
+              className={cn(
+                'text-main-700 text-xs font-bold',
+                'transition-opacity hover:opacity-80'
+              )}
+            >
+              더보기 →
+            </Link>
+          ) : undefined
         }
       />
       <div className={cn('mt-4 grid grid-cols-2 gap-2.5', 'sm:grid-cols-4')}>

@@ -101,6 +101,18 @@ export function useSidebar(): UseQueryResult<SidebarData | null, Error> {
     // refetchOnMount(기본 true)는 어차피 refetch 하지 않는다 — 명시 제거.
     staleTime: MEMBER_INFO_STALE_TIME,
     gcTime: MEMBER_INFO_GC_TIME,
+    // 탭 전경 복귀 시 항상 재요청한다(FRESH_ON_RETURN 과 동일). sidebar 는
+    // 가입완료 게이트(AppLayoutShell) 의 판정 소스라, 앱이 탭 WebView 를 살려
+    // 둔 채 전환하면(리로드 없음) staleTime:Infinity 라 옛(닉네임 빈) 스냅샷이
+    // 그대로 남아 다른 탭에서 가입을 마쳐도 이 탭이 /signup 으로 튕겼다(재발).
+    // NativeBridge 의 focus 게이트가 배경에선 눌러 두므로 전경 복귀 때만 돈다.
+    refetchOnWindowFocus: 'always',
+    // persist 제외. sidebar.nickname 은 가입완료 게이트(AppLayoutShell) 의
+    // 판정 소스다. persist 하면 가입 전(닉네임 빈값) 스냅샷이 localStorage 에
+    // 남고, staleTime:Infinity 라 웹뷰 리로드(네이티브 탭 전환) 시 그 stale
+    // 스냅샷이 복원돼 재요청 없이 가드가 다시 /signup 으로 튕겼다(재발 버그).
+    // 항상 서버에서 fresh 하게 받아 현재 가입 상태를 반영한다.
+    meta: { noPersist: true },
   });
 }
 
