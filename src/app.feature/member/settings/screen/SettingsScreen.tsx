@@ -110,9 +110,11 @@ export default function SettingsScreen(): React.ReactElement {
 
   const confirmWithdraw = (): void => {
     deleteMember.mutate(undefined, {
-      onSuccess: (response) => {
+      onSuccess: () => {
         setIsWithdrawDialogOpen(false);
-        toast.success(response.message ?? '회원 탈퇴가 완료되었습니다.');
+        // 즉시 영구 삭제로 전환됐다. 서버 message 에 옛 유예("일주일 후 삭제")
+        // 문구가 남아 있을 수 있어 그대로 노출하지 않고 완료 문구로 고정한다.
+        toast.success('회원 탈퇴가 완료되었습니다.');
         router.replace('/login');
       },
       onError: (error) => {
