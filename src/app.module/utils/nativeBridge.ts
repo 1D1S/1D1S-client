@@ -250,7 +250,10 @@ export type NativeMessage =
       disabled?: boolean;
       step?: number;
       steps?: number;
-    };
+    }
+  // 화면 콘텐츠가 실제로 렌더된 시점. 앱이 해당 screen 의 네이티브 스켈레톤을
+  // 걷고 워치독을 해제한다(흰 화면 방지). route 는 경로 검증·중복 방지용.
+  | { type: 'page_ready'; screen: string; route: string };
 
 interface NativeChannel {
   postMessage(payload: string): void;
@@ -782,4 +785,22 @@ export function onNativeFormCtaAction(
   };
   win.addEventListener('native:form_cta_action', listener);
   return () => win.removeEventListener('native:form_cta_action', listener);
+}
+
+// ── 화면 준비 신호 (page_ready) ──────────────────────────────────────────
+// app_ready(부팅 1회, 스플래시)와 별개로, 화면 진입마다 콘텐츠가 실제로
+// 렌더된 뒤 보낸다. 앱은 이 신호까지 네이티브 스켈레톤을 유지하다가 걷는다
+// (흰 화면 방지). native_skeleton 피처를 announce 한 앱에서만 동작한다.
+
+/** 네이티브 스켈레톤(page_ready 소비) 지원 여부. 아니면 emit 안 한다. */
+export function isNativeSkeletonAvailable(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null &&
+    hasNativeFeature('native_skeleton')
+  );
+}
+
+/** 화면 콘텐츠 렌더 완료를 네이티브에 알린다(screen id + 현재 route). */
+export function sendNativePageReady(screen: string, route: string): void {
+  postNativeMessage({ type: 'page_ready', screen, route });
 }

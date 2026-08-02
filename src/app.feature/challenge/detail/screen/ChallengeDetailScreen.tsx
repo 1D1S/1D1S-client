@@ -11,6 +11,7 @@ import { resolveSidebarMemberId } from '@feature/diary/detail/utils/diaryViewDat
 import { getApiErrorCode, normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { useSafeBack } from '@module/hooks/useSafeBack';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { formatDateISO } from '@module/utils/date';
@@ -149,6 +150,7 @@ export function ChallengeDetailScreen({
 
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
   const showSkeleton = useMinimumLoading(isLoading);
+  useSignalPageReady('challenge_detail', !showSkeleton && Boolean(data));
 
   // 일지 탭 배지용 총 일지 수. 통계 쿼리(소개 탭과 공유·캐시)의 일자별 합계다.
   const { data: statsData } = useChallengeStatistics(challengeId);

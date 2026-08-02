@@ -8,6 +8,7 @@ import { useMyPage } from '@feature/member/hooks/useMemberQueries';
 import { MyPageStatisticsEntry } from '@feature/member/statistics/components/MyPageStatisticsEntry';
 import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
@@ -42,6 +43,7 @@ export default function MyPageScreen(): React.ReactElement | null {
   // 렌더된 시점(스켈레톤 아님)에 1회 발화. (게스트는 /login 으로 리다이렉트
   // 되어 발화하지 않음 → 앱 타임아웃 폴백.)
   useSignalAppReady(!showSkeleton && Boolean(data));
+  useSignalPageReady('mypage', !showSkeleton && Boolean(data));
 
   useEffect(() => {
     if (isGuest) {

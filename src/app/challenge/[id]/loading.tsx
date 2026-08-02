@@ -2,5 +2,9 @@ import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSke
 import React from 'react';
 
 export default function ChallengeDetailLoading(): React.ReactElement {
-  return <ChallengeDetailSkeleton />;
+  return (
+    <div data-native-hide className="contents">
+      <ChallengeDetailSkeleton />
+    </div>
+  );
 }

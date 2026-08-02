@@ -16,6 +16,7 @@ import { useMemberProfileDiariesInfinite } from '@feature/member/hooks/useMember
 import { normalizeApiError } from '@module/api/error';
 import { useDedupedInfinitePages } from '@module/hooks/useDedupedInfinitePages';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { formatMonthDayKR } from '@module/utils/date';
 import {
   resolveDiaryImageUrl,
@@ -109,6 +110,7 @@ export function MemberDiaryListScreen({
     isFetchingNextPage,
   } = useMemberProfileDiariesInfinite(memberIdNum, MEMBER_DIARY_PAGE_SIZE);
   const showSkeleton = useMinimumLoading(isLoading);
+  useSignalPageReady('member_diary', !showSkeleton);
   const { ref } = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,

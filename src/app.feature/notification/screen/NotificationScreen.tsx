@@ -5,6 +5,7 @@ import { SubPageShell } from '@component/layout/SubPageShell';
 import { NotificationListSkeleton } from '@component/skeletons/ListItemSkeleton';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { useSafeBack } from '@module/hooks/useSafeBack';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { Bell } from 'lucide-react';
@@ -23,6 +24,7 @@ export function NotificationScreen(): React.JSX.Element {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useNotificationsInfinite();
   const showSkeleton = useMinimumLoading(isLoading);
+  useSignalPageReady('notification', !showSkeleton);
   const { mutate: markAsRead } = useMarkAsRead();
   const { mutate: markAllAsRead } = useMarkAllAsRead();
   const { ref } = useInfiniteScroll({

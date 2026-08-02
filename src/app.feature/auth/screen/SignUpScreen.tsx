@@ -10,6 +10,7 @@ import { getApiErrorCode } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { putToStorage } from '@module/api/presignedUpload';
 import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
@@ -71,6 +72,7 @@ export function SignUpScreen(): React.ReactElement {
   // 그동안 네이티브 스플래시가 덮고 있으므로 이 화면도 랜딩 루트처럼
   // app_ready 를 쏴야 걷힌다. 폼은 서버 데이터 없이 즉시 그려진다.
   useSignalAppReady(true);
+  useSignalPageReady('signup', true);
 
   // 뒤로가기(브라우저 back 버튼·앱 웹뷰 history back)를 가로채 회원가입 이탈
   // 확인 모달을 띄운다. 웹 헤더의 back 버튼(handleBack)은 앱에선 native-hide 라

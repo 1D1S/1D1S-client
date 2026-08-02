@@ -2,5 +2,9 @@ import { ChallengeBoardSkeleton } from '@component/skeletons/ChallengeBoardSkele
 import React from 'react';
 
 export default function ChallengeListLoading(): React.ReactElement {
-  return <ChallengeBoardSkeleton />;
+  return (
+    <div data-native-hide className="contents">
+      <ChallengeBoardSkeleton />
+    </div>
+  );
 }

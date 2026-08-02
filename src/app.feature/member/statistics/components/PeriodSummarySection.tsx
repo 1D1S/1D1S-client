@@ -16,7 +16,7 @@ import { BarTrend, type BarTrendDatum } from '@component/charts/BarTrend';
 import { Skeleton } from '@component/Skeleton';
 import { cn } from '@module/utils/cn';
 import Image from 'next/image';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import {
   useStatisticsPeriods,
@@ -223,10 +223,17 @@ function SummarySkeleton(): React.ReactElement {
   );
 }
 
+interface PeriodSummarySectionProps {
+  // 주 요약 쿼리 준비 상태 통지(통계 화면의 page_ready emit 용).
+  onReady?(ready: boolean): void;
+}
+
 /**
  * 기간 요약 — 주/월/연 토글 + 이전/다음 네비 + 기간 점프 + KPI 카드.
  */
-export function PeriodSummarySection(): React.ReactElement {
+export function PeriodSummarySection({
+  onReady,
+}: PeriodSummarySectionProps = {}): React.ReactElement {
   const [unit, setUnit] = useState<StatisticsPeriodUnit>('WEEK');
   const [periodKey, setPeriodKey] = useState<string | undefined>(undefined);
 
@@ -290,6 +297,11 @@ export function PeriodSummarySection(): React.ReactElement {
   // 로그인 확정 전(enabled: false)에는 isLoading 이 false 라서 빈상태로
   // 새는 문제가 있어, settled 전까지는 isPending 으로 스켈레톤을 유지한다.
   const isPending = summaryQuery.isPending || periodsQuery.isPending;
+
+  // 통계 화면의 page_ready 는 이 주 요약이 준비된 시점에 emit 한다.
+  useEffect(() => {
+    onReady?.(!isPending);
+  }, [isPending, onReady]);
 
   return (
     <StatisticsCard

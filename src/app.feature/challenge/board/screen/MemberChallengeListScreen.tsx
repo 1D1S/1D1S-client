@@ -11,6 +11,7 @@ import {
   getCategoryStripeTone,
 } from '@constants/categories';
 import { normalizeApiError } from '@module/api/error';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { useRouter } from 'next/navigation';
@@ -83,6 +84,7 @@ export function MemberChallengeListScreen({
   const router = useRouter();
   const { data, isLoading, isError, error } = useMemberChallenges(memberIdNum);
   const showSkeleton = useMinimumLoading(isLoading);
+  useSignalPageReady('member_challenge', !showSkeleton);
 
   const challenges = data ?? [];
   const hasChallenges = challenges.length > 0;

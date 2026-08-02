@@ -5,6 +5,7 @@ import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { normalizeApiError } from '@module/api/error';
 import { useSafeBack } from '@module/hooks/useSafeBack';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { cn } from '@module/utils/cn';
 import { requestNativePushRoute } from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
@@ -373,6 +374,7 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
     enabled: Boolean(safeDiaryId) && !isDeleting,
   });
   const showSkeleton = useMinimumLoading(isLoading);
+  useSignalPageReady('diary_detail', !showSkeleton && Boolean(data));
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
   const challengeId = data?.challenge?.challengeId ?? 0;

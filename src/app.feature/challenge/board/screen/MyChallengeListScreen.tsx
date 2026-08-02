@@ -19,6 +19,7 @@ import {
   getCategoryLabel,
   getCategoryStripeTone,
 } from '@constants/categories';
+import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { X } from 'lucide-react';
@@ -132,6 +133,7 @@ export function MyChallengeListScreen(): React.ReactElement {
   // 재요청하지 않아 체감이 빠르고, 정렬도 한 번에 적용된다).
   const { data, isLoading } = useMyChallenges('ALL');
   const showSkeleton = useMinimumLoading(isLoading);
+  useSignalPageReady('my_challenge', !showSkeleton);
 
   const [category, setCategory] = useState<string>('ALL');
   const [stateFilter, setStateFilter] = useState<StateFilter>('ALL');
