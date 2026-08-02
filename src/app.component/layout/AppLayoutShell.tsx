@@ -150,17 +150,28 @@ export default function AppLayoutShell({
   const showPhoneBadge = usePhoneNumberMissing();
 
   useEffect(() => {
-    if (
-      !isLoggedIn ||
-      !sidebarData ||
-      pathname === '/signup' ||
-      pathname === '/login' ||
-      pathname.startsWith('/auth')
-    ) {
+    if (!isLoggedIn || !sidebarData) {
       return;
     }
+    const onSignup = pathname === '/signup';
     if (!sidebarData.nickname) {
-      router.replace('/signup');
+      // 추가정보 미완 → /signup. 이미 인증 라우트면 그대로 둔다.
+      if (
+        !onSignup &&
+        pathname !== '/login' &&
+        !pathname.startsWith('/auth')
+      ) {
+        router.replace('/signup');
+      }
+      return;
+    }
+    // 가입 완료(nickname 존재)인데 /signup 에 갇혀 있으면 홈으로 되돌린다.
+    // 앱이 탭 WebView 를 살려 둔 채 전환하면, 가입 전 로드된 이 탭이 옛 판정으로
+    // /signup 에 머문다. 전경 복귀 시 sidebar 가 refetch(위 refetchOnWindowFocus:
+    // 'always')돼 최신 nickname 이 도착하면 이 역방향 가드가 즉시 빠져나가게 한다.
+    // 가드는 nickname 이 있을 때만 발동하므로 가입 진행 중 사용자는 튕기지 않는다.
+    if (onSignup) {
+      router.replace('/');
     }
   }, [isLoggedIn, sidebarData, pathname, router]);
 
