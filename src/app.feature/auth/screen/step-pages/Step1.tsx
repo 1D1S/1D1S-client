@@ -99,6 +99,10 @@ export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
   const showSuccess = isCheckCurrent && checkNickname.isSuccess;
   const showError = isCheckCurrent && checkNickname.isError;
   const isVerified = showSuccess;
+  // 직업은 필수(*)다. 닉네임 중복확인과 함께 "다음" 활성 조건에 포함한다 —
+  // 이게 빠져 미선택 상태에서도 다음이 활성/통과됐다(버그2).
+  const jobValue = form.watch('job');
+  const canProceed = isVerified && Boolean(jobValue);
   const yearValue = form.watch('year') ?? '';
   const monthValue = form.watch('month') ?? '';
   const dayValue = form.watch('day') ?? '';
@@ -118,7 +122,7 @@ export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
   };
 
   const handleNext = (): void => {
-    if (!isVerified) {
+    if (!canProceed) {
       return;
     }
     onNext();
@@ -126,7 +130,7 @@ export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
 
   // 앱(웹뷰)에선 "다음" CTA 를 네이티브 고정 바로 위임한다(스텝 1/2).
   // back(네이티브 헤더/시스템 back → form_cta 'back')은 이탈 확인 모달로 잇는다.
-  const ctaDelegated = useNativeSubmitBar('다음', !isVerified, handleNext, {
+  const ctaDelegated = useNativeSubmitBar('다음', !canProceed, handleNext, {
     step: 1,
     steps: 2,
     onBack: onExit,
@@ -424,7 +428,7 @@ export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
             type="button"
             size="lg"
             fullWidth
-            disabled={!isVerified}
+            disabled={!canProceed}
             onClick={handleNext}
           >
             다음 — 관심 카테고리
