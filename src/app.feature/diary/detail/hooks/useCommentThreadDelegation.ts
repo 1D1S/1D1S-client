@@ -18,27 +18,6 @@ export interface UseCommentThreadDelegationResult {
   ): void;
 }
 
-// "답글 달기" 탭 흐름에서 열린 답글 입력에 포커스를 맞춘다(iOS 웹뷰 키보드
-// 확실히 띄우기용 — DS 2.11.2 autoFocusReply 와 별개로 웹이 한 번 더 잡는다).
-// DS 2.11.2: 열린 입력만 `[data-reply-input]` 을 달고, 닫힌 입력은 inert 라
-// 셀렉터가 항상 "열려 있는 하나"만 가리킨다 — <li> 스코프/텍스트영역 탐색 같은
-// 방어용 우회가 필요 없다. 입력이 아직 안 그려졌을 수 있어 몇 프레임 재시도한다.
-function focusOpenReplyInputSoon(): void {
-  let tries = 0;
-  const tryFocus = (): void => {
-    const input = document.querySelector<HTMLElement>('[data-reply-input]');
-    if (input) {
-      input.focus();
-      return;
-    }
-    if (tries < 5) {
-      tries += 1;
-      requestAnimationFrame(tryFocus);
-    }
-  };
-  requestAnimationFrame(tryFocus);
-}
-
 /**
  * DS CommentThread 에 이벤트 위임을 붙이는 훅. 아바타 클릭은 멤버 프로필로
  * 이동시키고, 삭제된 댓글 행 클릭은 DS 의 답글 오픈 핸들러로 전달되지 않게
@@ -59,21 +38,11 @@ export function useCommentThreadDelegation({
       return;
     }
 
-    // "답글 달기" 토글 클릭 → DS 가 해당 댓글 아래 인라인 입력을 연다. 그
-    // 입력에 정확히 포커스를 맞춘다. stopPropagation 하지 않아 DS 의 열기
-    // 동작은 그대로. 여기서 return 하면 아래 "삭제 행 클릭 차단"을 타지 않아,
-    // 마지막 대댓글이 삭제돼 그 행에 "답글 달기" 가 달렸을 때도 답글을 열 수
-    // 있다(DS 기본 replyButtonLabel 은 "답글 달기").
-    const replyButton = target.closest('button');
-    if (
-      replyButton &&
-      commentWrapperRef.current.contains(replyButton) &&
-      replyButton.textContent?.trim() === '답글 달기'
-    ) {
-      focusOpenReplyInputSoon();
-      return;
-    }
-
+    // 답글 입력 포커스는 DS 2.11.2 autoFocusReply(기본 true)가 열림과 동시에
+    // 정확히 그 입력만 잡는다(inert 기반). 웹이 [data-reply-input] 에 또 focus()
+    // 하면 이중 포커스 → 브라우저 기본 포커스-스크롤이 두 번 발동해 화면이
+    // 위아래로 튀었다(중복 제거). 포커스 주체를 DS 로 일원화한다. "답글 달기"
+    // 버튼 클릭은 아래 삭제-행 차단의 button 예외로 그대로 DS 로 전달된다.
     const avatar = target.closest('[data-slot="circle-avatar"]');
     if (avatar) {
       const avatars = commentWrapperRef.current.querySelectorAll(
