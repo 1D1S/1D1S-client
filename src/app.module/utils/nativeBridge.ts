@@ -220,7 +220,11 @@ export type NativeMessage =
   | { type: 'scroll_dir'; payload: NativeScrollDirPayload }
   | { type: 'oauth_open'; payload: { url: string } }
   | { type: 'token_refresh'; payload: { id: string } }
-  | { type: 'logout' }
+  // 일반 로그아웃은 successMessage 없이 보낸다. 회원 탈퇴만 successMessage 를
+  // 실어, 앱이 정리(푸시토큰 회수→네이티브 로그아웃→쿠키 삭제→홈 리로드)를
+  // 모두 마친 뒤 그 문구를 네이티브 토스트로 띄운다(빌드 126 계약). 정리 창에서
+  // 웹 토스트는 씹히므로 소유권을 앱에 넘긴다. 필드가 없으면 토스트 없음.
+  | { type: 'logout'; successMessage?: string }
   | {
       type: 'progress_open';
       payload: { message: string };

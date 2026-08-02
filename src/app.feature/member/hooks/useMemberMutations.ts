@@ -1,7 +1,10 @@
 import { clearCachedSidebar } from '@feature/member/hooks/useMemberQueries';
 import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
-import { postNativeMessage } from '@module/utils/nativeBridge';
+import {
+  isNativeBridgeAvailable,
+  postNativeMessage,
+} from '@module/utils/nativeBridge';
 import {
   useMutation,
   UseMutationResult,
@@ -83,22 +86,22 @@ export function useDeleteMember(): UseMutationResult<
   return useMutation({
     mutationFn: () => memberApi.deleteMember(),
     onSuccess: () => {
-      // 성공 토스트를 로그아웃 신호보다 "먼저" 보낸다. toast·logout 둘 다
-      // 네이티브 위임 메시지인데(같은 JS 채널), logout 이 먼저 가면 앱이
-      // 웹뷰·세션을 정리하는 사이 뒤이은 toast 메시지가 씹혔다(반복 신고).
-      // 서버 message 는 옛 유예 문구가 남을 수 있어 완료 문구로 고정한다.
-      // 순서 보장을 위해 컴포넌트가 아니라 여기(hook onSuccess, 항상 먼저 실행)
-      // 에서 토스트를 띄운다.
-      toast.success('회원 탈퇴가 완료되었습니다.');
       authStorage.clearTokens();
       clearCachedSidebar();
       queryClient.clear();
       // 영속된 RQ 캐시(localStorage)도 비운다 — 탈퇴 후 개인 데이터 잔존 방지.
       purgePersistedQueries();
-      // 앱(웹뷰)은 네이티브 세션을 따로 들고 있어, 토큰만 지우면 쉘이 곧
-      // 웹 세션을 복구해 버린다(로그아웃 버그와 동일). 로그아웃과 같은
-      // 신호를 보내 쉘 세션까지 정리한다 — 탈퇴 후 완전히 로그아웃된다.
-      postNativeMessage({ type: 'logout' });
+      // 완료 문구 고정(서버 유예 문구 잔존 방지).
+      const successMessage = '회원 탈퇴가 완료되었습니다.';
+      if (isNativeBridgeAvailable()) {
+        // 앱(웹뷰): 앱이 정리(푸시토큰 회수→네이티브 로그아웃→쿠키 삭제→홈
+        // 리로드)를 모두 마친 뒤 이 문구를 네이티브 토스트로 띄운다(빌드 126
+        // 계약). 정리 창에서 웹 토스트는 씹히므로 웹에선 띄우지 않는다.
+        postNativeMessage({ type: 'logout', successMessage });
+      } else {
+        // 브라우저: 앱 정리 흐름이 없으므로 웹 토스트를 그대로 띄운다.
+        toast.success(successMessage);
+      }
     },
   });
 }
