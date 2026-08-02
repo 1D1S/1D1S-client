@@ -4,10 +4,14 @@ import { Button, MobileHeader, Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { normalizeApiError } from '@module/api/error';
+import { useNativeCapability } from '@module/hooks/useNativeCapability';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { cn } from '@module/utils/cn';
-import { requestNativePushRoute } from '@module/utils/nativeBridge';
+import {
+  isNativeSkeletonAvailable,
+  requestNativePushRoute,
+} from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { Flag } from 'lucide-react';
 import Image from 'next/image';
@@ -364,7 +368,11 @@ function DiaryDetailView({
   );
 }
 
-export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
+export function DiaryDetailScreen({
+  id,
+}: {
+  id: number;
+}): React.ReactElement | null {
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -375,6 +383,10 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
   });
   const showSkeleton = useMinimumLoading(isLoading);
   useSignalPageReady('diary_detail', !showSkeleton && Boolean(data));
+  // 앱이 native_skeleton 을 그리는 동안 웹 스켈레톤을 또 그리면 이중이 된다.
+  // 이 경우 로딩 중엔 아무것도 렌더하지 않고(네이티브가 덮음) page_ready 로
+  // 콘텐츠 준비를 알려 네이티브 스켈레톤을 걷게 한다.
+  const nativeSkeleton = useNativeCapability(isNativeSkeletonAvailable);
   const likeDiary = useLikeDiary();
   const unlikeDiary = useUnlikeDiary();
   const challengeId = data?.challenge?.challengeId ?? 0;
@@ -437,7 +449,7 @@ export function DiaryDetailScreen({ id }: { id: number }): React.ReactElement {
   }
 
   if (showSkeleton) {
-    return <DiaryDetailSkeleton />;
+    return nativeSkeleton ? null : <DiaryDetailSkeleton />;
   }
 
   if (isError || !data) {

@@ -10,12 +10,16 @@ import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challe
 import { resolveSidebarMemberId } from '@feature/diary/detail/utils/diaryViewData';
 import { getApiErrorCode, normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
+import { useNativeCapability } from '@module/hooks/useNativeCapability';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { formatDateISO } from '@module/utils/date';
-import { requestNativePushRoute } from '@module/utils/nativeBridge';
+import {
+  isNativeSkeletonAvailable,
+  requestNativePushRoute,
+} from '@module/utils/nativeBridge';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { ArrowLeft, CircleAlert } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -97,7 +101,7 @@ const PARTICIPANT_PREVIEW_SIZE = 10;
 
 export function ChallengeDetailScreen({
   id,
-}: ChallengeDetailScreenProps): React.ReactElement {
+}: ChallengeDetailScreenProps): React.ReactElement | null {
   const challengeId = Number(id);
   const router = useRouter();
   const pathname = usePathname();
@@ -151,6 +155,9 @@ export function ChallengeDetailScreen({
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
   const showSkeleton = useMinimumLoading(isLoading);
   useSignalPageReady('challenge_detail', !showSkeleton && Boolean(data));
+  // 앱 native_skeleton 중엔 웹 스켈레톤을 그리지 않는다(이중 방지) — 네이티브가
+  // 덮고, page_ready 로 콘텐츠 준비를 알려 걷게 한다.
+  const nativeSkeleton = useNativeCapability(isNativeSkeletonAvailable);
 
   // 일지 탭 배지용 총 일지 수. 통계 쿼리(소개 탭과 공유·캐시)의 일자별 합계다.
   const { data: statsData } = useChallengeStatistics(challengeId);
@@ -446,7 +453,7 @@ export function ChallengeDetailScreen({
     isError && normalizeApiError(error).status === 403;
 
   if (showSkeleton) {
-    return <ChallengeDetailSkeleton />;
+    return nativeSkeleton ? null : <ChallengeDetailSkeleton />;
   }
 
   if (isPrivateChallengeLocked) {
