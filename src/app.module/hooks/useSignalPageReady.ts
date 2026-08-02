@@ -34,9 +34,19 @@ export function useSignalPageReady(screenId: string, ready: boolean): void {
       return;
     }
     signaledRouteRef.current = pathname;
-    const raf = requestAnimationFrame(() =>
-      sendNativePageReady(screenId, pathname)
-    );
-    return () => cancelAnimationFrame(raf);
+    // double rAF: 첫 rAF 는 현재 프레임 페인트 "전"에 돌고, 그 안의 두 번째
+    // rAF 는 그 프레임이 실제 페인트된 "다음"에 돈다. 즉 콘텐츠가 DOM 에
+    // 커밋+페인트된 뒤 emit → 앱이 네이티브 스켈레톤을 너무 일찍 걷어 생기던
+    // "잠깐 흰 화면"을 막는다.
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() =>
+        sendNativePageReady(screenId, pathname)
+      );
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
   }, [ready, pathname, screenId]);
 }
