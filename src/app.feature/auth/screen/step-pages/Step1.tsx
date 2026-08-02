@@ -55,6 +55,13 @@ const YEAR_OPTIONS = Array.from({ length: CURRENT_YEAR - 1950 + 1 }, (_, i) =>
 );
 const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => String(i + 1));
 
+// 생년월일은 선택(optional) 항목이라 비울 수 있어야 한다. Radix Select 는
+// value="" 를 허용하지 않으므로 "선택 안 함" 에 센티널을 쓰고, 선택 시 빈
+// 문자열로 되돌려 폼 값을 비운다(스키마가 '' 를 허용).
+const BIRTH_NONE = '__none__';
+const toBirthValue = (value: string): string =>
+  value === BIRTH_NONE ? '' : value;
+
 function getDaysInMonth(year: string, month: string): number {
   const yearNum = Number(year);
   const monthNum = Number(month);
@@ -241,7 +248,8 @@ export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
                   <FormControl>
                     <Select
                       value={field.value ?? ''}
-                      onValueChange={(value) => {
+                      onValueChange={(raw) => {
+                        const value = toBirthValue(raw);
                         field.onChange(value);
                         const maxDay = getDaysInMonth(value, monthValue);
                         if (dayValue && Number(dayValue) > maxDay) {
@@ -253,6 +261,7 @@ export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
                         <SelectValue placeholder="연도" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value={BIRTH_NONE}>선택 안 함</SelectItem>
                         {YEAR_OPTIONS.map((year) => (
                           <SelectItem key={year} value={year}>
                             {year}년
@@ -273,7 +282,8 @@ export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
                   <FormControl>
                     <Select
                       value={field.value ?? ''}
-                      onValueChange={(value) => {
+                      onValueChange={(raw) => {
+                        const value = toBirthValue(raw);
                         field.onChange(value);
                         const maxDay = getDaysInMonth(yearValue, value);
                         if (dayValue && Number(dayValue) > maxDay) {
@@ -285,6 +295,7 @@ export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
                         <SelectValue placeholder="월" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value={BIRTH_NONE}>선택 안 함</SelectItem>
                         {MONTH_OPTIONS.map((month) => (
                           <SelectItem key={month} value={month}>
                             {month}월
@@ -305,12 +316,13 @@ export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
                   <FormControl>
                     <Select
                       value={field.value ?? ''}
-                      onValueChange={field.onChange}
+                      onValueChange={(raw) => field.onChange(toBirthValue(raw))}
                     >
                       <SelectTrigger className="w-full min-w-0 px-3">
                         <SelectValue placeholder="일" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value={BIRTH_NONE}>선택 안 함</SelectItem>
                         {dayOptions.map((day) => (
                           <SelectItem key={day} value={day}>
                             {day}일
@@ -348,11 +360,13 @@ export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
                   // 미선택(undefined)에서도 controlled 상태를 유지하도록 '' 로
                   // 보정한다. uncontrolled→controlled 전환 경고 방지.
                   value={field.value ?? ''}
-                  onValueChange={(value) => {
-                    if (value) {
-                      field.onChange(value as GenderType);
-                    }
-                  }}
+                  // 성별은 선택(optional) 항목 — 고른 버튼을 다시 누르면 ToggleGroup
+                  // 이 '' 를 주고, 그때 undefined 로 되돌려 선택 해제되게 한다.
+                  onValueChange={(value) =>
+                    field.onChange(
+                      (value || undefined) as GenderType | undefined
+                    )
+                  }
                   className="grid grid-cols-3 gap-2"
                 >
                   {SIGN_UP_GENDER_OPTIONS.map((option) => (
