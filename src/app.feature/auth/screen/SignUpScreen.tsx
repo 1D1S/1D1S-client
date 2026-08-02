@@ -138,7 +138,12 @@ export function SignUpScreen(): React.ReactElement {
       });
 
       toast.success('가입이 완료되었습니다!');
-      await queryClient.invalidateQueries({
+      // 홈/탐색의 프로필 가드(AppLayoutShell)는 sidebar.nickname 으로 가입
+      // 완료를 판정한다. invalidateQueries(refetchType 기본 'active')는 /signup
+      // 에서 사이드바 옵저버가 없어 refetch 를 안 걸고 stale(nickname 없음) 캐시가
+      // 남아, 이동 시 다시 /signup 으로 튕겼다(버그). 이동 전에 refetch 로
+      // 완료된 프로필을 캐시에 확정해 가드가 통과하게 한다.
+      await queryClient.refetchQueries({
         queryKey: MEMBER_QUERY_KEYS.sidebar(),
       });
       // 로그인 → 프로필 설정으로 우회한 경우 원래 보던 경로로 복귀
@@ -289,7 +294,7 @@ export function SignUpScreen(): React.ReactElement {
                 steps={SIGN_UP_STEPS}
                 currentStep={step}
                 size="sm"
-                className="mb-6 w-full"
+                className="mb-5 w-full"
               />
 
               <Text
@@ -312,7 +317,7 @@ export function SignUpScreen(): React.ReactElement {
                 size="body2"
                 weight="regular"
                 as="p"
-                className="mt-2 mb-6 block text-gray-500"
+                className="mt-2 mb-5 block text-gray-500"
               >
                 {heading.sub}
               </Text>

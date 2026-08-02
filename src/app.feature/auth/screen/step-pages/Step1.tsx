@@ -71,14 +71,13 @@ function FieldLabel({
   children: React.ReactNode;
   required?: boolean;
 }): React.ReactElement {
-  // DS TextField 내장 label 과 동일한 타이포·상단 간격으로 맞춘다
-  // (mb-1.5 text-2xs font-bold text-gray-700). 닉네임/전화(내장 label)와
-  // 생년월일/성별/직업(이 라벨)의 스타일을 일치시킨다. 필수(*) 로직은 유지.
+  // 모든 필드 라벨을 이 컴포넌트로 통일. 입력값/플레이스홀더 대비 위계가
+  // 서도록 text-sm(14px) bold 로 키운다(기존 text-2xs 는 너무 작았음).
   return (
     <span
       className={cn(
         'mb-1.5 flex items-center gap-1',
-        'text-2xs font-bold text-gray-700'
+        'text-sm font-bold text-gray-800'
       )}
     >
       {children}
@@ -135,7 +134,7 @@ export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
         <FormField
           control={form.control}
           name="nickname"
