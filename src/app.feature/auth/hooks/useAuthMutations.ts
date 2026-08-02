@@ -15,6 +15,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { purgePersistedQueries } from '@/app.lib/queryPersist';
+
 import { authApi } from '../api/authApi';
 import { LogoutResponse, SocialLoginResponse } from '../type/auth';
 import { signInWithApple } from '../utils/appleAuth';
@@ -115,6 +117,8 @@ export function useLogout(): UseMutationResult<LogoutResponse, Error, void> {
       // 비워 진행 중인 이 로그아웃 mutation 의 생명주기는 건드리지 않는다.
       void queryClient.cancelQueries();
       queryClient.removeQueries();
+      // 영속된 RQ 캐시(localStorage)도 비운다 — 개인 데이터 잔존 방지.
+      purgePersistedQueries();
     },
     mutationFn: () => authApi.logout(),
     // 로그아웃 POST 는 best-effort 다. 실패해도(앱 네트워크/네이티브 경로에서
