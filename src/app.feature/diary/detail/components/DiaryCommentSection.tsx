@@ -48,17 +48,34 @@ function handleCommentInputFocus(event: React.FocusEvent<HTMLElement>): void {
   ) {
     return;
   }
-  // 앱 웹뷰는 키보드 시 웹뷰 자체가 줄고(resizeToAvoidBottomInset, 확인됨),
-  // 브라우저 기본 포커스 스크롤이 입력을 보이게 한다. 여기서 scrollIntoView
-  // (특히 visualViewport resize 마다 반복)까지 하면 앱 리플로우와 겹쳐 "계단식"
-  // 점프가 난다(버그A). → 앱에선 수동 보정을 생략한다. 순수 모바일 웹(웹뷰
-  // 리사이즈 없음)만 visualViewport 로 입력을 키보드 위로 올린다.
-  if (document.documentElement.getAttribute('data-native-app') === 'true') {
-    return;
-  }
   const scrollIntoView = (): void => {
     target.scrollIntoView({ block: 'center', behavior: 'smooth' });
   };
+  // 앱 웹뷰는 키보드 시 웹뷰 자체가 줄어(resizeToAvoidBottomInset, 확인됨)
+  // 문서 흐름의 인라인 답글 입력이 키보드 아래로 가려진다. 포커스는 DS
+  // autoFocusReply 가 소유하므로(이중 포커스 점프 제거, 7f76bb8) 여기선 스크롤만
+  // 한다. resize 마다 반복하면 앱 리플로우와 겹쳐 계단식 점프가 나므로(버그A)
+  // 웹뷰가 줄어든(=visualViewport resize 안정) 뒤 딱 1회만 올린다.
+  if (document.documentElement.getAttribute('data-native-app') === 'true') {
+    const vv = window.visualViewport;
+    if (!vv) {
+      window.setTimeout(scrollIntoView, 300);
+      return;
+    }
+    let settled = false;
+    const scrollOnce = (): void => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      vv.removeEventListener('resize', scrollOnce);
+      scrollIntoView();
+    };
+    vv.addEventListener('resize', scrollOnce);
+    // resize 가 안 오는 환경(키보드 이미 떠 있음) 대비 폴백 1회.
+    window.setTimeout(scrollOnce, 350);
+    return;
+  }
   const vv = window.visualViewport;
   if (!vv) {
     window.setTimeout(scrollIntoView, 300);
