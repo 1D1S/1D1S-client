@@ -2,6 +2,7 @@
 
 import { Text } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
+import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useHasMounted } from '@module/hooks/useHasMounted';
 import { cn } from '@module/utils/cn';
 import React from 'react';
@@ -15,11 +16,23 @@ export default function HomeWarmGreeting({
   isLoading = false,
 }: HomeWarmGreetingProps): React.ReactElement {
   const hasMounted = useHasMounted();
-  const { data: sidebar } = useSidebar();
+  const status = useAuthStatus();
+  const { data: sidebar, isLoading: isSidebarLoading } = useSidebar();
+
+  // 이름(닉네임)이 확정되기 전 빈 이름으로 렌더하지 않는다. 가입 직후 앱이 탭을
+  // 리로드하면 member/sidebar 를 fresh 로 받기 전이라, 부모의 isLoading(streak
+  // 기준)이 이미 false 여도 닉네임이 비어 "안녕하세요"만 떴다가 이름이 팝인하거나
+  // 빈 줄(안 보임)이 노출됐다. 닉네임의 실제 소스(sidebar)+인증 상태로 직접
+  // 판정: 마운트 전·인증 확정 전(unknown)·인증됐는데 sidebar 로딩 중이면
+  // 스켈레톤. 게스트로 확정되면 이름 없는 일반 인사로 정착한다.
+  const isNameResolving =
+    !hasMounted ||
+    status === 'unknown' ||
+    (status === 'authenticated' && isSidebarLoading);
 
   // 로그인 셸 로딩 중에는 이름이 확정되기 전 "안녕하세요"만 떴다가 이름이
   // 붙는 팝인이 보였다 — 로딩 동안 이름 줄을 스켈레톤으로 예약한다.
-  if (isLoading) {
+  if (isLoading || isNameResolving) {
     return (
       <div className="w-full">
         <span
