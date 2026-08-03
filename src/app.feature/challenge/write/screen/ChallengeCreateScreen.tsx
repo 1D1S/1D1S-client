@@ -29,6 +29,7 @@ import {
   useChallengeCreateForm,
 } from '@feature/challenge/write/hooks/useChallengeCreateForm';
 import { formatFormValues } from '@feature/challenge/write/utils/challengeCreatePayload';
+import { getChallengeCreateCtaHint } from '@feature/challenge/write/utils/challengeCtaHint';
 import { useNativeSubmitBar } from '@module/hooks/useNativeSubmitBar';
 import { cn } from '@module/utils/cn';
 import {
@@ -125,6 +126,17 @@ export default function ChallengeCreateScreen(): React.ReactElement {
   };
 
   const canSubmit = form.formState.isValid && !createChallenge.isPending;
+  // 완료 버튼이 왜 막혔는지 — 필수 항목을 화면 배치 순서대로 스캔해 첫 미충족
+  // 항목의 안내 문구. 충족되면 undefined(힌트 제거). 미충족인데 매칭 문구가
+  // 없으면(길이 초과 등 엣지) 일반 문구로 폴백해 항상 사유를 노출한다.
+  // 검증 실패(제출 중이 아니라 값 미충족)일 때만 힌트를 만든다 — 제출 중
+  // (값은 유효)에는 힌트를 보내지 않는다.
+  const ctaHint = form.formState.isValid
+    ? undefined
+    : (getChallengeCreateCtaHint(form.watch()) ??
+      '입력한 내용을 확인해주세요.');
+  // 버튼/다이얼로그 라벨용 — 항상 문자열(유효하면 실행 문구, 미충족이면 사유).
+  const ctaLabel = ctaHint ?? '챌린지 만들기';
   const handleCreateRequest = async (): Promise<void> => {
     if (!nativeModalAvailable) {
       form.handleSubmit(onSubmit)();
@@ -147,7 +159,8 @@ export default function ChallengeCreateScreen(): React.ReactElement {
   const nativeCtaDelegated = useNativeSubmitBar(
     '챌린지 만들기',
     !canSubmit,
-    () => void handleCreateRequest()
+    () => void handleCreateRequest(),
+    { disabledHint: ctaHint }
   );
 
   return (
@@ -260,7 +273,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
                   입력 완료 · 만들 준비가 됐어요
                 </>
               ) : (
-                '필수 항목을 입력해 주세요'
+                ctaHint
               )}
             </Text>
             <div className="w-full lg:ml-auto lg:w-auto">
@@ -271,19 +284,13 @@ export default function ChallengeCreateScreen(): React.ReactElement {
                   className="w-full lg:w-auto"
                   onClick={() => void handleCreateRequest()}
                 >
-                  {canSubmit
-                    ? '챌린지 만들기'
-                    : '제목 · 내 목표를 입력해 주세요'}
+                  {ctaLabel}
                 </Button>
               ) : (
                 <ChallengeCreateDialog
                   onConfirm={() => form.handleSubmit(onSubmit)()}
                   disabled={!canSubmit}
-                  triggerText={
-                    canSubmit
-                      ? '챌린지 만들기'
-                      : '제목 · 내 목표를 입력해 주세요'
-                  }
+                  triggerText={ctaLabel}
                   triggerClassName="w-full lg:w-auto"
                 />
               )}

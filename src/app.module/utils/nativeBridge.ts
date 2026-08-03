@@ -252,6 +252,9 @@ export type NativeMessage =
       type: 'form_cta';
       label?: string;
       disabled?: boolean;
+      // 비활성 사유(첫 미충족 필수 항목 안내). 앱은 disabled 상태에서 이 문구를
+      // 노출하거나 버튼 탭 시 띄운다. 충족되면 미포함(힌트 제거).
+      disabledHint?: string;
       step?: number;
       steps?: number;
     }
@@ -740,6 +743,8 @@ export function isNativeChallengeCreatedModalAvailable(): boolean {
 export interface NativeFormCtaPayload {
   label: string;
   disabled?: boolean;
+  // 비활성 사유(첫 미충족 필수 항목 안내). disabled 일 때만 의미가 있다.
+  disabledHint?: string;
   // 단계 표시(선택). 회원가입처럼 다단계 폼에서만 쓴다.
   step?: number;
   steps?: number;
@@ -761,6 +766,7 @@ export function sendNativeFormCta(payload: NativeFormCtaPayload | null): void {
     type: 'form_cta',
     label: payload.label,
     disabled: payload.disabled,
+    disabledHint: payload.disabledHint,
     step: payload.step,
     steps: payload.steps,
   });
