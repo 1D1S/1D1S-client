@@ -571,10 +571,14 @@ function ensurePopupResultListener(): void {
       return;
     }
     pendingNativePopups.delete(detail.id);
-    // action 이 없으면 dismiss — 그냥 닫기로 읽는다.
+    // action 이 없으면 dismiss — 그냥 닫기로 읽는다. popupKey 는 'cta'(어느 장의
+    // 링크인지)에만 필요하고, 'dismissForever'/'close' 는 노출된 전체 key 를
+    // 대상으로 처리하므로 없어도 된다. 예전엔 popupKey 가 없으면 action 을
+    // 무조건 'close' 로 낮춰, 앱이 popupKey 없이 dismissForever 를 보내면 "다시
+    // 보지 않기" 쿠키가 저장되지 않아 재노출됐다(미persist 버그).
     resolver(
-      detail.action && detail.popupKey
-        ? { action: detail.action, popupKey: detail.popupKey }
+      detail.action
+        ? { action: detail.action, popupKey: detail.popupKey ?? '' }
         : { action: 'close', popupKey: '' }
     );
   });
