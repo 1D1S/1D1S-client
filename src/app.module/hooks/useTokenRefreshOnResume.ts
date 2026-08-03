@@ -4,6 +4,7 @@ import {
   refreshAccessTokenOnce,
   runAuthBootProbe,
 } from '@module/api/tokenRefresh';
+import { onNativeAuthReady } from '@module/utils/nativeAuthReady';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 
@@ -81,9 +82,18 @@ export function useTokenRefreshOnResume(): void {
       void tryRefresh();
     };
 
+    // 앱이 resume 세션 재주입 완료를 알리면(native:auth_ready) 즉시 갱신한다.
+    // 부팅 probe 유예를 이미 넘겨 guest 로 굳은 탭도 이 신호로 복구된다. 방금
+    // 재주입된 세션을 확실히 태우도록 throttle 을 무시한다(lastRefreshAt 리셋).
+    const handleAuthReady = (): void => {
+      lastRefreshAtRef.current = 0;
+      void tryRefresh();
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('pageshow', handlePageShow);
     window.addEventListener('focus', handleFocus);
+    const offAuthReady = onNativeAuthReady(handleAuthReady);
 
     // 마운트 직후 권위 있는 부팅 세션 확인. tryRefresh 와 달리 결과를
     // authStorage 상태(authenticated/guest)로 확정해, JS 힌트가 소실된 Safari
@@ -96,6 +106,7 @@ export function useTokenRefreshOnResume(): void {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pageshow', handlePageShow);
       window.removeEventListener('focus', handleFocus);
+      offAuthReady();
     };
   }, [queryClient]);
 }
