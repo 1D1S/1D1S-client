@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { API_BASE_URL } from '../api/config';
+import { isNativeAppUserAgent } from '../utils/nativeAppUserAgent';
 import { buildLoginUrl, RETURN_TO_PARAM } from '../utils/returnTo';
 import {
   ACCESS_TOKEN_COOKIE_CANDIDATES,
@@ -200,6 +201,18 @@ export async function authMiddleware(
     // login-redirect(마이페이지/작성 등 민감 경로)는 기존대로 하드 게이트.
     if (matched.type === 'list-redirect' && hasSessionHint(req)) {
       return {};
+    }
+    // 앱(웹뷰)은 resume 시 네이티브가 세션 쿠키를 재주입하는데, 그 전에 웹뷰가
+    // 리로드되면 이 서버 refresh 가 일시적으로 실패한다. 그때 하드 /login 으로
+    // 튕기면 네이티브 세션이 살아있는데도 로그인 화면이 렌더된다. 앱 요청이면
+    // (UA 마커) 통과시키고 클라이언트가 해결하게 위임한다 — 스켈레톤 → 네이티브
+    // refresh 재시도(runAuthBootProbe grace) → 확정 guest 일 때만 리다이렉트.
+    // 브라우저·비앱은 기존대로 하드 게이트(민감 경로 보호).
+    if (
+      matched.type === 'login-redirect' &&
+      isNativeAppUserAgent(req.headers.get('user-agent'))
+    ) {
+      return passThrough;
     }
     return { block: buildUnauthorizedResponse(req, matched) };
   }

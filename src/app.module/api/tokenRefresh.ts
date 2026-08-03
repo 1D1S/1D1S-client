@@ -1,5 +1,8 @@
 import { authStorage } from '@module/utils/auth';
-import { requestNativeTokenRefresh } from '@module/utils/nativeBridge';
+import {
+  isNativeBridgeAvailable,
+  requestNativeTokenRefresh,
+} from '@module/utils/nativeBridge';
 import axios from 'axios';
 
 import { API_BASE_URL } from './config';
@@ -54,14 +57,38 @@ export function refreshAccessTokenOnce(): Promise<void> {
  *
  * single-flight 라 인터셉터/resume 과 동시에 불려도 요청은 1발이다.
  */
+// 앱(웹뷰) resume 재시도 간격. 네이티브가 세션 쿠키를 재주입할 시간을 준다.
+// 앱이 native:auth_ready 이벤트를 확정하면 이 고정 지연 대신 그 신호를 기다리는
+// 방식으로 교체할 수 있다.
+const NATIVE_BOOT_RETRY_MS = 700;
+
 export function runAuthBootProbe(): Promise<void> {
-  return refreshAccessTokenOnce().catch((error: unknown) => {
+  return refreshAccessTokenOnce().catch(async (error: unknown) => {
     if (authStorage.getStatus() !== 'unknown') {
       return; // 다른 경로(사이드바/에러 핸들러)가 이미 확정함
     }
     if (!isUnauthorizedError(error) && authStorage.hasTokens()) {
       authStorage.markAuthenticated();
       return;
+    }
+    // 앱(웹뷰): resume 시 네이티브가 세션을 재주입하는 중이라 첫 refresh 가
+    // 일시 실패할 수 있다. 1회 실패로 guest 를 확정하면 로그인 세션인데도
+    // login 으로 튕긴다. 짧게 한 번 더 재시도(재주입 완료 대기)한 뒤에도
+    // 실패하면 그때 확정한다. 브라우저·비앱은 즉시 확정(기존 동작).
+    if (isNativeBridgeAvailable()) {
+      await new Promise((resolve) => setTimeout(resolve, NATIVE_BOOT_RETRY_MS));
+      if (authStorage.getStatus() !== 'unknown') {
+        return;
+      }
+      try {
+        await refreshAccessTokenOnce(); // 성공 시 markAuthenticated
+        return;
+      } catch {
+        // 재시도도 실패 → 아래에서 guest 확정
+      }
+      if (authStorage.getStatus() !== 'unknown') {
+        return;
+      }
     }
     authStorage.settleGuest();
   });

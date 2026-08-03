@@ -1,5 +1,6 @@
 'use client';
 
+import { NATIVE_APP_UA_PATTERN } from '@module/utils/nativeAppUserAgent';
 import { useSyncExternalStore } from 'react';
 
 // SSR UA 매칭이 실패하더라도 chrome 이 겹쳐 보이지 않도록 클라이언트에서
@@ -12,7 +13,7 @@ import { useSyncExternalStore } from 'react';
 // 3. navigator.userAgent — 토큰 `1D1S-App` 매칭. 채널/마커가 모두 없는
 //    임시 환경(예: 브라우저 devtools UA 스푸핑) 에 대한 보조.
 
-const NATIVE_APP_UA_PATTERN = /1D1S-App/i;
+// UA 마커는 미들웨어(서버)와 공유하는 단일 소스(nativeAppUserAgent)에서 가져온다.
 const NATIVE_READY_EVENT = 'native:ready';
 
 interface NativeWindow {
