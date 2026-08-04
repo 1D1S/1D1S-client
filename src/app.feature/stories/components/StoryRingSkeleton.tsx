@@ -3,6 +3,8 @@
 import { cn } from '@module/utils/cn';
 import React from 'react';
 
+import { STORY_RAIL_BLEED } from '../consts/layout';
+
 interface StoryRingSkeletonProps {
   /** 표시할 스켈레톤 원 수 (default 6) */
   count?: number;
@@ -18,7 +20,8 @@ export default function StoryRingSkeleton({
     <div
       className={cn(
         'scrollbar-hide flex w-full items-start gap-3',
-        'overflow-x-auto py-3.5'
+        'overflow-x-auto py-3.5',
+        STORY_RAIL_BLEED
       )}
       aria-busy
       aria-label="스토리 불러오는 중"

@@ -7,6 +7,7 @@ import { cn } from '@module/utils/cn';
 import { resolveDiaryImageUrl } from '@module/utils/diaryImageUrl';
 import React from 'react';
 
+import { STORY_RAIL_BLEED } from '../consts/layout';
 import { StoryGroup } from '../type/story';
 import {
   getStoryPreviewThumbnail,
@@ -62,7 +63,11 @@ function StoryRing({
     <div
       className={cn(
         'scrollbar-hide flex w-full items-start gap-3',
-        'overflow-x-auto py-3.5'
+        'overflow-x-auto py-3.5',
+        // 가로 스크롤러는 화면 끝까지 흘러야 한다. 부모(px-5/lg:px-8) 안에
+        // 갇히면 스크롤한 카드가 여백 경계에서 뚝 잘려 보인다 — 좌우 여백은
+        // 유지하되 스크롤 영역만 full-bleed 로 넓힌다.
+        STORY_RAIL_BLEED
       )}
     >
       {showMySlot && !hasMyStory ? (

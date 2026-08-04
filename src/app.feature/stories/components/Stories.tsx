@@ -13,6 +13,7 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { STORY_RAIL_BLEED } from '../consts/layout';
 import { useViewStory } from '../hooks/useStoryMutations';
 import { useStories } from '../hooks/useStoryQueries';
 import { formatStoryDate, sortStoryGroups } from '../utils/storyHelpers';
@@ -56,7 +57,8 @@ function StoryLoginPrompt({
     <div
       className={cn(
         'scrollbar-hide flex w-full overflow-x-auto',
-        'gap-3 py-3.5'
+        'gap-3 py-3.5',
+        STORY_RAIL_BLEED
       )}
     >
       {lockedCards.map((card, index) => (
