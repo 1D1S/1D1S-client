@@ -29,6 +29,7 @@ import {
   type EditableChallengeCategory,
   useChallengeEditForm,
 } from '@feature/challenge/write/hooks/useChallengeEditForm';
+import { getChallengeEditCtaHint } from '@feature/challenge/write/utils/challengeCtaHint';
 import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useNativeSubmitBar } from '@module/hooks/useNativeSubmitBar';
 import { cn } from '@module/utils/cn';
@@ -203,12 +204,21 @@ function ChallengeEditScreenContent({
   };
 
   const canSubmit = form.formState.isValid && !updateChallenge.isPending;
+  // 완료가 왜 막혔는지 — 필수 항목을 화면 배치 순서대로 스캔한 첫 미충족 문구.
+  // 검증 실패일 때만(제출 중 제외) 만든다. 라벨용은 항상 문자열로 보정.
+  const ctaHint = form.formState.isValid
+    ? undefined
+    : (getChallengeEditCtaHint(form.watch()) ?? '입력한 내용을 확인해주세요.');
+  const ctaLabel = updateChallenge.isPending
+    ? '저장 중...'
+    : (ctaHint ?? '수정 완료');
 
   // 앱(웹뷰)에선 하단 CTA 를 네이티브 고정 바로 위임한다(8-1).
   const nativeCtaDelegated = useNativeSubmitBar(
     '수정 완료',
     !canSubmit,
-    () => form.handleSubmit(onSubmit)()
+    () => form.handleSubmit(onSubmit)(),
+    { disabledHint: ctaHint }
   );
 
   return (
@@ -320,7 +330,7 @@ function ChallengeEditScreenContent({
                   변경 사항을 저장할 수 있어요
                 </>
               ) : (
-                '필수 항목을 확인해 주세요'
+                ctaHint
               )}
             </Text>
             <div className="w-full lg:ml-auto lg:w-auto">
@@ -329,9 +339,7 @@ function ChallengeEditScreenContent({
                 disabled={!canSubmit}
                 startDate={startDate}
                 endDate={endDate}
-                triggerText={
-                  updateChallenge.isPending ? '저장 중...' : '수정 완료'
-                }
+                triggerText={ctaLabel}
                 triggerClassName="w-full lg:w-auto"
               />
             </div>

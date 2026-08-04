@@ -4,6 +4,7 @@ import { Button, MobileHeader, Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { DiaryDetailSkeleton } from '@component/skeletons/DiaryDetailSkeleton';
 import { normalizeApiError } from '@module/api/error';
+import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useNativeCapability } from '@module/hooks/useNativeCapability';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
@@ -375,6 +376,7 @@ export function DiaryDetailScreen({
 }): React.ReactElement | null {
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
+  const authStatus = useAuthStatus();
   const [isDeleting, setIsDeleting] = useState(false);
   const safeDiaryId = Number.isFinite(id) && id > 0 ? id : 0;
   const deleteDiary = useDeleteDiary();
@@ -425,7 +427,15 @@ export function DiaryDetailScreen({
     likeDiary.mutate(data.id);
   };
 
-  if (!isLoggedIn) {
+  // 인증 확인 중(unknown)에는 게스트/로그인 UI 를 렌더하지 않는다. 푸시 딥링크·
+  // resume 로 세션 재주입 전에 상세가 열리면 잠깐 게스트로 보여 로그인 팝업이
+  // 떴다(resume 과 동일 증상). runAuthBootProbe grace(native:auth_ready/유예)가
+  // 확정할 때까지 스켈레톤으로 대기하고, **확정된 게스트일 때만** 로그인을
+  // 띄운다(useIsLoggedIn 은 unknown 에도 false 라 여기선 쓰지 않는다).
+  if (authStatus === 'unknown') {
+    return nativeSkeleton ? null : <DiaryDetailSkeleton />;
+  }
+  if (authStatus === 'guest') {
     return (
       <LoginRequiredDialog
         open

@@ -15,6 +15,11 @@ interface NativeSubmitBarOptions {
   steps?: number;
   /** back 탭 콜백(이전 단계 등). 없으면 back 은 무시된다. */
   onBack?(): void;
+  /**
+   * 비활성 사유(첫 미충족 필수 항목 안내). disabled 일 때 앱이 노출한다.
+   * 활성이면 무시된다. 값이 바뀌면 재전송한다.
+   */
+  disabledHint?: string;
 }
 
 /**
@@ -41,6 +46,7 @@ export function useNativeSubmitBar(
   const step = options?.step;
   const steps = options?.steps;
   const onBack = options?.onBack;
+  const disabledHint = options?.disabledHint;
 
   // 핸들러는 매 렌더 바뀌지만(클로저) 구독은 한 번만 걸도록 ref 로 최신화한다.
   const primaryRef = useRef(onPrimary);
@@ -54,8 +60,8 @@ export function useNativeSubmitBar(
     if (!delegated) {
       return;
     }
-    sendNativeFormCta({ label, disabled, step, steps });
-  }, [delegated, label, disabled, step, steps]);
+    sendNativeFormCta({ label, disabled, disabledHint, step, steps });
+  }, [delegated, label, disabled, disabledHint, step, steps]);
 
   // 해제는 언마운트에서만 — 값이 바뀔 때마다 null→재전송하면 바가 깜빡인다.
   useEffect(

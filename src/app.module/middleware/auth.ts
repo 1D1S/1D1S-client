@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { API_BASE_URL } from '../api/config';
+import { isNativeAppUserAgent } from '../utils/nativeAppUserAgent';
 import { buildLoginUrl, RETURN_TO_PARAM } from '../utils/returnTo';
 import {
   ACCESS_TOKEN_COOKIE_CANDIDATES,
@@ -200,6 +201,15 @@ export async function authMiddleware(
     // login-redirect(마이페이지/작성 등 민감 경로)는 기존대로 하드 게이트.
     if (matched.type === 'list-redirect' && hasSessionHint(req)) {
       return {};
+    }
+    // 앱(웹뷰): resume·푸시 딥링크로 세션 재주입 전에 열려 이 서버 refresh 가
+    // 일시 실패해도, 하드 리다이렉트(login 또는 목록) 대신 통과시키고
+    // 클라이언트 grace 가 해결하게 위임한다 — 스켈레톤 → 네이티브 refresh 재시도
+    // (runAuthBootProbe: native:auth_ready/유예) → 확정 guest 일 때만 로그인.
+    // 딥링크 상세(list-redirect)·민감 경로(login-redirect) 모두 동일 규율.
+    // 브라우저·비앱은 기존 하드 게이트(민감 경로 보호).
+    if (isNativeAppUserAgent(req.headers.get('user-agent'))) {
+      return passThrough;
     }
     return { block: buildUnauthorizedResponse(req, matched) };
   }

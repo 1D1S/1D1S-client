@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
@@ -5,8 +6,12 @@ import {
   sessionDismissPopupKeys,
 } from './popupDismissal';
 
+// 세션 차단은 이제 WebView 간 공유되는 세션 쿠키에 저장한다(sessionStorage 는
+// 인스턴스별로 갈려 다른 탭/리로드에서 재노출됐다).
+const SESSION_COOKIE = '1d1s:sessionDismissedPopups';
+
 afterEach(() => {
-  window.sessionStorage.clear();
+  Cookies.remove(SESSION_COOKIE);
 });
 
 describe('session popup dismissal', () => {
@@ -26,12 +31,12 @@ describe('session popup dismissal', () => {
   });
 
   it('손상된 값이면 빈 배열로 복구한다', () => {
-    window.sessionStorage.setItem('1d1s:sessionDismissedPopups', '{bad');
+    Cookies.set(SESSION_COOKIE, '{bad');
     expect(getSessionDismissedPopupKeys()).toEqual([]);
   });
 
   it('배열이 아닌 JSON 이면 빈 배열을 반환한다', () => {
-    window.sessionStorage.setItem('1d1s:sessionDismissedPopups', '"x"');
+    Cookies.set(SESSION_COOKIE, '"x"');
     expect(getSessionDismissedPopupKeys()).toEqual([]);
   });
 });

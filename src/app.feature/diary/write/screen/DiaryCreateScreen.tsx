@@ -148,7 +148,12 @@ export default function DiaryCreateScreen(): React.ReactElement {
   return (
     <div
       className={cn(
-        'min-h-screen w-full',
+        // min-h-screen(100vh) 제거: 앱 시트 웹뷰는 키보드 시 웹뷰를 줄이는데,
+        // 100vh 플로어가 문서를 가시영역보다 크게 유지하면 텍스트 필드 포커스 시
+        // WebView 의 scroll-into-view 가 콘텐츠 아래 빈 영역으로 스크롤돼 폼이
+        // 흰 화면으로 덮였다(안드로이드). 작성 폼은 항상 화면을 채울 만큼 길어
+        // 플로어가 불필요하다 — 콘텐츠 높이로만 잡아 흰 여백을 없앤다.
+        'w-full',
         !nativeCtaDelegated && 'pb-mobile-action-bar'
       )}
     >
