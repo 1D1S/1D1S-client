@@ -87,9 +87,15 @@ export default function RootLayout({
   // `<Link>` prefetch 가 죽으므로(= "이동마다 로딩") 서버 UA 판정은 쓰지
   // 않는다. 스크립트는 정적 HTML 에 그대로 실려 나가므로 route 는 정적
   // prefetch 가능 상태를 유지하면서도 chrome 가시성은 페인트 시점에 이미
-  // 결정돼 있다. 하이드레이션 이후 토글되는 값이 아니라 시프트가 없다.
+  // 결정돼 있다.
+  //
+  // suppressHydrationWarning: 스크립트가 페인트 전에 data-native-app 을 'true'
+  // 로 바꿔 놓는데, 이게 없으면 하이드레이션에서 React 가 서버 렌더값('false')
+  // 으로 되돌려 sticky/native-hide chrome 이 한 프레임 보였다 사라진다(탐색
+  // 헤더 반짝임). 이 플래그로 스크립트가 세운 값을 하이드레이션이 건드리지
+  // 않게 해, 첫 페인트~하이드레이션 내내 숨김 상태가 유지된다(전 페이지 공통).
   return (
-    <html lang="ko" data-native-app="false">
+    <html lang="ko" data-native-app="false" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: NATIVE_APP_INIT_SCRIPT }} />
       </head>
