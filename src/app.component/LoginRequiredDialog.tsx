@@ -40,6 +40,11 @@ interface LoginRequiredDialogProps {
   returnTo?: string | null;
 }
 
+// 네이티브 로그인 모달 중복 억제(모듈 스코프). 여러 화면/인스턴스(딥링크 상세
+// 등)가 동시에 로그인 모달을 요청해 앱 팝업이 겹치는 것을 막는다. 모달이 떠
+// 있는 동안 true, 사용자가 닫으면(응답) false 로 풀린다.
+let nativeLoginModalInFlight = false;
+
 export function LoginRequiredDialog({
   open,
   onOpenChange,
@@ -62,35 +67,42 @@ export function LoginRequiredDialog({
   // AlertDialog) 가 뜨도록 모달 브릿지로 위임한다. required 모드도
   // 같은 동작 — 사용자가 dismiss(밖 클릭/시스템 백) 하면 onClose 호출.
   useEffect(() => {
-    if (!isNativeApp || !open) {
+    // 이미 네이티브 로그인 모달이 떠 있으면(다른 화면/인스턴스가 요청) 중복
+    // 요청을 막아 앱 팝업이 겹치지 않게 한다.
+    if (!isNativeApp || !open || nativeLoginModalInFlight) {
       return;
     }
+    nativeLoginModalInFlight = true;
     let cancelled = false;
     void (async () => {
-      const result = await openNativeModal({
-        title,
-        message: description,
-        // 아래 웹 분기(ConfirmDialog / required 다이얼로그)와 같은 배지를
-        // 네이티브에도 실어 보낸다. 이걸 빼면 앱에서만 아이콘 없는 모달이
-        // 떠서, 같은 "로그인이 필요합니다"가 진입 경로에 따라 다르게 생긴다
-        // (네이티브 FAB 게이트는 배지가 있고, 웹 위임분은 없었다).
-        icon: 'LogIn',
-        tone: 'brand',
-        buttons: [
-          { label: '닫기', value: 'cancel', style: 'cancel' },
-          { label: '로그인', value: 'login' },
-        ],
-      });
-      if (cancelled) {
-        return;
-      }
-      onOpenChange(false);
-      if (result === 'login') {
-        router.push(
-          returnTo ? buildLoginUrl(returnTo) : loginUrlFromCurrentLocation()
-        );
-      } else if (required) {
-        onClose?.();
+      try {
+        const result = await openNativeModal({
+          title,
+          message: description,
+          // 아래 웹 분기(ConfirmDialog / required 다이얼로그)와 같은 배지를
+          // 네이티브에도 실어 보낸다. 이걸 빼면 앱에서만 아이콘 없는 모달이
+          // 떠서, 같은 "로그인이 필요합니다"가 진입 경로에 따라 다르게 생긴다
+          // (네이티브 FAB 게이트는 배지가 있고, 웹 위임분은 없었다).
+          icon: 'LogIn',
+          tone: 'brand',
+          buttons: [
+            { label: '닫기', value: 'cancel', style: 'cancel' },
+            { label: '로그인', value: 'login' },
+          ],
+        });
+        if (cancelled) {
+          return;
+        }
+        onOpenChange(false);
+        if (result === 'login') {
+          router.push(
+            returnTo ? buildLoginUrl(returnTo) : loginUrlFromCurrentLocation()
+          );
+        } else if (required) {
+          onClose?.();
+        }
+      } finally {
+        nativeLoginModalInFlight = false;
       }
     })();
     return () => {
