@@ -19,7 +19,12 @@ const nextConfig = {
     // 모두 명시적으로 늘려, 짧은 시간 안의 탭 왕복은 캐시 hit 으로 즉시
     // 전환되도록 한다. TanStack Query staleTime 과 별개 레이어.
     staleTimes: {
-      dynamic: 120,
+      // 120 → 30: 라우터 캐시가 2분짜리 화면 스냅샷을 물고 있으면 SPA 이동이
+      // 최대 2분 전 RSC payload 를 보여준다("이전 데이터가 계속 보인다"의
+      // 한 축). 30초면 빠른 탭 왕복은 여전히 캐시 hit 이면서 신선도 손해가
+      // 체감 범위 아래로 내려간다. 데이터 자체는 TanStack Query 가 다시
+      // 채우므로 이 값은 셸(레이아웃/스켈레톤) 재사용 창에 가깝다.
+      dynamic: 30,
       static: 600,
     },
     webpackMemoryOptimizations: true,

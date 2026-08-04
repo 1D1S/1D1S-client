@@ -72,6 +72,18 @@ export function headersMiddleware(res: NextResponse): void {
     'Content-Security-Policy',
     cspHeader.replace(/\s{2,}/g, ' ').trim()
   );
-  // 이 부분은 1시간이 적합한지 논의 필요
-  res.headers.set('Cache-Control', 'public, max-age=3600');
+  // 문서(HTML) 응답은 캐시 재검증을 강제한다.
+  //
+  // 예전 값은 `public, max-age=3600` 이었다 — 두 가지가 잘못됐다:
+  //   1. 안드로이드 WebView 는 같은 URL 로드(loadUrl)를 1시간 내내 디스크
+  //      캐시로 끝내, pull-to-refresh 가 네트워크 요청 0회로 "완료"됐다.
+  //      한 시간 전 SSR HTML(과 그 안의 RSC 데이터)이 그대로 다시 보였다 —
+  //      "당겨도 이전 데이터"의 근본 원인. iOS(WebKit)는 메인 리소스를 훨씬
+  //      적극적으로 재검증해서 안드로이드에서만 유독 도드라졌다.
+  //   2. 로그인 사용자별 HTML 에 `public` 은 공유 캐시(프록시)에 개인화된
+  //      문서가 앉을 수 있다는 뜻이다.
+  // no-cache 는 "캐시하되 매번 재검증" — ETag/304 로 전송량은 그대로 아끼면서
+  // 신선도는 항상 보장된다. 정적 에셋(/_next/static)은 matcher 가 제외하므로
+  // 영향 없다.
+  res.headers.set('Cache-Control', 'private, no-cache');
 }
