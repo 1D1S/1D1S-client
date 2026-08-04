@@ -100,6 +100,9 @@ export async function fetchPublicChallengeMeta(
     const res = await fetch(`${API_BASE_URL}/challenges/${id}`, {
       headers: { accept: 'application/json' },
       next: { revalidate: 300 },
+      // 메타데이터는 없어도 페이지는 떠야 한다 — 행 걸린 백엔드가 RSC 렌더
+      // 전체를 잡아두지 않게 한다.
+      signal: AbortSignal.timeout(3_000),
     });
     if (!res.ok) {
       return null;

@@ -157,11 +157,16 @@ export const normalizeApiError = (error: unknown): NormalizedApiError => {
       };
     }
 
+    // 5xx 는 서버 message 를 쓰지 않는다. 그건 내부 사정("Internal Server
+    // Error", 스택 요약 등)이라 사용자에게 보여줄 문구가 아니다. 4xx 의
+    // message 는 도메인 사유("이미 참여한 챌린지입니다" 등)라 우리가 지어내는
+    // 일반 문구보다 정확하므로 그대로 쓴다.
+    const isServerFault = status !== undefined && status >= 500;
     return {
       status,
       code: error.code,
       message:
-        payloadMessage ||
+        (isServerFault ? null : payloadMessage) ||
         (status ? STATUS_ERROR_MESSAGE[status] : null) ||
         DEFAULT_ERROR_MESSAGE,
     };

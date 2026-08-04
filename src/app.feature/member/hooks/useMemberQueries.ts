@@ -58,7 +58,10 @@ async function fetchSidebar(): Promise<SidebarData> {
 /**
  * 사이드바 데이터 요청 (최대 3회 시도)
  * - 401: 즉시 포기 → 강제 로그아웃
- * - 기타 오류: 2번 더 재시도 → 모두 실패 시 강제 로그아웃
+ * - 기타 오류(네트워크/타임아웃/5xx): 2번 더 재시도 → 모두 실패해도 세션은
+ *   그대로 둔다. 서버가 세션을 거부한 게 아니라 **못 물어본** 것이므로,
+ *   여기서 로그아웃하면 일시적 서버 장애가 전 사용자 강제 로그아웃이 된다
+ *   (errorNotify 의 인증 판정 정책과 동일한 기준).
  */
 async function fetchSidebarWithRetry(): Promise<SidebarData | null> {
   for (let attempt = 0; attempt <= SIDEBAR_MAX_RETRIES; attempt++) {
@@ -70,9 +73,8 @@ async function fetchSidebarWithRetry(): Promise<SidebarData | null> {
         await forceLogout();
         return null;
       }
-      // 마지막 시도에서도 실패하면 강제 로그아웃
       if (attempt === SIDEBAR_MAX_RETRIES) {
-        await forceLogout();
+        // 판정 불가 — 다음 포커스/리페치가 다시 시도한다.
         return null;
       }
     }

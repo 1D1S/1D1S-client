@@ -7,7 +7,7 @@ import {
 
 import { API_BASE_URL } from './config';
 import { isUnauthorizedError } from './error';
-import { handleAuthError, notifyApiError } from './errorNotify';
+import { handleAuthError } from './errorNotify';
 import { refreshAccessTokenOnce } from './tokenRefresh';
 
 export interface ClientOptions {
@@ -148,7 +148,9 @@ export const attachInterceptors = (
         return new Promise<AxiosResponse>((resolve, reject) => {
           addRefreshSubscriber({
             resolve: () => {
-              originalRequest._retry = false;
+              // _retry 는 true 로 유지한다. false 로 되돌리면 재시도가 또
+              // 401 을 받았을 때 refresh 사이클이 한 번 더 돌아, 회전된
+              // refresh 토큰을 낭비하고 무한 재시도 위험이 생긴다.
               resolve(client(originalRequest));
             },
             reject,
@@ -156,10 +158,11 @@ export const attachInterceptors = (
         });
       }
 
-      if (!handleUnauthorized && !isUnauthorizedError(error)) {
-        notifyApiError(error);
-      }
-
+      // publicApiClient 의 자동 토스트는 제거했다. 이 자리에서 토스트하면
+      // 호출부가 조용히 삼키려는 에러(배너 조회, 닉네임 중복확인, 소셜 재로그인
+      // 실패)도 먼저 떠 버리고, react-query 전역 onError 와 겹쳐 같은 실패가
+      // 두 번 보였다. 사용자 통지는 QueryCache/MutationCache onError 한 곳이
+      // 책임진다.
       return Promise.reject(error);
     }
   );

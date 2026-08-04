@@ -2,6 +2,7 @@ import { authStorage } from '@module/utils/auth';
 import { waitForNativeAuthReady } from '@module/utils/nativeAuthReady';
 import {
   isNativeBridgeAvailable,
+  NativeTokenRefreshError,
   requestNativeTokenRefresh,
 } from '@module/utils/nativeBridge';
 import axios from 'axios';
@@ -10,6 +11,12 @@ import { API_BASE_URL } from './config';
 import { isUnauthorizedError } from './error';
 
 let inFlight: Promise<void> | null = null;
+
+function refreshViaWebCookie(): Promise<void> {
+  return axios
+    .get(`${API_BASE_URL}/auth/token`, { withCredentials: true })
+    .then(() => undefined);
+}
 
 /**
  * 모든 클라이언트 측 access 토큰 갱신이 공유하는 single-flight.
@@ -27,9 +34,20 @@ let inFlight: Promise<void> | null = null;
 export function refreshAccessTokenOnce(): Promise<void> {
   if (!inFlight) {
     const nativeRefresh = requestNativeTokenRefresh();
-    const refreshRequest =
-      nativeRefresh ??
-      axios.get(`${API_BASE_URL}/auth/token`, { withCredentials: true });
+    // 앱(웹뷰)에서는 네이티브 셸이 갱신을 대행하지만, 네이티브가 못 해주는
+    // 경우(네이티브 세션이 죽었거나 응답 없음)에도 웹 httpOnly 쿠키 세션은
+    // 멀쩡할 수 있다. 예전엔 여기서 그대로 실패해 — 네이티브 세션이 한 번
+    // 죽으면 그 앱 실행 내내 웹이 제 쿠키로 갱신할 방법이 없어, 살아 있는
+    // 세션이 로그아웃으로 확정됐다. 네이티브 실패 시 웹 자체 /auth/token
+    // 으로 한 번 더 시도한다.
+    const refreshRequest = nativeRefresh
+      ? nativeRefresh.catch((error: unknown) => {
+          if (error instanceof NativeTokenRefreshError) {
+            return refreshViaWebCookie();
+          }
+          throw error;
+        })
+      : refreshViaWebCookie();
     inFlight = refreshRequest
       .then(() => {
         // 갱신 성공 = 세션 생존 확정. 일시적 401 로 지워졌을 수 있는

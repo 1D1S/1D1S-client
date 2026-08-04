@@ -12,7 +12,6 @@ import { putToStorage } from '@module/api/presignedUpload';
 import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
 import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { toast } from '@module/providers/toast';
-import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import {
   normalizePhoneNumber,
@@ -100,11 +99,11 @@ export function SignUpScreen(): React.ReactElement {
   }, []);
 
   const onSubmit = async (values: SignupFormValues): Promise<void> => {
-    if (!authStorage.hasTokens()) {
-      toast.error('로그인이 필요합니다.');
-      router.replace('/login');
-      return;
-    }
+    // 세션 판정을 JS 힌트(hasTokens)로 하지 않는다. 힌트는 ITP·앱의
+    // localStorage.clear 로 세션과 무관하게 소실될 수 있고, 그 순간 여기서
+    // 막으면 **작성 완료된 가입 폼이 통째로 버려진다** — "가입 직후 로그인
+    // 화면으로 튕김"의 한 경로. 그냥 제출한다. 세션이 정말 없으면 서버가
+    // 401 을 주고, 인터셉터의 refresh → 실패 시 로그인 이동이 처리한다.
 
     // 생년월일은 선택 항목 — 세 값이 모두 있을 때만 전송한다(부분 입력은 미전송).
     const birth =

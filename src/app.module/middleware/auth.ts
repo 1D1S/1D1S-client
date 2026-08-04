@@ -97,6 +97,9 @@ async function refreshTokens(req: NextRequest): Promise<RefreshSuccess | null> {
       method: 'GET',
       headers: { cookie: cookieHeader },
       redirect: 'manual',
+      // 타임아웃이 없으면 백엔드가 행일 때 **모든 라우트의 미들웨어**가
+      // 여기 매달린다 — 서버 장애가 곧 앱 전체 흰 화면이 되는 경로.
+      signal: AbortSignal.timeout(3_000),
     });
   } catch {
     return null;
