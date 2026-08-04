@@ -14,6 +14,7 @@ export function ChallengeDetailSkeleton(): React.ReactElement {
   return (
     <>
       <div
+        data-skeleton-group
         className={cn(
           'min-h-screen w-full bg-white',
           'pb-mobile-action-bar lg:pb-12'
@@ -55,7 +56,7 @@ export function ChallengeDetailSkeleton(): React.ReactElement {
               'absolute left-3.5 z-10 flex h-9 w-9',
               'top-[calc(0.875rem+env(safe-area-inset-top))]',
               'items-center justify-center rounded-full bg-white/90',
-              'text-gray-700 shadow-sm backdrop-blur',
+              'text-gray-700 shadow-sm',
               'transition hover:bg-white lg:hidden'
             )}
           >

@@ -149,7 +149,9 @@ function DiaryCard({
       {...rootInteractiveProps}
       className={cn(
         // 배경과의 구분을 위해 기본(gray-200)보다 한 단계 진한 보더
-        'border-gray-300 p-4 transition-all duration-500 ease-out',
+        // transition-all 은 레이아웃 속성까지 전이 대상으로 잡는다 — 실제로
+        // 움직이는 건 그림자/변형뿐이라 그 둘만 명시한다.
+        'border-gray-300 p-4 transition-[translate,scale,box-shadow] duration-500 ease-out',
         'hover:shadow-warm',
         // 화면 밖 카드는 레이아웃/페인트를 스킵해 긴 무한스크롤 목록의
         // 렌더 비용을 줄인다. auto 는 화면에 들어와 한 번 렌더되면 실제

@@ -11,6 +11,7 @@ export function DiaryDetailSkeleton(): React.ReactElement {
   const router = useRouter();
   return (
     <div
+      data-skeleton-group
       className={cn(
         'min-h-screen w-full bg-white',
         'pb-mobile-action-bar-tall lg:pb-0'

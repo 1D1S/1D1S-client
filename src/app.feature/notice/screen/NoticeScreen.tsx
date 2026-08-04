@@ -23,7 +23,7 @@ export function NoticeScreen(): React.ReactElement {
       <div
         className={cn(
           'fixed top-0 right-0 left-0 z-30 flex h-14 items-center gap-3',
-          'border-b border-gray-100 bg-white/95 px-4 backdrop-blur',
+          'border-b border-gray-100 bg-white px-4',
           'lg:hidden'
         )}
       >

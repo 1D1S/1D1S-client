@@ -178,7 +178,7 @@ export default function StoryViewer({
       onClick={handleBackdropClick}
       className={cn(
         'animate-story-overlay-in fixed inset-0 z-1000 flex',
-        'items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm'
+        'items-center justify-center bg-black/60 px-4 py-6'
       )}
     >
       <button
@@ -188,7 +188,7 @@ export default function StoryViewer({
         className={cn(
           'absolute top-1/2 left-2 z-10 hidden h-11 w-11 -translate-y-1/2',
           'cursor-pointer items-center justify-center rounded-full border-0',
-          'bg-white/15 text-white backdrop-blur sm:left-6 sm:flex'
+          'bg-white/15 text-white sm:left-6 sm:flex'
         )}
       >
         <Icon name="ChevronLeft" size={22} aria-hidden />
@@ -200,7 +200,7 @@ export default function StoryViewer({
         className={cn(
           'absolute top-1/2 right-2 z-10 hidden h-11 w-11 -translate-y-1/2',
           'cursor-pointer items-center justify-center rounded-full border-0',
-          'bg-white/15 text-white backdrop-blur sm:right-6 sm:flex'
+          'bg-white/15 text-white sm:right-6 sm:flex'
         )}
       >
         <Icon name="ChevronRight" size={22} aria-hidden />
@@ -264,7 +264,7 @@ export default function StoryViewer({
             className={cn(
               'absolute top-3 right-3 z-10 flex h-9 w-9 cursor-pointer',
               'items-center justify-center rounded-full border-0',
-              'bg-black/40 text-white backdrop-blur-sm'
+              'bg-black/40 text-white'
             )}
           >
             <Icon name="Close" size={18} aria-hidden />
