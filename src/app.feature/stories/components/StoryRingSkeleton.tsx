@@ -19,7 +19,7 @@ export default function StoryRingSkeleton({
   return (
     <div
       className={cn(
-        'scrollbar-hide flex w-full items-start gap-3',
+        'scrollbar-hide flex items-start gap-3',
         'overflow-x-auto py-3.5',
         STORY_RAIL_BLEED
       )}
