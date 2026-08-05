@@ -10,11 +10,14 @@ const NOOP_VALUE_CHANGE = (): void => {};
 interface DiaryGoalsCardProps {
   checklistItems: ChecklistItem[];
   checkedChecklistIds: string[];
+  /** 체크 원 색 — 카드와 동일하게 무드 톤을 받는다(CSS color). */
+  checkColor?: string;
 }
 
 export function DiaryGoalsCard({
   checklistItems,
   checkedChecklistIds,
+  checkColor,
 }: DiaryGoalsCardProps): React.ReactElement {
   const checklistOptions = useMemo(
     () =>
@@ -45,6 +48,7 @@ export function DiaryGoalsCard({
           options={checklistOptions}
           value={checkedChecklistIds}
           onValueChange={NOOP_VALUE_CHANGE}
+          checkColor={checkColor}
           readOnly
         />
       ) : (
