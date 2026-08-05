@@ -101,10 +101,15 @@ export default function NativeTabShell({
     activeRef.current = active;
   }, [active]);
 
-  // 마운트 직후 URL 을 실제 탭 경로로 맞춘다. /shell 인 채로 두면
-  // nav_state 가 /shell 을 보고해 앱 크롬 판정이 어긋난다.
+  // URL 은 항상 /shell?tab=<탭> 으로 유지한다.
+  //
+  // 처음에는 실제 탭 경로(/, /diary …)로 replaceState 했는데, 그러면 이
+  // 히스토리 엔트리 자체가 실제 라우트가 된다 — 상세로 push 했다가 back
+  // 하는 순간 Next 가 그 엔트리의 라우트(실제 /diary 페이지)를 마운트해
+  // **셸이 통째로 사라진다.** 탭 식별은 쿼리로 남기고, 앱이 이 URL 을
+  // 실제 탭 경로로 번역해(onUrlChange) 크롬을 판정한다.
   React.useEffect(() => {
-    window.history.replaceState(null, '', TAB_PATHS[initialTab]);
+    window.history.replaceState(null, '', `/shell?tab=${initialTab}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -116,7 +121,7 @@ export default function NativeTabShell({
       }
       scrollByTab.current[activeRef.current] = window.scrollY;
       setActive(tab);
-      window.history.replaceState(null, '', TAB_PATHS[tab]);
+      window.history.replaceState(null, '', `/shell?tab=${tab}`);
       // display 가 바뀐 같은 프레임에 스크롤을 되돌린다. 새 탭이 아직
       // 그 높이만큼 콘텐츠가 없으면 브라우저가 알아서 최대치로 자른다.
       requestAnimationFrame(() => {
