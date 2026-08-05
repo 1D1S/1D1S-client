@@ -5,6 +5,7 @@ import { ChallengeChip } from '@component/cards/ChallengeChip';
 import FadeInImage from '@component/FadeInImage';
 import LikeBurst from '@component/LikeBurst';
 import { Skeleton } from '@component/Skeleton';
+import { EMOTION_TONE } from '@feature/diary/shared/utils/feeling';
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
 import Image from 'next/image';
@@ -19,14 +20,8 @@ const EMOTION_IMAGE: Record<DiaryEmotion, { src: string; alt: string }> = {
   sad: { src: '/images/mood-sad.svg', alt: '슬픈 얼굴' },
 };
 
-// 감정별 무드 컬러 — 포인트 텍스트(달성률) / 체크 원 배경(달성 목표).
-// 무드 SVG 얼굴색 팔레트(happy=main/피치, soso=mint, sad=blue)를 따르되,
-// 흰 체크·텍스트 대비를 위해 한 단계 진한 톤을 쓴다.
-const EMOTION_TONE: Record<DiaryEmotion, { fg: string; check: string }> = {
-  happy: { fg: 'text-main-700', check: 'bg-main-700' },
-  soso: { fg: 'text-mint-900', check: 'bg-mint-800' },
-  sad: { fg: 'text-blue-600', check: 'bg-blue-500' },
-};
+// 감정별 무드 컬러(달성률 텍스트·체크 원)는 카드·상세 공유 단일 소스
+// (@feature/diary/shared/utils/feeling)에서 가져온다.
 
 // next/image는 절대 URL이거나 / 시작 상대 경로만 허용한다. 백엔드가 raw key를
 // 줄 때 next/image의 URL 파서가 throw 하므로 안전한 형태만 통과시킨다.

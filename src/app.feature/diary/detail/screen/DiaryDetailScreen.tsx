@@ -24,6 +24,7 @@ import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
 import { useSidebar } from '../../../member/hooks/useMemberQueries';
 import { useDiaryDetail } from '../../board/hooks/useDiaryQueries';
 import { DiaryContentRenderer } from '../../shared/components/DiaryContentRenderer';
+import { toneFromFeeling } from '../../shared/utils/feeling';
 import { DiaryActionToolbar } from '../components/DiaryActionToolbar';
 import { DiaryAuthorRow } from '../components/DiaryAuthorRow';
 import {
@@ -58,19 +59,6 @@ import {
   mapDiaryToViewData,
   resolveSidebarMemberId,
 } from '../utils/diaryViewData';
-
-function getFeelingTextClass(feeling: DiaryDetailViewData['feeling']): string {
-  if (feeling === 'HAPPY') {
-    return 'text-main-800';
-  }
-  if (feeling === 'NORMAL') {
-    return 'text-green-800';
-  }
-  if (feeling === 'SAD') {
-    return 'text-blue-600';
-  }
-  return 'text-gray-500';
-}
 
 function DiaryDetailView({
   diaryData,
@@ -149,7 +137,8 @@ function DiaryDetailView({
     await navigator.clipboard.writeText(shareUrl);
   };
 
-  const isHundredPercent = diaryData.achievementPercent === 100;
+  // 기분·달성률·목표 체크 색을 카드와 동일한 무드 톤으로 통일(공유 소스).
+  const feelingTone = toneFromFeeling(diaryData.feeling);
 
   return (
     <div
@@ -259,12 +248,11 @@ function DiaryDetailView({
               </div>
             </section>
 
-            {/* Card 3 — 오늘의 기분 + 달성률 (독립 섹션, 프레스 모션) */}
+            {/* Card 3 — 오늘의 기분 + 달성률 (표시 전용, 클릭/프레스 없음) */}
             <section
               className={cn(
                 'flex items-center gap-2.5 rounded-[10px]',
-                'border border-gray-200 bg-white px-3.5 py-3',
-                'transition duration-200 ease-out active:scale-[0.97]'
+                'border border-gray-200 bg-white px-3.5 py-3'
               )}
             >
               {diaryData.feelingMoodImage ? (
@@ -281,17 +269,14 @@ function DiaryDetailView({
               <Text
                 size="caption1"
                 weight="semibold"
-                className={getFeelingTextClass(diaryData.feeling)}
+                className={feelingTone.fg}
               >
                 오늘의 기분 · {diaryData.feelingLabel}
               </Text>
               <Text
                 size="caption1"
                 weight="extrabold"
-                className={cn(
-                  'ml-auto shrink-0',
-                  isHundredPercent ? 'text-green-600' : 'text-main-800'
-                )}
+                className={cn('ml-auto shrink-0', feelingTone.fg)}
               >
                 달성 {diaryData.achievementPercent}%
               </Text>
@@ -300,6 +285,7 @@ function DiaryDetailView({
             <DiaryGoalsCard
               checklistItems={diaryData.checklistItems}
               checkedChecklistIds={diaryData.checkedChecklistIds}
+              checkColor={feelingTone.checkColor}
             />
 
             {/* Card 4 — 오늘의 기록: 본문 + 이미지 (모바일·태블릿은 플랫).
