@@ -93,6 +93,14 @@ export default function NativeTabShell({
   initialTab: ShellTabId;
 }): React.ReactElement {
   const [active, setActive] = React.useState<ShellTabId>(initialTab);
+  // 한 번이라도 활성화된 탭만 마운트한다(이후 keep-alive).
+  //
+  // 처음부터 다섯을 다 마운트하면 숨은 탭의 효과도 전부 돈다 — 마이 탭의
+  // 인증 가드가 게스트를 감지하고 문서를 /login 으로 라우팅해 셸을 통째로
+  // 갈아치웠다(실측). 게스트는 마이 탭을 활성화할 수 없으므로(앱이
+  // 네이티브에서 게이트) 첫 활성화 마운트면 그 문제가 원천에서 사라지고,
+  // 초기 하이드레이션도 가벼워진다.
+  const [mounted, setMounted] = React.useState<ShellTabId[]>([initialTab]);
   // 탭별 문서 스크롤 위치. 언마운트가 없으니 상태는 남지만 스크롤러는
   // 문서 하나를 공유한다 — 전환 때 저장/복원한다.
   const scrollByTab = React.useRef<Partial<Record<ShellTabId, number>>>({});
@@ -120,6 +128,7 @@ export default function NativeTabShell({
         return;
       }
       scrollByTab.current[activeRef.current] = window.scrollY;
+      setMounted((prev) => (prev.includes(tab) ? prev : [...prev, tab]));
       setActive(tab);
       window.history.replaceState(null, '', `/shell?tab=${tab}`);
       // display 가 바뀐 같은 프레임에 스크롤을 되돌린다. 새 탭이 아직
@@ -134,7 +143,7 @@ export default function NativeTabShell({
 
   return (
     <>
-      {TAB_IDS.map((tab) => (
+      {TAB_IDS.filter((tab) => mounted.includes(tab)).map((tab) => (
         <div
           key={tab}
           data-shell-tab={tab}
