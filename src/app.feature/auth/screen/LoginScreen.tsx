@@ -3,6 +3,7 @@
 import { Text } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { API_BASE_URL } from '@module/api/config';
+import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { markNativeOAuth } from '@module/utils/nativeBridge';
 import { RETURN_TO_PARAM, sanitizeReturnTo } from '@module/utils/returnTo';
@@ -18,6 +19,16 @@ import { getOrderedProviders, PROVIDER_META } from '../consts/providerMeta';
 import { OAuthProvider } from '../type/auth';
 import { getLaunchStreakDay } from '../utils/streakDay';
 
+// 서버가 인증 실패(OAuth 콜백 등)를 raw JSON 문서 대신 `/login?error=CODE` 로
+// 리다이렉트하면, 그 코드를 사용자 안내로 바꾼다. 세션/토큰 계열(AUTH-*)은
+// 모두 재로그인 안내로 수렴한다.
+function messageForAuthError(code: string): string {
+  if (code.startsWith('AUTH-')) {
+    return '세션이 만료됐어요. 다시 로그인해 주세요.';
+  }
+  return '로그인 중 문제가 발생했어요. 잠시 후 다시 시도해 주세요.';
+}
+
 export function LoginScreen(): React.ReactElement {
   const router = useRouter();
   // 사이드바 실데이터(= 서버가 확인해 준 살아있는 세션)만 리다이렉트 근거로
@@ -31,6 +42,24 @@ export function LoginScreen(): React.ReactElement {
   const [streakDay, setStreakDay] = React.useState<number>(() =>
     getLaunchStreakDay()
   );
+
+  // 서버가 리다이렉트로 실은 인증 에러(`?error=CODE`)를 토스트로 안내하고,
+  // 새로고침·뒤로가기에서 재노출되지 않게 URL 에서 파라미터를 제거한다.
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    if (!error) {
+      return;
+    }
+    toast.error(messageForAuthError(error));
+    params.delete('error');
+    const query = params.toString();
+    window.history.replaceState(
+      null,
+      '',
+      window.location.pathname + (query ? `?${query}` : '')
+    );
+  }, []);
 
   React.useEffect(() => {
     const nativeProvider = new URLSearchParams(window.location.search).get(
