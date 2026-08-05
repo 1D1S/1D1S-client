@@ -62,7 +62,7 @@ function StoryRing({
   return (
     <div
       className={cn(
-        'scrollbar-hide flex w-full items-start gap-3',
+        'scrollbar-hide flex items-start gap-3',
         'overflow-x-auto py-3.5',
         // 가로 스크롤러는 화면 끝까지 흘러야 한다. 부모(px-5/lg:px-8) 안에
         // 갇히면 스크롤한 카드가 여백 경계에서 뚝 잘려 보인다 — 좌우 여백은

@@ -7,5 +7,11 @@
  * (패딩을 부모에만 두면 카드가 여백 선에서 잘려 보였다 — 실제 QA 증상)
  *
  * HomeScreen 의 패딩을 바꾸면 이 값도 같이 바꿔야 한다.
+ *
+ * ⚠️ 이 클래스를 쓰는 스크롤 컨테이너에 `w-full` 을 붙이지 말 것.
+ * box-sizing:border-box 에서 width:100% 는 border-box 를 부모 content 폭(= 화면폭
+ * − 2×패딩)으로 고정한다. 음수 마진은 왼쪽만 당길 뿐 폭을 넓히지 못해 오른쪽이
+ * 2×패딩만큼 짧아져 마지막 카드가 잘렸다(실제 QA 증상). width 를 auto 로 두면
+ * 음수 마진에 맞춰 border-box 가 화면폭까지 확장돼 edge-to-edge full-bleed 가 된다.
  */
 export const STORY_RAIL_BLEED = '-mx-5 px-5 lg:-mx-8 lg:px-8';

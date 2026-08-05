@@ -56,7 +56,7 @@ function StoryLoginPrompt({
   return (
     <div
       className={cn(
-        'scrollbar-hide flex w-full overflow-x-auto',
+        'scrollbar-hide flex overflow-x-auto',
         'gap-3 py-3.5',
         STORY_RAIL_BLEED
       )}
