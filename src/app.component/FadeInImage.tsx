@@ -90,7 +90,11 @@ function FadeInImage({
       className={cn(
         'transition-opacity duration-700 ease-out',
         'motion-reduce:transition-none',
-        '[transform:translateZ(0)] [backface-visibility:hidden]',
+        // 레이어 승격(translateZ)은 **페이드 중에만**. 무조건 걸면 리스트의
+        // 이미지 하나하나(카드당 2~3장)가 영구 컴포지터 레이어로 남아,
+        // 보드 한 페이지에 레이어 수십 개 — 저사양 안드로이드에서 타일
+        // 메모리를 넘겨 스크롤 중 재래스터 끊김의 주범이 된다.
+        !loaded && '[transform:translateZ(0)] [backface-visibility:hidden]',
         loaded ? 'opacity-100' : 'opacity-0',
         className
       )}

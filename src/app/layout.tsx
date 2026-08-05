@@ -1,5 +1,10 @@
 // app/layout.tsx
 import '@/app.styles/globals.css';
+// Pretendard 는 next/font(localFont) 대신 unicode-range 동적 서브셋 CSS 로
+// 로드한다. next/font 는 unicode-range 분할을 지원하지 않아 풀 한글 woff2
+// 3장(~2.3MB)을 통째로 받았고, display:swap 이 페이스마다 문서 전체 리플로우를
+// 일으켰다. 서브셋은 화면에 실제 등장한 글리프 블록만 받는다.
+import '@/app.styles/pretendard-subset.css';
 
 import AppLayoutShell from '@component/layout/AppLayoutShell';
 import ScrollToTop from '@component/layout/ScrollToTop';
@@ -17,8 +22,6 @@ import { cn } from '@module/utils/cn';
 import { NATIVE_APP_INIT_SCRIPT } from '@module/utils/nativeAppScript';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata, Viewport } from 'next';
-
-import { pretendard } from '@/app.lib/font';
 
 const OG_IMAGE_URL = toAbsoluteUrl(DEFAULT_OG_IMAGE_PATH);
 
@@ -99,12 +102,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: NATIVE_APP_INIT_SCRIPT }} />
       </head>
-      <body
-        className={cn(
-          pretendard.variable,
-          'font-pretendard bg-white text-gray-900'
-        )}
-      >
+      <body className={cn('font-pretendard bg-white text-gray-900')}>
         <AppProviders>
           <ScrollToTop />
           <AppLayoutShell>{children}</AppLayoutShell>

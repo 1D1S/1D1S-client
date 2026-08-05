@@ -220,6 +220,9 @@ export type NativeMessage =
   | { type: 'scroll_dir'; payload: NativeScrollDirPayload }
   | { type: 'oauth_open'; payload: { url: string } }
   | { type: 'token_refresh'; payload: { id: string } }
+  // 셸의 native:pull_refresh 위임을 웹이 처리 완료(쿼리 리페치 종료).
+  // 셸은 이걸 받고 PTR 스피너를 내린다.
+  | { type: 'pull_refresh_done' }
   // 일반 로그아웃은 successMessage 없이 보낸다. 회원 탈퇴만 successMessage 를
   // 실어, 앱이 정리(푸시토큰 회수→네이티브 로그아웃→쿠키 삭제→홈 리로드)를
   // 모두 마친 뒤 그 문구를 네이티브 토스트로 띄운다(빌드 126 계약). 정리 창에서

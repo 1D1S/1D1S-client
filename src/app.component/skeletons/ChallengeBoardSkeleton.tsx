@@ -16,13 +16,13 @@ import React from 'react';
  */
 export function ChallengeBoardSkeleton(): React.ReactElement {
   return (
-    <div className="w-full">
+    <div data-skeleton-group className="w-full">
       {/* 모바일 sticky 헤더 */}
       <div
         className={cn(
           'sticky top-0 z-20 border-b border-gray-100',
-          'bg-white/95 px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
-          'backdrop-blur lg:hidden'
+          'bg-white px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
+          'lg:hidden'
         )}
       >
         <div className="mb-3 flex items-center justify-between">

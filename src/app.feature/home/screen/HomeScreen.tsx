@@ -91,7 +91,13 @@ export default function HomeScreen(): React.ReactElement {
   // 스플래시 dismiss 신호: 홈 핵심 콘텐츠(스트릭/오늘의 기록 or 게스트 CTA)가
   // 스켈레톤이 아니라 실제로 렌더된 시점에 1회 발화. 게스트는 isStreakLoading
   // 이 false 라 CTA 렌더 직후, 로그인 사용자는 사이드바 로드 후.
-  useSignalAppReady(!isStreakLoading);
+  // `unknown`(부팅 세션 확인 중)에는 보내지 않는다. 힌트가 없는 순간에는
+  // showGuestCta 가 true → isStreakLoading 이 false 라, 로그인 사용자인데도
+  // 게스트 CTA 를 그린 채 곧바로 신호가 나갔다. 네이티브 셸은 그걸 "홈 완성"
+  // 으로 보고 스플래시를 걷고, 그 직후 auth 가 확정되며 홈이 통째로 다시
+  // 그려진다 — "다 로딩되기 전에 스플래시가 걷힌다"의 정체(안드로이드에서
+  // 확인 왕복이 더 길어 특히 눈에 띄었다).
+  useSignalAppReady(status !== 'unknown' && !isStreakLoading);
 
   return (
     <>

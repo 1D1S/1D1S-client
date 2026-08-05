@@ -10,7 +10,7 @@ import React from 'react';
 // - 데스크탑 프로필 카드: -mt-25 로 배너에 겹치고 border 만(그림자 없음)
 export function MyPageSkeleton(): React.ReactElement {
   return (
-    <div className="min-h-screen w-full bg-white">
+    <div data-skeleton-group className="min-h-screen w-full bg-white">
       {/* 데스크탑 풀블리드 그라데이션 배너 자리 (실제 h-[180px]) */}
       <Skeleton
         shape="rect"

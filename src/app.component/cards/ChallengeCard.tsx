@@ -174,8 +174,12 @@ function ChallengeCard({
       radius="md"
       {...rootInteractiveProps}
       className={cn(
-        'transition-all duration-500 ease-out',
+        'transition-[translate,scale,box-shadow] duration-500 ease-out',
         'hover:shadow-warm',
+        // 화면 밖 카드의 레이아웃/페인트를 건너뛴다(DiaryCard 와 동일).
+        // 챌린지 보드는 이 한 줄이 없어 누적된 카드 전부를 매 스크롤에
+        // 페인트하고 있었다.
+        '[content-visibility:auto] [contain-intrinsic-size:auto_320px]',
         isOfficial &&
           'ring-main-800 shadow-[0_10px_30px_-8px_rgba(255,89,0,0.45)] ring-2',
         isEnded && 'opacity-60',

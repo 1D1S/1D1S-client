@@ -9,7 +9,7 @@ export function DiaryCommentsSkeleton({
   count = 3,
 }: DiaryCommentsSkeletonProps): React.ReactElement {
   return (
-    <div className="flex flex-col gap-4">
+    <div data-skeleton-group className="flex flex-col gap-4">
       {Array.from({ length: count }).map((_, index) => (
         <div key={index} className="flex items-start gap-2.5">
           <Skeleton shape="circle" className="h-8 w-8 shrink-0" />

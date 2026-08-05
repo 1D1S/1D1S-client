@@ -4,7 +4,7 @@ import React from 'react';
 
 export function SubPageRouteSkeleton(): React.ReactElement {
   return (
-    <div className="min-h-screen w-full bg-white">
+    <div data-skeleton-group className="min-h-screen w-full bg-white">
       <div
         data-native-subpage-content
         className="mx-auto w-full max-w-[980px] p-4 lg:p-6"

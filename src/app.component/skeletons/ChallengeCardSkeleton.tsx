@@ -83,6 +83,8 @@ export function ChallengeCardSkeletonGrid({
 }: ChallengeCardSkeletonGridProps): React.ReactElement {
   return (
     <div
+      // 조각별 펄스 대신 그리드 전체가 하나로 깜빡인다(animation.css 참고).
+      data-skeleton-group
       className={cn(
         'xs:grid-cols-2 grid grid-cols-1 gap-4 sm:grid-cols-3',
         className

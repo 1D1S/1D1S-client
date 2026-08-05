@@ -74,6 +74,8 @@ export function DiaryCardSkeletonGrid({
 }: DiaryCardSkeletonGridProps): React.ReactElement {
   return (
     <div
+      // 조각별 펄스 대신 그리드 전체가 하나로 깜빡인다(animation.css 참고).
+      data-skeleton-group
       className={cn(
         'grid grid-cols-2 items-start gap-2.5',
         'sm:grid-cols-3 sm:gap-4',

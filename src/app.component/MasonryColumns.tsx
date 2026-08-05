@@ -50,6 +50,24 @@ export default function MasonryColumns({
     getServerSnapshot
   );
 
+  // 단일 패스 라운드로빈. 예전엔 렌더마다 toArray + 컬럼 수만큼 filter 를
+  // 반복해 O(n×열) 배열을 새로 만들었다 — 무한 스크롤로 n 이 커질수록
+  // 스크롤 중 재렌더 비용이 같이 자랐다. (훅이라 조기 return 앞에 둔다.)
+  const columns = React.useMemo(() => {
+    if (columnCount === 0) {
+      return [];
+    }
+    const items = React.Children.toArray(children);
+    const buckets: React.ReactNode[][] = Array.from(
+      { length: columnCount },
+      () => []
+    );
+    items.forEach((item, index) => {
+      buckets[index % columnCount].push(item);
+    });
+    return buckets;
+  }, [children, columnCount]);
+
   // 컬럼 수 미확정(SSR/하이드레이션) — 같은 브레이크포인트의 CSS 그리드로
   // 렌더해 첫 페인트부터 열 개수와 카드 폭이 정확하게 보이도록 한다.
   if (columnCount === 0) {
@@ -65,11 +83,6 @@ export default function MasonryColumns({
       </div>
     );
   }
-
-  const items = React.Children.toArray(children);
-  const columns = Array.from({ length: columnCount }, (_, columnIndex) =>
-    items.filter((_, itemIndex) => itemIndex % columnCount === columnIndex)
-  );
 
   return (
     <div className={cn('flex items-start', gapClassName, className)}>

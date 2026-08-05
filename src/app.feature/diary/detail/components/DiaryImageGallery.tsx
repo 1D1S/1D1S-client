@@ -75,7 +75,11 @@ export function DiaryImageGallery({
 
   return (
     <>
-      <div className="flex flex-wrap gap-2.5">
+      {/* 1장이면 전체폭 1열, 2장 이상이면 2열 masonry. 예전엔 고정 폭
+          w-[200px] flex-wrap 라 좁은 화면에서 1열로만 쌓여 스크롤이 길었다.
+          columns-2 는 이미지 자연 비율을 유지(잘림 없음)하면서 세로 높이를
+          절반으로 줄인다. 좁은 화면에서도 2열을 유지한다. */}
+      <div className={count === 1 ? undefined : 'columns-2 gap-2.5'}>
         {imageUrls.map((url, index) => (
           <button
             key={`${url}-${index}`}
@@ -90,8 +94,11 @@ export function DiaryImageGallery({
               }
             }}
             className={cn(
-              'aspect-square w-[200px] max-w-full cursor-zoom-in',
-              'overflow-hidden rounded-xl border border-gray-200 bg-gray-100'
+              'block w-full cursor-zoom-in overflow-hidden rounded-xl',
+              'border border-gray-200 bg-gray-100',
+              // 2열 masonry: columns 는 세로 gap 을 안 주므로 mb 로 보정하고,
+              // 이미지가 컬럼 사이에서 쪼개지지 않게 break-inside-avoid.
+              count > 1 && 'mb-2.5 break-inside-avoid'
             )}
           >
             {/* 썸네일은 페이드 없이 즉시 표시 — FadeInImage 의 opacity
@@ -100,7 +107,11 @@ export function DiaryImageGallery({
             <img
               src={url}
               alt={`일지 이미지 ${index + 1}`}
-              className="h-full w-full object-cover"
+              // 자연 비율 유지(잘림 없이). 1장은 너무 커지지 않게 높이 상한.
+              className={cn(
+                'w-full',
+                count === 1 ? 'max-h-[70vh] object-contain' : 'h-auto'
+              )}
               onError={handleThumbnailError}
             />
           </button>

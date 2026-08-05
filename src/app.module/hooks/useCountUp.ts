@@ -49,6 +49,7 @@ export function useCountUp(
     }
 
     let startTime: number | null = null;
+    let lastUpdate = 0;
     const tick = (now: number): void => {
       if (startTime === null) {
         startTime = now;
@@ -56,7 +57,13 @@ export function useCountUp(
       const progress = Math.min(1, (now - startTime) / durationMs);
       // easeOutCubic — 빠르게 올라가다 끝에서 부드럽게 멈춘다.
       const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(Math.round(from + delta * eased));
+      // React 재렌더는 ~20fps 로 제한한다. 매 프레임 setState 하면 800ms
+      // 동안 ~48회 재렌더인데, 마이페이지는 이 훅 4개가 동시에 돈다 —
+      // 숫자 카운트업에 60fps 는 눈으로 구분도 안 되는 낭비다.
+      if (progress >= 1 || now - lastUpdate >= 50) {
+        lastUpdate = now;
+        setDisplay(Math.round(from + delta * eased));
+      }
       if (progress < 1) {
         frameRef.current = requestAnimationFrame(tick);
       } else {

@@ -25,6 +25,40 @@
   animation: skeletonPulse 1.65s ease-in-out infinite;
 }
 
+/* 라우트 진입 페이드(src/app/template.tsx). opacity 전용 — transform 은
+   fixed 자손의 containing block 을 바꿔서 쓰지 않는다. */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-page-enter {
+  animation: pageEnter 0.18s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-enter {
+    animation: none;
+  }
+}
+
+/* 스켈레톤이 수십 개 모이는 화면(보드 첫 로드 등)에서는 개별 펄스가 각각
+   컴포지터 애니메이션이 된다 — 카드 스켈레톤 12장 × 11조각 = 132개 동시
+   애니메이션이 첫 화면의 가장 무거운 프레임이었다. 그룹 컨테이너에
+   data-skeleton-group 을 달면 자식 펄스를 전부 끄고 컨테이너 하나만
+   깜빡인다. 시각적으로 동일하고 비용은 1/n 이다. */
+[data-skeleton-group] {
+  animation: skeletonPulse 1.65s ease-in-out infinite;
+}
+
+[data-skeleton-group] .skeleton-pulse {
+  animation: none;
+}
+
 .animate-draw-check-1 {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
@@ -106,7 +140,11 @@
 }
 
 .animate-cta-pulse {
-  animation: ctaPulse 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  /* infinite → 3회. box-shadow spread 는 합성이 안 되는 속성이라 매 프레임
+     리페인트인데, WebView 에서는 그 리페인트가 곧 텍스처 업로드 + Flutter
+     프레임 요청이다 — 홈에 머무는 내내 프레임 루프가 쉬지 못했다. 시선
+     유도는 처음 몇 초면 충분하므로 3회만 돌고 멈춘다. */
+  animation: ctaPulse 2.2s cubic-bezier(0.4, 0, 0.2, 1) 3;
 }
 
 .animate-cta-pulse:hover,
@@ -148,6 +186,11 @@
   /* DS 기본 1.8s 보다 느리게 돌려 더 부드럽게(animation 단축속성 뒤에
      선언된 longhand 가 duration 만 덮어쓴다). */
   animation-duration: 2.4s;
+  /* infinite → 6회(~14초). transform 전용이라 합성은 되지만, WebView 의
+     texture-layer 합성에서는 **프레임이 갱신되는 것 자체**가 Flutter 프레임
+     요청이다 — 홈에 불꽃이 살아 있는 동안 프레임 루프가 영원히 못 쉰다.
+     진입 직후 잠깐만 살아 움직이고 멈춘다. */
+  animation-iteration-count: 6;
 }
 
 @media (prefers-reduced-motion: reduce) {

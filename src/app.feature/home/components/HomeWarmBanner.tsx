@@ -8,6 +8,10 @@ import {
 import { useBanners } from '@feature/banner/hooks/useBanners';
 import { type Banner as ServerBanner } from '@feature/banner/type/banner';
 import { cn } from '@module/utils/cn';
+import {
+  isNativeTabBackground,
+  subscribeNativeTabVisibility,
+} from '@module/utils/nativeTabVisibility';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -99,14 +103,33 @@ export default function HomeWarmBanner({
 
   // 자동 로테이션 — resetNonce 가 바뀌면(수동 조작) 인터벌을 다시 시작해
   // 풀 인터벌부터 카운트한다.
+  //
+  // 앱 셸에서는 배경 탭일 때 멈춘다. 홈은 탭 다섯 개 중 하나라 사용자가 다른
+  // 탭에 있는 동안에도 이 타이머가 5초마다 배너를 갈아 끼우고 있었다. 안드로이드
+  // 는 WebView 를 텍스처 레이어로 합성해서, 보이지 않는 문서가 프레임을 하나
+  // 그릴 때마다 텍스처가 dirty 가 되고 그게 Flutter 프레임 요청이 된다 —
+  // 화면에 바뀐 게 없는데 프레임 루프만 도는 상태다. 셸이 CSS 애니메이션은
+  // style 주입으로 멈추지만 setInterval 은 그 방식으로 멈출 수 없어서, 여기서
+  // 직접 받는다. 브라우저에는 신호 자체가 없어 종전대로 계속 돈다.
   useEffect(() => {
     if (count <= 1) {
       return undefined;
     }
-    const timerId = window.setInterval(() => {
-      setIndex((i) => (i + 1) % count);
-    }, ROTATION_MS);
-    return () => window.clearInterval(timerId);
+    let timerId: number | undefined;
+    const apply = (background: boolean): void => {
+      window.clearInterval(timerId);
+      timerId = background
+        ? undefined
+        : window.setInterval(() => {
+            setIndex((i) => (i + 1) % count);
+          }, ROTATION_MS);
+    };
+    apply(isNativeTabBackground());
+    const unsubscribe = subscribeNativeTabVisibility(apply);
+    return () => {
+      window.clearInterval(timerId);
+      unsubscribe();
+    };
   }, [count, resetNonce]);
 
   // 수동 이동(화살표·인디케이터·스와이프) — 순환 + 타이머 리셋.

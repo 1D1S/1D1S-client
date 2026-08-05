@@ -45,7 +45,7 @@ export function MobileBottomActionBar({
       }
       className={cn(
         'fixed right-0 bottom-0 left-0 z-20',
-        'border-t border-gray-100 bg-white/95 backdrop-blur',
+        'border-t border-gray-100 bg-white',
         'px-5 pt-3',
         'pb-[calc(1.75rem+env(safe-area-inset-bottom))]',
         'transition-transform duration-150 ease-out',
