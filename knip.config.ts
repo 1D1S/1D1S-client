@@ -60,6 +60,10 @@ const config: KnipConfig = {
     'ts-node',
     // CSS 에서 `@import` 로 사용
     'tw-animate-css',
+    // 폰트 서브셋 원본. 런타임은 자체 호스팅 subset(pretendard-subset.css →
+    // /fonts/pretendard/subset/*.woff2)을 쓰므로 npm 패키지를 직접 import 하지
+    // 않지만, 서브셋 재생성의 원본이라 유지한다. 제거하면 폰트 재생성이 깨진다.
+    'pretendard',
   ],
 
   // 현 시점 baseline (TECH_DEBT — Minor). 새로 추가된 것만 차단된다.
