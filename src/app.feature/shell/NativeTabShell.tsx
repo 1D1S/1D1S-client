@@ -2,13 +2,33 @@
 
 import { ChallengeBoardSkeleton } from '@component/skeletons/ChallengeBoardSkeleton';
 import { DiaryBoardSkeleton } from '@component/skeletons/DiaryBoardSkeleton';
-import ChallengeBoardScreen from '@feature/challenge/board/screen/ChallengeBoardScreen';
-import DiaryListScreen from '@feature/diary/board/screen/DiaryListScreen';
-import ExploreScreen from '@feature/explore/screen/ExploreScreen';
 import HomeMobileHeader from '@feature/home/components/HomeMobileHeader';
-import HomeScreen from '@feature/home/screen/HomeScreen';
-import MyPageScreen from '@feature/member/mypage/screen/MyPageScreen';
+import dynamic from 'next/dynamic';
 import React, { Suspense } from 'react';
+
+// 탭 화면은 dynamic import 로 코드 스플릿한다. 예전엔 5개 화면을 전부 static
+// import 해, 활성 탭 하나만 마운트해도 초기 번들에 5개 화면 코드가 모두 실려
+// 첫 로드에 JS 파싱이 무거웠다(저사양 기기 체감 지연). 이제 활성 탭의 청크만
+// 첫 페인트에 로드되고, 나머지는 활성화/유휴 프리워밍 때 로드된다.
+const HomeScreen = dynamic(() => import('@feature/home/screen/HomeScreen'), {
+  ssr: false,
+});
+const ExploreScreen = dynamic(
+  () => import('@feature/explore/screen/ExploreScreen'),
+  { ssr: false }
+);
+const ChallengeBoardScreen = dynamic(
+  () => import('@feature/challenge/board/screen/ChallengeBoardScreen'),
+  { ssr: false, loading: () => <ChallengeBoardSkeleton /> }
+);
+const DiaryListScreen = dynamic(
+  () => import('@feature/diary/board/screen/DiaryListScreen'),
+  { ssr: false, loading: () => <DiaryBoardSkeleton /> }
+);
+const MyPageScreen = dynamic(
+  () => import('@feature/member/mypage/screen/MyPageScreen'),
+  { ssr: false }
+);
 
 /**
  * 네이티브 앱 전용 keep-alive 탭 셸.
@@ -119,6 +139,30 @@ export default function NativeTabShell({
   React.useEffect(() => {
     window.history.replaceState(null, '', `/shell?tab=${initialTab}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 첫 페인트 후 유휴 시간에 비활성 탭을 백그라운드로 지연 마운트해 둔다.
+  // 첫 로드는 활성 탭 하나만큼 가볍게 하고, 이후 전환은 이미 데워져 즉시가
+  // 된다. mypage 는 제외 — 게스트일 때 인증 가드가 문서를 /login 으로
+  // 갈아치우므로(위 mounted 주석) 사용자가 눌러 활성화할 때만 마운트한다.
+  React.useEffect(() => {
+    const PREWARM: ShellTabId[] = ['home', 'explore', 'challenge', 'diary'];
+    const warm = (): void => {
+      setMounted((prev) => {
+        const next = PREWARM.filter((tab) => !prev.includes(tab));
+        return next.length ? [...prev, ...next] : prev;
+      });
+    };
+    const win = window as Window & {
+      requestIdleCallback?(cb: () => void, opts?: { timeout: number }): number;
+      cancelIdleCallback?(handle: number): void;
+    };
+    if (win.requestIdleCallback) {
+      const handle = win.requestIdleCallback(warm, { timeout: 3000 });
+      return () => win.cancelIdleCallback?.(handle);
+    }
+    const handle = window.setTimeout(warm, 1500);
+    return () => window.clearTimeout(handle);
   }, []);
 
   React.useEffect(() => {
