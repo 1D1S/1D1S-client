@@ -47,14 +47,26 @@ export function FilterDisclosure({
         <ChevronDown
           className={cn(
             'h-4 w-4 transition-transform duration-200',
-            open ? 'rotate-180 text-main-700' : 'text-gray-400'
+            open ? 'text-main-700 rotate-180' : 'text-gray-400'
           )}
           aria-hidden
         />
       </button>
-      {open ? (
-        <div className="mt-2.5 flex flex-col gap-2.5">{children}</div>
-      ) : null}
+      {/* 200ms 높이+페이드 — grid-rows 0fr→1fr 트릭으로 auto 높이를
+          애니메이션한다. 앱 네이티브 툴바(AnimatedSize 200ms)와 짝. */}
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows,opacity] duration-200 ease-out',
+          open
+            ? 'grid-rows-[1fr] opacity-100'
+            : 'pointer-events-none grid-rows-[0fr] opacity-0'
+        )}
+        aria-hidden={!open}
+      >
+        <div className="overflow-hidden">
+          <div className="mt-2.5 flex flex-col gap-2.5 pb-2">{children}</div>
+        </div>
+      </div>
     </div>
   );
 }
