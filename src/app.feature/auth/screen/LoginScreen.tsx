@@ -68,7 +68,12 @@ export function LoginScreen(): React.ReactElement {
     const codeChallenge = new URLSearchParams(window.location.search).get(
       'pkceChallenge'
     );
-    if (nativeProvider === 'naver' && codeChallenge) {
+    // 안드로이드 구글은 SHA-1 콘솔 등록 없이 네이버와 같은 서버 OAuth
+    // 웹 경로로 로그인한다 — 같은 분기를 태운다.
+    if (
+      (nativeProvider === 'naver' || nativeProvider === 'google') &&
+      codeChallenge
+    ) {
       markNativeOAuth(codeChallenge);
       window.location.replace(
         `${API_BASE_URL}/oauth2/authorization/${nativeProvider}`
