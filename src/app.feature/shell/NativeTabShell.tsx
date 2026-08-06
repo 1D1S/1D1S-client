@@ -2,17 +2,16 @@
 
 import { ChallengeBoardSkeleton } from '@component/skeletons/ChallengeBoardSkeleton';
 import { DiaryBoardSkeleton } from '@component/skeletons/DiaryBoardSkeleton';
+import { MyPageSkeleton } from '@component/skeletons/MyPageSkeleton';
 import HomeMobileHeader from '@feature/home/components/HomeMobileHeader';
+import HomeScreen from '@feature/home/screen/HomeScreen';
 import dynamic from 'next/dynamic';
 import React, { Suspense } from 'react';
 
-// 탭 화면은 dynamic import 로 코드 스플릿한다. 예전엔 5개 화면을 전부 static
-// import 해, 활성 탭 하나만 마운트해도 초기 번들에 5개 화면 코드가 모두 실려
-// 첫 로드에 JS 파싱이 무거웠다(저사양 기기 체감 지연). 이제 활성 탭의 청크만
-// 첫 페인트에 로드되고, 나머지는 활성화/유휴 프리워밍 때 로드된다.
-const HomeScreen = dynamic(() => import('@feature/home/screen/HomeScreen'), {
-  ssr: false,
-});
+// 홈은 셸의 기본 활성 탭이라 정적 import 로 셸 청크에 포함한다 — 콜드 오픈에서
+// 추가 청크 왕복 없이 즉시 렌더된다. 나머지 탭은 dynamic import 로 코드 스플릿
+// 하되, 미준비(마운트 전) 탭을 눌러도 흰 화면이 아니라 스켈레톤이 즉시 뜨도록
+// loading 을 각 탭 스켈레톤으로 준다 — 특히 프리워밍에서 제외되는 mypage.
 const ExploreScreen = dynamic(
   () => import('@feature/explore/screen/ExploreScreen'),
   { ssr: false }
@@ -27,7 +26,7 @@ const DiaryListScreen = dynamic(
 );
 const MyPageScreen = dynamic(
   () => import('@feature/member/mypage/screen/MyPageScreen'),
-  { ssr: false }
+  { ssr: false, loading: () => <MyPageSkeleton /> }
 );
 
 /**
