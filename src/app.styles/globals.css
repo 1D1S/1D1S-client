@@ -161,12 +161,13 @@
     margin-top: 0 !important;
   }
 
-  /* 챌린지 보드: 네이티브 툴바(검색+필터, 194px)가 body 최상단 오버레이로
-     얹힌다. 첫 콘텐츠를 그 아래로 내린다. 불변식:
-     offset = 툴바높이(Flutter kChallengeToolbarHeight = 194) + 12 clearance
-     = 206. 툴바 높이가 바뀌면 이 값도 같이 바꿀 것. */
+  /* 챌린지 보드·내 챌린지: 네이티브 툴바(검색+필터)가 body 최상단
+     오버레이로 얹힌다. 첫 콘텐츠를 그 아래로 내린다. 높이는 앱이
+     bridge.setToolbarOffset 으로 --native-toolbar-offset 에 싣는다
+     (상세 필터 접기/펴기로 동적). 폴백 162 = Flutter
+     ChallengeToolbar.heightFor(collapsed) 150 + 12 clearance. */
   html[data-native-app='true'] [data-native-toolbar-offset] {
-    margin-top: 206px !important;
+    margin-top: var(--native-toolbar-offset, 162px) !important;
   }
   /* h-14 (3.5rem) 컨텐츠 높이는 유지하면서 노치 영역만큼 위로 확장 */
   .h-14-safe {

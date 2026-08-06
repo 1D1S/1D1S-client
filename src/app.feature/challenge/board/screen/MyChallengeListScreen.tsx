@@ -24,7 +24,7 @@ import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { FilterDisclosure } from '../components/FilterDisclosure';
 import { useMyChallenges } from '../hooks/useChallengeQueries';
@@ -139,6 +139,36 @@ export function MyChallengeListScreen(): React.ReactElement {
   const [stateFilter, setStateFilter] = useState<StateFilter>('ALL');
   const [search, setSearch] = useState('');
 
+  // 네이티브 툴바(앱)의 검색/필터. 챌린지 보드와 같은 이벤트 계약 —
+  // 내 챌린지는 category(단일) + state(단일)만 쓴다. 웹 필터 블록은
+  // 네이티브에서 data-native-hide 로 숨겨져 이 이벤트가 유일한 입력이다.
+  useEffect(() => {
+    const onSearch = (event: Event): void => {
+      const detail = (event as CustomEvent<{ keyword?: string }>).detail;
+      setSearch(detail?.keyword ?? '');
+    };
+    const onFilter = (event: Event): void => {
+      const detail = (
+        event as CustomEvent<{ category?: string; state?: StateFilter }>
+      ).detail;
+      if (!detail) {
+        return;
+      }
+      if (detail.category) {
+        setCategory(detail.category);
+      }
+      if (detail.state) {
+        setStateFilter(detail.state);
+      }
+    };
+    window.addEventListener('native:board_search', onSearch);
+    window.addEventListener('native:board_filter', onFilter);
+    return () => {
+      window.removeEventListener('native:board_search', onSearch);
+      window.removeEventListener('native:board_filter', onFilter);
+    };
+  }, []);
+
   const items = useMemo(() => data ?? [], [data]);
   const hasAnyChallenge = items.length > 0;
 
@@ -175,6 +205,7 @@ export function MyChallengeListScreen(): React.ReactElement {
         // 스크롤해도 필터가 따라 올라가지 않는다. bg-white 로 카드가 비쳐
         // 보이지 않게 하고, 좌우 -mx/px 로 컨테이너 패딩 경계까지 덮는다.
         <div
+          data-native-hide
           className={cn(
             'sticky top-0 z-20 -mx-5 mt-4 flex flex-col gap-2.5 bg-white',
             'px-5 pt-1 pb-2 lg:-mx-8 lg:mt-6 lg:px-8'
@@ -226,10 +257,7 @@ export function MyChallengeListScreen(): React.ReactElement {
                   size="sm"
                   shape="rounded"
                   icon={
-                    <CategoryIcon
-                      category={option.value}
-                      className="h-3 w-3"
-                    />
+                    <CategoryIcon category={option.value} className="h-3 w-3" />
                   }
                 >
                   {option.label}
@@ -269,47 +297,50 @@ export function MyChallengeListScreen(): React.ReactElement {
         </div>
       ) : null}
 
-      {showSkeleton ? (
-        <ChallengeCardSkeletonGrid
-          count={8}
-          className="data-fade-in mt-6 gap-4"
-        />
-      ) : null}
+      {/* 네이티브: 오버레이 툴바 높이만큼 첫 콘텐츠를 내린다. 웹: no-op. */}
+      <div data-native-toolbar-offset>
+        {showSkeleton ? (
+          <ChallengeCardSkeletonGrid
+            count={8}
+            className="data-fade-in mt-6 gap-4"
+          />
+        ) : null}
 
-      {!showSkeleton && hasResults ? (
-        <div
-          className={cn(
-            'data-fade-in mt-6 grid gap-4',
-            'xs:grid-cols-2 grid-cols-1 sm:grid-cols-3'
-          )}
-        >
-          {visibleItems.map((item) => (
-            <MyChallengeCardItem
-              key={item.challenge.challengeId}
-              item={item}
-            />
-          ))}
-        </div>
-      ) : null}
+        {!showSkeleton && hasResults ? (
+          <div
+            className={cn(
+              'data-fade-in mt-6 grid gap-4',
+              'xs:grid-cols-2 grid-cols-1 sm:grid-cols-3'
+            )}
+          >
+            {visibleItems.map((item) => (
+              <MyChallengeCardItem
+                key={item.challenge.challengeId}
+                item={item}
+              />
+            ))}
+          </div>
+        ) : null}
 
-      {/* 필터 결과 없음(참여 이력은 있으나 조건에 안 맞음) */}
-      {!showSkeleton && hasAnyChallenge && !hasResults ? (
-        <EmptyState
-          variant="challenge"
-          title="조건에 맞는 챌린지가 없어요"
-          description="검색어나 필터를 바꿔 보세요"
-          className="mt-10"
-        />
-      ) : null}
+        {/* 필터 결과 없음(참여 이력은 있으나 조건에 안 맞음) */}
+        {!showSkeleton && hasAnyChallenge && !hasResults ? (
+          <EmptyState
+            variant="challenge"
+            title="조건에 맞는 챌린지가 없어요"
+            description="검색어나 필터를 바꿔 보세요"
+            className="mt-10"
+          />
+        ) : null}
 
-      {/* 참여 이력 자체가 없음 */}
-      {!showSkeleton && !hasAnyChallenge ? (
-        <EmptyState
-          variant="challenge"
-          title="참여한 챌린지가 없어요"
-          className="mt-10"
-        />
-      ) : null}
+        {/* 참여 이력 자체가 없음 */}
+        {!showSkeleton && !hasAnyChallenge ? (
+          <EmptyState
+            variant="challenge"
+            title="참여한 챌린지가 없어요"
+            className="mt-10"
+          />
+        ) : null}
+      </div>
     </BoardScreenLayout>
   );
 }
