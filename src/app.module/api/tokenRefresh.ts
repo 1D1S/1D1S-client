@@ -103,7 +103,26 @@ export function runAuthBootProbe(): Promise<void> {
         await refreshAccessTokenOnce(); // 성공 시 markAuthenticated
         return;
       } catch {
-        // 재시도도 실패 → 아래에서 guest 확정
+        // 재시도 실패 — 아래 지연 2차 재시도로.
+      }
+      if (authStorage.getStatus() !== 'unknown') {
+        return;
+      }
+      // 지연 2차 재시도: 딥링크/콜드 진입으로 뜬 **상세 웹뷰**는 앱이
+      // native:auth_ready 를 쏘는 대상(탭 웹뷰)이 아니라 신호가 영영 안
+      // 온다. 그 사이 앱의 쿠키 심기(부트스트랩, 수 초)가 끝났을 수
+      // 있으니 한 번 더 기다렸다 재시도한 뒤에야 guest 를 확정한다.
+      // 진짜 게스트는 이 ~4초 동안 스켈레톤을 본다 — 로그인 사용자가
+      // '로그인 필요'로 굳는 것보다 싼 비용이다.
+      await new Promise((resolve) => setTimeout(resolve, 2_500));
+      if (authStorage.getStatus() !== 'unknown') {
+        return;
+      }
+      try {
+        await refreshAccessTokenOnce();
+        return;
+      } catch {
+        // 2차도 실패 → 아래에서 guest 확정
       }
       if (authStorage.getStatus() !== 'unknown') {
         return;

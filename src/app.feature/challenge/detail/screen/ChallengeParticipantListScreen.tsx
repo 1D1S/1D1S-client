@@ -6,6 +6,7 @@ import { SubPageShell } from '@component/layout/SubPageShell';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { normalizeApiError } from '@module/api/error';
+import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
@@ -99,6 +100,7 @@ export function ChallengeParticipantListScreen({
   const router = useRouter();
   const handleBack = useSafeBack(`/challenge/${id}`);
   const isLoggedIn = useIsLoggedIn();
+  const authStatus = useAuthStatus();
   const [sort, setSort] = useState<ParticipantSort>('PARTICIPATION');
 
   const {
@@ -115,7 +117,11 @@ export function ChallengeParticipantListScreen({
     PARTICIPANT_PAGE_SIZE,
     isLoggedIn
   );
-  const showSkeleton = useMinimumLoading(isLoading);
+  // 인증 확인 중(unknown)에도 스켈레톤을 유지한다 — 딥링크/콜드 진입에서
+  // 세션 주입 전 게스트로 단정해 로그인 안내가 뜨던 문제 방지(일지 탭과 동일).
+  const showSkeleton = useMinimumLoading(
+    isLoading || authStatus === 'unknown'
+  );
   const { ref } = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,
@@ -135,7 +141,9 @@ export function ChallengeParticipantListScreen({
   const total = data?.pages?.[0]?.pageInfo.totalElements ?? participants.length;
   const hasParticipants = participants.length > 0;
 
-  if (!isLoggedIn) {
+  // 확정된 게스트만 로그인 안내. unknown 은 위 showSkeleton 으로 대기하고,
+  // authenticated 는 목록을 그린다(콜드/딥링크에서 세션 준비 전 오판 방지).
+  if (authStatus === 'guest') {
     return (
       <LoginRequiredDialog
         open
