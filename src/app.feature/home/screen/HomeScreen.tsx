@@ -2,22 +2,35 @@
 
 import { Icon, PageWatermark } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
-import Stories from '@feature/stories/components/Stories';
+import StoryRingSkeleton from '@feature/stories/components/StoryRingSkeleton';
 import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useHasMounted } from '@module/hooks/useHasMounted';
 import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
 import { authStorage } from '@module/utils/auth';
 import { cn } from '@module/utils/cn';
 import { loginUrlFromCurrentLocation } from '@module/utils/returnTo';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import HomeExploreEntry from '../components/HomeExploreEntry';
-import HomePopup from '../components/HomePopup';
 import HomeStreakSlot from '../components/HomeStreakSlot';
 import HomeTodayRecordSection from '../components/HomeTodayRecordSection';
 import HomeWarmBanner from '../components/HomeWarmBanner';
 import HomeWarmGreeting from '../components/HomeWarmGreeting';
+
+// 아래-폴드 섹션은 dynamic import 로 지연한다. 홈 첫 페인트 크리티컬 청크에서
+// Stories(StoryRing/Viewer)·HomePopup 코드를 빼 파싱을 줄이고, 이들이 첫 페인트
+// 후 마운트될 때만 각자의 쿼리(스토리·팝업)가 발화해 크리티컬 sidebar/auth
+// 쿼리와 대역폭을 다투지 않게 한다. app_ready 는 sidebar 로만 게이팅되므로 이
+// 지연이 스플래시 시점을 늦추지 않는다.
+const Stories = dynamic(() => import('@feature/stories/components/Stories'), {
+  ssr: false,
+  loading: () => <StoryRingSkeleton />,
+});
+const HomePopup = dynamic(() => import('../components/HomePopup'), {
+  ssr: false,
+});
 
 function HomeLoginCta(): React.ReactElement {
   const router = useRouter();
