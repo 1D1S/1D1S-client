@@ -56,3 +56,14 @@ export function useReceivedFriendRequests(
     staleTime: FRIEND_STALE_TIME,
   });
 }
+
+/** 차단한 회원 목록(차단 관리 화면). 페이지네이션 없음. */
+export function useBlockedMembers(): UseQueryResult<FriendSummary[], Error> {
+  const isLoggedIn = useIsLoggedIn();
+  return useQuery({
+    queryKey: FRIEND_QUERY_KEYS.blocked(),
+    queryFn: () => friendApi.getBlockedMembers(),
+    enabled: isLoggedIn,
+    staleTime: FRIEND_STALE_TIME,
+  });
+}

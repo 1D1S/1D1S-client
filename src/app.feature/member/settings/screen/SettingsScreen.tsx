@@ -9,6 +9,7 @@ import { getApiErrorCode } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { cn } from '@module/utils/cn';
 import {
+  Ban,
   Bell,
   BookOpen,
   ChevronRight,
@@ -153,6 +154,13 @@ export default function SettingsScreen(): React.ReactElement {
             label="알림 설정"
             description="알림 수신 항목을 관리해요"
             onClick={() => router.push('/mypage/settings/notifications')}
+          />
+          <div className="h-px w-full bg-gray-100" />
+          <SettingsRow
+            icon={<Ban className="h-5 w-5" />}
+            label="차단 관리"
+            description="차단한 사용자를 확인하고 해제해요"
+            onClick={() => router.push('/mypage/friend/blocked')}
           />
         </section>
 

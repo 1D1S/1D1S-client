@@ -76,3 +76,33 @@ export function useRemoveFriend(): UseMutationResult<void, Error, number> {
     onSuccess: invalidate,
   });
 }
+
+/**
+ * 차단/해제 후에는 일지 보드·상세·챌린지 일지·댓글·참여자·프로필 등 여러
+ * 피드에서 그 사용자의 콘텐츠가 사라지거나 다시 나타나야 한다. 서버가
+ * 필터링하므로 클라는 현재 열려 있는 쿼리를 모두 무효화해 즉시 반영한다.
+ */
+function useInvalidateAfterBlock(): () => void {
+  const queryClient = useQueryClient();
+  return () => {
+    void queryClient.invalidateQueries();
+  };
+}
+
+export function useBlockMember(): UseMutationResult<void, Error, number> {
+  const invalidate = useInvalidateAfterBlock();
+  return useMutation({
+    mutationFn: (blockedMemberId: number) =>
+      friendApi.blockMember(blockedMemberId),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUnblockMember(): UseMutationResult<void, Error, number> {
+  const invalidate = useInvalidateAfterBlock();
+  return useMutation({
+    mutationFn: (blockedMemberId: number) =>
+      friendApi.unblockMember(blockedMemberId),
+    onSuccess: invalidate,
+  });
+}

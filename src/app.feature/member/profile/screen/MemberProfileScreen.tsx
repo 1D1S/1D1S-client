@@ -3,6 +3,7 @@
 import { MobileHeader, Text } from '@1d1s/design-system';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { MyPageSkeleton } from '@component/skeletons/MyPageSkeleton';
+import { MemberBlockButton } from '@feature/friend/components/MemberBlockButton';
 import { MemberFriendActionButton } from '@feature/friend/components/MemberFriendActionButton';
 import { useMemberProfile } from '@feature/member/hooks/useMemberQueries';
 import { MyPageActiveChallenges } from '@feature/member/mypage/components/MyPageActiveChallenges';
@@ -124,10 +125,19 @@ export default function MemberProfileScreen({
           challengeHref={`/member/${memberId}/challenge`}
           diaryHref={`/member/${memberId}/diary`}
           actions={
-            <MemberFriendActionButton
-              memberId={memberId}
-              relationStatus={relationStatus}
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <MemberFriendActionButton
+                memberId={memberId}
+                relationStatus={relationStatus}
+              />
+              {relationStatus && relationStatus !== 'SELF' ? (
+                <MemberBlockButton
+                  memberId={memberId}
+                  nickname={nickname}
+                  blocked={relationStatus === 'BLOCKED'}
+                />
+              ) : null}
+            </div>
           }
         />
 

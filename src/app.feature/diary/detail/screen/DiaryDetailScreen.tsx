@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 
 import { useChallengeDetail } from '../../../challenge/board/hooks/useChallengeQueries';
+import { MemberBlockButton } from '../../../friend/components/MemberBlockButton';
 import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
 import { useSidebar } from '../../../member/hooks/useMemberQueries';
 import { useDiaryDetail } from '../../board/hooks/useDiaryQueries';
@@ -183,14 +184,25 @@ function DiaryDetailView({
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 {!isOwner ? (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setIsReportOpen(true)}
-                  >
-                    <Flag className="mr-1 h-3.5 w-3.5" />
-                    신고
-                  </Button>
+                  <>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setIsReportOpen(true)}
+                    >
+                      <Flag className="mr-1 h-3.5 w-3.5" />
+                      신고
+                    </Button>
+                    {diaryData.authorId ? (
+                      <MemberBlockButton
+                        memberId={diaryData.authorId}
+                        nickname={diaryData.authorName}
+                        blocked={false}
+                        size="sm"
+                        onBlocked={() => router.push('/diary')}
+                      />
+                    ) : null}
+                  </>
                 ) : null}
                 {isOwner ? (
                   <DiaryOwnerMenu
