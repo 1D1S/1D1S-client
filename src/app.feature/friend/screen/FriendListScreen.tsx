@@ -17,7 +17,6 @@ import React from 'react';
 import { FriendListItem } from '../components/FriendListItem';
 import { useRemoveFriend } from '../hooks/useFriendMutations';
 import {
-  useBlockedMembers,
   useFriendList,
   useReceivedFriendRequests,
   useSentFriendRequests,
@@ -31,7 +30,7 @@ function RequestEntryRow({
 }: {
   icon: React.ReactNode;
   label: string;
-  count: number;
+  count?: number;
   onClick(): void;
 }): React.ReactElement {
   return (
@@ -57,7 +56,7 @@ function RequestEntryRow({
           {label}
         </Text>
       </div>
-      {count > 0 ? (
+      {count != null && count > 0 ? (
         <span
           className={cn(
             'inline-flex h-6 min-w-6 items-center justify-center',
@@ -82,13 +81,11 @@ export default function FriendListScreen(): React.ReactElement {
   useSignalPageReady('friend_list', !showSkeleton);
   const { data: received } = useReceivedFriendRequests();
   const { data: sent } = useSentFriendRequests();
-  const { data: blocked } = useBlockedMembers();
   const removeFriend = useRemoveFriend();
 
   const friendList = friends ?? [];
   const receivedCount = received?.length ?? 0;
   const sentCount = sent?.length ?? 0;
-  const blockedCount = blocked?.length ?? 0;
 
   const handleRemove = (memberId: number, nickname: string): void => {
     if (!window.confirm(`'${nickname}'님을 친구 목록에서 삭제할까요?`)) {
@@ -125,7 +122,6 @@ export default function FriendListScreen(): React.ReactElement {
         <RequestEntryRow
           icon={<Ban className="h-5 w-5" />}
           label="차단한 사용자"
-          count={blockedCount}
           onClick={() => router.push('/mypage/friend/blocked')}
         />
       </section>

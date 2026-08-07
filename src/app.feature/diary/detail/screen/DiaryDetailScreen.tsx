@@ -387,6 +387,9 @@ export function DiaryDetailScreen({
   const deleteDiary = useDeleteDiary();
   const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId, {
     enabled: Boolean(safeDiaryId) && !isDeleting && !isLeaving,
+    // 인라인 에러 화면을 직접 렌더하므로 전역 에러 토스트는 중복. 차단 후
+    // 403 재요청 토스트도 이걸로 억제된다.
+    skipGlobalErrorToast: true,
   });
   const showSkeleton = useMinimumLoading(isLoading);
   useSignalPageReady('diary_detail', !showSkeleton && Boolean(data));

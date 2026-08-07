@@ -26,12 +26,19 @@ export function useDiaryDetail(
   diaryId: number,
   options?: {
     enabled?: boolean;
+    // 상세 화면은 접근 불가(403)를 인라인 에러 화면으로 직접 렌더하므로 전역
+    // 에러 토스트가 중복이 된다. 특히 작성자 차단 후 invalidate 재요청이 403 을
+    // 받아 "접근 권한 없음" 토스트가 뜨는 것을 막는다.
+    skipGlobalErrorToast?: boolean;
   }
 ): UseQueryResult<DiaryDetail, Error> {
   return useQuery({
     queryKey: DIARY_QUERY_KEYS.detail(diaryId),
     queryFn: () => diaryDetailApi.getDiaryById(diaryId),
     enabled: options?.enabled ?? Boolean(diaryId),
+    meta: options?.skipGlobalErrorToast
+      ? { skipGlobalErrorToast: true }
+      : undefined,
   });
 }
 
