@@ -14,6 +14,10 @@ import {
 import { useFriendList } from '@feature/friend/hooks/useFriendQueries';
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
+import {
+  isWithdrawnMember,
+  withdrawnDisplayName,
+} from '@module/utils/nickname';
 import React, { useMemo, useState } from 'react';
 
 import { useFriendComparison } from '../hooks/useStatisticsQueries';
@@ -130,7 +134,8 @@ export function FriendComparisonSection(): React.ReactElement {
   } = useFriendComparison(effectiveId, period);
 
   const hasFriends = (friends?.length ?? 0) > 0;
-  const friendName = selectedFriend?.nickname ?? '친구';
+  const friendName =
+    withdrawnDisplayName(selectedFriend?.nickname) || '친구';
 
   return (
     <StatisticsCard
@@ -158,7 +163,11 @@ export function FriendComparisonSection(): React.ReactElement {
         <div className="flex items-center gap-2">
           <CircleAvatar
             size="sm"
-            imageUrl={selectedFriend?.profileUrl}
+            imageUrl={
+              isWithdrawnMember(selectedFriend?.nickname)
+                ? undefined
+                : selectedFriend?.profileUrl
+            }
             alt={friendName}
           />
           <div className="min-w-0 flex-1">
@@ -175,7 +184,7 @@ export function FriendComparisonSection(): React.ReactElement {
                     key={friend.memberId}
                     value={String(friend.memberId)}
                   >
-                    {friend.nickname}
+                    {withdrawnDisplayName(friend.nickname)}
                   </SelectItem>
                 ))}
               </SelectContent>

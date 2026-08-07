@@ -1,6 +1,10 @@
 'use client';
 
 import type { CommentNode } from '@1d1s/design-system';
+import {
+  isWithdrawnMember,
+  WITHDRAWN_MEMBER_LABEL,
+} from '@module/utils/nickname';
 import { useCallback, useMemo } from 'react';
 
 import { DiaryComment } from '../type/comment';
@@ -73,8 +77,12 @@ export function useCommentTree(
         createdAt: formatCommentDateTime(comment.createdAt),
         author: {
           id: String(comment.author.id),
-          nickname: comment.author.nickname || '익명',
-          profileImageUrl: comment.author.profileImage ?? undefined,
+          nickname: isWithdrawnMember(comment.author.nickname)
+            ? WITHDRAWN_MEMBER_LABEL
+            : comment.author.nickname || '익명',
+          profileImageUrl: isWithdrawnMember(comment.author.nickname)
+            ? undefined
+            : comment.author.profileImage ?? undefined,
         },
         isAuthor:
           (currentMemberId !== null && comment.author.id === currentMemberId) ||

@@ -22,3 +22,44 @@ export function validateNickname(value: string): string {
   const result = nicknameSchema.safeParse(value);
   return result.success ? '' : result.error.issues[0].message;
 }
+
+export const WITHDRAWN_MEMBER_LABEL = '탈퇴한 사용자';
+
+// 서버가 탈퇴 회원 닉네임을 마스킹하기 전이라 "탈퇴한 사용자_<id>_<ts>" 형태의
+// raw 닉네임이 그대로 내려올 수 있다. 유효 닉네임 규칙(NICKNAME_REGEX: 공백·
+// 언더바 불가)상 실제 사용자 닉네임과 절대 겹치지 않으므로 방어적으로 마스킹한다.
+const WITHDRAWN_MEMBER_RAW = /^탈퇴한 사용자(?:_\d+)+$/;
+
+/**
+ * 탈퇴 회원 여부. 서버가 isDeleted 를 주면 그것을 우선하고, 아직 raw 닉네임만
+ * 오는 경우 접미사 패턴/마스킹 라벨로도 판정한다(프로필 링크 비활성용).
+ */
+export function isWithdrawnMember(
+  nickname?: string | null,
+  isDeleted?: boolean
+): boolean {
+  if (isDeleted) {
+    return true;
+  }
+  const value = nickname?.trim() ?? '';
+  return value === WITHDRAWN_MEMBER_LABEL || WITHDRAWN_MEMBER_RAW.test(value);
+}
+
+/** 화면 표시용 닉네임 — 탈퇴 회원이면 "탈퇴한 사용자"로 마스킹한다. */
+export function withdrawnDisplayName(
+  nickname?: string | null,
+  isDeleted?: boolean
+): string {
+  return isWithdrawnMember(nickname, isDeleted)
+    ? WITHDRAWN_MEMBER_LABEL
+    : nickname ?? '';
+}
+
+// 서버가 조합한 문장(알림 메시지 등) 안에 raw 접미사 닉네임이 섞여 오는 경우
+// 문자열 내부의 해당 부분만 라벨로 치환한다.
+const WITHDRAWN_MEMBER_RAW_GLOBAL = /탈퇴한 사용자(?:_\d+)+/g;
+
+/** 문장 안에 섞인 raw 탈퇴 닉네임을 "탈퇴한 사용자"로 치환한다. */
+export function maskWithdrawnInText(text: string): string {
+  return text.replace(WITHDRAWN_MEMBER_RAW_GLOBAL, WITHDRAWN_MEMBER_LABEL);
+}

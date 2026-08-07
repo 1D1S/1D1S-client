@@ -8,6 +8,10 @@ import { Skeleton } from '@component/Skeleton';
 import { EMOTION_TONE } from '@feature/diary/shared/utils/feeling';
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
+import {
+  isWithdrawnMember,
+  withdrawnDisplayName,
+} from '@module/utils/nickname';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
@@ -113,6 +117,7 @@ function DiaryCard({
   onLikeToggle,
   className,
 }: DiaryCardProps): React.ReactElement {
+  const authorWithdrawn = isWithdrawnMember(user);
   const handleKeyDown = createActivationKeydownHandler<HTMLDivElement>(onClick);
   // href 모드에서는 내부의 stretched-link 가 키보드 포커스/활성화를 담당
   // 하므로 루트에 button 시맨틱을 주지 않는다 (탭 스톱 중복 방지).
@@ -297,7 +302,7 @@ function DiaryCard({
             )}
             aria-hidden
           >
-            {isValidNextImageSrc(profileImageUrl) ? (
+            {isValidNextImageSrc(profileImageUrl) && !authorWithdrawn ? (
               <FadeInImage
                 src={profileImageUrl}
                 alt=""
@@ -308,7 +313,7 @@ function DiaryCard({
             ) : null}
           </span>
           <span className="truncate text-[11px] font-medium text-gray-500">
-            {user}
+            {withdrawnDisplayName(user)}
           </span>
         </span>
         <span className="flex shrink-0 items-center gap-1.5">

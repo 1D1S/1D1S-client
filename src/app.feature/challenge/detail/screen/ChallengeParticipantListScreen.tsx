@@ -11,6 +11,10 @@ import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { cn } from '@module/utils/cn';
 import { requestNativePushRoute } from '@module/utils/nativeBridge';
+import {
+  isWithdrawnMember,
+  withdrawnDisplayName,
+} from '@module/utils/nickname';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
@@ -38,14 +42,18 @@ function ParticipantRow({
 }): React.ReactElement {
   const hasRank = typeof participant.rank === 'number' && participant.rank > 0;
   const isHost = participant.status === 'HOST';
+  const withdrawn = isWithdrawnMember(participant.nickname);
 
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={withdrawn ? undefined : onClick}
+      disabled={withdrawn}
       className={cn(
-        'flex w-full cursor-pointer items-center gap-3 px-2 py-3',
-        'text-left transition-colors hover:bg-gray-50'
+        'flex w-full items-center gap-3 px-2 py-3 text-left',
+        withdrawn
+          ? 'cursor-default'
+          : 'cursor-pointer transition-colors hover:bg-gray-50'
       )}
     >
       <span
@@ -65,13 +73,13 @@ function ParticipantRow({
       </span>
       <CircleAvatar
         size="sm"
-        imageUrl={participant.profileImg ?? undefined}
+        imageUrl={withdrawn ? undefined : participant.profileImg ?? undefined}
         tone="cream"
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-1.5">
           <Text size="body2" weight="bold" className="truncate text-gray-800">
-            {participant.nickname}
+            {withdrawnDisplayName(participant.nickname)}
           </Text>
           {isHost ? (
             <span

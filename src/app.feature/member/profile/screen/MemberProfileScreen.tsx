@@ -22,6 +22,10 @@ import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { cn } from '@module/utils/cn';
+import {
+  isWithdrawnMember,
+  withdrawnDisplayName,
+} from '@module/utils/nickname';
 import React from 'react';
 
 interface MemberProfileScreenProps {
@@ -107,10 +111,11 @@ export default function MemberProfileScreen({
   const isSelf =
     relationStatus === 'SELF' ||
     (Boolean(sidebar?.nickname) && sidebar?.nickname === nickname);
+  const displayNickname = withdrawnDisplayName(nickname);
 
   return (
     <div className="min-h-screen w-full bg-white">
-      <MobileBackHeader title={nickname} />
+      <MobileBackHeader title={displayNickname} />
       <div className="hidden lg:block">
         <MyPageHeroBanner />
       </div>
@@ -122,8 +127,8 @@ export default function MemberProfileScreen({
         )}
       >
         <MyPageProfileCard
-          nickname={nickname}
-          profileUrl={profileUrl}
+          nickname={displayNickname}
+          profileUrl={isWithdrawnMember(nickname) ? '' : profileUrl}
           totalDiaryCount={streak.totalDiaryCount}
           totalChallengeCount={streak.totalChallengeCount ?? 0}
           completedFiniteChallengeCount={
@@ -143,7 +148,7 @@ export default function MemberProfileScreen({
                 />
                 <MemberBlockButton
                   memberId={memberId}
-                  nickname={nickname}
+                  nickname={displayNickname}
                   blocked={relationStatus === 'BLOCKED'}
                 />
               </div>
@@ -170,7 +175,7 @@ export default function MemberProfileScreen({
               <MyPageStatSection
                 streak={streak}
                 isMe={false}
-                memberName={nickname}
+                memberName={displayNickname}
               />
             </div>
 
@@ -184,9 +189,9 @@ export default function MemberProfileScreen({
 
             <div className="mt-8">
               <MyPageDiarySection
-                title={`${nickname}님의 일지`}
+                title={`${displayNickname}님의 일지`}
                 diaries={memberDiaries}
-                nickname={nickname}
+                nickname={displayNickname}
                 hasMore={hasMoreDiaries}
                 viewAllHref={`/member/${memberId}/diary`}
                 emptyMessage="작성한 일지가 없습니다."

@@ -4,6 +4,10 @@ import { CircleAvatar, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { getDateTimestamp } from '@module/utils/date';
 import { requestNativePushRoute } from '@module/utils/nativeBridge';
+import {
+  isWithdrawnMember,
+  withdrawnDisplayName,
+} from '@module/utils/nickname';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -19,6 +23,7 @@ export function FriendRequestListItem({
   actions,
 }: FriendRequestListItemProps): React.ReactElement {
   const router = useRouter();
+  const withdrawn = isWithdrawnMember(request.nickname);
 
   return (
     <div
@@ -30,17 +35,28 @@ export function FriendRequestListItem({
       <button
         type="button"
         onClick={() => {
+          if (withdrawn) {
+            return;
+          }
           const path = `/member/${request.memberId}`;
           if (!requestNativePushRoute(path)) {
             router.push(path);
           }
         }}
-        className="flex flex-1 items-center gap-3 text-left"
+        disabled={withdrawn}
+        className={cn(
+          'flex flex-1 items-center gap-3 text-left',
+          withdrawn && 'cursor-default'
+        )}
       >
-        <CircleAvatar size="md" imageUrl={request.profileUrl} tone="peach" />
+        <CircleAvatar
+          size="md"
+          imageUrl={withdrawn ? undefined : request.profileUrl}
+          tone="peach"
+        />
         <div className="flex min-w-0 flex-1 flex-col">
           <Text size="body1" weight="medium" className="truncate text-gray-900">
-            {request.nickname}
+            {withdrawnDisplayName(request.nickname)}
           </Text>
           {request.createdAt ? (
             <Text size="caption2" className="text-gray-400">

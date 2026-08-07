@@ -4,6 +4,10 @@ import { CircleAvatar, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { getRelativeTimeLabel } from '@module/utils/date';
 import { createActivationKeydownHandler } from '@module/utils/event';
+import {
+  isWithdrawnMember,
+  maskWithdrawnInText,
+} from '@module/utils/nickname';
 import { useRouter } from 'next/navigation';
 
 import { Notification } from '../type/notification';
@@ -24,7 +28,10 @@ function resolveTargetUrl(notification: Notification): string | null {
     return null;
   }
   if (targetType.startsWith('MEMBER') || targetType.startsWith('FRIEND')) {
-    return `/member/${targetId}`;
+    // 탈퇴 회원 프로필은 접근 불가 — 이동을 막는다.
+    return isWithdrawnMember(notification.actorNickname)
+      ? null
+      : `/member/${targetId}`;
   }
   if (targetType.startsWith('DIARY')) {
     return `/diary/${targetId}`;
@@ -82,7 +89,14 @@ export function NotificationListItem({
       )}
     >
       {showAvatar && (
-        <CircleAvatar imageUrl={actorProfileUrl ?? undefined} size="sm" />
+        <CircleAvatar
+          imageUrl={
+            isWithdrawnMember(actorNickname)
+              ? undefined
+              : actorProfileUrl ?? undefined
+          }
+          size="sm"
+        />
       )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -91,7 +105,7 @@ export function NotificationListItem({
           weight={isRead ? 'regular' : 'medium'}
           className={cn(isRead ? 'text-gray-700' : 'text-gray-900')}
         >
-          {message}
+          {maskWithdrawnInText(message)}
         </Text>
         <Text size="caption2" weight="regular" className="text-gray-400">
           {getRelativeTimeLabel(createdAt)}

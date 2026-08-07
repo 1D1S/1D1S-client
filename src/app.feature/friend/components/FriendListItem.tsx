@@ -3,6 +3,10 @@
 import { CircleAvatar, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { requestNativePushRoute } from '@module/utils/nativeBridge';
+import {
+  isWithdrawnMember,
+  withdrawnDisplayName,
+} from '@module/utils/nickname';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -18,7 +22,11 @@ export function FriendListItem({
   action,
 }: FriendListItemProps): React.ReactElement {
   const router = useRouter();
+  const withdrawn = isWithdrawnMember(friend.nickname);
   const handleOpenProfile = (): void => {
+    if (withdrawn) {
+      return;
+    }
     const path = `/member/${friend.memberId}`;
     if (!requestNativePushRoute(path)) {
       router.push(path);
@@ -35,11 +43,19 @@ export function FriendListItem({
       <button
         type="button"
         onClick={handleOpenProfile}
-        className="flex flex-1 items-center gap-3 text-left"
+        disabled={withdrawn}
+        className={cn(
+          'flex flex-1 items-center gap-3 text-left',
+          withdrawn && 'cursor-default'
+        )}
       >
-        <CircleAvatar size="md" imageUrl={friend.profileUrl} tone="peach" />
+        <CircleAvatar
+          size="md"
+          imageUrl={withdrawn ? undefined : friend.profileUrl}
+          tone="peach"
+        />
         <Text size="body1" weight="medium" className="truncate text-gray-900">
-          {friend.nickname}
+          {withdrawnDisplayName(friend.nickname)}
         </Text>
       </button>
       {action ? <div className="shrink-0">{action}</div> : null}

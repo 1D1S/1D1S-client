@@ -8,6 +8,10 @@ import { notifyApiError } from '@module/api/errorNotify';
 import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
+import {
+  isWithdrawnMember,
+  withdrawnDisplayName,
+} from '@module/utils/nickname';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React from 'react';
 
@@ -47,7 +51,11 @@ export default function BlockedMembersScreen(): React.ReactElement {
             >
               <CircleAvatar
                 size="md"
-                imageUrl={member.profileUrl}
+                imageUrl={
+                  isWithdrawnMember(member.nickname)
+                    ? undefined
+                    : member.profileUrl
+                }
                 tone="peach"
               />
               <Text
@@ -55,7 +63,7 @@ export default function BlockedMembersScreen(): React.ReactElement {
                 weight="bold"
                 className="min-w-0 flex-1 truncate text-gray-900"
               >
-                {member.nickname}
+                {withdrawnDisplayName(member.nickname)}
               </Text>
               <Button
                 variant="secondary"
