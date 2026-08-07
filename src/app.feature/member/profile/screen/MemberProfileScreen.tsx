@@ -5,7 +5,10 @@ import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { MyPageSkeleton } from '@component/skeletons/MyPageSkeleton';
 import { MemberBlockButton } from '@feature/friend/components/MemberBlockButton';
 import { MemberFriendActionButton } from '@feature/friend/components/MemberFriendActionButton';
-import { useMemberProfile } from '@feature/member/hooks/useMemberQueries';
+import {
+  useMemberProfile,
+  useSidebar,
+} from '@feature/member/hooks/useMemberQueries';
 import { MyPageActiveChallenges } from '@feature/member/mypage/components/MyPageActiveChallenges';
 import { MyPageActivityHeatmap } from '@feature/member/mypage/components/MyPageActivityHeatmap';
 import { MyPageBadgesSection } from '@feature/member/mypage/components/MyPageBadgesSection';
@@ -36,6 +39,7 @@ export default function MemberProfileScreen({
 }: MemberProfileScreenProps): React.ReactElement {
   const authStatus = useAuthStatus();
   const handleBack = useSafeBack('/');
+  const { data: sidebar } = useSidebar();
   const { data, isLoading, isError, error } = useMemberProfile(
     memberId,
     authStatus === 'authenticated'
@@ -100,6 +104,9 @@ export default function MemberProfileScreen({
   } = data;
   const memberDiaries = diaryList?.items ?? [];
   const hasMoreDiaries = diaryList?.pageInfo?.hasNextPage ?? false;
+  const isSelf =
+    relationStatus === 'SELF' ||
+    (Boolean(sidebar?.nickname) && sidebar?.nickname === nickname);
 
   return (
     <div className="min-h-screen w-full bg-white">
@@ -125,19 +132,22 @@ export default function MemberProfileScreen({
           challengeHref={`/member/${memberId}/challenge`}
           diaryHref={`/member/${memberId}/diary`}
           actions={
-            <div className="flex flex-wrap items-center gap-2">
-              <MemberFriendActionButton
-                memberId={memberId}
-                relationStatus={relationStatus}
-              />
-              {relationStatus && relationStatus !== 'SELF' ? (
+            // 본인 프로필을 멤버 상세로 열면 친구/차단 버튼을 숨긴다. 서버가
+            // relationStatus='SELF' 를 안 줄 수 있어(케이스 확인됨) 사이드바
+            // 닉네임 일치로도 self 를 판정한다(일지 상세 isOwner 와 동일 방식).
+            isSelf ? null : (
+              <div className="flex flex-wrap items-center gap-2">
+                <MemberFriendActionButton
+                  memberId={memberId}
+                  relationStatus={relationStatus}
+                />
                 <MemberBlockButton
                   memberId={memberId}
                   nickname={nickname}
                   blocked={relationStatus === 'BLOCKED'}
                 />
-              ) : null}
-            </div>
+              </div>
+            )
           }
         />
 
