@@ -10,7 +10,7 @@ import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import { ChevronRight, Inbox, Send, UserMinus } from 'lucide-react';
+import { Ban, ChevronRight, Inbox, Send, UserMinus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -30,7 +30,7 @@ function RequestEntryRow({
 }: {
   icon: React.ReactNode;
   label: string;
-  count: number;
+  count?: number;
   onClick(): void;
 }): React.ReactElement {
   return (
@@ -56,7 +56,7 @@ function RequestEntryRow({
           {label}
         </Text>
       </div>
-      {count > 0 ? (
+      {count != null && count > 0 ? (
         <span
           className={cn(
             'inline-flex h-6 min-w-6 items-center justify-center',
@@ -117,6 +117,12 @@ export default function FriendListScreen(): React.ReactElement {
           label="보낸 친구 신청"
           count={sentCount}
           onClick={() => router.push('/mypage/friend/sent')}
+        />
+        <div className="h-px w-full bg-gray-100" />
+        <RequestEntryRow
+          icon={<Ban className="h-5 w-5" />}
+          label="차단한 사용자"
+          onClick={() => router.push('/mypage/friend/blocked')}
         />
       </section>
 

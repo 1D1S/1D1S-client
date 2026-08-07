@@ -12,6 +12,10 @@ import {
   Text,
 } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import {
+  isWithdrawnMember,
+  withdrawnDisplayName,
+} from '@module/utils/nickname';
 import { ListChecks } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -44,6 +48,9 @@ export function PendingMemberItem({
 }: PendingMemberItemProps): React.ReactElement {
   const [goalsOpen, setGoalsOpen] = useState(false);
   const hasGoals = (goals?.length ?? 0) > 0;
+  const withdrawn = isWithdrawnMember(name);
+  const displayName = withdrawnDisplayName(name);
+  const canOpenProfile = Boolean(onProfileClick) && !withdrawn;
 
   return (
     <div
@@ -55,9 +62,9 @@ export function PendingMemberItem({
       <div className="flex min-w-0 items-center gap-2">
         <button
           type="button"
-          onClick={onProfileClick}
-          disabled={!onProfileClick}
-          aria-label={`${name} 프로필 보기`}
+          onClick={canOpenProfile ? onProfileClick : undefined}
+          disabled={!canOpenProfile}
+          aria-label={`${displayName} 프로필 보기`}
           className={cn(
             'flex min-w-0 flex-1 items-center gap-3 rounded-lg',
             '-mx-1 -my-1 px-1 py-1 text-left transition-colors',
@@ -67,7 +74,7 @@ export function PendingMemberItem({
         >
           <CircleAvatar
             size="md"
-            imageUrl={profileImg ?? undefined}
+            imageUrl={withdrawn ? undefined : profileImg ?? undefined}
             tone="cream"
           />
           <div className="flex min-w-0 flex-col items-start gap-1">
@@ -76,7 +83,7 @@ export function PendingMemberItem({
               weight="bold"
               className="max-w-full truncate text-gray-900"
             >
-              {name}
+              {displayName}
             </Text>
             <Tag tone="gray" size="xs">
               {joinedAt}
@@ -129,7 +136,7 @@ export function PendingMemberItem({
         <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[420px]">
           <DialogHeader className="flex-col items-start gap-1.5 pb-2">
             <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
-              {`${name}님이 설정한 목표`}
+              {`${displayName}님이 설정한 목표`}
             </DialogTitle>
           </DialogHeader>
           <DialogBody>

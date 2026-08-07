@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 
 import { useChallengeDetail } from '../../../challenge/board/hooks/useChallengeQueries';
+import { MemberBlockButton } from '../../../friend/components/MemberBlockButton';
 import { useIsLoggedIn } from '../../../member/hooks/useIsLoggedIn';
 import { useSidebar } from '../../../member/hooks/useMemberQueries';
 import { useDiaryDetail } from '../../board/hooks/useDiaryQueries';
@@ -66,6 +67,7 @@ function DiaryDetailView({
   isLikePending,
   isOwner,
   onDelete,
+  onBlocked,
   onRequireLogin,
 }: {
   diaryData: DiaryDetailViewData;
@@ -73,6 +75,7 @@ function DiaryDetailView({
   isLikePending: boolean;
   isOwner: boolean;
   onDelete(): void;
+  onBlocked(): void;
   onRequireLogin(): void;
 }): React.ReactElement {
   const router = useRouter();
@@ -183,14 +186,25 @@ function DiaryDetailView({
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 {!isOwner ? (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setIsReportOpen(true)}
-                  >
-                    <Flag className="mr-1 h-3.5 w-3.5" />
-                    신고
-                  </Button>
+                  <>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setIsReportOpen(true)}
+                    >
+                      <Flag className="mr-1 h-3.5 w-3.5" />
+                      신고
+                    </Button>
+                    {diaryData.authorId ? (
+                      <MemberBlockButton
+                        memberId={diaryData.authorId}
+                        nickname={diaryData.authorName}
+                        blocked={false}
+                        size="sm"
+                        onBlocked={onBlocked}
+                      />
+                    ) : null}
+                  </>
                 ) : null}
                 {isOwner ? (
                   <DiaryOwnerMenu
@@ -364,10 +378,18 @@ export function DiaryDetailScreen({
   const isLoggedIn = useIsLoggedIn();
   const authStatus = useAuthStatus();
   const [isDeleting, setIsDeleting] = useState(false);
+  // 작성자를 차단하면 이 일지가 접근 불가가 되어, block 성공 후 invalidate 로
+  // 재요청한 상세가 403(DIARY_NOT_ACCESS)을 받아 "볼 수 없습니다" 에러 화면이
+  // 떴다. 차단 성공 시 이 플래그를 세워 에러 화면 대신 이탈(스켈레톤)만 보이게
+  // 하고 목록으로 나간다.
+  const [isLeaving, setIsLeaving] = useState(false);
   const safeDiaryId = Number.isFinite(id) && id > 0 ? id : 0;
   const deleteDiary = useDeleteDiary();
   const { data, isLoading, isError, error } = useDiaryDetail(safeDiaryId, {
-    enabled: Boolean(safeDiaryId) && !isDeleting,
+    enabled: Boolean(safeDiaryId) && !isDeleting && !isLeaving,
+    // 인라인 에러 화면을 직접 렌더하므로 전역 에러 토스트는 중복. 차단 후
+    // 403 재요청 토스트도 이걸로 억제된다.
+    skipGlobalErrorToast: true,
   });
   const showSkeleton = useMinimumLoading(isLoading);
   useSignalPageReady('diary_detail', !showSkeleton && Boolean(data));
@@ -448,6 +470,11 @@ export function DiaryDetailScreen({
     return nativeSkeleton ? null : <DiaryDetailSkeleton />;
   }
 
+  // 차단 후 이탈 중 — 접근 불가(403) 에러 화면 대신 스켈레톤만 보이고 나간다.
+  if (isLeaving) {
+    return nativeSkeleton ? null : <DiaryDetailSkeleton />;
+  }
+
   if (isError || !data) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center p-4">
@@ -468,6 +495,10 @@ export function DiaryDetailScreen({
         isLikePending={isLikePending}
         isOwner={isOwner}
         onDelete={handleDelete}
+        onBlocked={() => {
+          setIsLeaving(true);
+          router.push('/diary');
+        }}
         onRequireLogin={() => {}}
       />
       {/* 모바일 sticky 댓글 입력바 — data-fade-in 래퍼 밖에 둔다:

@@ -15,6 +15,10 @@ import {
   isNativeModalAvailable,
   openNativeModal,
 } from '@module/utils/nativeBridge';
+import {
+  isWithdrawnMember,
+  withdrawnDisplayName,
+} from '@module/utils/nickname';
 import { ListChecks, Pointer } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -118,6 +122,7 @@ function MemberRow({
   const hasGoals = (entry.goals?.length ?? 0) > 0;
 
   const hasRank = typeof entry.rank === 'number' && entry.rank > 0;
+  const withdrawn = isWithdrawnMember(entry.nickname);
 
   // 상위 3등은 메달 아이콘, 그 외에는 등수 숫자로 표시한다.
   const isMedal = hasRank && (entry.rank as number) <= 3;
@@ -126,11 +131,12 @@ function MemberRow({
     <div className="flex items-center gap-1">
       <button
         type="button"
-        onClick={onSelect}
+        onClick={withdrawn ? undefined : onSelect}
+        disabled={withdrawn}
         className={cn(
-          'flex min-w-0 flex-1 cursor-pointer items-center gap-2.5',
+          'flex min-w-0 flex-1 items-center gap-2.5',
           'rounded-md px-2 py-2.5 text-left transition-colors',
-          'hover:bg-gray-50'
+          withdrawn ? 'cursor-default' : 'cursor-pointer hover:bg-gray-50'
         )}
       >
         {hasRank ? (
@@ -151,7 +157,7 @@ function MemberRow({
         ) : null}
         <CircleAvatar
           size="sm"
-          imageUrl={entry.profileImg ?? undefined}
+          imageUrl={withdrawn ? undefined : entry.profileImg ?? undefined}
           tone="cream"
         />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -161,7 +167,7 @@ function MemberRow({
               weight="bold"
               className="truncate text-gray-800"
             >
-              {entry.nickname}
+              {withdrawnDisplayName(entry.nickname)}
             </Text>
             {entry.isHost ? (
               <span
@@ -198,7 +204,7 @@ function MemberRow({
         <button
           type="button"
           onClick={onGoals}
-          aria-label={`${entry.nickname}님의 목표 보기`}
+          aria-label={`${withdrawnDisplayName(entry.nickname)}님의 목표 보기`}
           className={cn(
             'inline-flex shrink-0 items-center gap-1 rounded-full',
             'px-2.5 py-1 text-[11px] font-bold transition-colors',
@@ -245,7 +251,7 @@ export function ChallengeLeaderboardCard({
     }
     nativeGoalsInFlight.current = true;
     void openNativeModal({
-      title: `${goalsOf.nickname}님의 목표`,
+      title: `${withdrawnDisplayName(goalsOf.nickname)}님의 목표`,
       goals: (goalsOf.goals ?? []).map((goal) => goal.content),
       buttons: [],
     }).then(() => {
@@ -305,7 +311,8 @@ export function ChallengeLeaderboardCard({
                 entry.memberId === currentMemberId) ||
               (Boolean(currentNickname) &&
                 entry.nickname === currentNickname);
-            const showPoke = canPoke && !isMe;
+            const showPoke =
+              canPoke && !isMe && !isWithdrawnMember(entry.nickname);
             const isPoking = pokingMemberId === entry.memberId;
             const isPoked = pokedMemberIds.includes(entry.memberId);
 
@@ -330,7 +337,7 @@ export function ChallengeLeaderboardCard({
                       type="button"
                       onClick={() => onPoke?.(entry.memberId)}
                       disabled={isPoking || isPoked}
-                      aria-label={`${entry.nickname}님 콕 찌르기`}
+                      aria-label={`${withdrawnDisplayName(entry.nickname)}님 콕 찌르기`}
                       className={cn(
                         'inline-flex items-center gap-1 self-start',
                         'rounded-full px-2.5 py-1 text-[11px] font-bold',
@@ -367,7 +374,9 @@ export function ChallengeLeaderboardCard({
         <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[420px]">
           <DialogHeader className="flex-col items-start gap-1.5 pb-2">
             <DialogTitle className="text-[17px] font-extrabold tracking-[-0.3px] text-gray-900">
-              {goalsOf ? `${goalsOf.nickname}님의 목표` : '목표'}
+              {goalsOf
+                ? `${withdrawnDisplayName(goalsOf.nickname)}님의 목표`
+                : '목표'}
             </DialogTitle>
           </DialogHeader>
           <DialogBody>
