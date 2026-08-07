@@ -10,13 +10,14 @@ import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import { ChevronRight, Inbox, Send, UserMinus } from 'lucide-react';
+import { Ban, ChevronRight, Inbox, Send, UserMinus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { FriendListItem } from '../components/FriendListItem';
 import { useRemoveFriend } from '../hooks/useFriendMutations';
 import {
+  useBlockedMembers,
   useFriendList,
   useReceivedFriendRequests,
   useSentFriendRequests,
@@ -81,11 +82,13 @@ export default function FriendListScreen(): React.ReactElement {
   useSignalPageReady('friend_list', !showSkeleton);
   const { data: received } = useReceivedFriendRequests();
   const { data: sent } = useSentFriendRequests();
+  const { data: blocked } = useBlockedMembers();
   const removeFriend = useRemoveFriend();
 
   const friendList = friends ?? [];
   const receivedCount = received?.length ?? 0;
   const sentCount = sent?.length ?? 0;
+  const blockedCount = blocked?.length ?? 0;
 
   const handleRemove = (memberId: number, nickname: string): void => {
     if (!window.confirm(`'${nickname}'님을 친구 목록에서 삭제할까요?`)) {
@@ -117,6 +120,13 @@ export default function FriendListScreen(): React.ReactElement {
           label="보낸 친구 신청"
           count={sentCount}
           onClick={() => router.push('/mypage/friend/sent')}
+        />
+        <div className="h-px w-full bg-gray-100" />
+        <RequestEntryRow
+          icon={<Ban className="h-5 w-5" />}
+          label="차단한 사용자"
+          count={blockedCount}
+          onClick={() => router.push('/mypage/friend/blocked')}
         />
       </section>
 
