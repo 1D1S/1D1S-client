@@ -1,3 +1,4 @@
+import { CATEGORY_OPTIONS } from '@constants/categories';
 import type { SidebarChallenge } from '@feature/member/type/member';
 import { formatDateISO, toStartOfDay } from '@module/utils/date';
 import { extractDiaryImageList } from '@module/utils/diaryImageUrl';
@@ -121,21 +122,15 @@ export function getSubmitButtonLabel({
   return isEditMode ? '수정 완료' : '작성 완료';
 }
 
-function normalizeChallengeCategory(category: string): ChallengeCategory {
-  const categoryMap: Record<string, ChallengeCategory> = {
-    ALL: 'ALL',
-    DEV: 'DEV',
-    EXERCISE: 'EXERCISE',
-    BOOK: 'BOOK',
-    DIET: 'DIET',
-    HEALTH: 'HEALTH',
-    HOBBY: 'HOBBY',
-    LANGUAGE: 'LANGUAGE',
-    SELF_DEV: 'SELF_DEV',
-    ETC: 'ETC',
-  };
+// CATEGORY_OPTIONS(전역 상수)를 유일한 카테고리 목록 소스로 쓴다.
+const CATEGORY_VALUES = new Set<string>(
+  CATEGORY_OPTIONS.map((option) => option.value)
+);
 
-  return categoryMap[category] ?? 'DEV';
+function normalizeChallengeCategory(category: string): ChallengeCategory {
+  return CATEGORY_VALUES.has(category)
+    ? (category as ChallengeCategory)
+    : 'DEV';
 }
 
 function normalizeGoalType(goalType: string): GoalType {
@@ -171,18 +166,7 @@ export function mapSidebarChallengeToChallengeListItem(
   challenge: SidebarChallenge
 ): ChallengeListItem {
   return {
-    challengeId: challenge.challengeId,
-    title: challenge.title,
-    category: normalizeChallengeCategory(challenge.category),
-    startDate: challenge.startDate,
-    endDate: challenge.endDate,
-    maxParticipantCnt: challenge.maxParticipantCnt,
-    goalType: normalizeGoalType(challenge.goalType),
-    participationType: normalizeParticipationType(challenge.participationType),
-    participantCnt: challenge.participantCnt,
-    liked: challenge.likeInfo.likedByMe,
-    likeCnt: challenge.likeInfo.likeCnt,
-    thumbnailImage: challenge.thumbnailImage ?? undefined,
+    ...mapDiaryChallengeToChallengeListItem(challenge),
     postEndWriteAllowed: challenge.postEndWriteAllowed,
   };
 }

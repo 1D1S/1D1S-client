@@ -35,12 +35,24 @@ export function NotificationOptInPrompt({
   const handled = useRef(false);
   const [dismissed, setDismissed] = useState(false);
 
-  const { data: prefs } = useNotificationPreferences({ enabled: active });
+  const { data: prefs, isError } = useNotificationPreferences({
+    enabled: active,
+  });
   const { mutate: updatePrefs, isPending } = useUpdateNotificationPreferences();
   const { subscribe } = useWebPushSubscription();
 
   useEffect(() => {
-    if (!active || !prefs || handled.current) {
+    if (!active || handled.current) {
+      return;
+    }
+    // 설정 조회 실패 시 프롬프트 없이 로그인 플로우를 마친다 — 여기서 막으면
+    // onComplete 가 영영 안 불려 로그인 처리 화면에 갇힌다.
+    if (isError) {
+      handled.current = true;
+      onComplete();
+      return;
+    }
+    if (!prefs) {
       return;
     }
     if (!prefs.pushEnabled) {
@@ -53,7 +65,7 @@ export function NotificationOptInPrompt({
       return;
     }
     onComplete();
-  }, [active, prefs, onComplete, subscribe]);
+  }, [active, prefs, isError, onComplete, subscribe]);
 
   function handleConfirm(): void {
     // prefs 갱신으로 useEffect 가 재실행되어 onComplete 가 중복 호출되는 것을 방지.

@@ -6,7 +6,9 @@ import {
   getCategoryLabel,
   getCategoryStripeTone,
 } from '@constants/categories';
-import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challengePeriod';
+import {   formatChallengeRemainingLabel,
+isInfiniteChallengeEndDate ,
+} from '@feature/challenge/board/utils/challengePeriod';
 import type { SidebarChallenge } from '@feature/member/type/member';
 import { cn } from '@module/utils/cn';
 import { Check } from 'lucide-react';
@@ -15,7 +17,6 @@ import { useRouter } from 'next/navigation';
 import React, { useMemo } from 'react';
 
 import { useTodayRecords } from '../hooks/useTodayRecords';
-import { formatChallengeRemainingLabel } from '../utils/homeFormatters';
 
 interface HomeTodayRecordSectionProps {
   /** 사이드바의 참여 챌린지 전체 목록 */

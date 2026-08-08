@@ -107,10 +107,13 @@ export function useMyDiaries(
 export function useMyDiariesInfinite(
   size?: number
 ): UseInfiniteQueryResult<InfiniteData<MyDiariesResponse>, Error> {
+  // useMyDiaries 와 동일한 이유로 서버 확인 authenticated 에서만 조회한다.
+  const status = useAuthStatus();
   return useInfiniteQuery({
     queryKey: DIARY_QUERY_KEYS.myDiariesInfinite({ size }),
     queryFn: ({ pageParam }) =>
       diaryBoardApi.getMyDiaries({ page: pageParam, size }),
+    enabled: status === 'authenticated',
     initialPageParam: 0,
     getNextPageParam: (lastPage) =>
       lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.page + 1 : undefined,

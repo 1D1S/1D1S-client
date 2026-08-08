@@ -8,15 +8,14 @@ import {
   getCategoryStripeTone,
 } from '@constants/categories';
 import { type ChallengeListItem } from '@feature/challenge/board/type/challenge';
-import { isInfiniteChallengeEndDate } from '@feature/challenge/board/utils/challengePeriod';
-import { cn } from '@module/utils/cn';
-import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import React from 'react';
-
 import {
   formatChallengeRemainingLabel,
   isChallengeEndedOrArchived,
-} from '../utils/homeFormatters';
+  isInfiniteChallengeEndDate,
+} from '@feature/challenge/board/utils/challengePeriod';
+import { cn } from '@module/utils/cn';
+import { useMinimumLoading } from '@module/utils/useMinimumLoading';
+import React from 'react';
 
 interface HomeRandomChallengesSectionProps {
   challenges: ChallengeListItem[];

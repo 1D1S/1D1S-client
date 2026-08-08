@@ -32,11 +32,7 @@ import type {
   ChallengeStatus,
   ChallengeTypeFilter,
 } from '../type/challenge';
-import {
-  formatChallengeRemainingLabel,
-  isChallengeEndedOrArchived,
-  isInfiniteChallengeEndDate,
-} from '../utils/challengePeriod';
+import { resolveChallengeCardStatus } from '../utils/challengePeriod';
 
 interface ChallengeBoardCardItemProps {
   challenge: ChallengeListItem;
@@ -48,17 +44,8 @@ interface ChallengeBoardCardItemProps {
 // 실제로 재렌더를 건너뛸 수 있도록 한다.
 const ChallengeBoardCardItem = React.memo(
   ({ challenge, href }: ChallengeBoardCardItemProps): React.ReactElement => {
-    const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
-    const ended = isChallengeEndedOrArchived(
-      challenge.endDate,
-      challenge.participantCnt,
-      challenge.challengeType
-    );
-    const remainingLabel = formatChallengeRemainingLabel(
-      challenge.endDate,
-      isInfinite,
-      ended
-    );
+    const { status, isInfinite, isEnded, remainingLabel } =
+      resolveChallengeCardStatus(challenge);
 
     return (
       <ChallengeCard
@@ -77,7 +64,8 @@ const ChallengeBoardCardItem = React.memo(
         isInfinite={isInfinite}
         goalType={challenge.goalType}
         isGroup={challenge.participationType === 'GROUP'}
-        isEnded={ended}
+        isEnded={isEnded}
+        status={status}
         isPhotoRequired={challenge.photoRequired}
         isOfficial={challenge.challengeType === 'OFFICIAL'}
         participants={challenge.randomParticipants}

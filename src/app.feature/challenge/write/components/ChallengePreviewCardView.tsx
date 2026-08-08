@@ -1,20 +1,11 @@
 import { Icon, Stripe, Tag, Text } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
-import { CATEGORY_OPTIONS } from '@constants/categories';
+import {
+  CATEGORY_OPTIONS,
+  getCategoryStripeTone,
+} from '@constants/categories';
 import { cn } from '@module/utils/cn';
 import React from 'react';
-
-const CATEGORY_TONE: Record<string, string> = {
-  DEV: 'blue',
-  EXERCISE: 'peach',
-  BOOK: 'mint',
-  DIET: 'cream',
-  HEALTH: 'mint',
-  HOBBY: 'rose',
-  LANGUAGE: 'sky',
-  SELF_DEV: 'blue',
-  ETC: 'gray',
-};
 
 export interface ChallengePreviewCardViewProps {
   /** values.category (미선택 시 undefined) */
@@ -51,7 +42,8 @@ export function ChallengePreviewCardView({
   const category = CATEGORY_OPTIONS.find(
     (option) => option.value === categoryValue
   );
-  const tone = categoryValue ? CATEGORY_TONE[categoryValue] : 'cream';
+  // 실제 카드와 같은 카테고리 색을 쓴다 — 미리보기와 결과물 색상 불일치 방지.
+  const tone = categoryValue ? getCategoryStripeTone(categoryValue) : 'cream';
 
   return (
     <div

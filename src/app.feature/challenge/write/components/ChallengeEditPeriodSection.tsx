@@ -1,6 +1,10 @@
 import { Icon, SegmentedControl, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
-import { formatDateKR } from '@module/utils/date';
+import {
+  formatDateKR,
+  getInclusiveDayCount,
+  parseDateValue,
+} from '@module/utils/date';
 
 import {
   isChallengeEnded,
@@ -13,17 +17,6 @@ interface ChallengeEditPeriodSectionProps {
   endDate: string;
 }
 
-const MS_PER_DAY = 1000 * 60 * 60 * 24;
-
-function calculateDurationDays(startDate: string, endDate: string): number {
-  const start = new Date(startDate).getTime();
-  const end = new Date(endDate).getTime();
-  if (Number.isNaN(start) || Number.isNaN(end)) {
-    return 0;
-  }
-  return Math.max(1, Math.round((end - start) / MS_PER_DAY) + 1);
-}
-
 export function ChallengeEditPeriodSection({
   startDate,
   endDate,
@@ -33,17 +26,15 @@ export function ChallengeEditPeriodSection({
   const ended = isChallengeEnded(endDate);
   const durationDays = isEndless
     ? 0
-    : calculateDurationDays(startDate, endDate);
-  const parsedStart = new Date(startDate);
-  const parsedEnd = new Date(endDate);
-  const startLabel = Number.isNaN(parsedStart.getTime())
-    ? '-'
-    : formatDateKR(parsedStart);
+    : getInclusiveDayCount(startDate, endDate) ?? 0;
+  const parsedStart = parseDateValue(startDate);
+  const parsedEnd = parseDateValue(endDate);
+  const startLabel = parsedStart ? formatDateKR(parsedStart) : '-';
   const endLabel = isEndless
     ? '무제한'
-    : Number.isNaN(parsedEnd.getTime())
-      ? '-'
-      : formatDateKR(parsedEnd);
+    : parsedEnd
+      ? formatDateKR(parsedEnd)
+      : '-';
 
   return (
     <ChallengeCreateSectionCard

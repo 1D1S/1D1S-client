@@ -48,7 +48,12 @@ function isDateOnlyValue(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
-function parseDateValue(value: string): Date | null {
+/**
+ * 날짜 문자열을 로컬 타임존 기준 Date 로 파싱한다.
+ * `YYYY-MM-DD` 를 `new Date(str)` 로 파싱하면 UTC 자정으로 해석돼
+ * 음수 오프셋 타임존에서 하루가 밀린다 — 반드시 이 함수를 쓸 것.
+ */
+export function parseDateValue(value: string): Date | null {
   if (!value) {
     return null;
   }
@@ -118,4 +123,26 @@ export function getRelativeTimeLabel(
  */
 export function getDateTimestamp(value: string): number {
   return parseDateValue(value)?.getTime() ?? 0;
+}
+
+export const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+/**
+ * 시작~종료 양끝 포함 일수 (예: 8/1~8/7 → 7). 화면마다 ceil / round+1 이
+ * 제각각이라 같은 기간이 7일/8일로 다르게 보이던 것을 이 함수로 통일한다.
+ * 파싱 실패 또는 종료일 < 시작일이면 null.
+ */
+export function getInclusiveDayCount(
+  startDate: string | null | undefined,
+  endDate: string | null | undefined
+): number | null {
+  const start = startDate ? parseDateValue(startDate) : null;
+  const end = endDate ? parseDateValue(endDate) : null;
+  if (!start || !end) {
+    return null;
+  }
+  const diff = Math.round(
+    (toStartOfDay(end).getTime() - toStartOfDay(start).getTime()) / MS_PER_DAY
+  );
+  return diff < 0 ? null : diff + 1;
 }

@@ -10,6 +10,7 @@ import {
 import { CHALLENGE_QUERY_KEYS } from '../../../challenge/board/consts/queryKeys';
 import { HOME_QUERY_KEYS } from '../../../home/consts/homeQueryKeys';
 import { MEMBER_QUERY_KEYS } from '../../../member/consts/queryKeys';
+import { STATISTICS_QUERY_KEYS } from '../../../member/statistics/consts/queryKeys';
 import { DIARY_QUERY_KEYS } from '../../board/consts/queryKeys';
 import {
   CreateDiaryReportRequest,
@@ -36,10 +37,14 @@ export function useCreateDiary(): UseMutationResult<
         DIARY_QUERY_KEYS.lists(),
         DIARY_QUERY_KEYS.randoms(),
         DIARY_QUERY_KEYS.allDiaries(),
+        DIARY_QUERY_KEYS.my(),
         MEMBER_QUERY_KEYS.myPage(),
         MEMBER_QUERY_KEYS.sidebar(),
+        MEMBER_QUERY_KEYS.profiles(),
         CHALLENGE_QUERY_KEYS.checkWrite(variables.challengeId),
+        CHALLENGE_QUERY_KEYS.challengeDiaries(),
         HOME_QUERY_KEYS.todayChallenges(),
+        STATISTICS_QUERY_KEYS.all,
       ]);
     },
   });
@@ -62,8 +67,11 @@ export function useUpdateDiary(): UseMutationResult<
         DIARY_QUERY_KEYS.lists(),
         DIARY_QUERY_KEYS.randoms(),
         DIARY_QUERY_KEYS.allDiaries(),
+        DIARY_QUERY_KEYS.my(),
         CHALLENGE_QUERY_KEYS.challengeDiaries(),
         MEMBER_QUERY_KEYS.profiles(),
+        HOME_QUERY_KEYS.todayChallenges(),
+        STATISTICS_QUERY_KEYS.all,
       ]);
     },
   });
@@ -81,10 +89,15 @@ export function useDeleteDiary(): UseMutationResult<boolean, Error, number> {
       queryClient.removeQueries({ queryKey: DIARY_QUERY_KEYS.allDiaries() });
       invalidateAll(queryClient, [
         DIARY_QUERY_KEYS.randoms(),
+        DIARY_QUERY_KEYS.my(),
         CHALLENGE_QUERY_KEYS.challengeDiaries(),
+        // 오늘 일지를 지우면 작성 가능 상태가 되살아나야 한다.
+        CHALLENGE_QUERY_KEYS.checkWrites(),
+        HOME_QUERY_KEYS.todayChallenges(),
         MEMBER_QUERY_KEYS.myPage(),
         MEMBER_QUERY_KEYS.sidebar(),
         MEMBER_QUERY_KEYS.profiles(),
+        STATISTICS_QUERY_KEYS.all,
       ]);
     },
   });
@@ -99,6 +112,7 @@ function likeAffectedKeys(
     DIARY_QUERY_KEYS.detail(id),
     DIARY_QUERY_KEYS.lists(),
     DIARY_QUERY_KEYS.randoms(),
+    DIARY_QUERY_KEYS.allDiaries(),
     CHALLENGE_QUERY_KEYS.challengeDiaries(),
     DIARY_QUERY_KEYS.my(),
     MEMBER_QUERY_KEYS.profiles(),
@@ -147,16 +161,20 @@ function patchDiaryLike(
   return node;
 }
 
-// 캐시 전체에 좋아요 상태를 즉시 반영한다. 변경 없는 쿼리는 같은 참조를
-// 돌려받아 구독자 알림이 발생하지 않으므로 전 쿼리 순회 비용은 미미하다.
+// 일지가 담기는 캐시들에만 좋아요 상태를 즉시 반영한다. 변경 없는 쿼리는
+// undefined 를 돌려 setQueryData 를 건너뛴다 — 동일 참조라도 setQueryData
+// 는 dataUpdatedAt 을 갱신해 staleTime 시계를 초기화하기 때문이다.
 function applyLikeToCache(
   queryClient: QueryClient,
   diaryId: number,
   apply: (like: LikeInfo) => LikeInfo
 ): void {
-  queryClient.setQueriesData({ predicate: () => true }, (data: unknown) =>
-    patchDiaryLike(data, diaryId, apply)
-  );
+  for (const queryKey of likeAffectedKeys(diaryId)) {
+    queryClient.setQueriesData({ queryKey }, (data: unknown) => {
+      const patched = patchDiaryLike(data, diaryId, apply);
+      return patched === data ? undefined : patched;
+    });
+  }
 }
 
 // 다이어리 좋아요 누르기 — 낙관적 업데이트. 클릭 즉시 캐시를 고쳐

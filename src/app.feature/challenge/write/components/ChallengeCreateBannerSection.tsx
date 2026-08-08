@@ -12,9 +12,7 @@ import {
   CHALLENGE_THUMBNAIL_ASPECT,
   CHALLENGE_THUMBNAIL_SIZE,
 } from '@feature/challenge/detail/consts/heroLayout';
-import { apiClient } from '@module/api/client';
-import { putToStorage } from '@module/api/presignedUpload';
-import { requestData } from '@module/api/request';
+import { uploadImageViaPresignedSingle } from '@module/api/presignedUpload';
 import { useState } from 'react';
 import { Control, useFormContext, useWatch } from 'react-hook-form';
 
@@ -66,29 +64,30 @@ export function ChallengeCreateBannerSection(): React.ReactElement {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  // 교체·제거 시 이전 blob URL 을 회수해 누수를 막는다.
+  const replacePreviewUrl = (next?: string): void => {
+    setPreviewUrl((prev) => {
+      if (prev?.startsWith('blob:') && prev !== next) {
+        URL.revokeObjectURL(prev);
+      }
+      return next;
+    });
+  };
+
   const uploadFile = async (file: File): Promise<void> => {
     setUploadError(null);
     const blobUrl = URL.createObjectURL(file);
-    setPreviewUrl(blobUrl);
+    replacePreviewUrl(blobUrl);
     setIsUploading(true);
 
     try {
-      const { presignedUrl, objectKey } = await requestData<{
-        presignedUrl: string;
-        objectKey: string;
-      }>(apiClient, {
-        url: '/image/presigned-url',
-        method: 'POST',
-        data: { fileName: file.name, fileType: file.type },
-      });
-
-      await putToStorage(presignedUrl, file);
+      const objectKey = await uploadImageViaPresignedSingle(file);
 
       setValue('thumbnailImageKey', objectKey);
       setValue('thumbnailPreviewUrl', blobUrl);
     } catch {
       setUploadError('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
-      setPreviewUrl(undefined);
+      replacePreviewUrl(undefined);
       setValue('thumbnailImageKey', undefined);
       setValue('thumbnailPreviewUrl', undefined);
     } finally {
@@ -115,7 +114,7 @@ export function ChallengeCreateBannerSection(): React.ReactElement {
   };
 
   const handleClear = (): void => {
-    setPreviewUrl(undefined);
+    replacePreviewUrl(undefined);
     setValue('thumbnailImageKey', undefined);
     setValue('thumbnailPreviewUrl', undefined);
   };

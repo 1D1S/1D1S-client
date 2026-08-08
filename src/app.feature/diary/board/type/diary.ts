@@ -1,5 +1,8 @@
 import type { ChallengeSummary as ChallengeSummaryResponse } from '@feature/challenge/board/type/challenge';
-import type { LikeInfo } from '@module/api/types';
+import type {
+  LikeInfo,
+  OffsetPageInfo as DiarySimplePageInfo,
+} from '@module/api/types';
 
 export type { LikeInfo };
 
@@ -129,13 +132,7 @@ export interface DiaryListParams {
   cursor?: string;
 }
 
-export interface DiarySimplePageInfo {
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  hasNextPage: boolean;
-}
+export type { DiarySimplePageInfo };
 
 export interface MyDiariesResponse {
   items: DiaryItem[];

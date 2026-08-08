@@ -13,7 +13,11 @@ interface ChallengeDetailMobileHeaderProps {
   likeCnt: number;
   isLikePending: boolean;
   onToggleLike(): void;
-  participationRate: number;
+  // 기간 대비 진행률(%) — 참여율이 아니라 "며칠째 진행 중"이다.
+  progressPercent: number;
+  // 예: "3일째 / 총 30일". 무제한이면 "12일째".
+  progressCaption: string;
+  isInfinite?: boolean;
 }
 
 // 모바일 컨텐츠 헤더 — 히어로 위로 오버레이. 탭 위 고정 노출.
@@ -27,7 +31,9 @@ export function ChallengeDetailMobileHeader({
   likeCnt,
   isLikePending,
   onToggleLike,
-  participationRate,
+  progressPercent,
+  progressCaption,
+  isInfinite = false,
 }: ChallengeDetailMobileHeaderProps): React.ReactElement {
   return (
     <div
@@ -93,7 +99,7 @@ export function ChallengeDetailMobileHeader({
         <div className="h-[7px] flex-1 overflow-hidden rounded-full bg-white">
           <div
             className="bg-main-800 h-full rounded-full"
-            style={{ width: `${participationRate}%` }}
+            style={{ width: `${isInfinite ? 100 : progressPercent}%` }}
           />
         </div>
         <Text
@@ -101,7 +107,7 @@ export function ChallengeDetailMobileHeader({
           weight="extrabold"
           className="text-main-800 shrink-0 tabular-nums"
         >
-          {participationRate}%
+          {progressCaption}
         </Text>
       </div>
     </div>

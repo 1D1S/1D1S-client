@@ -38,16 +38,17 @@ export const beginLogoutSuppression = (durationMs = 5000): void => {
 
 const isLogoutSuppressed = (): boolean => Date.now() < logoutSuppressUntil;
 
+// 챌린지/일지 상세(/challenge/{id}, /diary/{id})는 비인증 공개 조회가
+// 열려 있어(미들웨어 제외 + OG 크롤러 대응) 여기서도 보호 경로로 취급하지
+// 않는다 — 넣으면 공유 링크로 들어온 게스트가 로그인으로 튕긴다.
 const PROTECTED_PATH_PREFIXES = [
   '/mypage',
   '/diary/create',
   '/challenge/create',
 ];
-const PROTECTED_PATH_PATTERNS = [/^\/challenge\/\d+/, /^\/diary\/\d+/];
 
 const isProtectedRoute = (pathname: string): boolean =>
-  PROTECTED_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
-  PROTECTED_PATH_PATTERNS.some((pattern) => pattern.test(pathname));
+  PROTECTED_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
 // 무효 세션의 서버 쿠키 정리: 백엔드 /auth/logout 을 best-effort 로 호출해
 // HttpOnly 쿠키를 Set-Cookie 로 만료시킨다. 인터셉터/재귀를 피하려 raw fetch 를
@@ -104,6 +105,10 @@ export const handleAuthError = (error: unknown): void => {
 
   if (!isRedirecting && isProtectedRoute(window.location.pathname)) {
     isRedirecting = true;
+    // 네비게이션이 무산될 수 있는 환경(WebView 등)을 대비해 래치를 풀어준다.
+    setTimeout(() => {
+      isRedirecting = false;
+    }, 5000);
     // 로그인 후 보던 페이지로 복귀할 수 있게 returnTo 를 실어 보낸다.
     window.location.assign(loginUrlFromCurrentLocation());
   }

@@ -27,6 +27,8 @@ export function useSocialLogin(
     refetchOnWindowFocus: false,
     // 로그인 실패는 전역 에러 토스트를 띄우지 않는다 — 콜백이 조용히
     // /login 으로 돌려보낸다(탈퇴 계정 재로그인 시 서버 메시지 노출 방지).
-    meta: { skipGlobalErrorToast: true },
+    // noPersist: 응답에 nativeLoginCode 등 일회성 인증 데이터가 담겨
+    // localStorage RQ persist 대상에서 제외한다.
+    meta: { skipGlobalErrorToast: true, noPersist: true },
   });
 }
