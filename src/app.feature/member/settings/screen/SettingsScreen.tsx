@@ -15,6 +15,7 @@ import {
   ChevronRight,
   HelpCircle,
   LogOut,
+  Megaphone,
   Trash2,
   Trophy,
   User,
@@ -169,6 +170,13 @@ export default function SettingsScreen(): React.ReactElement {
             'overflow-hidden rounded-[14px] border border-gray-200 bg-white'
           )}
         >
+          <SettingsRow
+            icon={<Megaphone className="h-5 w-5" />}
+            label="공지사항"
+            description="서비스 업데이트와 안내사항을 확인해요"
+            onClick={() => router.push('/notice')}
+          />
+          <div className="h-px w-full bg-gray-100" />
           <SettingsRow
             icon={<BookOpen className="h-5 w-5" />}
             label="사용 가이드"

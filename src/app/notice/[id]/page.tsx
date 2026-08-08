@@ -1,6 +1,4 @@
-import { NOTICE_ITEMS } from '@constants/consts/noticeData';
 import { NoticeDetailScreen } from '@feature/notice/screen/NoticeDetailScreen';
-import { notFound } from 'next/navigation';
 import React from 'react';
 
 interface NoticeDetailPageProps {
@@ -15,10 +13,6 @@ export default async function NoticeDetailPage({
   params,
 }: NoticeDetailPageProps): Promise<React.ReactElement> {
   const { id } = await params;
-  const notice = NOTICE_ITEMS.find((item) => item.id === id);
-  if (!notice) {
-    notFound();
-  }
 
-  return <NoticeDetailScreen notice={notice} />;
+  return <NoticeDetailScreen id={id} />;
 }
