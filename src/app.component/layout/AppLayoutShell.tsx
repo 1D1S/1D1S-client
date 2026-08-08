@@ -125,13 +125,20 @@ export default function AppLayoutShell({
   // 이 effect 는 늦게 도착한 `native:ready` handshake 처럼 그 이후에
   // 값이 바뀌는 경우만 <html> 속성에 반영한다. RootLayout 은 App Router
   // 에서 재렌더되지 않으므로 이 effect 가 유일한 갱신 경로다.
+  //
+  // **false 는 절대 쓰지 않는다.** `useIsNativeApp` 은 useSyncExternalStore
+  // 라서 하이드레이션 렌더에서는 계약상 getServerSnapshot(=false) 을
+  // 돌려준다 — 그 커밋의 effect 가 'false' 를 쓰면 inline script 가 이미
+  // 세워 둔 'true' 가 한 프레임 뒤집혀 웹 모바일 헤더가 보였다 사라진다
+  // (탐색 첫 진입에서 가장 잘 보이던 그 반짝임). 곧바로 클라이언트
+  // 스냅샷(true)으로 재렌더돼 다시 숨는 게 반짝임의 정체다.
+  //
+  // 네이티브가 아니면 SSR 값('false')이 그대로 맞으므로 쓸 일 자체가 없다.
   useEffect(() => {
-    if (typeof document === 'undefined') {
+    if (typeof document === 'undefined' || !isNativeApp) {
       return;
     }
-    document.documentElement.dataset.nativeApp = isNativeApp
-      ? 'true'
-      : 'false';
+    document.documentElement.dataset.nativeApp = 'true';
   }, [isNativeApp]);
 
   useTokenRefreshOnResume();
@@ -156,9 +163,11 @@ export default function AppLayoutShell({
     const onSignup = pathname === '/signup';
     if (!sidebarData.nickname) {
       // 추가정보 미완 → /signup. 이미 인증 라우트면 그대로 둔다.
+      // /login 은 OAuth 콜백(/login/oauth2/…)까지 포함해 prefix 로 제외한다 —
+      // 콜백이 returnTo 를 실어 보내는 replace 와 경합해 returnTo 가 유실됐다.
       if (
         !onSignup &&
-        pathname !== '/login' &&
+        !pathname.startsWith('/login') &&
         !pathname.startsWith('/auth')
       ) {
         router.replace('/signup');
