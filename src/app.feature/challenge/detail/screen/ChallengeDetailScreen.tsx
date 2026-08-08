@@ -33,6 +33,7 @@ import {
 } from '../../board/hooks/useChallengeQueries';
 import {
   canWriteDiaryForChallenge,
+  getChallengeDayProgress,
   isChallengeEndedOrArchived,
   isChallengeOngoing,
   isInfiniteChallengeEndDate,
@@ -218,10 +219,6 @@ export function ChallengeDetailScreen({
   const goals = data?.challengeGoals ?? EMPTY_GOALS;
   const participants = data?.participants ?? EMPTY_PARTICIPANTS;
 
-  const participationRate =
-    Math.round(
-      Math.min(100, Math.max(0, detail?.participationRate ?? 0)) * 10
-    ) / 10;
 
   const myStatus = detail?.myStatus ?? 'NONE';
   const isHost = myStatus === 'HOST';
@@ -277,6 +274,13 @@ export function ChallengeDetailScreen({
     summary?.postEndWriteAllowed
   );
   const isEndless = isInfiniteChallengeEndDate(summaryEndDate);
+  // 진행률 = 기간 대비 며칠째 진행 중인지. 이전에는 참여율을 "진행률"로
+  // 보여주고 있어 두 지표가 뒤바뀌어 있었다.
+  const dayProgress = getChallengeDayProgress(summaryStartDate, summaryEndDate);
+  const dayProgressLabel =
+    dayProgress.totalDays === null
+      ? `${dayProgress.currentDay}일째`
+      : `${dayProgress.currentDay}일째 / 총 ${dayProgress.totalDays}일`;
   // 챌린지 시작 여부 (시작일이 오늘 이전이면 시작된 것으로 간주)
   const isChallengeStarted =
     isChallengeCurrentlyOngoing ||
@@ -625,7 +629,9 @@ export function ChallengeDetailScreen({
           likeCnt={summary.likeInfo.likeCnt}
           isLikePending={isActionLoading}
           onToggleLike={handleToggleLike}
-          participationRate={participationRate}
+          progressPercent={dayProgress.percent}
+          progressCaption={dayProgressLabel}
+          isInfinite={isEndless}
         />
 
         <div
@@ -751,7 +757,11 @@ export function ChallengeDetailScreen({
                 ) : null}
 
                 {activeTab === 'stats' ? (
-                  <ChallengeStatisticsSection challengeId={challengeId} />
+                  <ChallengeStatisticsSection
+                    challengeId={challengeId}
+                    startDate={summary.startDate}
+                    endDate={summary.endDate}
+                  />
                 ) : null}
 
                 {activeTab === 'diary' ? (
@@ -871,7 +881,8 @@ export function ChallengeDetailScreen({
             >
               <div className="hidden lg:block">
                 <ChallengeProgressCard
-                  progressPercent={participationRate}
+                  progressPercent={dayProgress.percent}
+                  progressCaption={dayProgressLabel}
                   participantsLabel={participantsLabel}
                   remainingLabel={dateRangeText}
                   ctaLabel={ctaConfig.label}

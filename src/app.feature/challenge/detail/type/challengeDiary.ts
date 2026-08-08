@@ -4,6 +4,7 @@ import {
   DiaryInfo,
   LikeInfo,
 } from '@feature/diary/board/type/diary';
+import type { OffsetPageInfo as PageInfo } from '@module/api/types';
 
 export interface ChallengeDiaryItem {
   id: number;
@@ -18,13 +19,7 @@ export interface ChallengeDiaryItem {
   diaryInfo: DiaryInfo;
 }
 
-export interface PageInfo {
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  hasNextPage: boolean;
-}
+export type { PageInfo };
 
 export interface ChallengeDiaryListResponse {
   items: ChallengeDiaryItem[];

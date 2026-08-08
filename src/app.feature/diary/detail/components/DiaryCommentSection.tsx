@@ -191,11 +191,24 @@ export function DiaryCommentSection({
       return;
     }
 
+    // isCommentPending 은 다음 렌더에야 반영돼 같은 틱의 중복 제출을 못 막는다.
+    if (isCommentSubmittingRef.current) {
+      return;
+    }
+
     requireAuthAction(() => {
-      createReply.mutate({
-        commentId: rootCommentId,
-        content: trimmedContent,
-      });
+      isCommentSubmittingRef.current = true;
+      createReply.mutate(
+        {
+          commentId: rootCommentId,
+          content: trimmedContent,
+        },
+        {
+          onSettled: () => {
+            isCommentSubmittingRef.current = false;
+          },
+        }
+      );
     });
   };
 

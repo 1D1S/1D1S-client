@@ -25,12 +25,6 @@ export const DIARY_QUERY_KEYS = {
       ...(params ? [params] : []),
     ] as const,
   commentReplies: () => [...DIARY_QUERY_KEYS.comments(), 'replies'] as const,
-  replies: (commentId: number, params?: { page?: number; size?: number }) =>
-    [
-      ...DIARY_QUERY_KEYS.commentReplies(),
-      commentId,
-      ...(params ? [params] : []),
-    ] as const,
   repliesMap: (
     commentIds: number[],
     params?: { page?: number; size?: number }

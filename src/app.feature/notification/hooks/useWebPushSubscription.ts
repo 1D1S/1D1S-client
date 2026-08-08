@@ -29,16 +29,21 @@ export function useWebPushSubscription(): {
     if (!('serviceWorker' in navigator)) {
       return;
     }
-    navigator.serviceWorker.getRegistration('/sw.js').then((reg) => {
-      if (!reg) {
-        return;
-      }
-      reg.pushManager.getSubscription().then((sub) => {
-        if (!cancelled && sub) {
-          setStatus('subscribed');
+    navigator.serviceWorker
+      .getRegistration('/sw.js')
+      .then((reg) => {
+        if (!reg) {
+          return;
         }
+        return reg.pushManager.getSubscription().then((sub) => {
+          if (!cancelled && sub) {
+            setStatus('subscribed');
+          }
+        });
+      })
+      .catch(() => {
+        // Safari 프라이빗 모드 등에서 reject — 미구독으로 간주하고 넘어간다.
       });
-    });
     return () => {
       cancelled = true;
     };

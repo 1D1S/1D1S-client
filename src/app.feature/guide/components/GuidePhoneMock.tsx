@@ -1,3 +1,4 @@
+import { getCategoryStripeTone } from '@constants/categories';
 import { cn } from '@module/utils/cn';
 import {
   BookOpen,
@@ -35,13 +36,6 @@ function GuidePhone({
     </div>
   );
 }
-
-// 카테고리별 대표색 — 실제 카드의 Stripe placeholder 색상 팔레트와 동일.
-// (src/app.constants/categories.tsx 의 CATEGORY_STRIPE_TONES 를 따름)
-const CATEGORY_HEX: Record<string, string> = {
-  EXERCISE: '#ef4444',
-  BOOK: '#16a34a',
-};
 
 const CATEGORY_ICON: Record<string, typeof Dumbbell> = {
   EXERCISE: Dumbbell,
@@ -101,7 +95,7 @@ interface MiniChallenge {
 
 function MiniChallengeCard({ c }: { c: MiniChallenge }): React.ReactElement {
   const CatIcon = CATEGORY_ICON[c.catCode];
-  const hex = CATEGORY_HEX[c.catCode];
+  const hex = getCategoryStripeTone(c.catCode);
   return (
     <div
       className={cn(
@@ -494,7 +488,7 @@ function MockDiary(): React.ReactElement {
                 fill="currentColor"
                 aria-hidden
               >
-                {/* eslint-disable-next-line max-len -- SVG 하트 path 는 분리 불가 */}
+                { }
                 <path d="M12 21s-7.5-4.6-10-9.3C.4 8.4 2 5 5.4 5c2 0 3.3 1.1 4.1 2.3.8-1.2 2.1-2.3 4.1-2.3 3.4 0 5 3.4 3.4 6.7C19.5 16.4 12 21 12 21z" />
               </svg>
               24

@@ -3,7 +3,7 @@ import {
   normalizeDiaryItems,
 } from '@feature/diary/shared/utils/normalizeDiary';
 import { apiClient, publicApiClient } from '@module/api/client';
-import { putToStorage } from '@module/api/presignedUpload';
+import { uploadImageViaPresignedSingle } from '@module/api/presignedUpload';
 import {
   buildQueryString,
   requestBody,
@@ -88,16 +88,7 @@ export const memberApi = {
     }),
 
   updateProfileImage: async (file: File): Promise<void> => {
-    const { presignedUrl, objectKey } = await requestData<{
-      presignedUrl: string;
-      objectKey: string;
-    }>(apiClient, {
-      url: '/image/presigned-url',
-      method: 'POST',
-      data: { fileName: file.name, fileType: file.type },
-    });
-
-    await putToStorage(presignedUrl, file);
+    const objectKey = await uploadImageViaPresignedSingle(file);
 
     await requestData<void>(apiClient, {
       url: '/member/profile-image',

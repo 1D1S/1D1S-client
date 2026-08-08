@@ -5,6 +5,7 @@ import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
+import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { cn } from '@module/utils/cn';
 import { formatMonthDayKR } from '@module/utils/date';
 import {
@@ -14,10 +15,13 @@ import {
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React, { useCallback } from 'react';
 
-import {
-  getDiaryAchievementRate,
-  mapFeelingToEmotion,
-} from '../utils/homeFormatters';
+function getDiaryAchievementRate(
+  achievementRate?: number,
+  fallbackAchievementRate?: number
+): number {
+  const rate = achievementRate ?? fallbackAchievementRate ?? 0;
+  return Math.min(100, Math.max(0, rate));
+}
 
 interface HomeDiaryItemProps {
   item: DiaryItem;

@@ -8,7 +8,10 @@ import { Heart } from 'lucide-react';
 import React from 'react';
 
 interface ChallengeProgressCardProps {
+  // 기간 대비 진행률(%) — 참여율이 아니라 "며칠째 진행 중"이다.
   progressPercent: number;
+  // 진행률 숫자 옆 설명. 예: "3일째 / 총 30일".
+  progressCaption?: string;
   participantsLabel: string;
   remainingLabel: string;
   ctaLabel: string;
@@ -29,6 +32,7 @@ interface ChallengeProgressCardProps {
 
 export function ChallengeProgressCard({
   progressPercent,
+  progressCaption,
   participantsLabel,
   remainingLabel,
   ctaLabel,
@@ -89,6 +93,11 @@ export function ChallengeProgressCard({
             %
           </Text>
         )}
+        {progressCaption ? (
+          <Text size="caption1" weight="bold" className="ml-1 text-gray-400">
+            {progressCaption}
+          </Text>
+        ) : null}
       </div>
       <div className="mt-2.5">
         <ProgressBar
