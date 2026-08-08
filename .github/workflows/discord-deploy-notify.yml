@@ -32,9 +32,10 @@ jobs:
         uses: actions/github-script@v7
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-          # 알림 채널 ID(PR 알림/서버 알림과 공유). WEB(ENV) 접두어로 구분.
-          # 별도 채널을 원하면 이 값만 교체.
-          CHANNEL_ID: '1351796500279197757'
+          # 프론트엔드 채널 — PR 알림(discord-pr-notification)과 같은 곳.
+          # 예전엔 서버 레포에서 복사해 온 공용 채널 ID 가 남아 있어 프론트
+          # 배포 알림이 백엔드 채널로 갔다.
+          CHANNEL_ID: '1352445288102494358'
         with:
           script: |
             const token = process.env.DISCORD_BOT_TOKEN;
