@@ -19,11 +19,7 @@ import React from 'react';
 
 import { useMemberChallenges } from '../hooks/useChallengeQueries';
 import type { ChallengeListItem } from '../type/challenge';
-import {
-  formatChallengeRemainingLabel,
-  isChallengeEndedOrArchived,
-  isInfiniteChallengeEndDate,
-} from '../utils/challengePeriod';
+import { resolveChallengeCardStatus } from '../utils/challengePeriod';
 
 interface MemberChallengeCardItemProps {
   challenge: ChallengeListItem;
@@ -33,17 +29,8 @@ interface MemberChallengeCardItemProps {
 // 파생 계산을 컴포넌트로 분리한다.
 const MemberChallengeCardItem = React.memo(
   ({ challenge }: MemberChallengeCardItemProps): React.ReactElement => {
-    const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
-    const ended = isChallengeEndedOrArchived(
-      challenge.endDate,
-      challenge.participantCnt,
-      challenge.challengeType
-    );
-    const remainingLabel = formatChallengeRemainingLabel(
-      challenge.endDate,
-      isInfinite,
-      ended
-    );
+    const { status, isInfinite, isEnded, remainingLabel } =
+      resolveChallengeCardStatus(challenge);
 
     return (
       <ChallengeCard
@@ -62,7 +49,8 @@ const MemberChallengeCardItem = React.memo(
         isInfinite={isInfinite}
         goalType={challenge.goalType}
         isGroup={challenge.participationType === 'GROUP'}
-        isEnded={ended}
+        isEnded={isEnded}
+        status={status}
         isPhotoRequired={challenge.photoRequired}
         isOfficial={challenge.challengeType === 'OFFICIAL'}
         participants={challenge.randomParticipants}

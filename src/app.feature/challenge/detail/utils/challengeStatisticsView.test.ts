@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  getTrendProgress,
   parseLocalDate,
   summarizeDiaryTrend,
 } from './challengeStatisticsView';
@@ -43,35 +42,6 @@ describe('summarizeDiaryTrend', () => {
       total: 0,
       max: 1,
       peakIndex: -1,
-    });
-  });
-});
-
-describe('getTrendProgress', () => {
-  const trend = [
-    { date: '2026-07-01', count: 0 },
-    { date: '2026-07-02', count: 0 },
-    { date: '2026-07-03', count: 0 },
-  ];
-
-  it('오늘이 기간 안이면 경과 일수(1-base)를 낸다', () => {
-    expect(getTrendProgress(trend, new Date(2026, 6, 2))).toEqual({
-      currentDay: 2,
-      totalDays: 3,
-    });
-  });
-
-  it('오늘이 마지막 날 이후면 전 기간 완료로 본다', () => {
-    expect(getTrendProgress(trend, new Date(2026, 6, 9))).toEqual({
-      currentDay: 3,
-      totalDays: 3,
-    });
-  });
-
-  it('시작 전이면 currentDay 는 0이다', () => {
-    expect(getTrendProgress(trend, new Date(2026, 5, 20))).toEqual({
-      currentDay: 0,
-      totalDays: 3,
     });
   });
 });

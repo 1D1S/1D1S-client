@@ -1,6 +1,7 @@
-import type { LikeInfo } from '@module/api/types';
+import type { LikeInfo, OffsetPageInfo } from '@module/api/types';
 
-export type { LikeInfo };
+// OffsetPageInfo: 오프셋 페이지네이션 공통 페이지 정보 (@module/api/types).
+export type { LikeInfo, OffsetPageInfo };
 
 export type ChallengeCategory =
   | 'ALL'
@@ -136,14 +137,6 @@ export interface ParticipantListParams {
   status?: ParticipantStatus[];
 }
 
-// 오프셋 페이지네이션 공통 페이지 정보 (챌린지 일지 목록과 동일 형태)
-export interface OffsetPageInfo {
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  hasNextPage: boolean;
-}
 
 export interface ParticipantListResponse {
   items: Participant[];

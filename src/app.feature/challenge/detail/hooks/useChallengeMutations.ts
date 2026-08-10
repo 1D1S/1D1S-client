@@ -35,6 +35,8 @@ export function useCreateChallenge(): UseMutationResult<
       invalidateAll(queryClient, [
         CHALLENGE_QUERY_KEYS.lists(),
         CHALLENGE_QUERY_KEYS.randoms(),
+        CHALLENGE_QUERY_KEYS.my(),
+        CHALLENGE_QUERY_KEYS.members(),
         MEMBER_QUERY_KEYS.myPage(),
         MEMBER_QUERY_KEYS.sidebar(),
       ]);
@@ -62,6 +64,8 @@ export function useJoinChallenge(): UseMutationResult<
       invalidateAll(queryClient, [
         CHALLENGE_QUERY_KEYS.detail(challengeId),
         CHALLENGE_QUERY_KEYS.lists(),
+        CHALLENGE_QUERY_KEYS.my(),
+        CHALLENGE_QUERY_KEYS.members(),
         CHALLENGE_QUERY_KEYS.participants(),
       ]);
     },
@@ -84,6 +88,8 @@ export function useVerifyChallengePassword(): UseMutationResult<
       invalidateAll(queryClient, [
         CHALLENGE_QUERY_KEYS.detail(challengeId),
         CHALLENGE_QUERY_KEYS.lists(),
+        CHALLENGE_QUERY_KEYS.my(),
+        CHALLENGE_QUERY_KEYS.members(),
         CHALLENGE_QUERY_KEYS.participants(),
       ]);
     },
@@ -147,6 +153,7 @@ export function useLeaveChallenge(): UseMutationResult<void, Error, number> {
       invalidateAll(queryClient, [
         CHALLENGE_QUERY_KEYS.detail(challengeId),
         CHALLENGE_QUERY_KEYS.lists(),
+        CHALLENGE_QUERY_KEYS.my(),
         CHALLENGE_QUERY_KEYS.members(),
         CHALLENGE_QUERY_KEYS.participants(),
       ]);

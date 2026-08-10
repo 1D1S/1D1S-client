@@ -1,4 +1,5 @@
 import { clearCachedSidebar } from '@feature/member/hooks/useMemberQueries';
+import { beginLogoutSuppression } from '@module/api/errorNotify';
 import { toast } from '@module/providers/toast';
 import { authStorage } from '@module/utils/auth';
 import {
@@ -85,6 +86,12 @@ export function useDeleteMember(): UseMutationResult<
 
   return useMutation({
     mutationFn: () => memberApi.deleteMember(),
+    onMutate: () => {
+      // useLogout 과 동일한 정리 창 — 탈퇴 처리 중 잔여 in-flight 요청들이
+      // 401/취소로 떨어지며 에러 토스트·로그인 리다이렉트를 유발하는 것을 막는다.
+      beginLogoutSuppression();
+      void queryClient.cancelQueries();
+    },
     onSuccess: () => {
       authStorage.clearTokens();
       clearCachedSidebar();

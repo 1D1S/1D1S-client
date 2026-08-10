@@ -158,7 +158,7 @@ function DiaryCard({
         // 높이를 기억해 재스크롤 시 점프가 없다(초기 추정 360px). 카드
         // 자신의 hover:shadow-warm 는 own 박스 데코라 contain:paint 로도
         // 잘리지 않고, LikeBurst 는 이미 Card 의 overflow-hidden 에 갇힌다.
-        '[content-visibility:auto] [contain-intrinsic-size:auto_360px]',
+        '[contain-intrinsic-size:auto_360px] [content-visibility:auto]',
         href && 'relative',
         className
       )}

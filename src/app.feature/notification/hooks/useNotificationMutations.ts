@@ -152,15 +152,8 @@ export function useRegisterEndpoint(): UseMutationResult<
   Error,
   WebPushEndpointRequest
 > {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (data: WebPushEndpointRequest) =>
       notificationApi.registerEndpoint(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: NOTIFICATION_QUERY_KEYS.endpoints(),
-      });
-    },
   });
 }

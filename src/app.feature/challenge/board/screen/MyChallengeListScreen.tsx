@@ -29,11 +29,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { FilterDisclosure } from '../components/FilterDisclosure';
 import { useMyChallenges } from '../hooks/useChallengeQueries';
 import type { MyChallengeItem } from '../type/challenge';
-import {
-  formatChallengeRemainingLabel,
-  isChallengeEndedOrArchived,
-  isInfiniteChallengeEndDate,
-} from '../utils/challengePeriod';
+import { resolveChallengeCardStatus } from '../utils/challengePeriod';
 import {
   getMyChallengeState,
   type MyChallengeState,
@@ -67,17 +63,8 @@ interface MyChallengeCardItemProps {
 const MyChallengeCardItem = React.memo(
   ({ item }: MyChallengeCardItemProps): React.ReactElement => {
     const { challenge } = item;
-    const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
-    const ended = isChallengeEndedOrArchived(
-      challenge.endDate,
-      challenge.participantCnt,
-      challenge.challengeType
-    );
-    const remainingLabel = formatChallengeRemainingLabel(
-      challenge.endDate,
-      isInfinite,
-      ended
-    );
+    const { status, isInfinite, isEnded, remainingLabel } =
+      resolveChallengeCardStatus(challenge);
     const hasLeft = item.participationStatus === 'LEAVE';
 
     return (
@@ -98,7 +85,8 @@ const MyChallengeCardItem = React.memo(
           isInfinite={isInfinite}
           goalType={challenge.goalType as ChallengeCardGoalType}
           isGroup={challenge.participationType === 'GROUP'}
-          isEnded={ended}
+          isEnded={isEnded}
+          status={status}
           isOfficial={challenge.challengeType === 'OFFICIAL'}
           participants={challenge.randomParticipants}
           href={`/challenge/${challenge.challengeId}`}

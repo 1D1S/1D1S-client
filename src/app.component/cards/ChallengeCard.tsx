@@ -3,12 +3,26 @@
 import { Card, CircleAvatar, Icon, Stripe } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
 import { cn } from '@module/utils/cn';
+import { getInclusiveDayCount, parseDateValue } from '@module/utils/date';
 import { createActivationKeydownHandler } from '@module/utils/event';
 import { CalendarDays, Camera, Target, Users } from 'lucide-react';
 import Link from 'next/link';
 import React, { useMemo } from 'react';
 
 export type ChallengeCardGoalType = 'FIXED' | 'FLEXIBLE';
+
+export type ChallengeCardStatus = 'UPCOMING' | 'ONGOING' | 'ENDED';
+
+// 모집중/진행중이 카드에서 구분되지 않아 아직 시작 안 한 챌린지도 진행중처럼
+// 보였다. 썸네일 좌상단에 상태 배지를 항상 띄운다.
+const STATUS_BADGE: Record<
+  ChallengeCardStatus,
+  { label: string; className: string }
+> = {
+  UPCOMING: { label: '모집 중', className: 'bg-blue-600 text-white' },
+  ONGOING: { label: '진행 중', className: 'bg-emerald-600 text-white' },
+  ENDED: { label: '종료', className: 'bg-gray-700 text-white' },
+};
 
 export interface ChallengeCardParticipant {
   memberId: number;
@@ -31,6 +45,8 @@ export interface ChallengeCardProps {
   goalType?: ChallengeCardGoalType;
   isGroup?: boolean;
   isEnded?: boolean;
+  /** 모집중/진행중/종료 배지. 생략하면 isEnded 로 추론한다. */
+  status?: ChallengeCardStatus;
   // 인증샷 필수 챌린지 — 카메라 배지로 표시한다.
   isPhotoRequired?: boolean;
   // 공식 챌린지 — 브랜드 링/글로우 + "공식" 배지로 강조한다.
@@ -50,8 +66,6 @@ const GOAL_TYPE_LABELS: Record<ChallengeCardGoalType, string> = {
   FIXED: '고정 목표',
   FLEXIBLE: '자유 목표',
 };
-
-const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 function pad2(value: number): string {
   return value < 10 ? `0${value}` : `${value}`;
@@ -81,8 +95,8 @@ function buildPeriodInfo(
     return null;
   }
 
-  const start = new Date(startDate);
-  if (Number.isNaN(start.getTime())) {
+  const start = parseDateValue(startDate);
+  if (!start) {
     return null;
   }
 
@@ -96,21 +110,18 @@ function buildPeriodInfo(
     return { rangeLabel: startLabel, durationLabel: null };
   }
 
-  const end = new Date(endDate);
-  if (Number.isNaN(end.getTime())) {
+  const end = parseDateValue(endDate);
+  if (!end) {
     return { rangeLabel: startLabel, durationLabel: null };
   }
 
   const sameYear = start.getFullYear() === end.getFullYear();
   const endLabel = sameYear ? formatShortDate(end) : formatFullDate(end);
-  const days = Math.max(
-    1,
-    Math.round((end.getTime() - start.getTime()) / MS_PER_DAY) + 1
-  );
+  const days = getInclusiveDayCount(startDate, endDate);
 
   return {
     rangeLabel: `${startLabel} ~ ${endLabel}`,
-    durationLabel: `${days}일`,
+    durationLabel: days === null ? null : `${days}일`,
   };
 }
 
@@ -129,6 +140,7 @@ function ChallengeCard({
   goalType,
   isGroup = true,
   isEnded = false,
+  status,
   isPhotoRequired = false,
   isOfficial = false,
   participants,
@@ -148,6 +160,7 @@ function ChallengeCard({
         onKeyDown: handleKeyDown,
       };
 
+  const statusBadge = STATUS_BADGE[status ?? (isEnded ? 'ENDED' : 'ONGOING')];
   const participationLabel = isGroup ? '단체' : '개인';
   const goalLabel = goalType ? GOAL_TYPE_LABELS[goalType] : null;
   const visibleParticipants = (participants ?? []).slice(0, 3);
@@ -179,7 +192,7 @@ function ChallengeCard({
         // 화면 밖 카드의 레이아웃/페인트를 건너뛴다(DiaryCard 와 동일).
         // 챌린지 보드는 이 한 줄이 없어 누적된 카드 전부를 매 스크롤에
         // 페인트하고 있었다.
-        '[content-visibility:auto] [contain-intrinsic-size:auto_320px]',
+        '[contain-intrinsic-size:auto_320px] [content-visibility:auto]',
         isOfficial &&
           'ring-main-800 shadow-[0_10px_30px_-8px_rgba(255,89,0,0.45)] ring-2',
         isEnded && 'opacity-60',
@@ -271,6 +284,15 @@ function ChallengeCard({
               'flex-wrap items-center justify-end gap-1'
             )}
           >
+            <span
+              className={cn(
+                'inline-flex shrink-0 items-center rounded-full px-2.5 py-1',
+                'text-[11px] font-bold whitespace-nowrap shadow-sm',
+                statusBadge.className
+              )}
+            >
+              {statusBadge.label}
+            </span>
             {isPhotoRequired ? (
               <span
                 aria-label="인증샷 필수"

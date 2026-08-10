@@ -1,11 +1,15 @@
-import { NOTICE_ITEMS } from '@constants/consts/noticeData';
+'use client';
+
+import { useLatestNotice } from '@feature/notice/hooks/useNoticeQueries';
 import { cn } from '@module/utils/cn';
 import { ChevronRight, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
 export default function HomeNoticeStrip(): React.ReactElement | null {
-  const [latest] = NOTICE_ITEMS;
+  // 서버가 고정 우선으로 정렬하므로 첫 건이 곧 "지금 보여줄 공지"다.
+  // 조회 실패 시 훅이 null 을 돌려줘 스트립이 조용히 사라진다.
+  const { data: latest } = useLatestNotice();
   if (!latest) {
     return null;
   }
@@ -13,7 +17,7 @@ export default function HomeNoticeStrip(): React.ReactElement | null {
   return (
     <div className="w-full">
       <Link
-        href={latest.href ?? '/notice'}
+        href={`/notice/${latest.id}`}
         className={cn(
           'flex w-full cursor-pointer items-center gap-3',
           'rounded-4 border border-gray-200 bg-white px-4 py-3',

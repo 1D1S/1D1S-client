@@ -59,27 +59,31 @@ export function useDiaryImagePicker(): UseDiaryImagePickerResult {
         return;
       }
 
-      // 최대 장수까지만 받는다(초과분은 애초에 objectURL 을 만들지 않음).
-      const remaining = MAX_DIARY_IMAGES - images.length;
-      if (remaining <= 0) {
-        return;
-      }
+      // 함수형 업데이트 — 렌더 전 두 번 연속 호출돼도(네이티브 브리지 중복
+      // 콜백 등) 앞 배치가 유실되거나 최대 장수를 넘지 않게 한다.
+      setImages((prevImages) => {
+        // 최대 장수까지만 받는다(초과분은 애초에 objectURL 을 만들지 않음).
+        const remaining = MAX_DIARY_IMAGES - prevImages.length;
+        if (remaining <= 0) {
+          return prevImages;
+        }
 
-      const addedImages = files.slice(0, remaining).map((file) => ({
-        kind: 'new' as const,
-        url: URL.createObjectURL(file),
-        file,
-      }));
+        const addedImages = files.slice(0, remaining).map((file) => ({
+          kind: 'new' as const,
+          url: URL.createObjectURL(file),
+          file,
+        }));
 
-      setImages([...images, ...addedImages]);
+        // 첫 등록 이미지는 자동으로 대표 지정(빈 목록일 때만). 이후 변경·
+        // 해제는 사용자 몫이라 여기서 다시 건드리지 않는다.
+        if (prevImages.length === 0 && addedImages.length > 0) {
+          setThumbnailImageUrl(addedImages[0].url);
+        }
 
-      // 첫 등록 이미지는 자동으로 대표 지정(빈 목록일 때만). 이후 변경·해제는
-      // 사용자 몫이라 여기서 다시 건드리지 않는다.
-      if (images.length === 0 && addedImages.length > 0) {
-        setThumbnailImageUrl(addedImages[0].url);
-      }
+        return [...prevImages, ...addedImages];
+      });
     },
-    [images]
+    []
   );
 
   const handleRemoveImageAt = useCallback(

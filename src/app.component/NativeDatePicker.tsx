@@ -2,6 +2,7 @@
 
 import { DatePicker, type DatePickerProps } from '@1d1s/design-system';
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
+import { formatDateISO } from '@module/utils/date';
 import {
   isNativeDatePickerAvailable,
   openNativeDatePicker,
@@ -11,13 +12,6 @@ import React from 'react';
 // 하루씩 훑어 disabled 목록을 만들 때의 상한. min~max 가 이보다 넓으면
 // 목록을 보내지 않는다 (현재 사용처는 일지 작성의 3일 창뿐).
 const MAX_DISABLED_SCAN_DAYS = 62;
-
-function toLocalDateString(date: Date): string {
-  const y = String(date.getFullYear()).padStart(4, '0');
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
 
 function fromLocalDateString(value: string): Date | undefined {
   const [y, m, d] = value.split('-').map(Number);
@@ -65,17 +59,17 @@ export function NativeDatePicker({
           break;
         }
         if (nativeIsDisabled(cursor)) {
-          disabled.push(toLocalDateString(cursor));
+          disabled.push(formatDateISO(cursor));
         }
         cursor.setDate(cursor.getDate() + 1);
       }
     }
     const picked = await openNativeDatePicker({
       value: pickerProps.value
-        ? toLocalDateString(pickerProps.value)
+        ? formatDateISO(pickerProps.value)
         : undefined,
-      min: nativeMin ? toLocalDateString(nativeMin) : undefined,
-      max: nativeMax ? toLocalDateString(nativeMax) : undefined,
+      min: nativeMin ? formatDateISO(nativeMin) : undefined,
+      max: nativeMax ? formatDateISO(nativeMax) : undefined,
       disabled: disabled.length > 0 ? disabled : undefined,
     });
     if (picked) {

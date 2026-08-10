@@ -1,5 +1,9 @@
 import type { DiaryItem } from '@feature/diary/board/type/diary';
 import type { FriendRelationStatus } from '@feature/friend/type/friend';
+import type {
+  LikeInfo,
+  OffsetPageInfo as MemberDiaryPageInfo,
+} from '@module/api/types';
 
 export interface SidebarChallenge {
   challengeId: number;
@@ -16,10 +20,7 @@ export interface SidebarChallenge {
   thumbnailImage?: string | null;
   // 종료 후 2일 유예 동안 일지 작성 허용 여부.
   postEndWriteAllowed?: boolean;
-  likeInfo: {
-    likedByMe: boolean;
-    likeCnt: number;
-  };
+  likeInfo: LikeInfo;
 }
 
 export interface SidebarData {
@@ -61,10 +62,7 @@ export interface MyPageChallenge {
   participantCnt: number;
   // 인증샷(사진) 필수 여부(서버 JSON 키: photoRequired).
   photoRequired?: boolean;
-  likeInfo: {
-    likedByMe: boolean;
-    likeCnt: number;
-  };
+  likeInfo: LikeInfo;
   thumbnailImage?: string;
   randomParticipants?: Array<{
     memberId: number;
@@ -78,20 +76,11 @@ export interface MyPageDiary {
   title: string;
   content: string;
   isPublic: boolean;
-  likeInfo: {
-    likedByMe: boolean;
-    likeCnt: number;
-  };
+  likeInfo: LikeInfo;
   commentCount: number;
 }
 
-export interface MemberDiaryPageInfo {
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  hasNextPage: boolean;
-}
+export type { MemberDiaryPageInfo };
 
 export interface MemberDiaryListResponse {
   items: DiaryItem[];

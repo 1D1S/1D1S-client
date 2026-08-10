@@ -3,6 +3,7 @@
 import { Text } from '@1d1s/design-system';
 import { BarTrend, type BarTrendDatum } from '@component/charts/BarTrend';
 import { Skeleton } from '@component/Skeleton';
+import { getChallengeDayProgress } from '@feature/challenge/board/utils/challengePeriod';
 import { normalizeApiError } from '@module/api/error';
 import { cn } from '@module/utils/cn';
 import {
@@ -17,13 +18,12 @@ import { useRouter } from 'next/navigation';
 import React, { useMemo } from 'react';
 
 import { useChallengeStatistics } from '../hooks/useChallengeDiaryQueries';
-import {
-  getTrendProgress,
-  summarizeDiaryTrend,
-} from '../utils/challengeStatisticsView';
+import { summarizeDiaryTrend } from '../utils/challengeStatisticsView';
 
 interface ChallengeStatisticsSectionProps {
   challengeId: number;
+  startDate: string;
+  endDate: string;
 }
 
 // 'YYYY-MM-DD' → 'M/D' (막대 라벨용 컴팩트 표기).
@@ -88,6 +88,8 @@ function Kpi({
  */
 export function ChallengeStatisticsSection({
   challengeId,
+  startDate,
+  endDate,
 }: ChallengeStatisticsSectionProps): React.ReactElement {
   const router = useRouter();
   const { data, isPending, isError, error } =
@@ -95,7 +97,12 @@ export function ChallengeStatisticsSection({
 
   const trend = useMemo(() => data?.diaryTrend ?? [], [data]);
   const summary = useMemo(() => summarizeDiaryTrend(trend), [trend]);
-  const progress = useMemo(() => getTrendProgress(trend), [trend]);
+  // 진행일은 diaryTrend 길이가 아니라 챌린지 기간에서 계산한다. trend 는
+  // 무기한이면 오늘까지만 오므로 전체 일수로 쓰면 항상 "N/N일"이 된다.
+  const progress = useMemo(
+    () => getChallengeDayProgress(startDate, endDate),
+    [startDate, endDate]
+  );
 
   const barData = useMemo<BarTrendDatum[]>(
     () =>
@@ -153,7 +160,9 @@ export function ChallengeStatisticsSection({
           icon={CalendarClock}
           label="진행"
           value={progress.currentDay}
-          unit={`/ ${progress.totalDays}일`}
+          unit={
+            progress.totalDays === null ? '일째' : `/ ${progress.totalDays}일`
+          }
         />
       </div>
 

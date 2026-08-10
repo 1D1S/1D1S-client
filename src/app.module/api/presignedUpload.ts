@@ -69,6 +69,26 @@ export async function putToStorage(
 }
 
 /**
+ * 단건 presigned 발급 + PUT 업로드 후 objectKey 를 반환한다.
+ * 프로필/챌린지 배너 등 단일 이미지 업로드 경로가 공유한다.
+ */
+export async function uploadImageViaPresignedSingle(
+  file: File
+): Promise<string> {
+  const { presignedUrl, objectKey } = await requestData<{
+    presignedUrl: string;
+    objectKey: string;
+  }>(apiClient, {
+    url: '/image/presigned-url',
+    method: 'POST',
+    data: { fileName: file.name, fileType: file.type },
+  });
+
+  await putToStorage(presignedUrl, file);
+  return objectKey;
+}
+
+/**
  * 파일 배열을 presigned 방식으로 업로드하고 최종 fileUrl 배열을 반환한다.
  * 입력 순서를 그대로 유지하며, 하나라도 실패하면 throw 한다.
  *
