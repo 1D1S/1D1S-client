@@ -35,6 +35,20 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: '1D1S',
   },
+  // 사파리 Smart App Banner (iOS 전용).
+  // → <meta name="apple-itunes-app" content="app-id=…, app-argument=…">
+  //
+  // app-argument 는 현재 경로가 아니라 홈 URL 고정이다. 이 도메인에는
+  // apple-app-site-association 이 없어(운영 /.well-known/… 404) 유니버설
+  // 링크 경로 라우팅 규칙 자체가 없고, 경로별 인자를 실어도 앱이 대응할
+  // 계약이 없다. 쿼리스트링을 싣지 않으므로 로그인 사용자의 returnTo·
+  // notifId 같은 값이 배너 메타로 새지도 않는다.
+  // AASA 배선 후 경로별 딥링크가 필요해지면, 미들웨어에서 x-pathname 을
+  // 요청 헤더로 넣고 이 값을 generateMetadata 로 바꾸면 된다.
+  itunes: {
+    appId: '6793538373',
+    appArgument: SITE_URL.toString(),
+  },
   icons: {
     icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
     apple: [{ url: '/icon.svg', type: 'image/svg+xml' }],
