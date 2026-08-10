@@ -19,6 +19,8 @@ import type {
 interface VoteFloatingWidgetProps {
   enabled: boolean;
   hasBottomNav: boolean;
+  /** 데스크탑 우측 레일(280px)이 있는 라우트인지 — 데스크탑 위치 계산용 */
+  hasRightRail: boolean;
 }
 
 interface VotePanelProps {
@@ -66,7 +68,10 @@ function VoteOptionButton({
         'rounded-3 border px-3.5 py-3 text-left transition',
         isSelected
           ? 'border-main-700 bg-main-200'
-          : 'hover:border-main-500 border-gray-200 bg-white',
+          : 'border-gray-200 bg-white',
+        // 응답이 끝난 뒤에는 hover 반응을 없애 "아직 고를 수 있다" 는
+        // 인상을 주지 않는다. disabled 여도 :hover 는 그대로 매칭된다.
+        !isSubmitted && !isSelected && 'hover:border-main-500',
         isSubmitted && 'cursor-default'
       )}
     >
@@ -82,7 +87,8 @@ function VoteOptionButton({
         className={cn(
           'relative flex h-5 w-5 shrink-0 items-center justify-center',
           'border-2 transition',
-          selectionType === 'SINGLE' ? 'rounded-full' : 'rounded-1.5',
+          // rounded-1.5 는 정의된 radius 토큰이 아니라 각진 사각형이 됐다.
+          selectionType === 'SINGLE' ? 'rounded-full' : 'rounded-1',
           isSelected
             ? 'border-main-800 bg-main-800 text-white'
             : 'border-gray-400 bg-white'
@@ -126,7 +132,9 @@ function VotePanel({
       className={cn(
         'animate-in fade-in zoom-in-95 w-[min(360px,calc(100vw-40px))]',
         'max-h-[min(580px,calc(100vh-120px))] overflow-y-auto',
-        'rounded-5 border border-gray-200 bg-white p-5 shadow-2xl',
+        // radius 스케일은 --radius-0~4 까지만 정의돼 있다. rounded-5 는
+        // 유틸이 생성되지 않아 각진 카드로 보였다.
+        'rounded-4 border border-gray-200 bg-white p-5 shadow-2xl',
         'duration-200'
       )}
     >
@@ -259,11 +267,13 @@ function VoteFab({
 export default function VoteFloatingWidget({
   enabled,
   hasBottomNav,
+  hasRightRail,
 }: VoteFloatingWidgetProps): React.ReactElement | null {
   const [isDesktopOpen, setIsDesktopOpen] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [selectedOptionIds, setSelectedOptionIds] = useState<number[]>([]);
   const [submittedVote, setSubmittedVote] = useState<VoteDetail | null>(null);
+  const [renderedVoteId, setRenderedVoteId] = useState<number | null>(null);
 
   const { data: todayVotes = [] } = useTodayVotes(enabled);
   const activeVote = todayVotes.find((vote) => !vote.voted);
@@ -277,9 +287,23 @@ export default function VoteFloatingWidget({
   const submitVote = useSubmitVote();
   const vote = submittedVote ?? queriedVote;
 
+  // 이번 세션의 제출 여부(submittedVote)만 보면, 다른 기기·탭에서 이미
+  // 응답했거나 today 목록 캐시(staleTime 5분 + localStorage 영속)가 낡아
+  // voted:false 로 남아 있을 때 선택지가 계속 클릭 가능해 보인다.
+  // 상세 응답의 voted 플래그를 함께 보고 확정 상태를 판정한다.
+  const isAnswered = submittedVote !== null || vote?.voted === true;
+
+  // 표시 중인 투표가 바뀌면 이전 투표의 선택을 반드시 버린다 — 안 그러면
+  // 오늘 투표가 2건 이상일 때 앞 투표의 optionId 가 다음 투표로 넘어간다.
+  // effect 가 아니라 렌더 중 조정으로 처리한다(추가 렌더 1회 없이 즉시 반영).
+  if (voteId !== renderedVoteId) {
+    setRenderedVoteId(voteId);
+    setSelectedOptionIds([]);
+  }
+
   const handleOptionClick = useCallback(
     (optionId: number): void => {
-      if (!vote || submittedVote) {
+      if (!vote || isAnswered) {
         return;
       }
       setSelectedOptionIds((current) => {
@@ -291,11 +315,11 @@ export default function VoteFloatingWidget({
           : [...current, optionId];
       });
     },
-    [submittedVote, vote]
+    [isAnswered, vote]
   );
 
   const handleSubmit = useCallback((): void => {
-    if (!vote || selectedOptionIds.length === 0) {
+    if (!vote || isAnswered || selectedOptionIds.length === 0) {
       return;
     }
     submitVote.mutate(
@@ -307,7 +331,7 @@ export default function VoteFloatingWidget({
         onSuccess: (detail) => setSubmittedVote(detail),
       }
     );
-  }, [selectedOptionIds, submitVote, vote]);
+  }, [isAnswered, selectedOptionIds, submitVote, vote]);
 
   const resetCompletedVote = useCallback((): void => {
     if (!submittedVote) {
@@ -336,7 +360,7 @@ export default function VoteFloatingWidget({
     isLoading: isDetailLoading,
     isError: isDetailError,
     isSubmitting: submitVote.isPending,
-    isSubmitted: submittedVote !== null,
+    isSubmitted: isAnswered,
     selectedOptionIds,
     onOptionClick: handleOptionClick,
     onSubmit: handleSubmit,
@@ -348,7 +372,15 @@ export default function VoteFloatingWidget({
 
   return (
     <>
-      <div className="fixed right-6 bottom-6 z-40 hidden lg:block">
+      {/* 데스크탑: 우측 레일(280px) 위에 겹치면 레일 하단의 "일지 쓰기"
+          CTA 를 가린다. 레일이 있는 라우트에서는 레일 폭만큼 밀어 컨텐츠
+          영역 안쪽 우하단에 붙인다. (모바일 배치는 건드리지 않는다) */}
+      <div
+        className={cn(
+          'fixed bottom-6 z-40 hidden lg:block',
+          hasRightRail ? 'lg:right-[304px]' : 'lg:right-6'
+        )}
+      >
         {isDesktopOpen ? (
           <VotePanel {...panelProps} />
         ) : (

@@ -285,6 +285,7 @@ export default function AppLayoutShell({
       <VoteFloatingScreen
         enabled={isLoggedIn && !isLoginPage}
         hasBottomNav={showBottomNav && !isNativeApp}
+        hasRightRail={showRightRail}
       />
       {isNativeApp ? <NativeBridge authState={authState} /> : null}
     </div>
