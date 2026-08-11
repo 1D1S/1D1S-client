@@ -9,8 +9,9 @@ interface DiaryActionToolbarProps {
   diaryData: DiaryDetailViewData;
   totalCommentCount: number;
   isLikePending: boolean;
-  // 앱에서 댓글 시트를 열 수 있을 때만 넘어온다. 없으면 카운터는 그대로
-  // 표시 전용(span)이라 웹 동작이 바뀌지 않는다.
+  // 댓글 카운터를 눌렀을 때의 동작(일지 상세는 댓글 섹션으로 스크롤).
+  // 넘기지 않으면 카운터가 button 이 아닌 표시 전용 span 으로 렌더된다 —
+  // 눌러도 반응이 없으므로, 이동시킬 곳이 있으면 반드시 넘길 것.
   onCommentTap?(): void;
   onLikeToggle(): void;
   onShare(): void;
