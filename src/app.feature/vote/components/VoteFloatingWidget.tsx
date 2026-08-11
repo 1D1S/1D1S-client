@@ -17,14 +17,9 @@ interface VoteFloatingWidgetProps {
   hasRightRail: boolean;
 }
 
-// 웹 오버레이(`bg-black/40`)와 같은 값. 앱이 헤더·탭바를 이 톤으로 덮어야
-// 웹뷰 경계에 딤 단차가 생기지 않는다. --black 은 순수 검정이 아니라
-// #111111 이라 앱도 반드시 이 값을 써야 한다.
-const VOTE_DIM_COLOR = '#111111';
-const VOTE_DIM_OPACITY = 0.4;
-
 /**
- * 카드 열림/닫힘을 앱에 알린다.
+ * 카드 열림/닫힘을 앱에 알린다 — 앱은 네이티브 헤더·탭바·FAB 를 숨긴다.
+ * 딤은 웹 오버레이 한 겹뿐이라 앱은 아무것도 덮지 않는다.
  *
  * Dialog Content 안에서만 마운트되므로 언마운트 시점이 곧 "닫힘 애니메이션
  * 종료"다(Radix Presence 가 animationend 까지 기다렸다 언마운트한다).
@@ -35,11 +30,7 @@ function NativeVoteCardSignal({ enabled }: { enabled: boolean }): null {
     if (!enabled) {
       return;
     }
-    sendNativeVoteCard({
-      open: true,
-      dimColor: VOTE_DIM_COLOR,
-      dimOpacity: VOTE_DIM_OPACITY,
-    });
+    sendNativeVoteCard({ open: true });
     return () => {
       sendNativeVoteCard({ open: false });
     };
@@ -144,7 +135,9 @@ export default function VoteFloatingWidget({
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay
             className={cn(
-              // 앱에 전달하는 VOTE_DIM_COLOR/OPACITY 와 같은 톤이어야 한다.
+              // 화면 전체를 덮는 **유일한** 딤. WebView 가 상태바·탭바
+              // 뒤까지 풀블리드라 inset-0 이 곧 화면 전체다. 앱은 이 위에
+              // 또 덮지 않고 네이티브 크롬을 숨기기만 한다.
               'fixed inset-0 z-40 bg-black/40',
               'data-[state=open]:animate-in data-[state=closed]:animate-out',
               'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',

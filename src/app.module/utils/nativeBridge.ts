@@ -296,13 +296,6 @@ function hasNativeFeature(name: string): boolean {
 
 export interface NativeVoteCardPayload {
   open: boolean;
-  /**
-   * 웹이 웹뷰 영역에 깔고 있는 딤 색(#RRGGBB)과 알파. 앱이 헤더·탭바를
-   * 같은 값으로 덮어야 경계선 없이 하나의 딤으로 보인다. 닫을 때는
-   * 의미가 없어 보내지 않는다.
-   */
-  dimColor?: string;
-  dimOpacity?: number;
 }
 
 export interface NativeVoteFabPayload {
@@ -844,10 +837,13 @@ export function sendNativeVoteFab(payload: NativeVoteFabPayload): void {
 /**
  * 웹 투표 카드의 열림/닫힘을 앱에 알린다.
  *
- * 웹 딤은 WebView 안에 갇혀 네이티브 헤더·탭바를 덮지 못한다. 앱이 같은
- * 톤으로 그 영역을 덮고 네이티브 FAB 를 숨겨야 화면 전체가 하나의 딤으로
- * 보인다. 닫힘은 카드가 실제로 사라진 뒤(애니메이션 종료) 보낸다 —
- * 먼저 보내면 앱 딤이 카드보다 빨리 걷혀 한 프레임 어긋난다.
+ * **딤은 웹이 한 겹만 그린다.** WebView 가 상태바·탭바 뒤까지 풀블리드로
+ * 깔려 있어 웹의 `fixed inset-0` 오버레이가 화면 전체를 덮는다. 앱은 딤을
+ * 그리지 말고 네이티브 헤더·탭바·FAB 를 **숨기기만** 해야 한다 — 앱이 또
+ * 덮으면 두 겹이 겹쳐 그 영역만 진해진다(실제로 그랬다).
+ *
+ * 닫힘은 카드가 실제로 사라진 뒤(애니메이션 종료) 보낸다 — 먼저 보내면
+ * 네이티브 크롬이 카드보다 빨리 돌아와 한 프레임 어긋난다.
  */
 export function sendNativeVoteCard(payload: NativeVoteCardPayload): void {
   postNativeMessage({ type: 'vote_card', payload });
