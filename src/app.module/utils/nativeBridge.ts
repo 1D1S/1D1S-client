@@ -261,6 +261,8 @@ export type NativeMessage =
       step?: number;
       steps?: number;
     }
+  // 오늘의 투표 FAB 를 네이티브 고정 버튼으로 위임. visible:false 로 해제.
+  | { type: 'vote_fab'; payload: NativeVoteFabPayload }
   // 화면 콘텐츠가 실제로 렌더된 시점. 앱이 해당 screen 의 네이티브 스켈레톤을
   // 걷고 워치독을 해제한다(흰 화면 방지). route 는 경로 검증·중복 방지용.
   | { type: 'page_ready'; screen: string; route: string };
@@ -287,6 +289,14 @@ function getNativeWindow(): NativeWindow | null {
 // 컨트롤이 된다. 응답이 필요한 새 위임은 이 플래그를 먼저 확인한다.
 function hasNativeFeature(name: string): boolean {
   return getNativeWindow()?.__1D1S_FEATURES__?.[name] === true;
+}
+
+export interface NativeVoteFabPayload {
+  // false 면 앱이 버튼을 내린다(라우트 이탈·진행 중 투표 0건).
+  visible: boolean;
+  // 미참여 투표 수. 0 이면 앱은 배지 없이 버튼만 그린다(웹 FAB 규칙과 동일).
+  count?: number;
+  label?: string;
 }
 
 export interface NativeToastPayload {
@@ -802,6 +812,37 @@ export function onNativeFormCtaAction(
   };
   win.addEventListener('native:form_cta_action', listener);
   return () => win.removeEventListener('native:form_cta_action', listener);
+}
+
+// ── 오늘의 투표 FAB 위임 (vote_fab) ──────────────────────────────────────
+// 웹 FAB 는 WebView 안에 갇혀 네이티브 하단 바 위로 올라가지 못한다. 앱이
+// 대신 고정 버튼을 그리고, 노출 여부·개수·라벨은 웹이 계속 갱신한다
+// (노출 판정의 권위는 웹). 앱→웹은 native:vote_fab_tap 이벤트로 돌아온다.
+// form_cta 와 같은 수명 규칙: 상태가 바뀌면 재전송, 떠날 때 해제.
+
+const VOTE_FAB_TAP_EVENT = 'native:vote_fab_tap';
+
+/** 투표 FAB 상태 전송. visible:false 가 해제 신호다. */
+export function sendNativeVoteFab(payload: NativeVoteFabPayload): void {
+  postNativeMessage({ type: 'vote_fab', payload });
+}
+
+/** 네이티브 투표 FAB 지원 여부(채널 + vote_fab 피처). 아니면 웹 FAB 유지. */
+export function isNativeVoteFabAvailable(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('vote_fab')
+  );
+}
+
+/** 네이티브 투표 FAB 탭 구독. cleanup 반환. */
+export function onNativeVoteFabTap(handler: () => void): () => void {
+  const win = getNativeWindow();
+  if (!win) {
+    return () => {};
+  }
+  const listener = (): void => handler();
+  win.addEventListener(VOTE_FAB_TAP_EVENT, listener);
+  return () => win.removeEventListener(VOTE_FAB_TAP_EVENT, listener);
 }
 
 // ── 화면 준비 신호 (page_ready) ──────────────────────────────────────────

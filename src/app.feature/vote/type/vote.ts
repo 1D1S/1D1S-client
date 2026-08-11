@@ -24,6 +24,9 @@ export interface VoteOption {
 
 export interface VoteDetail extends VoteSummary {
   options: VoteOption[];
+  // 내가 고른 optionId 들. 미응답·비로그인이면 []. 목록(VoteSummary)에는
+  // 없고 상세·제출/재투표 응답에만 실린다. 구버전 서버 대비 옵셔널.
+  myOptionIds?: number[];
 }
 
 export interface VoteSubmitRequest {
