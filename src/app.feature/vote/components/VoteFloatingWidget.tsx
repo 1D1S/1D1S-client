@@ -1,7 +1,9 @@
 'use client';
 
 import { Button } from '@1d1s/design-system';
+import { useNativeVoteFab } from '@module/hooks/useNativeVoteFab';
 import { cn } from '@module/utils/cn';
+import { formatMonthDayKR } from '@module/utils/date';
 import {
   Check,
   ChevronLeft,
@@ -41,6 +43,17 @@ interface VotePanelProps {
   onClose(): void;
   /** 투표가 2건 이상일 때만 — 목록으로 돌아가는 핸들러 */
   onBack?(): void;
+}
+
+// 투표 기간 라벨. formatMonthDayKR 은 Date 파싱을 거치지 않아 타임존으로
+// 하루가 밀리지 않는다. 형식이 아니면 빈 문자열 → 라벨 자체를 숨긴다.
+function formatVotePeriod(startDate: string, endDate: string): string {
+  const start = formatMonthDayKR(startDate);
+  const end = formatMonthDayKR(endDate);
+  if (!start || !end) {
+    return '';
+  }
+  return start === end ? start : `${start} ~ ${end}`;
 }
 
 // 플로팅 카드 공통 골격. 목록/상세 두 단계가 같은 크기·모서리·스크롤 규칙을
@@ -162,6 +175,7 @@ function VotePanel({
     vote?.selectionType === 'MULTIPLE'
       ? '원하는 항목을 모두 선택해 주세요.'
       : '하나의 항목을 선택해 주세요.';
+  const votePeriod = vote ? formatVotePeriod(vote.startDate, vote.endDate) : '';
 
   return (
     <section aria-label="오늘의 투표" className={PANEL_CLASS}>
@@ -194,6 +208,9 @@ function VotePanel({
           <h2 className="text-lg leading-snug font-extrabold text-gray-900">
             {isLoading ? '투표를 불러오고 있어요' : vote?.title}
           </h2>
+          {votePeriod ? (
+            <p className="mt-1 text-xs text-gray-400">{votePeriod}</p>
+          ) : null}
         </div>
         <PanelCloseButton onClick={onClose} />
       </div>
@@ -308,39 +325,47 @@ function VoteListPanel({
       </div>
 
       <ul className="mt-4 flex flex-col gap-2.5">
-        {votes.map((vote) => (
-          <li key={vote.id}>
-            <button
-              type="button"
-              onClick={() => onSelect(vote.id)}
-              className={cn(
-                'flex min-h-12 w-full items-center gap-3 text-left',
-                'rounded-3 border border-gray-200 bg-white px-3.5 py-3',
-                'hover:border-main-500 transition'
-              )}
-            >
-              <span className="min-w-0 flex-1 text-sm font-semibold">
-                {vote.title}
-              </span>
-              {vote.voted ? (
-                <span
-                  className={cn(
-                    'inline-flex shrink-0 items-center gap-1 rounded-full',
-                    'bg-gray-100 px-2 py-0.5 text-[11px] font-bold',
-                    'text-gray-600'
-                  )}
-                >
-                  <Check className="h-3 w-3" strokeWidth={3} aria-hidden />
-                  참여 완료
+        {votes.map((vote) => {
+          const period = formatVotePeriod(vote.startDate, vote.endDate);
+          return (
+            <li key={vote.id}>
+              <button
+                type="button"
+                onClick={() => onSelect(vote.id)}
+                className={cn(
+                  'flex min-h-12 w-full items-center gap-3 text-left',
+                  'rounded-3 border border-gray-200 bg-white px-3.5 py-3',
+                  'hover:border-main-500 transition'
+                )}
+              >
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="truncate text-sm font-semibold">
+                    {vote.title}
+                  </span>
+                  {period ? (
+                    <span className="text-[11px] text-gray-400">{period}</span>
+                  ) : null}
                 </span>
-              ) : null}
-              <ChevronRight
-                className="h-4 w-4 shrink-0 text-gray-400"
-                aria-hidden
-              />
-            </button>
-          </li>
-        ))}
+                {vote.voted ? (
+                  <span
+                    className={cn(
+                      'inline-flex shrink-0 items-center gap-1 rounded-full',
+                      'bg-gray-100 px-2 py-0.5 text-[11px] font-bold',
+                      'text-gray-600'
+                    )}
+                  >
+                    <Check className="h-3 w-3" strokeWidth={3} aria-hidden />
+                    참여 완료
+                  </span>
+                ) : null}
+                <ChevronRight
+                  className="h-4 w-4 shrink-0 text-gray-400"
+                  aria-hidden
+                />
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
@@ -366,18 +391,22 @@ function VoteFab({
       )}
     >
       <Vote className="h-6 w-6" aria-hidden />
-      <span
-        aria-hidden
-        className={cn(
-          'absolute -top-0.5 -right-0.5 flex items-center justify-center',
-          'rounded-full border-2 border-white bg-red-500',
-          remaining > 1
-            ? 'h-5 min-w-5 px-1 text-[11px] leading-none font-bold'
-            : 'h-3 w-3'
-        )}
-      >
-        {remaining > 1 ? remaining : null}
-      </span>
+      {/* 배지는 미참여가 남아 있을 때만. 다 응답해도 버튼은 유지되는데
+          빨간 점까지 남으면 "안 본 게 있다"는 오신호가 된다. */}
+      {remaining > 0 ? (
+        <span
+          aria-hidden
+          className={cn(
+            'absolute -top-0.5 -right-0.5 flex items-center justify-center',
+            'rounded-full border-2 border-white bg-red-500',
+            remaining > 1
+              ? 'h-5 min-w-5 px-1 text-[11px] leading-none font-bold'
+              : 'h-3 w-3'
+          )}
+        >
+          {remaining > 1 ? remaining : null}
+        </span>
+      ) : null}
     </button>
   );
 }
@@ -480,10 +509,20 @@ export default function VoteFloatingWidget({
     resetPanelState();
   }, [resetPanelState]);
 
-  const remaining = votes.filter((vote) => !vote.voted).length;
-  // 참여할 투표가 남아 있을 때만 띄운다. 방금 제출한 결과를 보고 있는
-  // 동안(submittedVote)은 마지막 1건을 끝냈어도 카드를 닫지 않는다.
-  if (!enabled || (remaining === 0 && submittedVote === null)) {
+  const remaining = votes.filter((item) => !item.voted).length;
+
+  // 네이티브 쉘이 vote_fab 을 announce 했으면 앱이 고정 버튼을 그리고 웹
+  // FAB 는 숨긴다(패널은 그대로 웹이 소유). 구버전 쉘·브라우저는 false 라
+  // 기존 웹 FAB 가 유지된다. 훅이므로 early return 위에서 호출한다.
+  const isNativeFab = useNativeVoteFab({
+    visible: enabled && votes.length > 0,
+    count: remaining,
+    onTap: () => setIsMobileOpen(true),
+  });
+
+  // 진행 중인 투표가 하나라도 있으면 계속 노출한다. 예전엔 미참여가 0 이면
+  // 버튼째 사라져서, 참여 기간인데도 결과를 다시 볼 방법이 없었다.
+  if (!enabled || votes.length === 0) {
     return null;
   }
 
@@ -530,7 +569,7 @@ export default function VoteFloatingWidget({
       >
         {isDesktopOpen ? (
           renderPanel(handleDesktopClose)
-        ) : (
+        ) : isNativeFab ? null : (
           <VoteFab
             remaining={remaining}
             onClick={() => setIsDesktopOpen(true)}
@@ -547,7 +586,7 @@ export default function VoteFloatingWidget({
       >
         {isMobileOpen ? (
           renderPanel(handleMobileClose)
-        ) : (
+        ) : isNativeFab ? null : (
           <VoteFab
             remaining={remaining}
             onClick={() => setIsMobileOpen(true)}
