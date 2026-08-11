@@ -4,11 +4,15 @@ import { cn } from '@module/utils/cn';
 import { Heart } from 'lucide-react';
 import React from 'react';
 
+import { ChallengeCompletedBadge } from '../../shared/components/ChallengeCompletedBadge';
+
 interface ChallengeDetailMobileHeaderProps {
   categoryLabel: string;
   typeLabel: string;
   title: string;
   metaLabel: string;
+  /** 내 완료 여부(서버 판정) — true 일 때만 완료 딱지를 붙인다. */
+  myCompleted?: boolean;
   likedByMe: boolean;
   likeCnt: number;
   isLikePending: boolean;
@@ -27,6 +31,7 @@ export function ChallengeDetailMobileHeader({
   typeLabel,
   title,
   metaLabel,
+  myCompleted = false,
   likedByMe,
   likeCnt,
   isLikePending,
@@ -49,6 +54,7 @@ export function ChallengeDetailMobileHeader({
         <Tag tone="gray" size="sm">
           {typeLabel}
         </Tag>
+        {myCompleted ? <ChallengeCompletedBadge label="내 완료" /> : null}
       </div>
       <Text
         as="h1"

@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 
 import { Participant, ParticipantSort } from '../../board/type/challenge';
+import { ChallengeCompletedBadge } from '../../shared/components/ChallengeCompletedBadge';
 import { useChallengeParticipantsInfinite } from '../hooks/useChallengeParticipantQueries';
 
 const PARTICIPANT_PAGE_SIZE = 20;
@@ -91,6 +92,8 @@ function ParticipantRow({
               HOST
             </span>
           ) : null}
+          {/* completed 는 nullable — null 이면 딱지 없음(false 와 동일). */}
+          {participant.completed ? <ChallengeCompletedBadge /> : null}
         </div>
         <Text size="caption2" weight="regular" className="text-gray-400">
           {participant.streak ?? 0}일 연속 · 완료 목표{' '}

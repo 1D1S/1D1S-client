@@ -6,6 +6,7 @@ import { CategoryIcon } from '@constants/categories';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 
+import { ChallengeCompletedBadge } from '../../shared/components/ChallengeCompletedBadge';
 import { CHALLENGE_HERO_ASPECT } from '../consts/heroLayout';
 
 const PILL_CLASS = cn(
@@ -20,6 +21,8 @@ interface ChallengeDetailHeroProps {
   category?: string | null;
   typeLabel: string;
   metaLabel: string;
+  /** 내 완료 여부(서버 판정) — true 일 때만 완료 딱지를 붙인다. */
+  myCompleted?: boolean;
   imageUrl?: string | null;
   accent: string;
   gradient: string;
@@ -34,6 +37,7 @@ export function ChallengeDetailHero({
   category,
   typeLabel,
   metaLabel,
+  myCompleted = false,
   imageUrl,
   accent,
   gradient,
@@ -105,6 +109,7 @@ export function ChallengeDetailHero({
           <span className={PILL_CLASS} style={{ color: accent }}>
             {typeLabel}
           </span>
+          {myCompleted ? <ChallengeCompletedBadge label="내 완료" /> : null}
         </div>
         <Text
           as="h1"

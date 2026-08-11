@@ -55,10 +55,7 @@ import { ExpandableText } from '../components/ExpandableText';
 import { OfficialChallengeGuideBanner } from '../components/OfficialChallengeGuideBanner';
 import { PendingMemberItem } from '../components/PendingMemberItem';
 import { TabCountBadge } from '../components/TabCountBadge';
-import {
-  type ChallengeTabId,
-  isChallengeTab,
-} from '../consts/challengeTabs';
+import { type ChallengeTabId, isChallengeTab } from '../consts/challengeTabs';
 import { useChallengeStatistics } from '../hooks/useChallengeDiaryQueries';
 import { useChallengeGoalEditors } from '../hooks/useChallengeGoalEditors';
 import {
@@ -219,8 +216,10 @@ export function ChallengeDetailScreen({
   const goals = data?.challengeGoals ?? EMPTY_GOALS;
   const participants = data?.participants ?? EMPTY_PARTICIPANTS;
 
-
   const myStatus = detail?.myStatus ?? 'NONE';
+  // 내 완료 딱지 — 서버가 종료·목표율까지 판정해 내려준다(비참여/비로그인은
+  // false). 웹은 조건을 다시 계산하지 않는다.
+  const myCompleted = detail?.myCompleted === true;
   const isHost = myStatus === 'HOST';
   // 상세 응답 participants 는 등수순 상위 5명이라 PENDING 이 빠진다.
   // 대기 승인 카드는 참여자 탭에 있으므로, 호스트가 그 탭을 볼 때만 조회한다.
@@ -594,6 +593,7 @@ export function ChallengeDetailScreen({
             category={summary.category}
             typeLabel={`${formatChallengeTypeLabel(summary.goalType)} 챌린지`}
             metaLabel={heroMetaLabel}
+            myCompleted={myCompleted}
             imageUrl={summary.thumbnailImage ?? undefined}
             accent={accentColor}
             gradient={heroGradient}
@@ -625,6 +625,7 @@ export function ChallengeDetailScreen({
           typeLabel={formatChallengeTypeLabel(summary.goalType)}
           title={summary.title}
           metaLabel={heroMetaLabel}
+          myCompleted={myCompleted}
           likedByMe={summary.likeInfo.likedByMe}
           likeCnt={summary.likeInfo.likeCnt}
           isLikePending={isActionLoading}
@@ -849,6 +850,7 @@ export function ChallengeDetailScreen({
                         rank: participant.rank,
                         streak: participant.streak,
                         completedGoalCount: participant.completedGoalCount,
+                        completed: participant.completed,
                       }))}
                       totalCount={summaryParticipantCnt}
                       onShowAll={() =>
