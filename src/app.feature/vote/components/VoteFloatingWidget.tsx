@@ -43,6 +43,11 @@ interface VotePanelProps {
   onClose(): void;
   /** 투표가 2건 이상일 때만 — 목록으로 돌아가는 핸들러 */
   onBack?(): void;
+  /** 재투표(수정) 모드 진행 중인지. */
+  isEditing: boolean;
+  /** 완료 상태에서 "수정" — 이전 선택을 프리체크하고 잠금을 푼다. */
+  onEdit(): void;
+  onCancelEdit(): void;
 }
 
 // 투표 기간 라벨. formatMonthDayKR 은 Date 파싱을 거치지 않아 타임존으로
@@ -169,6 +174,9 @@ function VotePanel({
   onRetry,
   onClose,
   onBack,
+  isEditing,
+  onEdit,
+  onCancelEdit,
 }: VotePanelProps): React.ReactElement {
   const hasSelection = selectedOptionIds.length > 0;
   const selectionGuide =
@@ -245,7 +253,7 @@ function VotePanel({
       {vote && !isError ? (
         <>
           <p className="mt-2 text-xs text-gray-500">
-            {isSubmitted
+            {isSubmitted && !isEditing
               ? '소중한 의견을 남겨주셔서 감사해요.'
               : selectionGuide}
           </p>
@@ -260,21 +268,62 @@ function VotePanel({
                 option={option}
                 selectionType={vote.selectionType}
                 isSelected={selectedOptionIds.includes(option.optionId)}
-                isSubmitted={isSubmitted}
+                isSubmitted={isSubmitted && !isEditing}
                 onClick={() => onOptionClick(option.optionId)}
               />
             ))}
           </div>
-          <Button
-            type="button"
-            size="lg"
-            fullWidth
-            disabled={!isSubmitted && (!hasSelection || isSubmitting)}
-            onClick={isSubmitted ? onClose : onSubmit}
-            className="mt-5"
-          >
-            {isSubmitted ? '확인' : isSubmitting ? '투표 중...' : '투표하기'}
-          </Button>
+          {isEditing ? (
+            <div className="mt-5 flex gap-2">
+              <Button
+                type="button"
+                size="lg"
+                variant="secondary"
+                fullWidth
+                disabled={isSubmitting}
+                onClick={onCancelEdit}
+              >
+                취소
+              </Button>
+              <Button
+                type="button"
+                size="lg"
+                fullWidth
+                disabled={!hasSelection || isSubmitting}
+                onClick={onSubmit}
+              >
+                {isSubmitting ? '수정 중...' : '수정 완료'}
+              </Button>
+            </div>
+          ) : isSubmitted ? (
+            // 기간 안이면 몇 번이든 바꿀 수 있다(서버 upsert). 마감·비대상은
+            // 서버가 VOTE-004/VOTE-011 로 막고 전역 토스트가 사유를 띄운다.
+            <div className="mt-5 flex gap-2">
+              <Button
+                type="button"
+                size="lg"
+                variant="secondary"
+                fullWidth
+                onClick={onEdit}
+              >
+                수정
+              </Button>
+              <Button type="button" size="lg" fullWidth onClick={onClose}>
+                확인
+              </Button>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              size="lg"
+              fullWidth
+              disabled={!hasSelection || isSubmitting}
+              onClick={onSubmit}
+              className="mt-5"
+            >
+              {isSubmitting ? '투표 중...' : '투표하기'}
+            </Button>
+          )}
         </>
       ) : null}
     </section>
@@ -423,6 +472,8 @@ export default function VoteFloatingWidget({
   const [renderedVoteId, setRenderedVoteId] = useState<number | null>(null);
   // 2건 이상일 때 목록에서 고른 투표. null 이면 목록 단계.
   const [selectedVoteId, setSelectedVoteId] = useState<number | null>(null);
+  // 재투표(수정) 모드. 완료 상태의 잠금을 로컬로만 푼다.
+  const [isEditing, setIsEditing] = useState(false);
 
   // 서버가 노출 대상(audience) 필터를 로그인 회원 기준으로 이미 적용해
   // 내려주므로, 받은 배열을 그대로 전부 노출한다. 예전엔 여기서
@@ -447,6 +498,15 @@ export default function VoteFloatingWidget({
   // voted:false 로 남아 있을 때 선택지가 계속 클릭 가능해 보인다.
   // 상세 응답의 voted 플래그를 함께 보고 확정 상태를 판정한다.
   const isAnswered = submittedVote !== null || vote?.voted === true;
+  const myOptionIds = vote?.myOptionIds;
+
+  // 강조할 선택지.
+  // - 완료 & 비수정: 서버의 myOptionIds — 어제·다른 기기에서 응답한 것도
+  //   세션 상태 없이 그대로 강조된다.
+  // - 수정 중/미응답: 이번 세션의 클릭(selectedOptionIds). 수정 중에 서버값을
+  //   OR 로 섞으면 이전 선택을 해제할 수 없어 복수 선택 변경이 막힌다.
+  const displayedOptionIds =
+    isAnswered && !isEditing ? (myOptionIds ?? []) : selectedOptionIds;
 
   // 표시 중인 투표가 바뀌면 이전 투표의 선택을 반드시 버린다 — 안 그러면
   // 오늘 투표가 2건 이상일 때 앞 투표의 optionId 가 다음 투표로 넘어간다.
@@ -457,11 +517,12 @@ export default function VoteFloatingWidget({
     // 제출 결과도 함께 버린다 — 안 그러면 A 를 제출하고 목록으로 돌아가
     // B 를 열었을 때 A 의 결과(선택지·비율)가 B 자리에 그대로 남는다.
     setSubmittedVote(null);
+    setIsEditing(false);
   }
 
   const handleOptionClick = useCallback(
     (optionId: number): void => {
-      if (!vote || isAnswered) {
+      if (!vote || (isAnswered && !isEditing)) {
         return;
       }
       setSelectedOptionIds((current) => {
@@ -473,11 +534,11 @@ export default function VoteFloatingWidget({
           : [...current, optionId];
       });
     },
-    [isAnswered, vote]
+    [isAnswered, isEditing, vote]
   );
 
   const handleSubmit = useCallback((): void => {
-    if (!vote || isAnswered || selectedOptionIds.length === 0) {
+    if (!vote || (isAnswered && !isEditing) || selectedOptionIds.length === 0) {
       return;
     }
     submitVote.mutate(
@@ -486,10 +547,28 @@ export default function VoteFloatingWidget({
         data: { optionIds: selectedOptionIds },
       },
       {
-        onSuccess: (detail) => setSubmittedVote(detail),
+        // 응답에 갱신된 myOptionIds·비율이 실려 온다. 캐시(detail/today)는
+        // useSubmitVote 가 함께 패치한다.
+        onSuccess: (detail) => {
+          setSubmittedVote(detail);
+          setIsEditing(false);
+          setSelectedOptionIds([]);
+        },
       }
     );
-  }, [isAnswered, selectedOptionIds, submitVote, vote]);
+  }, [isAnswered, isEditing, selectedOptionIds, submitVote, vote]);
+
+  // 수정 진입 시 이전 선택을 프리체크한다 — 복수 선택에서 처음부터 다시
+  // 고르게 하지 않기 위해 서버의 myOptionIds 를 그대로 시드로 쓴다.
+  const handleEdit = useCallback((): void => {
+    setSelectedOptionIds(myOptionIds ?? []);
+    setIsEditing(true);
+  }, [myOptionIds]);
+
+  const handleCancelEdit = useCallback((): void => {
+    setIsEditing(false);
+    setSelectedOptionIds([]);
+  }, []);
 
   // 카드를 접을 때는 진행 상태를 초기화해, 다시 열었을 때 목록(2건 이상)
   // 또는 깨끗한 상세(1건)에서 시작하게 한다.
@@ -497,6 +576,7 @@ export default function VoteFloatingWidget({
     setSelectedVoteId(null);
     setSubmittedVote(null);
     setSelectedOptionIds([]);
+    setIsEditing(false);
   }, []);
 
   const handleDesktopClose = useCallback((): void => {
@@ -535,7 +615,10 @@ export default function VoteFloatingWidget({
     isError: isDetailError,
     isSubmitting: submitVote.isPending,
     isSubmitted: isAnswered,
-    selectedOptionIds,
+    selectedOptionIds: displayedOptionIds,
+    isEditing,
+    onEdit: handleEdit,
+    onCancelEdit: handleCancelEdit,
     onOptionClick: handleOptionClick,
     onSubmit: handleSubmit,
     onRetry: () => {
