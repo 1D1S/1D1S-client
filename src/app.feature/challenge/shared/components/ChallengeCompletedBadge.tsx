@@ -23,12 +23,14 @@ export function ChallengeCompletedBadge({
     <span
       className={cn(
         'inline-flex shrink-0 items-center gap-1 rounded-full',
-        'bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold',
+        // 10px 는 작아서 읽기 불편하다는 피드백 → 카드 상태 배지와 같은
+        // 11px/px-2.5/py-1 규격으로 소폭 올린다(참여종료 딱지와 동일 규격).
+        'bg-emerald-50 px-2.5 py-1 text-[11px] font-extrabold',
         'whitespace-nowrap text-emerald-700',
         className
       )}
     >
-      <CircleCheck className="h-3 w-3 shrink-0" aria-hidden />
+      <CircleCheck className="h-3.5 w-3.5 shrink-0" aria-hidden />
       {label}
     </span>
   );
