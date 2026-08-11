@@ -263,6 +263,9 @@ export type NativeMessage =
     }
   // 오늘의 투표 FAB 를 네이티브 고정 버튼으로 위임. visible:false 로 해제.
   | { type: 'vote_fab'; payload: NativeVoteFabPayload }
+  // 웹 투표 카드가 열렸는지. 앱은 네이티브 헤더·탭바를 같은 톤으로 덮고
+  // 네이티브 FAB 를 숨긴다(웹 딤은 웹뷰 영역까지만 덮기 때문).
+  | { type: 'vote_card'; payload: NativeVoteCardPayload }
   // 화면 콘텐츠가 실제로 렌더된 시점. 앱이 해당 screen 의 네이티브 스켈레톤을
   // 걷고 워치독을 해제한다(흰 화면 방지). route 는 경로 검증·중복 방지용.
   | { type: 'page_ready'; screen: string; route: string };
@@ -289,6 +292,17 @@ function getNativeWindow(): NativeWindow | null {
 // 컨트롤이 된다. 응답이 필요한 새 위임은 이 플래그를 먼저 확인한다.
 function hasNativeFeature(name: string): boolean {
   return getNativeWindow()?.__1D1S_FEATURES__?.[name] === true;
+}
+
+export interface NativeVoteCardPayload {
+  open: boolean;
+  /**
+   * 웹이 웹뷰 영역에 깔고 있는 딤 색(#RRGGBB)과 알파. 앱이 헤더·탭바를
+   * 같은 값으로 덮어야 경계선 없이 하나의 딤으로 보인다. 닫을 때는
+   * 의미가 없어 보내지 않는다.
+   */
+  dimColor?: string;
+  dimOpacity?: number;
 }
 
 export interface NativeVoteFabPayload {
@@ -825,6 +839,18 @@ const VOTE_FAB_TAP_EVENT = 'native:vote_fab_tap';
 /** 투표 FAB 상태 전송. visible:false 가 해제 신호다. */
 export function sendNativeVoteFab(payload: NativeVoteFabPayload): void {
   postNativeMessage({ type: 'vote_fab', payload });
+}
+
+/**
+ * 웹 투표 카드의 열림/닫힘을 앱에 알린다.
+ *
+ * 웹 딤은 WebView 안에 갇혀 네이티브 헤더·탭바를 덮지 못한다. 앱이 같은
+ * 톤으로 그 영역을 덮고 네이티브 FAB 를 숨겨야 화면 전체가 하나의 딤으로
+ * 보인다. 닫힘은 카드가 실제로 사라진 뒤(애니메이션 종료) 보낸다 —
+ * 먼저 보내면 앱 딤이 카드보다 빨리 걷혀 한 프레임 어긋난다.
+ */
+export function sendNativeVoteCard(payload: NativeVoteCardPayload): void {
+  postNativeMessage({ type: 'vote_card', payload });
 }
 
 /** 네이티브 투표 FAB 지원 여부(채널 + vote_fab 피처). 아니면 웹 FAB 유지. */

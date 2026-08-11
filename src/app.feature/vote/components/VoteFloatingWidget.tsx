@@ -2,9 +2,10 @@
 
 import { useNativeVoteFab } from '@module/hooks/useNativeVoteFab';
 import { cn } from '@module/utils/cn';
+import { sendNativeVoteCard } from '@module/utils/nativeBridge';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Vote } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useTodayVotes } from '../hooks/useVoteQueries';
 import { VoteContent } from './VoteContent';
@@ -14,6 +15,37 @@ interface VoteFloatingWidgetProps {
   hasBottomNav: boolean;
   /** 데스크탑 우측 레일(280px)이 있는 라우트인지 — 데스크탑 위치 계산용 */
   hasRightRail: boolean;
+}
+
+// 웹 오버레이(`bg-black/40`)와 같은 값. 앱이 헤더·탭바를 이 톤으로 덮어야
+// 웹뷰 경계에 딤 단차가 생기지 않는다. --black 은 순수 검정이 아니라
+// #111111 이라 앱도 반드시 이 값을 써야 한다.
+const VOTE_DIM_COLOR = '#111111';
+const VOTE_DIM_OPACITY = 0.4;
+
+/**
+ * 카드 열림/닫힘을 앱에 알린다.
+ *
+ * Dialog Content 안에서만 마운트되므로 언마운트 시점이 곧 "닫힘 애니메이션
+ * 종료"다(Radix Presence 가 animationend 까지 기다렸다 언마운트한다).
+ * open state 변화에 바로 붙이면 앱 딤이 카드보다 먼저 걷힌다.
+ */
+function NativeVoteCardSignal({ enabled }: { enabled: boolean }): null {
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+    sendNativeVoteCard({
+      open: true,
+      dimColor: VOTE_DIM_COLOR,
+      dimOpacity: VOTE_DIM_OPACITY,
+    });
+    return () => {
+      sendNativeVoteCard({ open: false });
+    };
+  }, [enabled]);
+
+  return null;
 }
 
 function VoteFab({
@@ -112,6 +144,7 @@ export default function VoteFloatingWidget({
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay
             className={cn(
+              // 앱에 전달하는 VOTE_DIM_COLOR/OPACITY 와 같은 톤이어야 한다.
               'fixed inset-0 z-40 bg-black/40',
               'data-[state=open]:animate-in data-[state=closed]:animate-out',
               'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
@@ -132,6 +165,7 @@ export default function VoteFloatingWidget({
               'duration-200'
             )}
           >
+            <NativeVoteCardSignal enabled={isNativeFab} />
             <DialogPrimitive.Title className="sr-only">
               오늘의 투표
             </DialogPrimitive.Title>
