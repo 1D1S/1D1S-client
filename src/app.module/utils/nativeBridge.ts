@@ -849,6 +849,23 @@ export function sendNativeVoteCard(payload: NativeVoteCardPayload): void {
   postNativeMessage({ type: 'vote_card', payload });
 }
 
+/**
+ * 앱이 투표 UI 를 통째로 소유하는 쉘인지(채널 + vote_native 피처).
+ *
+ * true 면 앱이 네이티브 오버레이로 투표 창을 직접 그리고 데이터도 직접
+ * 호출한다. 웹은 FAB·카드·딤은 물론 vote_fab/vote_card announce 와 탭
+ * 리스너까지 **전부 손을 뗀다** — 웹과 네이티브가 각자 딤을 그려 농도가
+ * 겹치던 하이브리드 문제를 아예 없애기 위한 분리다.
+ *
+ * 이 플래그가 없는 쉘은 기존 경로 그대로다: vote_fab 만 있으면 버튼만
+ * 위임하고 카드는 웹이, 둘 다 없으면(브라우저·구쉘) 전부 웹이 그린다.
+ */
+export function isNativeVoteOwned(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('vote_native')
+  );
+}
+
 /** 네이티브 투표 FAB 지원 여부(채널 + vote_fab 피처). 아니면 웹 FAB 유지. */
 export function isNativeVoteFabAvailable(): boolean {
   return (
