@@ -827,19 +827,6 @@ export function sendNativeVoteFab(payload: NativeVoteFabPayload): void {
   postNativeMessage({ type: 'vote_fab', payload });
 }
 
-/**
- * 네이티브가 투표 시트를 통째로 그리는 쉘인지(채널 + vote_sheet 피처).
- *
- * true 면 앱이 FAB 와 딤 바텀시트를 모두 소유하고, 시트 안에서 웹뷰가
- * `/vote?sheet=1` 을 연다. 웹은 FAB·플로팅 패널을 렌더하지 않는다.
- * vote_fab 만 있는 구버전 쉘은 기존대로 FAB 만 위임한다(3단 분기).
- */
-export function isNativeVoteSheetAvailable(): boolean {
-  return (
-    getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('vote_sheet')
-  );
-}
-
 /** 네이티브 투표 FAB 지원 여부(채널 + vote_fab 피처). 아니면 웹 FAB 유지. */
 export function isNativeVoteFabAvailable(): boolean {
   return (
@@ -856,22 +843,6 @@ export function onNativeVoteFabTap(handler: () => void): () => void {
   const listener = (): void => handler();
   win.addEventListener(VOTE_FAB_TAP_EVENT, listener);
   return () => win.removeEventListener(VOTE_FAB_TAP_EVENT, listener);
-}
-
-const VOTE_SHEET_CLOSED_EVENT = 'native:vote_sheet_closed';
-
-/**
- * 네이티브 투표 시트가 닫힌 시점 구독(바깥탭·스와이프·닫기 버튼 공통).
- * 배경에 남아 있던 웹 화면이 미참여 수를 다시 계산할 수 있게 한다.
- */
-export function onNativeVoteSheetClosed(handler: () => void): () => void {
-  const win = getNativeWindow();
-  if (!win) {
-    return () => {};
-  }
-  const listener = (): void => handler();
-  win.addEventListener(VOTE_SHEET_CLOSED_EVENT, listener);
-  return () => win.removeEventListener(VOTE_SHEET_CLOSED_EVENT, listener);
 }
 
 // ── 화면 준비 신호 (page_ready) ──────────────────────────────────────────

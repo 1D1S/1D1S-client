@@ -2,12 +2,10 @@
 
 import { useNativeVoteFab } from '@module/hooks/useNativeVoteFab';
 import { cn } from '@module/utils/cn';
-import { onNativeVoteSheetClosed } from '@module/utils/nativeBridge';
-import { useQueryClient } from '@tanstack/react-query';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Vote } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-import { VOTE_QUERY_KEYS } from '../consts/queryKeys';
 import { useTodayVotes } from '../hooks/useVoteQueries';
 import { VoteContent } from './VoteContent';
 
@@ -16,8 +14,6 @@ interface VoteFloatingWidgetProps {
   hasBottomNav: boolean;
   /** 데스크탑 우측 레일(280px)이 있는 라우트인지 — 데스크탑 위치 계산용 */
   hasRightRail: boolean;
-  /** 네이티브가 시트를 그리는 환경(vote_sheet) — 웹 FAB·패널을 모두 숨긴다. */
-  nativeSheet?: boolean;
 }
 
 function VoteFab({
@@ -61,96 +57,88 @@ function VoteFab({
 }
 
 /**
- * 투표 플로팅 위젯 — 컨테이너(위치·카드 chrome·FAB)만 담당한다.
- * 목록/상세/투표/재투표 콘텐츠는 VoteContent 가 소유하며, 네이티브 시트
- * 라우트(/vote?sheet=1)도 같은 콘텐츠를 chrome 없이 재사용한다.
+ * 투표 플로팅 위젯 — 우하단 카드와 그 트리거 FAB.
+ *
+ * 카드는 딤 배경 위에 뜨는 모달이다. 예전엔 FAB 자리에 카드를 그대로
+ * 끼워 넣어 배경이 안 어두워지고 바깥을 눌러도 닫히지 않았다. Radix
+ * Dialog 로 감싸 딤·바깥탭·ESC·포커스 트랩·열림/닫힘 애니메이션을 얻되,
+ * **위치와 디자인은 기존 우하단 카드 그대로** 유지한다(바텀시트 아님).
  */
 export default function VoteFloatingWidget({
   enabled,
   hasBottomNav,
   hasRightRail,
-  nativeSheet = false,
 }: VoteFloatingWidgetProps): React.ReactElement | null {
-  const [isDesktopOpen, setIsDesktopOpen] = useState(true);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const queryClient = useQueryClient();
+  const [isOpen, setIsOpen] = useState(false);
 
-  // VoteContent 와 같은 쿼리 키라 요청은 한 번만 나간다(캐시 공유).
-  // vote_sheet 쉘에서도 계속 조회한다 — 앱이 FAB·뱃지를 그리려면 웹이
-  // 보내는 visible/count 가 있어야 한다(웹은 렌더만 하지 않는다).
   const { data: votes = [] } = useTodayVotes(enabled);
   const remaining = votes.filter((vote) => !vote.voted).length;
 
-  // 네이티브 쉘이 vote_fab 을 announce 했으면 앱이 고정 버튼을 그리고 웹
-  // FAB 는 숨긴다(패널은 그대로 웹이 소유). 구버전 쉘·브라우저는 false 라
-  // 기존 웹 FAB 가 유지된다. 훅이므로 early return 위에서 호출한다.
+  // 네이티브 쉘이 vote_fab 을 announce 했으면 버튼은 앱이 그리고, 탭이 오면
+  // 웹이 이 카드를 연다(카드는 계속 웹 소유). 구버전 쉘·브라우저는 false 라
+  // 웹 FAB 가 그대로 유지된다. 훅이라 early return 위에서 호출한다.
   const isNativeFab = useNativeVoteFab({
     visible: enabled && votes.length > 0,
     count: remaining,
-    onTap: () => setIsMobileOpen(true),
+    onTap: () => setIsOpen(true),
   });
 
-  // 네이티브 시트가 닫히면 그 안에서 응답했을 수 있다. 배경에 남아 있던
-  // 이 화면이 미참여 수를 다시 계산해 FAB 뱃지를 동기화한다.
-  useEffect(
-    () =>
-      onNativeVoteSheetClosed(() => {
-        void queryClient.invalidateQueries({
-          queryKey: VOTE_QUERY_KEYS.today(),
-        });
-      }),
-    [queryClient]
-  );
-
-  // vote_sheet 를 지원하는 쉘은 FAB·패널을 앱이 통째로 그린다(웹은 /vote
-  // 라우트만 제공). 진행 중인 투표가 하나도 없으면 띄울 것이 없다.
-  if (!enabled || nativeSheet || votes.length === 0) {
+  // 진행 중인 투표가 하나라도 있으면 계속 노출한다. 예전엔 미참여가 0 이면
+  // 버튼째 사라져서, 참여 기간인데도 결과를 다시 볼 방법이 없었다.
+  if (!enabled || votes.length === 0) {
     return null;
   }
 
+  // FAB 와 카드가 같은 자리를 쓴다. 데스크탑은 우측 레일(280px)을 피해
+  // 컨텐츠 영역 안쪽에 붙인다 — 레일 하단 "일지 쓰기" CTA 를 가리지 않게.
+  const anchorClass = cn(
+    'right-5',
+    hasBottomNav
+      ? 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))]'
+      : 'bottom-[calc(1.25rem+env(safe-area-inset-bottom))]',
+    'lg:bottom-6',
+    hasRightRail ? 'lg:right-[304px]' : 'lg:right-6'
+  );
+
   return (
     <>
-      {/* 데스크탑: 우측 레일(280px) 위에 겹치면 레일 하단의 "일지 쓰기"
-          CTA 를 가린다. 레일이 있는 라우트에서는 레일 폭만큼 밀어 컨텐츠
-          영역 안쪽 우하단에 붙인다. (모바일 배치는 건드리지 않는다) */}
-      <div
-        className={cn(
-          'fixed bottom-6 z-40 hidden lg:block',
-          hasRightRail ? 'lg:right-[304px]' : 'lg:right-6'
-        )}
-      >
-        {isDesktopOpen ? (
-          <VoteContent
-            enabled={enabled}
-            onClose={() => setIsDesktopOpen(false)}
+      {!isOpen && !isNativeFab ? (
+        <div className={cn('fixed z-40', anchorClass)}>
+          <VoteFab remaining={remaining} onClick={() => setIsOpen(true)} />
+        </div>
+      ) : null}
+
+      <DialogPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay
+            className={cn(
+              'fixed inset-0 z-40 bg-black/40',
+              'data-[state=open]:animate-in data-[state=closed]:animate-out',
+              'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
+              'duration-200'
+            )}
           />
-        ) : isNativeFab ? null : (
-          <VoteFab
-            remaining={remaining}
-            onClick={() => setIsDesktopOpen(true)}
-          />
-        )}
-      </div>
-      <div
-        className={cn(
-          'fixed right-5 z-40 lg:hidden',
-          hasBottomNav
-            ? 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))]'
-            : 'bottom-[calc(1.25rem+env(safe-area-inset-bottom))]'
-        )}
-      >
-        {isMobileOpen ? (
-          <VoteContent
-            enabled={enabled}
-            onClose={() => setIsMobileOpen(false)}
-          />
-        ) : isNativeFab ? null : (
-          <VoteFab
-            remaining={remaining}
-            onClick={() => setIsMobileOpen(true)}
-          />
-        )}
-      </div>
+          <DialogPrimitive.Content
+            // 설명 문구는 카드 본문이 대신한다. 지정하지 않으면 Radix 가
+            // 콘솔 경고를 남긴다.
+            aria-describedby={undefined}
+            className={cn(
+              'fixed z-50',
+              anchorClass,
+              'data-[state=open]:animate-in data-[state=closed]:animate-out',
+              'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
+              'data-[state=open]:slide-in-from-bottom-4',
+              'data-[state=closed]:slide-out-to-bottom-4',
+              'duration-200'
+            )}
+          >
+            <DialogPrimitive.Title className="sr-only">
+              오늘의 투표
+            </DialogPrimitive.Title>
+            <VoteContent enabled={enabled} onClose={() => setIsOpen(false)} />
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
     </>
   );
 }
