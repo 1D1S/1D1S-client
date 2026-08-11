@@ -17,7 +17,7 @@ import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import { Flag } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useChallengeDetail } from '../../../challenge/board/hooks/useChallengeQueries';
 import { MemberBlockButton } from '../../../friend/components/MemberBlockButton';
@@ -81,6 +81,16 @@ function DiaryDetailView({
   const router = useRouter();
   // 알림 딥링크/콜드 스타트로 진입해 history 가 없을 때 일지 목록으로 보낸다.
   const handleBack = useSafeBack('/diary');
+  // 액션바의 댓글 수 pill → 댓글 섹션으로 스크롤. 그동안 onCommentTap 을
+  // 아무도 넘기지 않아 pill 이 button 이 아닌 span 으로 렌더됐고, 눌러도
+  // 아무 일도 일어나지 않았다.
+  const commentSectionRef = useRef<HTMLElement | null>(null);
+  const handleCommentTap = useCallback((): void => {
+    commentSectionRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, []);
   const { data: sidebarData } = useSidebar();
   const isLoggedIn = useIsLoggedIn();
   const currentMemberId = useMemo(
@@ -256,6 +266,7 @@ function DiaryDetailView({
                   diaryData={diaryData}
                   totalCommentCount={totalCommentCount}
                   isLikePending={isLikePending}
+                  onCommentTap={handleCommentTap}
                   onLikeToggle={onLikeToggle}
                   onShare={() => void handleShare()}
                 />
@@ -348,7 +359,15 @@ function DiaryDetailView({
             ) : null}
           </article>
 
-          <aside>
+          {/* scroll-mt: 스크롤 목적지가 sticky 헤더 뒤로 숨지 않게 —
+              모바일 MobileHeader(h-14 + safe-area), 데스크탑 AppTopNav(62px) */}
+          <aside
+            ref={commentSectionRef}
+            className={cn(
+              'scroll-mt-[calc(3.5rem+env(safe-area-inset-top)+0.5rem)]',
+              'lg:scroll-mt-20'
+            )}
+          >
             <DiaryCommentSection
               diaryId={diaryData.id}
               currentMemberId={currentMemberId}
