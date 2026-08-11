@@ -104,8 +104,10 @@ const MyChallengeCardItem = React.memo(
             {hasLeft ? (
               <span
                 className={cn(
-                  'rounded-full bg-gray-900/80 px-2 py-0.5',
-                  'text-[10px] font-extrabold text-white'
+                  // 완료 딱지와 같은 규격(11px/px-2.5/py-1)으로 맞춰야
+                  // 둘이 나란히 붙을 때 높이가 어긋나지 않는다.
+                  'rounded-full bg-gray-900/80 px-2.5 py-1',
+                  'text-[11px] font-extrabold whitespace-nowrap text-white'
                 )}
               >
                 참여종료
