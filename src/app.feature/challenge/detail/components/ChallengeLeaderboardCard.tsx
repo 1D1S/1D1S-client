@@ -22,6 +22,8 @@ import {
 import { ListChecks, Pointer } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
+import { ChallengeCompletedBadge } from '../../shared/components/ChallengeCompletedBadge';
+
 interface LeaderboardEntryGoal {
   challengeGoalId: number;
   content: string;
@@ -38,6 +40,8 @@ interface LeaderboardEntry {
   rank?: number | null;
   streak?: number;
   completedGoalCount?: number;
+  // 완료 딱지 — 서버 판정. nullable 이라 truthy 검사로만 쓴다.
+  completed?: boolean | null;
 }
 
 interface ChallengeLeaderboardCardProps {
@@ -188,6 +192,7 @@ function MemberRow({
                 {isMe ? '나' : '참여 중'}
               </span>
             )}
+            {entry.completed ? <ChallengeCompletedBadge /> : null}
           </div>
           {hasRank ? (
             <Text

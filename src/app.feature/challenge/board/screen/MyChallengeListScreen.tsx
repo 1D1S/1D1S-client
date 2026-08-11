@@ -26,6 +26,7 @@ import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { ChallengeCompletedBadge } from '../../shared/components/ChallengeCompletedBadge';
 import { FilterDisclosure } from '../components/FilterDisclosure';
 import { useMyChallenges } from '../hooks/useChallengeQueries';
 import type { MyChallengeItem } from '../type/challenge';
@@ -91,17 +92,27 @@ const MyChallengeCardItem = React.memo(
           participants={challenge.randomParticipants}
           href={`/challenge/${challenge.challengeId}`}
         />
-        {/* 과거참여 표시 — 카드 링크를 막지 않도록 pointer-events-none */}
-        {hasLeft ? (
-          <span
+        {/* 과거참여·완료 표시 — 카드 링크를 막지 않도록 pointer-events-none.
+            둘 다 붙을 수 있어 한 행에 나란히 둔다. */}
+        {hasLeft || item.completed ? (
+          <div
             className={cn(
-              'pointer-events-none absolute top-2 left-2 z-10 rounded-full',
-              'bg-gray-900/80 px-2 py-0.5 text-[10px] font-extrabold',
-              'text-white'
+              'pointer-events-none absolute top-2 left-2 z-10 flex',
+              'items-center gap-1'
             )}
           >
-            참여종료
-          </span>
+            {hasLeft ? (
+              <span
+                className={cn(
+                  'rounded-full bg-gray-900/80 px-2 py-0.5',
+                  'text-[10px] font-extrabold text-white'
+                )}
+              >
+                참여종료
+              </span>
+            ) : null}
+            {item.completed ? <ChallengeCompletedBadge /> : null}
+          </div>
         ) : null}
       </div>
     );

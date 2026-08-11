@@ -70,6 +70,9 @@ export type MyParticipationStatus = 'HOST' | 'PARTICIPANT' | 'LEAVE';
 export interface MyChallengeItem {
   participationStatus: MyParticipationStatus;
   challenge: ChallengeSummary;
+  // 완료 딱지 — 서버가 "종료된 기한제 + 목표 70% 달성"만 true 로 계산한다.
+  // 웹은 재계산 없이 boolean 만 신뢰한다. 구버전 서버 대비 옵셔널.
+  completed?: boolean;
 }
 
 export interface ChallengeListItem {
@@ -104,6 +107,9 @@ export interface ChallengeDetail {
   myStatus: ParticipantStatus;
   participationRate: number;
   goalCompletionRate: number;
+  // 내 완료 여부 — 서버 판정(종료된 기한제 + 목표 70% 달성).
+  // 비로그인·비참여·진행중·무기한은 서버가 false 로 내려준다.
+  myCompleted?: boolean;
 }
 
 export interface ChallengeGoal {
@@ -124,6 +130,8 @@ export interface Participant {
   // 연속 달성일수 / 완료한 목표 개수
   streak: number;
   completedGoalCount: number;
+  // 완료 딱지 — 서버 판정. null 이면 딱지 없음(false 와 동일 취급).
+  completed?: boolean | null;
 }
 
 // 참여자 목록 정렬 — 참여순(기본) / 등수순
@@ -136,7 +144,6 @@ export interface ParticipantListParams {
   // 상태 필터 (다중). 미지정 시 서버 기본(호스트: 전체 / 그 외: 승인자만).
   status?: ParticipantStatus[];
 }
-
 
 export interface ParticipantListResponse {
   items: Participant[];
