@@ -54,19 +54,34 @@ const BOTTOM_NAV_VISIBLE_ROUTES = [
   '/mypage',
 ];
 
+// 투표 플로팅 위젯 노출 경로. 전역으로 띄웠더니 일지·챌린지 상세의
+// MobileBottomActionBar(댓글 입력 + 등록, CTA)와 같은 자리(우하단)에 겹쳐
+// 등록 버튼을 가렸다 — 서브 화면은 바텀 네비가 없어 FAB 가 20px 까지
+// 내려앉고, z-40 이라 z-20 인 액션바 위를 덮는다. 액션바는 각 화면이
+// 직접 렌더해 셸이 존재를 알 수 없으므로, 셸이 아는 경로로 화이트리스트.
+const VOTE_WIDGET_ROUTES = ['/', '/explore'];
+
 function matchesRoute(pathname: string, routes: readonly string[]): boolean {
   return routes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 }
 
-function isBottomNavVisible(pathname: string): boolean {
-  // 정확히 최상위 탭 경로일 때만 노출(하위 경로는 서브 화면으로 간주).
+// 하위 경로를 제외한 정확 일치 판정(끝 슬래시만 정규화).
+function matchesExactRoute(
+  pathname: string,
+  routes: readonly string[]
+): boolean {
   const normalized =
     pathname.length > 1 && pathname.endsWith('/')
       ? pathname.slice(0, -1)
       : pathname;
-  return BOTTOM_NAV_VISIBLE_ROUTES.includes(normalized);
+  return routes.includes(normalized);
+}
+
+function isBottomNavVisible(pathname: string): boolean {
+  // 정확히 최상위 탭 경로일 때만 노출(하위 경로는 서브 화면으로 간주).
+  return matchesExactRoute(pathname, BOTTOM_NAV_VISIBLE_ROUTES);
 }
 
 function resolveActiveNavId(pathname: string): string {
@@ -206,6 +221,7 @@ export default function AppLayoutShell({
   // 세팅한 `data-native-app` 이 첫 페인트 전에 끝낸다.
   // ponytail: 네이티브에서도 훅(라우트 prefetch) 은 그대로 돈다.
   const showBottomNav = isBottomNavVisible(pathname);
+  const isVoteWidgetRoute = matchesExactRoute(pathname, VOTE_WIDGET_ROUTES);
   const bottomNavRespClass = 'lg:hidden native-hide';
   const activeNavId = resolveActiveNavId(pathname);
 
@@ -281,7 +297,7 @@ export default function AppLayoutShell({
 
       {!isLoginPage && !isNativeApp ? <BrowserPermissionPrompt /> : null}
       <VoteFloatingScreen
-        enabled={isLoggedIn && !isLoginPage}
+        enabled={isLoggedIn && !isLoginPage && isVoteWidgetRoute}
         hasBottomNav={showBottomNav && !isNativeApp}
         hasRightRail={showRightRail}
       />
