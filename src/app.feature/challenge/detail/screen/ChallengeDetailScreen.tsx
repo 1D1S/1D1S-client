@@ -8,6 +8,7 @@ import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSke
 import { getCategoryLabel } from '@constants/categories';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { resolveSidebarMemberId } from '@feature/diary/detail/utils/diaryViewData';
+import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
 import { getApiErrorCode, normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { useNativeCapability } from '@module/hooks/useNativeCapability';
@@ -200,6 +201,8 @@ export function ChallengeDetailScreen({
   const [passwordNeedsGoals, setPasswordNeedsGoals] = useState(false);
   // 비로그인 사용자가 로그인 필요 액션(참여·좋아요 등)을 누르면 로그인 유도.
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  // 챌린지 나가기는 되돌릴 수 없어(LEAVE 상태는 재참여 불가) 확인을 받는다.
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   // 로그인 필요 액션 게이트. 비로그인이면 로그인 유도 다이얼로그를 띄우고
   // false 를 반환한다(호출부는 즉시 return).
@@ -359,12 +362,29 @@ export function ChallengeDetailScreen({
     );
   };
 
+  // 재참여 불가는 확정 사실이다 — 탈퇴하면 myStatus 가 LEAVE 가 되는데
+  // canJoinByStatus 는 NONE/REJECTED 만 허용한다(위 참여 게이트 참고).
+  const leaveConfirmDescription = isHost
+    ? [
+        '나가면 참여자 목록에서 빠지고 이 챌린지의 진행률·순위 기록도',
+        '사라져요. 방장이 나가면 남은 챌린지원들의 운영에도 영향이 있어요.',
+        '한 번 나가면 같은 챌린지에 다시 참여할 수 없어요.',
+      ].join(' ')
+    : [
+        '나가면 참여자 목록에서 빠지고 이 챌린지의 진행률·순위 기록도',
+        '사라져요. 한 번 나가면 같은 챌린지에 다시 참여할 수 없어요.',
+      ].join(' ');
+
+  // 확인 다이얼로그의 [나가기] 에서만 호출된다. 버튼 클릭은 다이얼로그를
+  // 열기만 한다 — 오탭으로 즉시 탈퇴되던 동작을 막는다.
   const handleLeaveChallenge = (): void => {
     leaveChallenge.mutate(challengeId, {
       onSuccess: () => {
+        setShowLeaveConfirm(false);
         toast.success('챌린지에서 나갔습니다.');
       },
       onError: (mutationError) => {
+        // 실패면 다이얼로그를 열어 둔 채로 알린다(재시도 가능).
         notifyApiError(mutationError);
       },
     });
@@ -583,6 +603,22 @@ export function ChallengeDetailScreen({
           onOpenChange={setShowCreateUnavailableDialog}
           title="새 일지를 작성할 수 없습니다."
           description="최근 3일 동안 작성 가능한 날짜를 모두 사용했습니다."
+        />
+        <ConfirmDialog
+          open={showLeaveConfirm}
+          onOpenChange={setShowLeaveConfirm}
+          tone="danger"
+          icon="Close"
+          title={
+            isHost ? '방장인 챌린지에서 나갈까요?' : '챌린지에서 나갈까요?'
+          }
+          description={leaveConfirmDescription}
+          confirmLabel="나가기"
+          pendingLabel="나가는 중..."
+          isPending={leaveChallenge.isPending}
+          isDisabled={leaveChallenge.isPending}
+          onCancel={() => setShowLeaveConfirm(false)}
+          onConfirm={handleLeaveChallenge}
         />
 
         {/* 히어로 + 모바일 floating 뒤로가기 — 탭 위에 항상 고정 노출 */}
@@ -907,7 +943,7 @@ export function ChallengeDetailScreen({
               {isParticipating ? (
                 <button
                   type="button"
-                  onClick={handleLeaveChallenge}
+                  onClick={() => setShowLeaveConfirm(true)}
                   disabled={leaveChallenge.isPending}
                   className={cn(
                     'mt-1 self-center text-[12px] text-gray-500',
