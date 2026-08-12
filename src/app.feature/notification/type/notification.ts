@@ -73,3 +73,16 @@ export interface WebPushEndpointRequest {
 export interface UnreadCount {
   unreadCount: number;
 }
+
+/**
+ * 엔티티 단위 읽음 처리 대상.
+ *
+ * 웹은 상세 화면 두 곳만 보낸다. 서버가 형제 타입(CHALLENGE_LIST,
+ * DIARY_COMMENT 등)까지 알아서 확장 처리하므로 클라가 나열하지 않는다.
+ */
+export type NotificationReadTargetType = 'CHALLENGE_DETAIL' | 'DIARY_DETAIL';
+
+export interface MarkTargetAsReadParams {
+  targetType: NotificationReadTargetType;
+  targetId: number;
+}
