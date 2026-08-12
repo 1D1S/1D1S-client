@@ -9,6 +9,7 @@ import {
 import { notificationApi } from '../api/notificationApi';
 import { NOTIFICATION_QUERY_KEYS } from '../consts/queryKeys';
 import {
+  MarkTargetAsReadParams,
   NotificationEndpoint,
   NotificationListData,
   NotificationPreferences,
@@ -155,5 +156,42 @@ export function useRegisterEndpoint(): UseMutationResult<
   return useMutation({
     mutationFn: (data: WebPushEndpointRequest) =>
       notificationApi.registerEndpoint(data),
+  });
+}
+
+/**
+ * 엔티티 단위 읽음 처리(상세 진입). 응답이 처리 후 남은 **전체** 미읽음
+ * 수라, 헤더 뱃지 쿼리에 그대로 써넣고 목록은 무효화한다.
+ *
+ * 낙관적 갱신을 하지 않는다 — 이 상세에 걸린 알림이 몇 건인지 클라가 알 수
+ * 없어 미리 뺄 수가 없다. 서버가 정확한 수를 돌려주므로 응답으로 덮는다.
+ *
+ * 읽음 처리는 부가기능이라 실패해도 조용히 넘어간다(skipGlobalErrorToast).
+ * 상세 화면 표시를 막지 않는 게 우선이다.
+ */
+export function useMarkTargetAsRead(): UseMutationResult<
+  UnreadCount,
+  Error,
+  MarkTargetAsReadParams
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (params: MarkTargetAsReadParams) =>
+      notificationApi.markTargetAsRead(params),
+    meta: { skipGlobalErrorToast: true },
+    onSuccess: (data) => {
+      if (data) {
+        queryClient.setQueryData<UnreadCount>(
+          NOTIFICATION_QUERY_KEYS.unreadCount(),
+          data
+        );
+      }
+      // 목록을 열면 읽음이 반영돼 보이도록. 뱃지와 달리 목록은 서버가 준
+      // 카운트로 대체할 수 없어 무효화로 다시 받는다.
+      void queryClient.invalidateQueries({
+        queryKey: NOTIFICATION_QUERY_KEYS.lists(),
+      });
+    },
   });
 }
