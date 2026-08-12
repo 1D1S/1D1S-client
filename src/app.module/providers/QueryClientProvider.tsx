@@ -47,17 +47,14 @@ export function TanStackQueryProvider({
         buster: RQ_PERSIST_BUSTER,
         dehydrateOptions: {
           // 성공 쿼리만 저장(pending/error 제외) + meta.noPersist 옵트아웃.
-          // 무한 스크롤 쿼리도 제외한다 — 누적 페이지 전체가 1초마다
-          // JSON.stringify 로 localStorage 에 동기 기록되면(수백 KB) 저사양
-          // 기기에서는 스크롤 중 수 프레임짜리 멈춤이 된다. 복원해 봤자
-          // 첫 페이지만 보여주면 되는 데이터라 저장 가치도 낮다.
+          // 무한 스크롤 쿼리도 포함한다 — 예전엔 누적 페이지 전체를 1초마다
+          // JSON.stringify 하는 비용(수백 KB) 때문에 통째로 제외했지만,
+          // 그러면 탐색·일지·챌린지 리스트가 복귀할 때마다 스켈레톤이었다.
+          // 지금은 persister 가 쓰기 직전에 첫 페이지만 남기므로
+          // (truncateInfinitePages) 쓰기 비용은 일반 쿼리 수준이다.
           shouldDehydrateQuery: (query) =>
             defaultShouldDehydrateQuery(query) &&
-            query.meta?.noPersist !== true &&
-            !Array.isArray(
-              (query.state.data as { pageParams?: unknown[] } | undefined)
-                ?.pageParams
-            ),
+            query.meta?.noPersist !== true,
         },
       }}
     >

@@ -67,13 +67,17 @@ export function useDiaryList(
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
       lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.nextCursor : undefined,
-    // W12: 일지→챌린지→일지 뒤로가기 시 재요청/재로딩을 막는다. remount refetch
-    // 를 끄고 캐시를 그대로 보여준다. 새 일지/수정/삭제는 mutation 이
-    // DIARY_QUERY_KEYS.lists() 를 invalidate 하므로 목록 최신성은 유지된다.
+    // W12: 일지→챌린지→일지 뒤로가기 시 재요청/재로딩을 막는다. 그 왕복은
+    // staleTime(5분) 안에 끝나므로 `refetchOnMount: true` 로도 재요청이 없다
+    // — true 는 "stale 일 때만" 재요청이기 때문이다. false 는 아무리 오래된
+    // 캐시여도 절대 재검증하지 않아, localStorage 에서 복원한 최대 24시간
+    // 전 목록이 invalidate 전까지 그대로 남는 문제가 있었다.
+    // 새 일지/수정/삭제는 mutation 이 DIARY_QUERY_KEYS.lists() 를
+    // invalidate 하므로 목록 최신성은 유지된다.
     // 다른 창/탭에서 돌아오면(window focus) 새로고침한다.
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: 'always',
-    refetchOnMount: false,
+    refetchOnMount: true,
   });
 }
 
