@@ -9,6 +9,7 @@ import { getCategoryLabel } from '@constants/categories';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
 import { resolveSidebarMemberId } from '@feature/diary/detail/utils/diaryViewData';
 import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
+import { useMarkDetailAsRead } from '@feature/notification/hooks/useMarkDetailAsRead';
 import { getApiErrorCode, normalizeApiError } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
 import { useNativeCapability } from '@module/hooks/useNativeCapability';
@@ -154,6 +155,9 @@ export function ChallengeDetailScreen({
   const { data, isLoading, isError, error } = useChallengeDetail(challengeId);
   const showSkeleton = useMinimumLoading(isLoading);
   useSignalPageReady('challenge_detail', !showSkeleton && Boolean(data));
+  // 상세 진입 = 이 챌린지 관련 알림 읽음. 목록·딥링크·푸시 어느 경로로
+  // 들어와도 걸리도록 로딩 여부와 무관하게 진입 시점에 건다.
+  useMarkDetailAsRead('CHALLENGE_DETAIL', challengeId);
   // 앱 native_skeleton 중엔 웹 스켈레톤을 그리지 않는다(이중 방지) — 네이티브가
   // 덮고, page_ready 로 콘텐츠 준비를 알려 걷게 한다.
   const nativeSkeleton = useNativeCapability(isNativeSkeletonAvailable);
