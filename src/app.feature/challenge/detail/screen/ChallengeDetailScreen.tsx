@@ -364,10 +364,20 @@ export function ChallengeDetailScreen({
 
   // 재참여 불가는 확정 사실이다 — 탈퇴하면 myStatus 가 LEAVE 가 되는데
   // canJoinByStatus 는 NONE/REJECTED 만 허용한다(위 참여 게이트 참고).
+  //
+  // 방장 문구는 위임/삭제를 **분기하지 않고 통합 경고**로 간다. 서버
+  // (ChallengeService)는 방장 탈퇴 시 남은 후보가 있으면 transferHost,
+  // 없으면 챌린지 softDelete 인데, 그 갈림길을 클라가 신뢰성 있게 판정할 수
+  // 없다: summary.participantCnt 를 주는 useChallengeDetail 은 전역 기본값
+  // (staleTime 5분, refetchOnMount false)이라 재검증 없이 렌더되고, RQ
+  // persist 대상이라 최대 24시간 전 스냅샷이 복원될 수 있다. 그 값으로
+  // 분기하면 실제로는 삭제되는데 "권한이 넘어가요" 라고 안내하게 된다.
+  // 서버의 "후보" 기준(PENDING/LEAVE 포함 여부)도 클라 계약에 없다.
   const leaveConfirmDescription = isHost
     ? [
         '나가면 참여자 목록에서 빠지고 이 챌린지의 진행률·순위 기록도',
-        '사라져요. 방장이 나가면 남은 챌린지원들의 운영에도 영향이 있어요.',
+        '사라져요. 방장이 나가면 방장 권한이 다음 참여자에게 넘어가고,',
+        '남은 참여자가 없으면 챌린지가 삭제돼요.',
         '한 번 나가면 같은 챌린지에 다시 참여할 수 없어요.',
       ].join(' ')
     : [
@@ -604,14 +614,14 @@ export function ChallengeDetailScreen({
           title="새 일지를 작성할 수 없습니다."
           description="최근 3일 동안 작성 가능한 날짜를 모두 사용했습니다."
         />
+        {/* 제목은 방장/참여자 공통 — 방장 분기는 본문이 담당한다. 제목에
+            위임·삭제를 넣으면 둘 중 하나를 단정하게 된다. */}
         <ConfirmDialog
           open={showLeaveConfirm}
           onOpenChange={setShowLeaveConfirm}
           tone="danger"
           icon="Close"
-          title={
-            isHost ? '방장인 챌린지에서 나갈까요?' : '챌린지에서 나갈까요?'
-          }
+          title="정말 나가시겠어요?"
           description={leaveConfirmDescription}
           confirmLabel="나가기"
           pendingLabel="나가는 중..."
