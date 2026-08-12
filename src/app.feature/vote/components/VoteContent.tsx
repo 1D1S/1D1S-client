@@ -25,16 +25,7 @@ import type {
 interface VoteContentProps {
   /** 쿼리 활성화 — 로그인 사용자에게만 조회한다. */
   enabled: boolean;
-  /**
-   * 카드 chrome(테두리·라운드·그림자·최대높이) 없이 콘텐츠만 렌더한다.
-   * 네이티브 바텀시트가 컨테이너를 그리는 경우(/vote?sheet=1)에 쓴다.
-   */
-  bare?: boolean;
-  /**
-   * 닫기 핸들러. 주면 헤더 X 와 완료 상태의 "확인" 버튼이 생긴다.
-   * 네이티브 시트에서는 닫기를 앱이 담당하므로 넘기지 않는다.
-   */
-  onClose?(): void;
+  onClose(): void;
 }
 
 interface VotePanelProps {
@@ -47,8 +38,7 @@ interface VotePanelProps {
   onOptionClick(optionId: number): void;
   onSubmit(): void;
   onRetry(): void;
-  /** 없으면 X 버튼과 "확인" 버튼을 그리지 않는다(네이티브 시트). */
-  onClose?(): void;
+  onClose(): void;
   /** 투표가 2건 이상일 때만 — 목록으로 돌아가는 핸들러 */
   onBack?(): void;
   /** 재투표(수정) 모드 진행 중인지. */
@@ -68,9 +58,6 @@ function formatVotePeriod(startDate: string, endDate: string): string {
   }
   return start === end ? start : `${start} ~ ${end}`;
 }
-
-// 네이티브 시트 안에서는 시트가 컨테이너를 그리므로 카드 chrome 을 뺀다.
-const BARE_CLASS = 'w-full';
 
 // 플로팅 카드 공통 골격. 목록/상세 두 단계가 같은 크기·모서리·스크롤 규칙을
 // 공유해야 단계 전환에서 카드가 튀지 않는다.
@@ -188,8 +175,7 @@ function VotePanel({
   isEditing,
   onEdit,
   onCancelEdit,
-  bare = false,
-}: VotePanelProps & { bare?: boolean }): React.ReactElement {
+}: VotePanelProps): React.ReactElement {
   const hasSelection = selectedOptionIds.length > 0;
   const selectionGuide =
     vote?.selectionType === 'MULTIPLE'
@@ -198,10 +184,7 @@ function VotePanel({
   const votePeriod = vote ? formatVotePeriod(vote.startDate, vote.endDate) : '';
 
   return (
-    <section
-      aria-label="오늘의 투표"
-      className={bare ? BARE_CLASS : PANEL_CLASS}
-    >
+    <section aria-label="오늘의 투표" className={PANEL_CLASS}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           {onBack ? (
@@ -235,7 +218,7 @@ function VotePanel({
             <p className="mt-1 text-xs text-gray-400">{votePeriod}</p>
           ) : null}
         </div>
-        {onClose ? <PanelCloseButton onClick={onClose} /> : null}
+        <PanelCloseButton onClick={onClose} />
       </div>
 
       {isLoading ? (
@@ -317,17 +300,15 @@ function VotePanel({
               <Button
                 type="button"
                 size="lg"
-                variant={onClose ? 'secondary' : 'primary'}
+                variant="secondary"
                 fullWidth
                 onClick={onEdit}
               >
                 수정
               </Button>
-              {onClose ? (
-                <Button type="button" size="lg" fullWidth onClick={onClose}>
-                  확인
-                </Button>
-              ) : null}
+              <Button type="button" size="lg" fullWidth onClick={onClose}>
+                확인
+              </Button>
             </div>
           ) : (
             <Button
@@ -350,8 +331,7 @@ function VotePanel({
 interface VoteListPanelProps {
   votes: VoteSummary[];
   onSelect(voteId: number): void;
-  onClose?(): void;
-  bare?: boolean;
+  onClose(): void;
 }
 
 /**
@@ -366,15 +346,11 @@ function VoteListPanel({
   votes,
   onSelect,
   onClose,
-  bare = false,
 }: VoteListPanelProps): React.ReactElement {
   const remaining = votes.filter((vote) => !vote.voted).length;
 
   return (
-    <section
-      aria-label="오늘의 투표 목록"
-      className={bare ? BARE_CLASS : PANEL_CLASS}
-    >
+    <section aria-label="오늘의 투표 목록" className={PANEL_CLASS}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div
@@ -392,7 +368,7 @@ function VoteListPanel({
               : '모든 투표에 참여했어요'}
           </h2>
         </div>
-        {onClose ? <PanelCloseButton onClick={onClose} /> : null}
+        <PanelCloseButton onClick={onClose} />
       </div>
 
       <ul className="mt-4 flex flex-col gap-2.5">
@@ -444,7 +420,6 @@ function VoteListPanel({
 
 export function VoteContent({
   enabled,
-  bare = false,
   onClose,
 }: VoteContentProps): React.ReactElement | null {
   const [selectedOptionIds, setSelectedOptionIds] = useState<number[]>([]);
@@ -570,7 +545,6 @@ export function VoteContent({
         votes={votes}
         onSelect={setSelectedVoteId}
         onClose={onClose}
-        bare={bare}
       />
     );
   }
@@ -593,7 +567,6 @@ export function VoteContent({
       }}
       onClose={onClose}
       onBack={hasMultiple ? () => setSelectedVoteId(null) : undefined}
-      bare={bare}
     />
   );
 }

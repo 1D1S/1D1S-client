@@ -30,7 +30,6 @@ const config: KnipConfig = {
     '@radix-ui/react-aspect-ratio',
     '@radix-ui/react-avatar',
     '@radix-ui/react-checkbox',
-    '@radix-ui/react-dialog',
     '@radix-ui/react-menubar',
     '@radix-ui/react-progress',
     '@radix-ui/react-radio-group',
