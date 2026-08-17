@@ -44,6 +44,20 @@ export function useChatUnreadTotal(options?: { enabled?: boolean }): number {
 }
 
 /**
+ * 챌린지에 딸린 방. 없으면 null — 아직 참여하지 않았거나 개인 챌린지다.
+ * 챌린지 상세 응답에는 roomId 가 없어 방 목록으로 찾는다(챌린지 1 : 방 1).
+ */
+export function useChatRoomForChallenge(
+  challengeId: number,
+  options?: { enabled?: boolean }
+): number | null {
+  const { data } = useChatRooms(options);
+  return (
+    data?.rooms.find((room) => room.challengeId === challengeId)?.roomId ?? null
+  );
+}
+
+/**
  * 방 내역. 커서형·최신순이라 페이지를 이어 붙이면 그대로 "위로 갈수록
  * 과거" 가 된다. 화면은 column-reverse 로 그린다.
  */

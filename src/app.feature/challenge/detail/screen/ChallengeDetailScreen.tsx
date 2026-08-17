@@ -7,6 +7,7 @@ import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
+import { ChallengeChatEntry } from '@feature/chat/components/ChallengeChatEntry';
 import { resolveSidebarMemberId } from '@feature/diary/detail/utils/diaryViewData';
 import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
 import { useMarkDetailAsRead } from '@feature/notification/hooks/useMarkDetailAsRead';
@@ -953,6 +954,11 @@ export function ChallengeDetailScreen({
                   isLikePending={isActionLoading}
                 />
               </div>
+
+              <ChallengeChatEntry
+                challengeId={challengeId}
+                enabled={isParticipating && isGroupChallenge}
+              />
 
               {isParticipating ? (
                 <button
