@@ -45,7 +45,16 @@ describe('isChatArchived', () => {
     ).toBe(true);
   });
 
-  it('둘 다 없으면 종료 + 방 자체가 READ_ONLY 일 때만 보관이다', () => {
+  it('보관돼도 status 는 ACTIVE 그대로다 — status 로 판정하지 않는다', () => {
+    expect(
+      isChatArchived(
+        room({ archived: true, status: 'ACTIVE', challengeEnded: true }),
+        NOW
+      )
+    ).toBe(true);
+  });
+
+  it('과도기 폴백: 둘 다 없으면 종료 + 방 자체가 READ_ONLY 일 때만', () => {
     // 종료 후 일주일 안 — 아직 보낼 수 있다.
     expect(isChatArchived(room({ challengeEnded: true }), NOW)).toBe(false);
     expect(
@@ -62,11 +71,18 @@ describe('isChatArchived', () => {
 });
 
 describe('canSendInChatRoom', () => {
-  it('종료 후 일주일 동안은 그대로 보낼 수 있다', () => {
-    expect(canSendInChatRoom(room({ challengeEnded: true }), NOW)).toBe(true);
+  it('서버 canSend 가 정본이다', () => {
+    expect(canSendInChatRoom(room({ canSend: false }), NOW)).toBe(false);
+    // 보관 방이라도 서버가 보낼 수 있다고 하면 그 말을 따른다 — 잠금 규칙을
+    // 클라가 다시 조립하지 않는다.
+    expect(
+      canSendInChatRoom(room({ canSend: true, archived: true }), NOW)
+    ).toBe(true);
   });
 
-  it('보관되면 못 보낸다', () => {
+  it('과도기 폴백: canSend 가 없으면 상태 + 보관으로 판단한다', () => {
+    // 종료 후 일주일 동안은 그대로 보낼 수 있다.
+    expect(canSendInChatRoom(room({ challengeEnded: true }), NOW)).toBe(true);
     expect(canSendInChatRoom(room({ archived: true }), NOW)).toBe(false);
   });
 });

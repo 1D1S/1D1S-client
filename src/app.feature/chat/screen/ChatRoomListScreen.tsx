@@ -39,18 +39,20 @@ function ListSkeleton(): React.ReactElement {
   );
 }
 
+// value 가 그대로 서버 파라미터다 — undefined 면 생략(전체).
 const FILTERS = [
-  { value: 'all', label: '전체' },
-  { value: 'active', label: '진행 중' },
-  { value: 'archived', label: '아카이브' },
+  { key: 'all', label: '전체', archived: undefined },
+  { key: 'active', label: '진행 중', archived: false },
+  { key: 'archived', label: '아카이브', archived: true },
 ] as const;
 
-type ChatRoomFilter = (typeof FILTERS)[number]['value'];
+type ChatRoomFilterKey = (typeof FILTERS)[number]['key'];
 
 export function ChatRoomListScreen(): React.ReactElement {
   const handleBack = useSafeBack('/');
-  const [filter, setFilter] = useState<ChatRoomFilter>('all');
-  const { data, isLoading, isError, refetch } = useChatRooms();
+  const [filterKey, setFilterKey] = useState<ChatRoomFilterKey>('all');
+  const archived = FILTERS.find((item) => item.key === filterKey)?.archived;
+  const { data, isLoading, isError, refetch } = useChatRooms({ archived });
   // 재조회 중에도 값이 있으면 목록을 그대로 둔다. isLoading 만 보면 갱신될
   // 때마다 스켈레톤으로 갔다 돌아와 리스트 전체가 페이드된다.
   const showSkeleton = useMinimumLoading(isLoading && !data);
@@ -69,18 +71,12 @@ export function ChatRoomListScreen(): React.ReactElement {
     );
   };
 
-  const allRooms = data?.rooms ?? [];
-  // ponytail: 지금은 클라에서 거른다 — 방 목록은 참여 중인 그룹 챌린지 수만큼
-  // 이라 한 화면에 다 온다. 서버가 목록 아카이브 필터를 열면 이 두 줄이
-  // queryKey 파라미터로 바뀐다.
-  const rooms = allRooms.filter((room) => {
-    if (filter === 'all') {
-      return true;
-    }
-    return isChatArchived(room) === (filter === 'archived');
-  });
-  // 보관된 방이 하나도 없으면 필터 자체가 군더더기다.
-  const hasArchived = allRooms.some((room) => isChatArchived(room));
+  const rooms = data?.rooms ?? [];
+  // 보관된 방이 하나도 없으면 필터 줄은 군더더기다. 다만 '전체' 가 아닌
+  // 필터를 이미 고른 뒤에는 응답에 보관 방이 없어도 줄을 유지해야 한다 —
+  // 안 그러면 '진행 중' 을 누르는 순간 필터가 사라져 되돌아갈 길이 없다.
+  const showFilters =
+    filterKey !== 'all' || rooms.some((room) => isChatArchived(room));
 
   return (
     <SubPageShell
@@ -107,14 +103,14 @@ export function ChatRoomListScreen(): React.ReactElement {
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {hasArchived ? (
+          {showFilters ? (
             <div className="flex items-center gap-2">
               {FILTERS.map((option) => (
                 <FilterChip
-                  key={option.value}
+                  key={option.key}
                   size="sm"
-                  active={filter === option.value}
-                  onClick={() => setFilter(option.value)}
+                  active={filterKey === option.key}
+                  onClick={() => setFilterKey(option.key)}
                 >
                   {option.label}
                 </FilterChip>
@@ -126,14 +122,14 @@ export function ChatRoomListScreen(): React.ReactElement {
             <EmptyState
               variant="challenge"
               title={
-                filter === 'archived'
+                filterKey === 'archived'
                   ? '보관된 채팅방이 없어요'
-                  : allRooms.length === 0
-                    ? '참여 중인 그룹 채팅이 없어요'
-                    : '진행 중인 채팅방이 없어요'
+                  : filterKey === 'active'
+                    ? '진행 중인 채팅방이 없어요'
+                    : '참여 중인 그룹 채팅이 없어요'
               }
               description={
-                allRooms.length === 0
+                filterKey === 'all'
                   ? '그룹 챌린지에 참여하면 채팅방이 열려요.'
                   : undefined
               }

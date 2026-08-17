@@ -1,6 +1,6 @@
 'use client';
 
-import type { UseMutationResult } from '@tanstack/react-query';
+import type { QueryKey, UseMutationResult } from '@tanstack/react-query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { chatApi } from '../api/chatApi';
@@ -18,35 +18,35 @@ export function useToggleChatPush(): UseMutationResult<
   void,
   Error,
   { roomId: number; enabled: boolean },
-  { previous?: ChatRoomList }
+  { previous: Array<[QueryKey, ChatRoomList | undefined]> }
 > {
   const queryClient = useQueryClient();
+  // 목록은 archived 필터별로 따로 캐시된다(전체·진행 중·아카이브). 한 갈래만
+  // 고치면 필터를 바꿨을 때 종이 도로 뒤집힌 것처럼 보인다 — 전부 손본다.
+  const filter = { queryKey: CHAT_QUERY_KEYS.rooms() };
   return useMutation({
     mutationFn: ({ roomId, enabled }) =>
       chatApi.setNotifications(roomId, enabled),
     onMutate: async ({ roomId, enabled }) => {
-      await queryClient.cancelQueries({ queryKey: CHAT_QUERY_KEYS.rooms() });
-      const previous = queryClient.getQueryData<ChatRoomList>(
-        CHAT_QUERY_KEYS.rooms()
-      );
-      queryClient.setQueryData<ChatRoomList>(
-        CHAT_QUERY_KEYS.rooms(),
+      await queryClient.cancelQueries(filter);
+      const previous =
+        queryClient.getQueriesData<ChatRoomList>(filter);
+      queryClient.setQueriesData<ChatRoomList>(
+        filter,
         (cache) =>
           cache && {
             ...cache,
             rooms: cache.rooms.map((room) =>
-              room.roomId === roomId
-                ? { ...room, pushEnabled: enabled }
-                : room
+              room.roomId === roomId ? { ...room, pushEnabled: enabled } : room
             ),
           }
       );
       return { previous };
     },
     onError: (_error, _variables, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(CHAT_QUERY_KEYS.rooms(), context.previous);
-      }
+      context?.previous.forEach(([key, value]) => {
+        queryClient.setQueryData(key, value);
+      });
     },
   });
 }

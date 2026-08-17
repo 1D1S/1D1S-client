@@ -84,17 +84,20 @@ export interface ChatRoom {
   challengeEnded: boolean;
 
   /**
-   * 보관 상태(챌린지 종료 후 7일 경과). ⚠️ 서버가 아직 확정하지 않은
-   * 잠정 이름이다 — 확정되면 `utils/chatArchive.ts` 만 고치면 된다.
-   * 화면은 이 필드를 직접 읽지 않는다.
+   * 보관 상태 — 챌린지 종료 후 7일 경과(endDate+8일 00:00 KST 부터).
+   * **status 는 보관돼도 ACTIVE 그대로다** — 보관 판정에 status 를 쓰면 안 된다.
+   * 태그·필터가 이 값을 쓴다. 화면은 `utils/chatArchive.ts` 를 거쳐 읽는다.
    */
   archived?: boolean;
 
-  /**
-   * 전송이 막히는 시각(종료 + 7일). ⚠️ 위와 같은 잠정 이름.
-   * 남은 기간 안내에 쓴다.
-   */
+  /** 전송이 막히는 시각(종료 + 7일). 남은 기간 안내에 쓴다. */
   chatClosesAt?: string | null;
+
+  /**
+   * 서버의 최종 전송 가능 판정(= status ACTIVE && 멤버십 ACTIVE && !archived).
+   * **입력창 잠금은 이 값이 정본이다** — 클라가 조건을 다시 조립하지 않는다.
+   */
+  canSend?: boolean;
 }
 
 export interface ChatRoomList {

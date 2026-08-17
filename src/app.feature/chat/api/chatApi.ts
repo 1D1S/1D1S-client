@@ -75,11 +75,13 @@ function parseRoomList(data: unknown): ChatRoomList {
 }
 
 export const chatApi = {
-  getRooms: async (): Promise<ChatRoomList> =>
+  /** archived 를 생략하면 전체(보관 포함)를 준다. */
+  getRooms: async (params?: { archived?: boolean }): Promise<ChatRoomList> =>
     parseRoomList(
       await requestData<unknown>(apiClient, {
         url: '/chat/rooms',
         method: 'GET',
+        params,
       })
     ),
 

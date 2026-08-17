@@ -24,10 +24,14 @@ const EMPTY_ROOMS: ChatRoomList = { rooms: [], hiddenMemberIds: [] };
  */
 export function useChatRooms(options?: {
   enabled?: boolean;
+  /** 생략하면 전체(보관 포함). 서버가 `?archived=` 로 걸러 준다. */
+  archived?: boolean;
 }): UseQueryResult<ChatRoomList, Error> {
+  const archived = options?.archived;
   return useQuery({
-    queryKey: CHAT_QUERY_KEYS.rooms(),
-    queryFn: () => chatApi.getRooms(),
+    queryKey: CHAT_QUERY_KEYS.roomList(archived),
+    queryFn: () =>
+      chatApi.getRooms(archived === undefined ? undefined : { archived }),
     enabled: options?.enabled ?? true,
     meta: { noPersist: true },
     ...FRESH_ON_RETURN,

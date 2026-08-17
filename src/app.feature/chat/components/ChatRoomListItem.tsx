@@ -6,8 +6,8 @@ import { Bell, BellOff, BookOpen, Flag, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
-import { canSendInRoom, ChatRoom } from '../type/chat';
-import { isChatArchived } from '../utils/chatArchive';
+import { ChatRoom } from '../type/chat';
+import { canSendInChatRoom, isChatArchived } from '../utils/chatArchive';
 import { formatRoomTime, roomPreview } from '../utils/chatFormat';
 import { ChatRoomThumbnail } from './ChatRoomThumbnail';
 
@@ -61,7 +61,7 @@ function StateChip({ room }: { room: ChatRoom }): React.ReactElement | null {
   if (room.challengeEnded) {
     return <RoomChip label="종료" tone="state" />;
   }
-  if (!canSendInRoom(room)) {
+  if (!canSendInChatRoom(room)) {
     return <RoomChip label="읽기 전용" tone="state" />;
   }
   return null;

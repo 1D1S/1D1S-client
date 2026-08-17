@@ -2,10 +2,12 @@
 
 import { Text } from '@1d1s/design-system';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
+import { getApiErrorCode } from '@module/api/error';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Bell, BellOff, MoreVertical, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -28,6 +30,7 @@ import {
   ChatNoticeBanner,
   ChatNoticeMessageBanner,
 } from '../components/ChatTopBanners';
+import { CHAT_QUERY_KEYS } from '../consts/queryKeys';
 import {
   useClearChatNotice,
   useSetChatNotice,
@@ -80,6 +83,7 @@ export function ChatRoomScreen({
   roomId: number;
 }): React.ReactElement {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const handleBack = useSafeBack('/chat');
   const { data: sidebar } = useSidebar();
   const { data: roomList } = useChatRooms();
@@ -219,6 +223,15 @@ export function ChatRoomScreen({
       }
       await sendText(text);
     } catch (error) {
+      // 보고 있는 사이에 보관 시각이 지났다(CHAT-017). 목록을 새로 받아
+      // 입력창을 잠근다 — 안 그러면 계속 "보낼 수 있는 척" 한다.
+      if (getApiErrorCode(error) === 'CHAT-017') {
+        toast.error('보관된 채팅방이에요. 더는 메시지를 보낼 수 없어요.');
+        void queryClient.invalidateQueries({
+          queryKey: CHAT_QUERY_KEYS.rooms(),
+        });
+        return;
+      }
       // 판정과 전송 사이에 대상이 지워질 수 있다(CHAT-014). 링크에서 온
       // 카드면 원래 하려던 것 — 링크 보내기 — 로 되돌린다.
       if (pendingShare && linkShareUrl) {
