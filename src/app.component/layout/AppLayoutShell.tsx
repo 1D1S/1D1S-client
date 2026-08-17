@@ -39,6 +39,8 @@ const RIGHT_RAIL_HIDDEN_ROUTES = [
   '/mypage',
   '/challenge/create',
   '/notification',
+  // 채팅은 화면 높이를 꽉 쓰는 단일 패널이라 레일과 나란히 두면 좁아진다.
+  '/chat',
   '/terms',
   '/privacy',
   '/install',
