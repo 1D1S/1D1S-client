@@ -23,6 +23,7 @@ import {
   ChatShareMenuSheet,
 } from '../components/ChatSheets';
 import {
+  ChatArchivedBanner,
   ChatEndedBanner,
   ChatNoticeBanner,
   ChatNoticeMessageBanner,
@@ -36,7 +37,12 @@ import { useChatRooms } from '../hooks/useChatQueries';
 import { useChatRoom } from '../hooks/useChatRoom';
 import { useEndedBannerDismissal } from '../hooks/useEndedBannerDismissal';
 import { useMeasuredHeight } from '../hooks/useMeasuredHeight';
-import { canSendInRoom, ChatMessage, ChatShareResolution } from '../type/chat';
+import { ChatMessage, ChatShareResolution } from '../type/chat';
+import {
+  canSendInChatRoom,
+  formatChatClosesIn,
+  isChatArchived,
+} from '../utils/chatArchive';
 import { chatShareLinkIn } from '../utils/chatShareLink';
 
 const LINK_RESOLVE_DELAY_MS = 400;
@@ -122,10 +128,14 @@ export function ChatRoomScreen({
   const { mutate: togglePush } = useToggleChatPush();
   const { mutate: setNotice } = useSetChatNotice();
   const { mutate: clearNotice } = useClearChatNotice();
-  const ended = room?.challengeEnded ?? false;
+  // 보관 = 종료 + 7일 경과 읽기 전용. 판정은 chatArchive 한 곳에서만 한다.
+  const archived = room ? isChatArchived(room) : false;
+  // 종료 배너는 아직 보낼 수 있는 동안만 — 보관되면 보관 배너가 대신한다.
+  const ended = (room?.challengeEnded ?? false) && !archived;
+  const closesIn = formatChatClosesIn(room?.chatClosesAt);
   const { dismissed, dismiss } = useEndedBannerDismissal(roomId);
 
-  const canSend = (!room || canSendInRoom(room)) && !kickedOut;
+  const canSend = (!room || canSendInChatRoom(room)) && !kickedOut;
 
   // 실시간 공지 통지가 방 목록보다 우선한다. 통지에는 본문이 안 실려 오므로
   // (뷰어별 권한 때문에 서버가 id 만 준다) 내 내역에서 찾고, 없으면 방
@@ -381,8 +391,9 @@ export function ChatRoomScreen({
         {/* 배너는 메시지 **위에 떠 있다**. Column 에서 자리를 차지하면
             리스트를 밀어내 공유 카드가 배너에 잘려 보였다. */}
         <div ref={bannerRef} className="absolute inset-x-0 top-0 z-10">
+          {archived ? <ChatArchivedBanner /> : null}
           {ended && dismissed === false ? (
-            <ChatEndedBanner onDismiss={dismiss} />
+            <ChatEndedBanner onDismiss={dismiss} closesIn={closesIn} />
           ) : null}
           {notice ? (
             <ChatNoticeBanner
@@ -423,6 +434,7 @@ export function ChatRoomScreen({
             fetchNextPage={fetchNextPage}
             topInset={bannerInset}
             canSend={canSend}
+            archived={archived}
             noticeId={notice?.id}
             highlightId={highlightId}
             onRetry={(message) => void retry(message)}
@@ -435,6 +447,9 @@ export function ChatRoomScreen({
         value={draft}
         onChange={setDraft}
         enabled={canSend}
+        disabledPlaceholder={
+          archived ? '보관된 채팅방이에요' : '읽기 전용 채팅방입니다'
+        }
         sending={sending}
         imageFile={imageFile}
         share={share}

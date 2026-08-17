@@ -49,6 +49,8 @@ interface ChatMessageListProps {
   topInset: number;
   /** 이 방에 쓸 수 있는가. 빈 화면 문구가 갈린다. */
   canSend: boolean;
+  /** 보관된 방인가. 빈 화면 문구가 한 번 더 갈린다. */
+  archived?: boolean;
   noticeId?: number | null;
   highlightId?: number | null;
   onRetry(message: ChatMessage): void;
@@ -68,6 +70,7 @@ export function ChatMessageList({
   fetchNextPage,
   topInset,
   canSend,
+  archived = false,
   noticeId,
   highlightId,
   onRetry,
@@ -88,7 +91,9 @@ export function ChatMessageList({
           {/* 못 보내는 방에서 "첫 메시지를 보내 보세요" 는 모순이다. */}
           {canSend
             ? '아직 대화가 없어요.\n첫 메시지를 보내 보세요.'
-            : '아직 대화가 없어요.'}
+            : archived
+              ? '대화 없이 보관된 채팅방이에요.'
+              : '아직 대화가 없어요.'}
         </Text>
       </div>
     );

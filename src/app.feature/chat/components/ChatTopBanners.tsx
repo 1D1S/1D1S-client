@@ -2,7 +2,14 @@
 
 import { Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
-import { ChevronDown, ChevronRight, ChevronUp, PartyPopper, X } from 'lucide-react';
+import {
+  Archive,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  PartyPopper,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 import React, { useState } from 'react';
 
@@ -169,13 +176,17 @@ export function ChatNoticeBanner({
 }
 
 /**
- * 종료된 챌린지 안내. 종료돼도 방은 그대로 쓴다 — 입력창을 잠그지 않는다.
- * 대신 한 번 권하고, 접거나 아주 끄면 물러난다.
+ * 종료된 챌린지 안내. 종료돼도 방은 **일주일 더** 그대로 쓴다 — 그동안은
+ * 입력창을 잠그지 않는다. 대신 언제까지 쓸 수 있는지 알리고, 접거나 아주
+ * 끄면 물러난다.
  */
 export function ChatEndedBanner({
   onDismiss,
+  /** 전송이 막히기까지 남은 기간("6일"·"3시간"). 서버가 안 주면 생략. */
+  closesIn,
 }: {
   onDismiss(): void;
+  closesIn?: string | null;
 }): React.ReactElement {
   const [collapsed, setCollapsed] = useState(false);
   const Chevron = collapsed ? ChevronDown : ChevronUp;
@@ -195,6 +206,11 @@ export function ChatEndedBanner({
           </Text>
           {!collapsed ? (
             <>
+              <Text size="caption3" className="text-gray-600">
+                {closesIn
+                  ? `채팅방은 ${closesIn} 뒤 보관돼요. 그 뒤로는 메시지를 보낼 수 없고 지난 대화만 볼 수 있어요.`
+                  : '채팅방은 종료 후 일주일간 유지돼요. 그 뒤로는 메시지를 보낼 수 없고 지난 대화만 볼 수 있어요.'}
+              </Text>
               <Text size="caption3" className="text-gray-600">
                 새로운 챌린지를 진행해보는건 어떠신가요?
               </Text>
@@ -233,6 +249,31 @@ export function ChatEndedBanner({
         >
           <Chevron className="h-3.5 w-3.5 text-gray-500" />
         </button>
+      </div>
+    </BannerCard>
+  );
+}
+
+/**
+ * 보관된 방 안내. 종료 후 일주일이 지나 전송이 잠긴 상태다.
+ *
+ * 종료 배너와 달리 끌 수 없다 — 왜 입력창이 잠겼는지 설명하는 유일한
+ * 자리라, 끄면 사용자는 고장으로 읽는다.
+ */
+export function ChatArchivedBanner(): React.ReactElement {
+  return (
+    <BannerCard>
+      <div className="flex items-start gap-2 px-3.5 py-3">
+        <Archive className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gray-500" />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <Text size="caption2" weight="bold" className="text-gray-800">
+            보관된 채팅방이에요
+          </Text>
+          <Text size="caption3" className="text-gray-600">
+            챌린지 종료 후 일주일이 지나 더는 메시지를 보낼 수 없어요. 지난
+            대화는 계속 볼 수 있어요.
+          </Text>
+        </div>
       </div>
     </BannerCard>
   );

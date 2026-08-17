@@ -1,6 +1,6 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { FilterChip, Text } from '@1d1s/design-system';
 import EmptyState from '@component/EmptyState';
 import { SubPageShell } from '@component/layout/SubPageShell';
 import { Skeleton } from '@component/Skeleton';
@@ -9,12 +9,13 @@ import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { ChatRoomListItem } from '../components/ChatRoomListItem';
 import { useToggleChatPush } from '../hooks/useChatMutations';
 import { useChatRooms } from '../hooks/useChatQueries';
 import { ChatRoom } from '../type/chat';
+import { isChatArchived } from '../utils/chatArchive';
 
 function ListSkeleton(): React.ReactElement {
   return (
@@ -38,8 +39,17 @@ function ListSkeleton(): React.ReactElement {
   );
 }
 
+const FILTERS = [
+  { value: 'all', label: '전체' },
+  { value: 'active', label: '진행 중' },
+  { value: 'archived', label: '아카이브' },
+] as const;
+
+type ChatRoomFilter = (typeof FILTERS)[number]['value'];
+
 export function ChatRoomListScreen(): React.ReactElement {
   const handleBack = useSafeBack('/');
+  const [filter, setFilter] = useState<ChatRoomFilter>('all');
   const { data, isLoading, isError, refetch } = useChatRooms();
   // 재조회 중에도 값이 있으면 목록을 그대로 둔다. isLoading 만 보면 갱신될
   // 때마다 스켈레톤으로 갔다 돌아와 리스트 전체가 페이드된다.
@@ -59,7 +69,18 @@ export function ChatRoomListScreen(): React.ReactElement {
     );
   };
 
-  const rooms = data?.rooms ?? [];
+  const allRooms = data?.rooms ?? [];
+  // ponytail: 지금은 클라에서 거른다 — 방 목록은 참여 중인 그룹 챌린지 수만큼
+  // 이라 한 화면에 다 온다. 서버가 목록 아카이브 필터를 열면 이 두 줄이
+  // queryKey 파라미터로 바뀐다.
+  const rooms = allRooms.filter((room) => {
+    if (filter === 'all') {
+      return true;
+    }
+    return isChatArchived(room) === (filter === 'archived');
+  });
+  // 보관된 방이 하나도 없으면 필터 자체가 군더더기다.
+  const hasArchived = allRooms.some((room) => isChatArchived(room));
 
   return (
     <SubPageShell
@@ -84,22 +105,51 @@ export function ChatRoomListScreen(): React.ReactElement {
             </Text>
           </button>
         </div>
-      ) : rooms.length === 0 ? (
-        <EmptyState
-          variant="challenge"
-          title="참여 중인 그룹 채팅이 없어요"
-          description="그룹 챌린지에 참여하면 채팅방이 열려요."
-        />
       ) : (
-        // 카드 사이 간격이 구분 역할을 하므로 divider 를 두지 않는다.
-        <div className="flex flex-col gap-2.5">
-          {rooms.map((room) => (
-            <ChatRoomListItem
-              key={room.roomId}
-              room={room}
-              onToggleNotification={handleToggle}
+        <div className="flex flex-col gap-3">
+          {hasArchived ? (
+            <div className="flex items-center gap-2">
+              {FILTERS.map((option) => (
+                <FilterChip
+                  key={option.value}
+                  size="sm"
+                  active={filter === option.value}
+                  onClick={() => setFilter(option.value)}
+                >
+                  {option.label}
+                </FilterChip>
+              ))}
+            </div>
+          ) : null}
+
+          {rooms.length === 0 ? (
+            <EmptyState
+              variant="challenge"
+              title={
+                filter === 'archived'
+                  ? '보관된 채팅방이 없어요'
+                  : allRooms.length === 0
+                    ? '참여 중인 그룹 채팅이 없어요'
+                    : '진행 중인 채팅방이 없어요'
+              }
+              description={
+                allRooms.length === 0
+                  ? '그룹 챌린지에 참여하면 채팅방이 열려요.'
+                  : undefined
+              }
             />
-          ))}
+          ) : (
+            // 카드 사이 간격이 구분 역할을 하므로 divider 를 두지 않는다.
+            <div className="flex flex-col gap-2.5">
+              {rooms.map((room) => (
+                <ChatRoomListItem
+                  key={room.roomId}
+                  room={room}
+                  onToggleNotification={handleToggle}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </SubPageShell>

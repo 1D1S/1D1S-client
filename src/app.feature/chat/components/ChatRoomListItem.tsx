@@ -7,6 +7,7 @@ import Link from 'next/link';
 import React from 'react';
 
 import { canSendInRoom, ChatRoom } from '../type/chat';
+import { isChatArchived } from '../utils/chatArchive';
 import { formatRoomTime, roomPreview } from '../utils/chatFormat';
 import { ChatRoomThumbnail } from './ChatRoomThumbnail';
 
@@ -51,7 +52,12 @@ function RoomChip({
 }
 
 function StateChip({ room }: { room: ChatRoom }): React.ReactElement | null {
-  // 종료와 읽기 전용은 다르다 — 종료돼도 방은 그대로 쓴다. 둘은 배타다.
+  // 셋은 배타다. 아카이브는 이미 "종료 + 읽기 전용" 이라, 셋을 나란히
+  // 세우면 같은 사실을 세 번 말하게 된다.
+  if (isChatArchived(room)) {
+    return <RoomChip label="아카이브됨" tone="state" />;
+  }
+  // 종료와 읽기 전용은 다르다 — 종료 후 일주일은 그대로 쓸 수 있다.
   if (room.challengeEnded) {
     return <RoomChip label="종료" tone="state" />;
   }
@@ -72,6 +78,7 @@ export function ChatRoomListItem({
 }: ChatRoomListItemProps): React.ReactElement {
   const unread = room.unreadCount;
   const BellIcon = room.pushEnabled ? Bell : BellOff;
+  const archived = isChatArchived(room);
 
   return (
     <div
@@ -79,9 +86,12 @@ export function ChatRoomListItem({
         'relative flex items-center gap-3 rounded-2xl border px-3.5 py-3',
         'transition-colors',
         // 안 읽은 방은 살짝 물들여 눈에 띄게 한다. 그림자는 쓰지 않는다.
-        unread > 0
+        unread > 0 && !archived
           ? 'bg-main-100 border-main-200'
-          : 'border-gray-200 bg-white hover:bg-gray-50'
+          : 'border-gray-200 bg-white hover:bg-gray-50',
+        // 보관된 방은 한 단계 물러나 보이게 한다. 내용은 그대로 읽을 수
+        // 있으므로 아주 흐리게 만들지는 않는다.
+        archived && 'opacity-60'
       )}
     >
       {/* 카드 전체가 링크지만 종 버튼은 그 위에 따로 얹는다 — 링크 안에

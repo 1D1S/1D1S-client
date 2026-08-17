@@ -92,8 +92,10 @@ function ShareAttachment({
 interface ChatComposerProps {
   value: string;
   onChange(value: string): void;
-  /** 방과 내 멤버십이 모두 ACTIVE 일 때만 열린다. */
+  /** 방·멤버십이 ACTIVE 이고 보관되지 않았을 때만 열린다. */
   enabled: boolean;
+  /** 잠긴 이유를 입력창이 직접 말한다(읽기 전용 / 보관). */
+  disabledPlaceholder?: string;
   sending: boolean;
   imageFile: File | null;
   share: ChatShareResolution | null;
@@ -106,6 +108,7 @@ export function ChatComposer({
   value,
   onChange,
   enabled,
+  disabledPlaceholder = '읽기 전용 채팅방입니다',
   sending,
   imageFile,
   share,
@@ -177,7 +180,7 @@ export function ChatComposer({
               }
             }
           }}
-          placeholder={enabled ? '메시지를 입력하세요' : '읽기 전용 채팅방입니다'}
+          placeholder={enabled ? '메시지를 입력하세요' : disabledPlaceholder}
           className={cn(
             'max-h-[120px] min-h-10 flex-1 resize-none rounded-[20px]',
             'bg-gray-100 px-3.5 py-2.5 leading-normal text-gray-900',
