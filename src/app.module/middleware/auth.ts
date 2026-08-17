@@ -22,6 +22,7 @@ const PROTECTED_ROUTES: ProtectedRoute[] = [
   { pattern: /^\/challenge\/create\/?$/, type: 'login-redirect' },
   { pattern: /^\/mypage(\/.*)?$/, type: 'login-redirect' },
   { pattern: /^\/notification\/?$/, type: 'login-redirect' },
+  { pattern: /^\/chat(\/.*)?$/, type: 'login-redirect' },
 ];
 
 export interface AuthCheckResult {
