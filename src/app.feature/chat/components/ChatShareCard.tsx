@@ -12,7 +12,14 @@ import { ChatRoomThumbnail } from './ChatRoomThumbnail';
 
 // 공유 카드와 링크 미리보기의 폭. 둘이 제각각이면 말풍선 줄이 들쭉날쭉해
 // 보인다 — 한 값을 같이 쓴다.
-const CARD_CLASS = 'w-[232px] overflow-hidden rounded-[10px] border';
+//
+// `max-w-full` 이 핵심이다. 232px 고정만 두면 좁은 화면에서 말풍선
+// 콘텐츠 폭(= 최대 80% 에서 시각 라벨과 좌우 패딩을 뺀 값)보다 카드가
+// 넓어지는데, 말풍선이 `overflow-hidden` 이라 **오른쪽이 잘린 채** 그려진다
+// (모바일에서 카드가 한쪽으로 쏠려 보이던 원인). 232px 는 이제 상한이고,
+// 자리가 모자라면 카드가 말풍선에 맞춰 줄어든다.
+const CARD_CLASS =
+  'w-[232px] max-w-full min-w-0 overflow-hidden rounded-[10px] border';
 
 /**
  * 공유 카드. 볼 수 없는 대상이면 눌리지 않는다 — 보낼 땐 공개였던 일지가
@@ -118,7 +125,7 @@ export function ChatLinkPreviewCard({
           src={image}
           alt=""
           loading="lazy"
-          className="h-[116px] w-full object-cover"
+          className="h-[116px] w-full object-cover object-center"
         />
       ) : null}
       <div className="flex flex-col gap-1 p-2.5">

@@ -134,7 +134,14 @@ export function ChatComposer({
   const canSend = enabled && !sending && hasContent;
 
   return (
-    <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-2">
+    <div
+      className={cn(
+        'shrink-0 border-t border-gray-200 bg-white px-4 pt-2',
+        // 홈 인디케이터 영역만큼 아래를 더 띄운다. 없는 기기에서는 0 이라
+        // 기존 여백 그대로다.
+        'pb-[calc(0.5rem+env(safe-area-inset-bottom))]'
+      )}
+    >
       {imageFile ? (
         <div className="pb-2">
           <ImageAttachment file={imageFile} onRemove={onRemoveAttachment} />

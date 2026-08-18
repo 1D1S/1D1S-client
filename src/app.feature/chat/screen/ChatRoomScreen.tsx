@@ -344,7 +344,19 @@ export function ChatRoomScreen({
   };
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-[760px] flex-col bg-gray-50">
+    // 높이를 **여기서 확정한다**. `h-full` 로 두면 부모(AppLayoutShell 의
+    // main)가 `min-h-screen` 기반 auto 높이라 퍼센트가 해석되지 않아 채팅
+    // 화면이 콘텐츠 높이로 늘어나고, 그러면 내부 리스트 대신 **페이지가**
+    // 스크롤되면서 헤더가 같이 밀려 올라갔다(헤더가 안 붙어 보이던 원인).
+    // 100dvh 는 모바일 사파리 주소창 높이 변화까지 따라간다.
+    // 데스크톱(lg)에는 글로벌 TopNav(62px)가 위에 있어 그만큼 뺀다 — 채팅
+    // 라우트는 바텀 네비도, 뒤로가기 바도 없다.
+    <div
+      className={cn(
+        'mx-auto flex w-full max-w-[760px] flex-col bg-gray-50',
+        'h-[100dvh] lg:h-[calc(100dvh-62px)]'
+      )}
+    >
       <header
         className={cn(
           'flex shrink-0 items-center gap-1 border-b border-gray-200',
@@ -456,6 +468,7 @@ export function ChatRoomScreen({
         )}
       </div>
 
+      {/* 홈 인디케이터가 있는 기기에서 입력창이 가려지지 않게. */}
       <ChatComposer
         value={draft}
         onChange={setDraft}
