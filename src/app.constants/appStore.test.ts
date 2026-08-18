@@ -38,5 +38,6 @@ describe('스토어 좌표', () => {
   it('iTunes Lookup 으로 확인한 실제 앱을 가리킨다', () => {
     expect(APP_STORE_URL).toContain('id6793538373');
     expect(PLAY_STORE_URL).toContain('id=com.onedayonestreak.app');
+    expect(PLAY_STORE_URL).toContain('hl=ko');
   });
 });

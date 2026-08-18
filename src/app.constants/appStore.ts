@@ -9,8 +9,10 @@ export const APP_PACKAGE_NAME = 'com.onedayonestreak.app';
 /** App Store trackId. */
 export const APP_STORE_ID = '6793538373';
 
+// hl=ko 로 한국어 스토어 페이지를 고정한다. 기기 언어가 무엇이든 국내
+// 사용자가 보는 문구를 맞추기 위한 것이고, 링크 동작에는 영향이 없다.
 export const PLAY_STORE_URL =
-  `https://play.google.com/store/apps/details?id=${APP_PACKAGE_NAME}`;
+  `https://play.google.com/store/apps/details?id=${APP_PACKAGE_NAME}&hl=ko`;
 
 export const APP_STORE_URL =
   `https://apps.apple.com/kr/app/1d1s/id${APP_STORE_ID}`;
