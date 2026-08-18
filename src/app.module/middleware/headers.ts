@@ -7,8 +7,9 @@ import { NextResponse } from 'next/server';
  * - Cache-Control: public, max-age=3600
  *
  * @param res NextResponse
+ * @param pathname 요청 경로. 캐시 정책 예외 판정에만 쓴다.
  */
-export function headersMiddleware(res: NextResponse): void {
+export function headersMiddleware(res: NextResponse, pathname = ''): void {
   const envUrls = [
     process.env.NEXT_PUBLIC_ODOS_API_URL,
     process.env.NEXT_PUBLIC_ODOS_IMAGE_URL,
@@ -85,5 +86,13 @@ export function headersMiddleware(res: NextResponse): void {
   // no-cache 는 "캐시하되 매번 재검증" — ETag/304 로 전송량은 그대로 아끼면서
   // 신선도는 항상 보장된다. 정적 에셋(/_next/static)은 matcher 가 제외하므로
   // 영향 없다.
+  //
+  // 예외: `/.well-known/*` 은 HTML 문서가 아니라 Apple·Google 검증기가
+  // 주기적으로 가져가는 기계용 JSON 이다. 개인화될 일이 없고, 매번 재검증을
+  // 강요하면 그 CDN 들이 원본을 계속 두드린다. 라우트 핸들러가 스스로
+  // 선언한 값을 그대로 살린다.
+  if (pathname.startsWith('/.well-known/')) {
+    return;
+  }
   res.headers.set('Cache-Control', 'private, no-cache');
 }

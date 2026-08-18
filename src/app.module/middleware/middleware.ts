@@ -55,7 +55,7 @@ export async function proxy(req: NextRequest): Promise<NextResponse> {
     : NextResponse.next();
 
   applyRefreshedCookies(response, auth.setCookies);
-  headersMiddleware(response);
+  headersMiddleware(response, req.nextUrl.pathname);
 
   // 7. 응답 시간 로깅
   console.log(`Response Time: ${Date.now() - start}ms`);
