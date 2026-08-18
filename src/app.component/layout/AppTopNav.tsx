@@ -5,6 +5,7 @@ import { ChallengeTrophyIcon } from '@component/ChallengeTrophyIcon';
 import FadeInImage from '@component/FadeInImage';
 import { ProfileAlertBadge } from '@component/ProfileAlertBadge';
 import { Skeleton } from '@component/Skeleton';
+import { ChatEntryButton } from '@feature/chat/components/ChatEntryButton';
 import { cn } from '@module/utils/cn';
 import {
   buildLoginUrl,
@@ -120,6 +121,8 @@ export default function AppTopNav({
       </nav>
 
       <div className="ml-auto flex items-center gap-2">
+        <ChatEntryButton />
+
         <Link
           href="/notification"
           aria-label="알림"

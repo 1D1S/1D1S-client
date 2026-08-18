@@ -8,6 +8,7 @@ import '@/app.styles/pretendard-subset.css';
 
 import AppLayoutShell from '@component/layout/AppLayoutShell';
 import ScrollToTop from '@component/layout/ScrollToTop';
+import { APP_STORE_ID } from '@constants/appStore';
 import {
   DEFAULT_OG_IMAGE_PATH,
   OG_IMAGE_HEIGHT,
@@ -46,7 +47,7 @@ export const metadata: Metadata = {
   // AASA 배선 후 경로별 딥링크가 필요해지면, 미들웨어에서 x-pathname 을
   // 요청 헤더로 넣고 이 값을 generateMetadata 로 바꾸면 된다.
   itunes: {
-    appId: '6793538373',
+    appId: APP_STORE_ID,
     appArgument: SITE_URL.toString(),
   },
   icons: {

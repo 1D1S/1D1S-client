@@ -1,0 +1,161 @@
+'use client';
+
+import { Text } from '@1d1s/design-system';
+import { useInViewObserver } from '@module/hooks/useInViewObserver';
+import { cn } from '@module/utils/cn';
+import React, { useEffect } from 'react';
+
+import { ChatMessage } from '../type/chat';
+import { formatDateDivider, isSameChatDay } from '../utils/chatFormat';
+import { ChatMessageBubble } from './ChatMessageBubble';
+
+/** 시스템 안내. 대화가 아니라 표시이므로 가운데 칩으로 그린다. */
+function SystemChip({ text }: { text: string }): React.ReactElement {
+  return (
+    <div className="flex justify-center py-1.5">
+      <span className="bg-main-200 rounded-full px-3 py-1.5">
+        <Text
+          size="caption3"
+          weight="medium"
+          className="text-main-800 text-center"
+        >
+          {text}
+        </Text>
+      </span>
+    </div>
+  );
+}
+
+function DateDivider({ value }: { value: string }): React.ReactElement {
+  return (
+    <div className="flex justify-center pt-1 pb-3">
+      <span className="rounded-full bg-gray-100 px-3 py-1">
+        <Text size="caption3" weight="medium" className="text-gray-600">
+          {formatDateDivider(value)}
+        </Text>
+      </span>
+    </div>
+  );
+}
+
+interface ChatMessageListProps {
+  messages: ChatMessage[];
+  /** 내 것인지 판정할 닉네임. 웹은 자기 memberId 를 받지 않는다. */
+  myNickname?: string;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage(): void;
+  /** 떠 있는 배너에 가리지 않도록 리스트 위에 비워 둘 높이(실측값). */
+  topInset: number;
+  /** 이 방에 쓸 수 있는가. 빈 화면 문구가 갈린다. */
+  canSend: boolean;
+  /** 보관된 방인가. 빈 화면 문구가 한 번 더 갈린다. */
+  archived?: boolean;
+  noticeId?: number | null;
+  highlightId?: number | null;
+  onRetry(message: ChatMessage): void;
+  onOpenActions(message: ChatMessage): void;
+}
+
+/**
+ * 역방향 리스트. 서버 내역이 최신순으로 오므로 그대로 앞에서부터 그리고,
+ * `flex-col-reverse` 로 뒤집어 새 메시지가 아래에 쌓이게 한다 — 새 메시지가
+ * 와도 스크롤이 튀지 않는다.
+ */
+export function ChatMessageList({
+  messages,
+  myNickname,
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
+  topInset,
+  canSend,
+  archived = false,
+  noticeId,
+  highlightId,
+  onRetry,
+  onOpenActions,
+}: ChatMessageListProps): React.ReactElement {
+  const { ref, inView } = useInViewObserver();
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  if (messages.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center px-6">
+        <Text size="body2" className="text-center whitespace-pre-line text-gray-600">
+          {/* 못 보내는 방에서 "첫 메시지를 보내 보세요" 는 모순이다. */}
+          {canSend
+            ? '아직 대화가 없어요.\n첫 메시지를 보내 보세요.'
+            : archived
+              ? '대화 없이 보관된 채팅방이에요.'
+              : '아직 대화가 없어요.'}
+        </Text>
+      </div>
+    );
+  }
+
+  const children: React.ReactNode[] = [];
+  messages.forEach((message, index) => {
+    // 최신순이라 index+1 이 시간상 **이전** 메시지다.
+    const previous = messages[index + 1];
+    // 날짜가 바뀌는 첫 메시지 위에 구분선. 가장 오래된 메시지도 위에
+    // 아무것도 없으니 날짜를 보여 준다.
+    const startsNewDay =
+      !previous || !isSameChatDay(previous.createdAt, message.createdAt);
+
+    children.push(
+      message.type === 'SYSTEM' ? (
+        <SystemChip key={`m-${message.id}-${index}`} text={message.content ?? ''} />
+      ) : (
+        <ChatMessageBubble
+          key={message.clientMessageId ?? `m-${message.id}-${index}`}
+          message={message}
+          isMine={
+            Boolean(message.pending) ||
+            (Boolean(myNickname) && message.senderNickname === myNickname)
+          }
+          // 날짜가 갈리면 같은 사람이어도 닉네임을 다시 보여 준다.
+          showSender={startsNewDay || previous.senderId !== message.senderId}
+          isNotice={noticeId != null && message.id === noticeId}
+          highlighted={highlightId != null && message.id === highlightId}
+          onRetry={message.failed ? () => onRetry(message) : undefined}
+          onOpenActions={onOpenActions}
+        />
+      )
+    );
+
+    if (startsNewDay) {
+      // flex-col-reverse 라 DOM 상 뒤에 둔 것이 화면에서는 위에 온다.
+      children.push(
+        <DateDivider key={`d-${message.id}-${index}`} value={message.createdAt} />
+      );
+    }
+  });
+
+  return (
+    <div
+      className={cn(
+        'flex h-full flex-col-reverse overflow-y-auto overscroll-contain',
+        'px-4 pb-3'
+      )}
+      style={{ paddingTop: topInset + 12 }}
+    >
+      {children}
+      {hasNextPage ? (
+        <div ref={ref} className="flex justify-center py-4">
+          <span
+            className={cn(
+              'h-4 w-4 animate-spin rounded-full border-2',
+              'border-gray-300 border-t-transparent'
+            )}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}

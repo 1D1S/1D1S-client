@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@1d1s/design-system';
+import { AppInstallPrompt } from '@feature/install/components/AppInstallPrompt';
 import { usePhoneNumberMissing } from '@feature/member/hooks/usePhoneNumberMissing';
 import { BrowserPermissionPrompt } from '@feature/notification/components/BrowserPermissionPrompt';
 import VoteFloatingScreen from '@feature/vote/screen/VoteFloatingScreen';
@@ -39,6 +40,8 @@ const RIGHT_RAIL_HIDDEN_ROUTES = [
   '/mypage',
   '/challenge/create',
   '/notification',
+  // 채팅은 화면 높이를 꽉 쓰는 단일 패널이라 레일과 나란히 두면 좁아진다.
+  '/chat',
   '/terms',
   '/privacy',
   '/install',
@@ -296,6 +299,10 @@ export default function AppLayoutShell({
       ) : null}
 
       {!isLoginPage && !isNativeApp ? <BrowserPermissionPrompt /> : null}
+      {/* 모바일 웹으로 들어온 사용자에게만 앱을 권한다. 스스로 데스크톱·
+          네이티브 웹뷰·홈 화면 PWA 를 걸러내므로 여기서는 조건을 겹치지
+          않는다(가시성 규칙이 두 곳에 흩어지면 한쪽만 바뀐다). */}
+      <AppInstallPrompt isNativeApp={isNativeAppFromServer} />
       <VoteFloatingScreen
         enabled={isLoggedIn && !isLoginPage && isVoteWidgetRoute}
         hasBottomNav={showBottomNav && !isNativeApp}

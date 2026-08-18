@@ -1,3 +1,4 @@
+import { closeChatSocket } from '@feature/chat/socket/chatSocket';
 import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import { clearCachedSidebar } from '@feature/member/hooks/useMemberQueries';
 import { beginLogoutSuppression } from '@module/api/errorNotify';
@@ -119,6 +120,10 @@ export function useLogout(): UseMutationResult<LogoutResponse, Error, void> {
       queryClient.removeQueries();
       // 영속된 RQ 캐시(localStorage)도 비운다 — 개인 데이터 잔존 방지.
       purgePersistedQueries();
+      // 채팅 소켓은 쿠키로 인증된 연결이라 로그아웃과 함께 끊는다. 안 끊으면
+      // 탭을 닫을 때까지 살아 있고, 서버의 동시 접속 한도(CHAT-015) 자리도
+      // 계속 차지한다.
+      closeChatSocket();
     },
     mutationFn: () => authApi.logout(),
     // 로그아웃 POST 는 best-effort 다. 실패해도(앱 네트워크/네이티브 경로에서
