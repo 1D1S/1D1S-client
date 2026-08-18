@@ -706,6 +706,15 @@ export function ChallengeDetailScreen({
           {summary.challengeType === 'OFFICIAL' ? (
             <OfficialChallengeGuideBanner />
           ) : null}
+          {/* 채팅방 진입은 히어로 바로 아래에 둔다. 우측 레일에 두면
+              모바일(1열)에서 탭 콘텐츠 전부 뒤로 밀려, 페이지 맨 끝까지
+              스크롤해야 보였다 — 사실상 없는 버튼이었다. */}
+          <ChallengeChatEntry
+            challengeId={challengeId}
+            enabled={isParticipating && isGroupChallenge}
+            className="mb-4"
+          />
+
           <div
             className={cn(
               'grid grid-cols-1 gap-4',
@@ -965,11 +974,6 @@ export function ChallengeDetailScreen({
                   isLikePending={isActionLoading}
                 />
               </div>
-
-              <ChallengeChatEntry
-                challengeId={challengeId}
-                enabled={isParticipating && isGroupChallenge}
-              />
 
               {isParticipating ? (
                 <button

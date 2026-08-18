@@ -46,7 +46,10 @@ export function ChatRoomThumbnail({
           src={resolved}
           alt=""
           loading="lazy"
-          className="h-full w-full object-cover"
+          // 비율이 제각각인 원본을 자리에 맞춰 가운데 기준으로 채운다.
+          // object-center 는 기본값이지만, "왜 잘리는가" 가 의도된 동작임을
+          // 남겨 둔다.
+          className="h-full w-full object-cover object-center"
         />
       </div>
     );

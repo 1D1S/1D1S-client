@@ -20,10 +20,12 @@ import { useChatRoomForChallenge } from '../hooks/useChatQueries';
 export function ChallengeChatEntry({
   challengeId,
   enabled,
+  className,
 }: {
   challengeId: number;
   /** 참여 중인 그룹 챌린지일 때만 방 목록을 조회한다. */
   enabled: boolean;
+  className?: string;
 }): React.ReactElement | null {
   const nativeChat = useNativeCapability(isNativeChatAvailable);
   const roomId = useChatRoomForChallenge(challengeId, {
@@ -40,7 +42,8 @@ export function ChallengeChatEntry({
       className={cn(
         'flex items-center justify-center gap-1.5 rounded-xl border',
         'border-gray-200 bg-white py-2.5 text-gray-700',
-        'transition-colors hover:bg-gray-50'
+        'transition-colors hover:bg-gray-50',
+        className
       )}
     >
       <MessageCircle className="h-4 w-4" />
