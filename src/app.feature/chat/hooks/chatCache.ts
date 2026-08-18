@@ -131,20 +131,6 @@ export function applyChatLinkPreview(
   );
 }
 
-/** 내역에서 그 메시지를 찾는다. 공지 본문을 세울 때 쓴다. */
-export function findChatMessage(
-  cache: MessageCache,
-  messageId: number
-): ChatMessage | null {
-  for (const page of cache?.pages ?? []) {
-    const found = page.items.find((item) => item.id === messageId);
-    if (found) {
-      return found;
-    }
-  }
-  return null;
-}
-
 /**
  * 끊긴 동안 온 메시지를 채운다. 토픽은 지나간 것을 다시 주지 않으므로
  * 재연결 시 최신 페이지를 받아 **없는 것만** 끼워 넣는다. 쌓인 페이지를
