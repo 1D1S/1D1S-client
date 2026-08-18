@@ -54,12 +54,29 @@ describe('buildAssetLinks', () => {
     );
   });
 
-  it('지금은 업로드 키 지문 하나뿐 — Play 앱 서명 키가 오면 둘이 된다', () => {
+  it('업로드 키와 Play 앱 서명 키 지문을 모두 싣는다', () => {
     const fingerprints = (buildAssetLinks(PROD) as AssetLink[])[0].target
       .sha256_cert_fingerprints;
-    expect(fingerprints).toHaveLength(1);
-    expect(fingerprints[0]).toMatch(/^E3:32:B9:86/);
-    // 빈 슬롯이 그대로 새어 나가지 않는지(null 이 배열에 섞이면 검증 실패).
-    expect(fingerprints.every((value) => typeof value === 'string')).toBe(true);
+    // 하나만 있으면 한쪽 설치 경로가 검증에 실패한다 — 업로드 키만이면
+    // 스토어 설치본이, 앱 서명 키만이면 로컬 APK 가 막힌다.
+    expect(fingerprints).toEqual([
+      'E3:32:B9:86:FD:C8:0E:A0:67:B9:71:A7:E7:A5:3A:FE:8B:BB:92:21:47:6C:70:36:7A:96:D5:C5:54:7C:00:14',
+      '75:DA:D6:EC:C2:12:33:B8:C9:E3:DE:22:46:CE:A3:7F:41:BC:FB:66:99:7D:2A:7B:23:0F:98:9E:F1:78:32:8F',
+    ]);
+  });
+
+  it('지문 형식이 Google 이 받는 대문자 콜론 구분 SHA-256 이다', () => {
+    const fingerprints = (buildAssetLinks(PROD) as AssetLink[])[0].target
+      .sha256_cert_fingerprints;
+    fingerprints.forEach((value) => {
+      // 32바이트 = 콜론으로 이어진 2자리 16진수 32개.
+      expect(value).toMatch(/^([0-9A-F]{2}:){31}[0-9A-F]{2}$/);
+    });
+  });
+
+  it('relation 은 handle_all_urls 한 가지다', () => {
+    expect((buildAssetLinks(PROD) as AssetLink[])[0].relation).toEqual([
+      'delegate_permission/common.handle_all_urls',
+    ]);
   });
 });

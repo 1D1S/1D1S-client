@@ -19,25 +19,27 @@ const DEV_PACKAGE = `${PROD_PACKAGE}.dev`;
  * 업로드 키 SHA-256.
  *
  * 로컬·직접 설치(APK) 빌드는 이 키로 서명된다. Play 로 올린 빌드는 Play 가
- * 다시 서명하므로 이 지문만으로는 **스토어 설치본에서 App Links 검증이
- * 안 된다** — 아래 PLAY_SIGNING_SHA256 이 반드시 함께 들어가야 한다.
+ * 다시 서명하므로 이 지문만으로는 스토어 설치본이 검증되지 않는다 —
+ * 그쪽은 아래 PLAY_SIGNING_SHA256 이 맡는다.
  */
 const UPLOAD_KEY_SHA256 =
   'E3:32:B9:86:FD:C8:0E:A0:67:B9:71:A7:E7:A5:3A:FE:8B:BB:92:21:47:6C:70:36:7A:96:D5:C5:54:7C:00:14';
 
 /**
- * Play 앱 서명 키 SHA-256 — **아직 없다**.
+ * Play 앱 서명 키 SHA-256.
  *
- * Play Console > 설정 > 앱 서명 > "앱 서명 키 인증서" 의 SHA-256 지문이다
- * (업로드 키 인증서가 아니다 — 둘은 다른 값이고, 스토어 설치본을 검증하는
- * 것은 앱 서명 키 쪽이다). 값이 오면 이 상수만 채우면 되고, 아래 목록이
- * 자동으로 두 개가 된다.
+ * Play Console > 설정 > 앱 서명 > "앱 서명 키 인증서" 의 지문이다(업로드 키
+ * 인증서와 **다른 값**이다). Play 는 업로드된 AAB 를 이 키로 다시 서명하므로,
+ * 스토어에서 받은 설치본의 App Links 검증은 이 지문으로 통과한다.
+ *
+ * 둘 다 필요하다 — 업로드 키만 있으면 스토어 설치본이, 앱 서명 키만 있으면
+ * 로컬·사내 배포 APK 가 검증에 실패한다. 지문은 하나만 맞아도 통과하므로
+ * 나란히 두는 것이 정답이다.
  */
-const PLAY_SIGNING_SHA256: string | null = null;
+const PLAY_SIGNING_SHA256 =
+  '75:DA:D6:EC:C2:12:33:B8:C9:E3:DE:22:46:CE:A3:7F:41:BC:FB:66:99:7D:2A:7B:23:0F:98:9E:F1:78:32:8F';
 
-const ANDROID_FINGERPRINTS = [UPLOAD_KEY_SHA256, PLAY_SIGNING_SHA256].filter(
-  (value): value is string => Boolean(value)
-);
+const ANDROID_FINGERPRINTS = [UPLOAD_KEY_SHA256, PLAY_SIGNING_SHA256];
 
 /**
  * 이 호스트가 dev 환경인가.
