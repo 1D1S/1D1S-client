@@ -486,9 +486,20 @@ export function ChallengeDetailScreen({
     );
   };
 
-  // 비공개 챌린지(403)는 비밀번호 검증 모달로 유도한다.
+  // 비공개 챌린지는 비밀번호 검증 모달로 유도한다.
+  //
+  // 서버 403 이 정본이지만, 그것만 믿으면 서버가 200 + 상세를 주는 순간
+  // (SEC-1) 웹이 그대로 본문을 그린다. 응답 안에 이미 판단 재료가 있으므로
+  // 같은 판정을 한 번 더 한다 — 서버가 고쳐진 뒤에는 403 이 먼저 오므로
+  // 이 조건은 조용히 잠들어 있다가 회귀 때만 깨어난다.
+  //
+  // 조건을 `myStatus === 'NONE'`(아예 남이다) 으로 좁힌 것은 의도적이다.
+  // PENDING·ACCEPTED 처럼 애매한 상태까지 클라가 막으면, 서버는 허용하는데
+  // 화면만 잠기는 반대쪽 사고가 난다. 신고된 누출 경로(링크로 직접 진입한
+  // 외부인)는 언제나 NONE 이다.
   const isPrivateChallengeLocked =
-    isError && normalizeApiError(error).status === 403;
+    (isError && normalizeApiError(error).status === 403) ||
+    (summary?.challengeType === 'PRIVATE' && myStatus === 'NONE');
 
   if (showSkeleton) {
     return nativeSkeleton ? null : <ChallengeDetailSkeleton />;
