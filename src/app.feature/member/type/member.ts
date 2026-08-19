@@ -24,6 +24,11 @@ export interface SidebarChallenge {
 }
 
 export interface SidebarData {
+  /**
+   * 내 회원 id. 채팅이 "내 메시지" 와 "메시지별 안 읽은 수" 를 계산하는
+   * 유일한 근거다 — 이 값이 없어 한동안 닉네임 비교로 버텼다.
+   */
+  memberId: number;
   nickname: string;
   profileUrl: string;
   streakCount: number;

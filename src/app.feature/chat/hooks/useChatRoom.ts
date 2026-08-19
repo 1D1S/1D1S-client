@@ -13,6 +13,7 @@ import {
 import {
   ChatMessage,
   ChatMessageType,
+  ChatReadState,
   ChatShareResolution,
   ChatSocketError,
 } from '../type/chat';
@@ -66,6 +67,8 @@ export interface UseChatRoomResult {
   kickedOut: boolean;
   /** 실시간으로 받은 공지 id. null 이면 해제, undefined 면 통지 없음. */
   noticeUpdate: number | null | undefined;
+  /** 방 멤버 전원의 읽음 위치. 메시지별 안 읽은 수를 여기서 센다. */
+  readStates: ChatReadState[];
   sendText(content: string): Promise<void>;
   sendImage(file: File, caption?: string): Promise<void>;
   sendShare(
@@ -84,15 +87,16 @@ export interface UseChatRoomResult {
  */
 export function useChatRoom(
   roomId: number,
-  options: { myNickname?: string; challengeEnded?: boolean } = {}
+  options: { myMemberId?: number; challengeEnded?: boolean } = {}
 ): UseChatRoomResult {
-  const { myNickname, challengeEnded = false } = options;
+  const { myMemberId, challengeEnded = false } = options;
   const queryClient = useQueryClient();
   const query = useChatMessages(roomId);
   const [socketError, setSocketError] = useState<ChatSocketError | null>(null);
   const [noticeUpdate, setNoticeUpdate] = useState<number | null | undefined>(
     undefined
   );
+  const [readStates, setReadStates] = useState<ChatReadState[]>([]);
   /** 서버에 올린 마지막 읽음 위치. 같은 값을 반복해 올리지 않는다. */
   const lastReadSent = useRef(0);
 
@@ -121,6 +125,26 @@ export function useChatRoom(
     },
     [queryClient, roomId]
   );
+
+  // 방에 들어갈 때 읽음 위치를 한 번 받아 둔다. 이후 갱신은 /read 구독이
+  // 한 줄씩 실어 온다 — 여기서 주기적으로 다시 받지 않는다.
+  useEffect(() => {
+    if (!Number.isFinite(roomId) || roomId <= 0) {
+      return undefined;
+    }
+    let alive = true;
+    chatApi
+      .getReadStates(roomId)
+      .then((states) => {
+        if (alive) {
+          setReadStates(states.members);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [roomId]);
 
   // 방을 열었으면 거기까지는 읽은 것이다. 최신순이라 첫 항목이 최신.
   const latestId = messages.find((message) => message.id > 0)?.id ?? 0;
@@ -165,10 +189,41 @@ export function useChatRoom(
         }
         setSocketError(error);
       },
+      onRead: (receipt) => {
+        // 한 줄만 갈아 끼운다. 위치는 앞으로만 간다는 계약이지만, 순서가
+        // 뒤바뀌어 도착해도 뒤로 밀리지 않게 막는다.
+        setReadStates((current) => {
+          const next = current.filter(
+            (state) => state.memberId !== receipt.memberId
+          );
+          const before = current.find(
+            (state) => state.memberId === receipt.memberId
+          );
+          const previous = before?.lastReadMessageId ?? -1;
+          const incoming = receipt.lastReadMessageId ?? -1;
+          next.push(
+            incoming > previous
+              ? {
+                  memberId: receipt.memberId,
+                  lastReadMessageId: receipt.lastReadMessageId,
+                }
+              : (before ?? {
+                  memberId: receipt.memberId,
+                  lastReadMessageId: receipt.lastReadMessageId,
+                })
+          );
+          return next;
+        });
+      },
       onReconnect: () => {
         chatApi
           .getMessages(roomId)
           .then((page) => mergeLatestMessages(queryClient, roomId, page.items))
+          .catch(() => undefined);
+        // 끊긴 동안의 읽음 통지는 다시 오지 않는다 — 위치를 통째로 다시 받는다.
+        chatApi
+          .getReadStates(roomId)
+          .then((states) => setReadStates(states.members))
           .catch(() => undefined);
       },
     };
@@ -182,6 +237,7 @@ export function useChatRoom(
       onMessage: (message) => handlersRef.current.onMessage?.(message),
       onNotice: (update) => handlersRef.current.onNotice?.(update),
       onUpdate: (update) => handlersRef.current.onUpdate?.(update),
+      onRead: (receipt) => handlersRef.current.onRead?.(receipt),
       onError: (error) => handlersRef.current.onError?.(error),
       onReconnect: () => handlersRef.current.onReconnect?.(),
     });
@@ -217,10 +273,10 @@ export function useChatRoom(
     ): ChatMessage => ({
       id: 0,
       roomId,
-      // senderId 는 알 수 없다 — 웹은 자기 memberId 를 받지 않는다. 내 것인지는
-      // 닉네임으로 가른다(가입 시 유일성이 보장된다).
-      senderId: 0,
-      senderNickname: myNickname ?? '',
+      // 내 id 로 채운다 — 화면이 senderId 로 좌우를 가르므로 낙관적
+      // 말풍선도 같은 기준을 따라야 보내는 순간부터 오른쪽에 선다.
+      senderId: myMemberId ?? 0,
+      senderNickname: '',
       clientMessageId,
       type,
       content: content ?? null,
@@ -229,7 +285,7 @@ export function useChatRoom(
       createdAt: new Date().toISOString(),
       pending: true,
     }),
-    [myNickname, roomId]
+    [myMemberId, roomId]
   );
 
   const sendText = useCallback(
@@ -322,6 +378,7 @@ export function useChatRoom(
       : null,
     kickedOut: socketError?.code === 'CHAT-002',
     noticeUpdate,
+    readStates,
     sendText,
     sendImage,
     sendShare,

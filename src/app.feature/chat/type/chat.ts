@@ -125,6 +125,53 @@ export interface ChatShareResolution {
   share?: ChatShare | null;
 }
 
+/** 멤버 한 명의 읽음 위치(ChatReadStatesResponse.MemberReadState). */
+export interface ChatReadState {
+  memberId: number;
+  /** null 이면 이 방에서 한 번도 안 읽었다. */
+  lastReadMessageId?: number | null;
+}
+
+export interface ChatReadStates {
+  roomId: number;
+  /** 지금 방에 있는 멤버 전원. 나간 멤버는 빠진다. */
+  members: ChatReadState[];
+}
+
+/** 읽음 위치가 옮겨졌다는 통지(/topic/chat/rooms/{id}/read). */
+export interface ChatReadReceipt {
+  roomId: number;
+  memberId: number;
+  lastReadMessageId?: number | null;
+}
+
+/**
+ * 이 메시지를 아직 안 읽은 사람 수.
+ *
+ * **발신자는 빼고 센다.** 메시지마다 발신자가 다르므로 서버가 미리 빼 줄 수
+ * 없어(서버 DTO 주석의 계약) 클라가 계산한다. 서버는 멤버별 읽음 "위치"
+ * 하나만 주고, 갱신도 그 한 줄만 온다 — 메시지마다 개수를 실으면 비용도
+ * 크고 찍는 순간 낡는다.
+ *
+ * 0 이면 모두 읽은 것이므로 화면에서 숨긴다.
+ */
+export function unreadCountFor(
+  message: Pick<ChatMessage, 'id' | 'senderId'>,
+  states: ChatReadState[]
+): number {
+  // 아직 서버 id 가 없는 낙관적 말풍선은 셀 기준이 없다.
+  if (message.id <= 0) {
+    return 0;
+  }
+  return states.filter((state) => {
+    if (state.memberId === message.senderId) {
+      return false;
+    }
+    const read = state.lastReadMessageId;
+    return read == null || read < message.id;
+  }).length;
+}
+
 /** 신고 사유(ChatReportReason). 서버 enum 과 순서까지 맞춘다. */
 export const CHAT_REPORT_REASONS = [
   { value: 'SPAM', label: '스팸 / 광고' },

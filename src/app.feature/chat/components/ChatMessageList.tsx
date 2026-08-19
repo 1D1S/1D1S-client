@@ -5,7 +5,7 @@ import { useInViewObserver } from '@module/hooks/useInViewObserver';
 import { cn } from '@module/utils/cn';
 import React, { useEffect } from 'react';
 
-import { ChatMessage } from '../type/chat';
+import { ChatMessage, ChatReadState, unreadCountFor } from '../type/chat';
 import { formatDateDivider, isSameChatDay } from '../utils/chatFormat';
 import { ChatMessageBubble } from './ChatMessageBubble';
 
@@ -40,8 +40,10 @@ function DateDivider({ value }: { value: string }): React.ReactElement {
 
 interface ChatMessageListProps {
   messages: ChatMessage[];
-  /** 내 것인지 판정할 닉네임. 웹은 자기 memberId 를 받지 않는다. */
-  myNickname?: string;
+  /** 내 회원 id. 좌우 정렬과 안 읽은 수 계산이 모두 이 값을 기준으로 한다. */
+  myMemberId?: number;
+  /** 방 멤버 전원의 읽음 위치. */
+  readStates: ChatReadState[];
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   fetchNextPage(): void;
@@ -64,7 +66,8 @@ interface ChatMessageListProps {
  */
 export function ChatMessageList({
   messages,
-  myNickname,
+  myMemberId,
+  readStates,
   hasNextPage,
   isFetchingNextPage,
   fetchNextPage,
@@ -115,10 +118,8 @@ export function ChatMessageList({
         <ChatMessageBubble
           key={message.clientMessageId ?? `m-${message.id}-${index}`}
           message={message}
-          isMine={
-            Boolean(message.pending) ||
-            (Boolean(myNickname) && message.senderNickname === myNickname)
-          }
+          isMine={message.senderId === myMemberId}
+          unread={unreadCountFor(message, readStates)}
           // 날짜가 갈리면 같은 사람이어도 닉네임을 다시 보여 준다.
           showSender={startsNewDay || previous.senderId !== message.senderId}
           isNotice={noticeId != null && message.id === noticeId}
