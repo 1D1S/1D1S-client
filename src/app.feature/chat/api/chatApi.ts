@@ -6,6 +6,7 @@ import {
   ChatImagePresign,
   ChatMessage,
   ChatMessagePage,
+  ChatReportRequest,
   ChatRoomList,
   ChatSendRequest,
   ChatShareResolution,
@@ -106,6 +107,21 @@ export const chatApi = {
   ): Promise<ChatMessage> =>
     requestData<ChatMessage, ChatSendRequest>(apiClient, {
       url: `/chat/rooms/${roomId}/messages`,
+      method: 'POST',
+      data,
+    }),
+
+  /**
+   * 메시지 신고. 서버는 접수만 하고(PENDING) 메시지를 곧바로 가리지 않는다 —
+   * 숨김(HIDDEN)은 관리자가 신고를 승인했을 때만 일어난다. 그래서 화면도
+   * 신고 직후에 말풍선을 바꾸지 않는다.
+   */
+  reportMessage: async (
+    messageId: number,
+    data: ChatReportRequest
+  ): Promise<void> =>
+    requestData<void, ChatReportRequest>(apiClient, {
+      url: `/chat/messages/${messageId}/reports`,
       method: 'POST',
       data,
     }),

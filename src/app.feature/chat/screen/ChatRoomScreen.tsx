@@ -16,6 +16,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { chatApi, chatImageContentType } from '../api/chatApi';
 import { ChatComposer } from '../components/ChatComposer';
 import { ChatMessageList } from '../components/ChatMessageList';
+import { ChatReportSheet } from '../components/ChatReportSheet';
 import { ChatSharePickerSheet } from '../components/ChatSharePickerSheet';
 import {
   ChatMessageActionsSheet,
@@ -33,6 +34,7 @@ import {
 import { CHAT_QUERY_KEYS } from '../consts/queryKeys';
 import {
   useClearChatNotice,
+  useReportChatMessage,
   useSetChatNotice,
   useToggleChatPush,
 } from '../hooks/useChatMutations';
@@ -88,6 +90,7 @@ export function ChatRoomScreen({
   const { data: sidebar } = useSidebar();
   const { data: roomList } = useChatRooms();
   const room = roomList?.rooms.find((item) => item.roomId === roomId);
+  const myNickname = sidebar?.nickname;
 
   const {
     messages,
@@ -103,7 +106,7 @@ export function ChatRoomScreen({
     sendShare,
     retry,
   } = useChatRoom(roomId, {
-    myNickname: sidebar?.nickname,
+    myNickname,
     challengeEnded: room?.challengeEnded,
   });
 
@@ -123,6 +126,8 @@ export function ChatRoomScreen({
   const [actions, setActions] = useState<ChatMessageActionsState | null>(null);
   const [actionTarget, setActionTarget] = useState<ChatMessage | null>(null);
   const [highlightId, setHighlightId] = useState<number | null>(null);
+  /** 신고 시트를 연 메시지. null 이면 닫혀 있다. */
+  const [reportTarget, setReportTarget] = useState<number | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** 이미 물어본 링크. 같은 글을 다시 물어보지 않는다. */
@@ -132,6 +137,8 @@ export function ChatRoomScreen({
   const { mutate: togglePush } = useToggleChatPush();
   const { mutate: setNotice } = useSetChatNotice();
   const { mutate: clearNotice } = useClearChatNotice();
+  const { mutate: reportMessage, isPending: isReporting } =
+    useReportChatMessage();
   // 보관 = 종료 + 7일 경과 읽기 전용. 판정은 chatArchive 한 곳에서만 한다.
   const archived = room ? isChatArchived(room) : false;
   // 종료 배너는 아직 보낼 수 있는 동안만 — 보관되면 보관 배너가 대신한다.
@@ -291,7 +298,12 @@ export function ChatRoomScreen({
     }
     const text = message.content?.trim() ?? '';
     const canEditNotice = room?.myRole === 'HOST';
-    if (!text && !canEditNotice) {
+    // 웹은 자기 memberId 를 못 받아 닉네임으로 내 것을 가른다. 서버가
+    // memberId 를 내려주면 senderId 비교로 바꾼다(같은 선행조건을
+    // 메시지별 안읽음 수와 공유한다).
+    const isMine = Boolean(myNickname) && message.senderNickname === myNickname;
+    const canReport = !isMine;
+    if (!text && !canEditNotice && !canReport) {
       return;
     }
     setActionTarget(message);
@@ -299,6 +311,7 @@ export function ChatRoomScreen({
       text,
       canEditNotice,
       isNotice: notice?.id === message.id,
+      canReport,
     });
   };
 
@@ -453,7 +466,7 @@ export function ChatRoomScreen({
         ) : (
           <ChatMessageList
             messages={messages}
-            myNickname={sidebar?.nickname}
+            myNickname={myNickname}
             hasNextPage={hasNextPage}
             isFetchingNextPage={isFetchingNextPage}
             fetchNextPage={fetchNextPage}
@@ -532,6 +545,44 @@ export function ChatRoomScreen({
             .catch(() => toast.error('복사하지 못했습니다.'));
         }}
         onToggleNotice={handleToggleNotice}
+        onReport={() => {
+          if (actionTarget) {
+            setReportTarget(actionTarget.id);
+          }
+        }}
+      />
+      <ChatReportSheet
+        messageId={reportTarget}
+        isPending={isReporting}
+        onOpenChange={(open) => {
+          if (!open) {
+            setReportTarget(null);
+          }
+        }}
+        onSubmit={(messageId, data) =>
+          reportMessage(
+            { messageId, data },
+            {
+              onSuccess: () => {
+                setReportTarget(null);
+                toast.success('신고가 접수되었습니다.');
+              },
+              onError: (error) => {
+                const code = getApiErrorCode(error);
+                if (code === 'CHAT-010') {
+                  setReportTarget(null);
+                  toast.info('이미 신고한 메시지예요.');
+                  return;
+                }
+                toast.error(
+                  code === 'CHAT-013'
+                    ? '신고가 몰렸어요. 잠시 후 다시 시도해 주세요.'
+                    : '신고하지 못했습니다.'
+                );
+              },
+            }
+          )
+        }
       />
     </div>
   );
