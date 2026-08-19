@@ -58,17 +58,6 @@ export function resolveAppleAppId(host: string): string {
   return `${APPLE_TEAM_ID}.${isDevHost(host) ? DEV_PACKAGE : PROD_PACKAGE}`;
 }
 
-/**
- * 앱이 등록한 커스텀 URL 스킴(iOS `APP_URL_SCHEME`, Android `appAuthScheme`).
- *
- * 원래는 OAuth 콜백용이지만 iOS 는 스킴을 **앱 단위로** 등록하므로
- * `onedayonestreak://` 만으로 앱이 앞으로 나온다 — "앱이 깔려 있는가" 를
- * JS 로 알 수 없는 iOS 에서 유일하게 쓸 수 있는 신호다.
- */
-export function resolveAppScheme(host: string): string {
-  return isDevHost(host) ? 'onedayonestreakdev' : 'onedayonestreak';
-}
-
 /** Android App Links 용 패키지명. */
 export function resolveAndroidPackage(host: string): string {
   return isDevHost(host) ? DEV_PACKAGE : PROD_PACKAGE;
