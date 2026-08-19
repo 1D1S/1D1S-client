@@ -178,6 +178,31 @@ export function unreadCountFor(
   }).length;
 }
 
+/**
+ * 한 멤버의 읽음 위치를 앞으로만 옮긴다.
+ *
+ * 위치는 앞으로만 간다는 계약이지만, 통지가 순서를 바꿔 도착하거나 내가
+ * 낙관적으로 올린 값보다 낮은 브로드캐스트가 뒤늦게 와도 **뒤로 밀리지
+ * 않아야** 한다 — 밀리면 이미 사라진 안읽음 숫자가 되살아난다.
+ */
+export function advanceReadState(
+  states: ChatReadState[],
+  next: ChatReadState
+): ChatReadState[] {
+  const before = states.find((state) => state.memberId === next.memberId);
+  if (!before) {
+    return [...states, next];
+  }
+  const previous = before.lastReadMessageId ?? -1;
+  const incoming = next.lastReadMessageId ?? -1;
+  if (incoming <= previous) {
+    return states;
+  }
+  return states.map((state) =>
+    state.memberId === next.memberId ? next : state
+  );
+}
+
 /** 신고 사유(ChatReportReason). 서버 enum 과 순서까지 맞춘다. */
 export const CHAT_REPORT_REASONS = [
   { value: 'SPAM', label: '스팸 / 광고' },

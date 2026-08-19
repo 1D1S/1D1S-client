@@ -11,6 +11,7 @@ import {
   subscribeChatRoom,
 } from '../socket/chatSocket';
 import {
+  advanceReadState,
   ChatMessage,
   ChatMessageType,
   ChatReadState,
@@ -105,6 +106,13 @@ export function useChatRoom(
     [query.data]
   );
 
+  /**
+   * 읽음 위치를 서버에 올린다.
+   *
+   * **내 위치는 서버가 받아들이는 대로 화면에도 반영한다.** 예전에는
+   * 되쏘는 `/read` 브로드캐스트만 기다렸는데, 그게 늦거나 유실되면 내가
+   * 보고 있는 메시지에 내 안읽음 표시가 그대로 남는다.
+   */
   const markRead = useCallback(
     (messageId: number) => {
       if (messageId <= 0 || messageId <= lastReadSent.current) {
@@ -113,9 +121,22 @@ export function useChatRoom(
       lastReadSent.current = messageId;
       chatApi
         .markRead(roomId, messageId)
-        .then(() =>
-          queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.rooms() })
-        )
+        .then(() => {
+          // 서버가 받아들인 뒤에 내 위치를 화면에도 반영한다. 되쏘는
+          // 브로드캐스트를 기다리지 않는다 — 그게 늦거나 유실되면 내가
+          // 보고 있는 메시지에 내 안읽음 표시가 그대로 남는다.
+          if (myMemberId != null) {
+            setReadStates((current) =>
+              advanceReadState(current, {
+                memberId: myMemberId,
+                lastReadMessageId: messageId,
+              })
+            );
+          }
+          return queryClient.invalidateQueries({
+            queryKey: CHAT_QUERY_KEYS.rooms(),
+          });
+        })
         .catch(() => {
           // 실패하면 다음 메시지에서 다시 시도할 수 있게 되돌린다.
           if (lastReadSent.current === messageId) {
@@ -123,7 +144,7 @@ export function useChatRoom(
           }
         });
     },
-    [queryClient, roomId]
+    [myMemberId, queryClient, roomId]
   );
 
   // 방에 들어갈 때 읽음 위치를 한 번 받아 둔다. 이후 갱신은 /read 구독이
@@ -148,8 +169,34 @@ export function useChatRoom(
 
   // 방을 열었으면 거기까지는 읽은 것이다. 최신순이라 첫 항목이 최신.
   const latestId = messages.find((message) => message.id > 0)?.id ?? 0;
+
+  /**
+   * 읽음을 올리는 시점은 셋이다.
+   *
+   *   ① 방에 들어왔을 때          — 아래 effect 의 첫 실행
+   *   ② 방을 연 채 새 메시지 도착 — latestId 가 올라가며 다시 실행
+   *   ③ 창으로 돌아왔을 때        — 아래 focus/visibility 구독
+   *
+   * ②가 핵심이다. 이게 없으면 상대가 방을 보고 있어도 안읽음이 그대로
+   * 남는다 — 들어올 때 한 번 올린 위치에서 멈추기 때문이다. 스크롤
+   * 위치까지 따지지는 않는다. 방이 열려 있으면 읽은 것으로 본다.
+   */
   useEffect(() => {
     markRead(latestId);
+  }, [latestId, markRead]);
+
+  useEffect(() => {
+    const markLatest = (): void => {
+      if (!document.hidden) {
+        markRead(latestId);
+      }
+    };
+    window.addEventListener('focus', markLatest);
+    document.addEventListener('visibilitychange', markLatest);
+    return () => {
+      window.removeEventListener('focus', markLatest);
+      document.removeEventListener('visibilitychange', markLatest);
+    };
   }, [latestId, markRead]);
 
   // 실시간 콜백은 매 렌더 바뀌지만 구독은 방마다 한 번만 건다. 최신 콜백을
@@ -190,30 +237,12 @@ export function useChatRoom(
         setSocketError(error);
       },
       onRead: (receipt) => {
-        // 한 줄만 갈아 끼운다. 위치는 앞으로만 간다는 계약이지만, 순서가
-        // 뒤바뀌어 도착해도 뒤로 밀리지 않게 막는다.
-        setReadStates((current) => {
-          const next = current.filter(
-            (state) => state.memberId !== receipt.memberId
-          );
-          const before = current.find(
-            (state) => state.memberId === receipt.memberId
-          );
-          const previous = before?.lastReadMessageId ?? -1;
-          const incoming = receipt.lastReadMessageId ?? -1;
-          next.push(
-            incoming > previous
-              ? {
-                  memberId: receipt.memberId,
-                  lastReadMessageId: receipt.lastReadMessageId,
-                }
-              : (before ?? {
-                  memberId: receipt.memberId,
-                  lastReadMessageId: receipt.lastReadMessageId,
-                })
-          );
-          return next;
-        });
+        setReadStates((current) =>
+          advanceReadState(current, {
+            memberId: receipt.memberId,
+            lastReadMessageId: receipt.lastReadMessageId,
+          })
+        );
       },
       onReconnect: () => {
         chatApi
