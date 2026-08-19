@@ -1,6 +1,6 @@
 'use client';
 
-import { FilterChip, Text } from '@1d1s/design-system';
+import { Text } from '@1d1s/design-system';
 import EmptyState from '@component/EmptyState';
 import { SubPageShell } from '@component/layout/SubPageShell';
 import { Skeleton } from '@component/Skeleton';
@@ -12,6 +12,7 @@ import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React, { useState } from 'react';
 
 import { ChatRoomListItem } from '../components/ChatRoomListItem';
+import { ChatSegmentedTabs } from '../components/ChatSegmentedTabs';
 import { useToggleChatPush } from '../hooks/useChatMutations';
 import { useChatRooms } from '../hooks/useChatQueries';
 import { ChatRoom } from '../type/chat';
@@ -23,12 +24,9 @@ function ListSkeleton(): React.ReactElement {
       {Array.from({ length: 5 }).map((_, index) => (
         <div
           key={index}
-          className={cn(
-            'flex items-center gap-3 rounded-2xl border border-gray-200',
-            'px-3.5 py-3'
-          )}
+          className={cn('flex items-center gap-3 rounded-2xl px-2 py-3')}
         >
-          <Skeleton shape="rounded" className="h-11 w-[66px] rounded-[10px]" />
+          <Skeleton shape="rounded" className="h-13 w-13 rounded-2xl" />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Skeleton shape="text" className="h-3.5 w-[55%]" />
             <Skeleton shape="text" className="h-3 w-[75%]" />
@@ -104,18 +102,14 @@ export function ChatRoomListScreen(): React.ReactElement {
       ) : (
         <div className="flex flex-col gap-3">
           {showFilters ? (
-            <div className="flex items-center gap-2">
-              {FILTERS.map((option) => (
-                <FilterChip
-                  key={option.key}
-                  size="sm"
-                  active={filterKey === option.key}
-                  onClick={() => setFilterKey(option.key)}
-                >
-                  {option.label}
-                </FilterChip>
-              ))}
-            </div>
+            <ChatSegmentedTabs<ChatRoomFilterKey>
+              options={FILTERS.map((option) => ({
+                value: option.key,
+                label: option.label,
+              }))}
+              value={filterKey}
+              onChange={setFilterKey}
+            />
           ) : null}
 
           {rooms.length === 0 ? (
@@ -135,8 +129,9 @@ export function ChatRoomListScreen(): React.ReactElement {
               }
             />
           ) : (
-            // 카드 사이 간격이 구분 역할을 하므로 divider 를 두지 않는다.
-            <div className="flex flex-col gap-2.5">
+            // 행이 스스로 패딩을 갖고, 안 읽은 방만 배경으로 구분된다 —
+            // 카드 테두리도 divider 도 없다(디자인).
+            <div className="flex flex-col gap-0.5">
               {rooms.map((room) => (
                 <ChatRoomListItem
                   key={room.roomId}

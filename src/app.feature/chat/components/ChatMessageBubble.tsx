@@ -27,7 +27,9 @@ import {
 function ImageBody({ message }: { message: ChatMessage }): React.ReactElement {
   const [broken, setBroken] = useState(false);
   const url = resolveDiaryImageUrl(message.imageUrl);
-  const frame = 'h-[200px] w-[200px] overflow-hidden rounded-[10px] bg-gray-100';
+  // 디자인 .pic — 190x122 가로 프레임. 비율이 제각각인 원본을 가운데
+  // 기준으로 채운다(원본은 눌러서 본다).
+  const frame = 'h-[122px] w-[190px] overflow-hidden rounded-2xl bg-gray-100';
 
   // 아직 업로드 중이면 URL 이 없다 — 자리를 잡아 두고 진행 표시.
   if (!url) {
@@ -69,7 +71,7 @@ function ImageBody({ message }: { message: ChatMessage }): React.ReactElement {
         src={url}
         alt="채팅 사진"
         loading="lazy"
-        className="h-full w-full object-cover"
+        className="h-full w-full object-cover object-center"
         onError={() => setBroken(true)}
       />
     </button>
@@ -125,11 +127,28 @@ export function ChatBubbleBody({
   }
 
   const caption = message.content?.trim();
+  /**
+   * 사진·공유 카드는 스스로 배경과 테두리를 갖는다. 그래서 말풍선을
+   * 투명하게 두는데(디자인이 걷어내려던 오렌지 띠), 그러면 캡션 글씨가
+   * 배경 없이 뜬다 — 캡션은 **자기 말풍선**을 하나 더 갖는다.
+   */
   const withCaption = (card: React.ReactNode): React.ReactElement => (
-    <div className="flex flex-col items-start">
+    <div
+      className={cn(
+        'flex flex-col gap-1.5',
+        isMine ? 'items-end' : 'items-start'
+      )}
+    >
       {card}
       {caption ? (
-        <div className="px-1 pt-1.5">
+        <div
+          className={cn(
+            'max-w-full rounded-2xl px-3.5 py-2.5',
+            isMine
+              ? 'bg-main-800 text-white'
+              : 'border border-gray-200 bg-white'
+          )}
+        >
           <BubbleText value={caption} isMine={isMine} />
         </div>
       ) : null}
@@ -139,7 +158,7 @@ export function ChatBubbleBody({
   switch (message.type) {
     case 'CHALLENGE_SHARE':
     case 'DIARY_SHARE':
-      return withCaption(<ChatShareCard message={message} />);
+      return withCaption(<ChatShareCard message={message} isMine={isMine} />);
     case 'IMAGE':
       return withCaption(<ImageBody message={message} />);
     case 'TEXT': {
@@ -161,19 +180,17 @@ export function ChatBubbleBody({
   }
 }
 
-/**
- * 안 읽은 수 색 — 카톡 관행대로 노랑. 브랜드 주황과 붙어 있어도 구분된다.
- */
-const UNREAD_COLOR = 'text-[#f5a623]';
-
 function TimeLabel({
   message,
   unread,
+  showTime,
   onRetry,
 }: {
   message: ChatMessage;
   /** 이 메시지를 아직 안 읽은 사람 수. 0 이면 안 그린다. */
   unread: number;
+  /** 연속 발화는 **마지막 말풍선에만** 시간을 붙인다(디자인). */
+  showTime: boolean;
   onRetry?(): void;
 }): React.ReactElement {
   if (message.failed) {
@@ -194,15 +211,25 @@ function TimeLabel({
     );
   }
   return (
-    <div className="flex flex-col items-end">
+    <div className="flex flex-col items-end gap-px pb-0.5">
       {unread > 0 ? (
-        <Text size="caption4" weight="extrabold" className={UNREAD_COLOR}>
+        <Text
+          size="caption4"
+          weight="extrabold"
+          className="text-main-800 leading-none"
+        >
           {unread}
         </Text>
       ) : null}
-      <Text size="caption4" className="text-gray-500">
-        {message.pending ? '보내는 중' : formatBubbleTime(message.createdAt)}
-      </Text>
+      {message.pending ? (
+        <Text size="caption4" className="text-gray-400">
+          보내는 중
+        </Text>
+      ) : showTime ? (
+        <Text size="caption4" className="whitespace-nowrap text-gray-400">
+          {formatBubbleTime(message.createdAt)}
+        </Text>
+      ) : null}
     </div>
   );
 }
@@ -232,11 +259,20 @@ function useLongPress(onLongPress: () => void): {
   };
 }
 
+/**
+ * 연속 발화 안에서의 위치. 말풍선 꼬리를 어디에 붙일지가 이걸로 정해진다 —
+ * 같은 사람이 잇달아 보낸 묶음은 **처음(상대) / 마지막(나)** 한 군데만
+ * 각이 서고 나머지는 둥글다.
+ */
+export type ChatBubbleGroupPosition = 'single' | 'top' | 'mid' | 'last';
+
 interface ChatMessageBubbleProps {
   message: ChatMessage;
   isMine: boolean;
   /** 연속 발화의 첫 줄에만 닉네임을 보여 준다. */
   showSender: boolean;
+  /** 연속 발화 묶음에서의 위치. */
+  group?: ChatBubbleGroupPosition;
   /** 공지로 지정된 메시지는 본문에서도 구분되게 한다. */
   isNotice: boolean;
   /** 원본 이동 직후 잠깐 강조. */
@@ -252,13 +288,25 @@ export function ChatMessageBubble({
   isMine,
   showSender,
   isNotice,
+  group = 'single',
   highlighted = false,
   unread = 0,
   onRetry,
   onOpenActions,
 }: ChatMessageBubbleProps): React.ReactElement {
   const hidden = message.status === 'HIDDEN';
-  const isImage = message.type === 'IMAGE' && !hidden;
+  // 사진·공유 카드는 자기 테두리/라운드를 갖는다 — 말풍선 패딩을 주면
+  // 카드 둘레에 색 띠가 한 겹 더 생긴다(디자인이 걷어내려던 그 테두리).
+  const isMedia =
+    !hidden &&
+    (message.type === 'IMAGE' ||
+      message.type === 'CHALLENGE_SHARE' ||
+      message.type === 'DIARY_SHARE');
+  // 꼬리는 묶음의 바깥쪽 한 군데에만 붙는다. 상대는 맨 위, 나는 맨 아래다.
+  const tail = isMine
+    ? group === 'single' || group === 'last'
+    : group === 'single' || group === 'top';
+  const showTime = group === 'single' || group === 'last';
 
   // 롱프레스(모바일) 와 우클릭(데스크톱) 이 같은 메뉴를 연다.
   const longPress = useLongPress(() => onOpenActions?.(message));
@@ -280,12 +328,17 @@ export function ChatMessageBubble({
       ) : null}
       <div
         className={cn(
-          'flex max-w-[80%] items-end gap-1.5',
+          'flex max-w-[86%] items-end gap-1.5',
           isMine ? 'flex-row' : 'flex-row-reverse'
         )}
       >
         <div className="shrink-0 pb-0.5">
-          <TimeLabel message={message} unread={unread} onRetry={onRetry} />
+          <TimeLabel
+            message={message}
+            unread={unread}
+            showTime={showTime}
+            onRetry={onRetry}
+          />
         </div>
         <div
           role={onOpenActions ? 'button' : undefined}
@@ -299,14 +352,19 @@ export function ChatMessageBubble({
           }}
           {...longPress}
           className={cn(
-            'min-w-0 overflow-hidden rounded-[14px]',
-            isImage ? 'p-1.5' : 'px-3 py-2.5',
+            'min-w-0 overflow-hidden rounded-2xl',
+            isMedia ? 'p-0' : 'px-3.5 py-2.5',
             hidden
               ? 'bg-gray-100'
-              : isMine
-                ? 'bg-main-600'
-                : 'border border-gray-200 bg-white',
-            isNotice && 'border-main-600 border-[1.5px]',
+              : isMedia
+                ? // 카드가 스스로 배경·테두리를 갖는다.
+                  'bg-transparent'
+                : isMine
+                  ? 'bg-main-800 text-white'
+                  : 'border border-gray-200 bg-white',
+            // 꼬리 — 상대는 왼쪽 위, 나는 오른쪽 아래 모서리를 각지게.
+            tail && (isMine ? 'rounded-br-[4px]' : 'rounded-tl-[4px]'),
+            isNotice && 'border-main-800 border-[1.5px]',
             message.pending && 'opacity-70'
           )}
         >

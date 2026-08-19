@@ -3,7 +3,7 @@
 import { Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { resolveDiaryImageUrl } from '@module/utils/diaryImageUrl';
-import { BookOpen, Flag, Youtube } from 'lucide-react';
+import { BookOpen, ChevronRight, Flag, Youtube } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
@@ -18,8 +18,10 @@ import { ChatRoomThumbnail } from './ChatRoomThumbnail';
 // 넓어지는데, 말풍선이 `overflow-hidden` 이라 **오른쪽이 잘린 채** 그려진다
 // (모바일에서 카드가 한쪽으로 쏠려 보이던 원인). 232px 는 이제 상한이고,
 // 자리가 모자라면 카드가 말풍선에 맞춰 줄어든다.
-const CARD_CLASS =
-  'w-[232px] max-w-full min-w-0 overflow-hidden rounded-[10px] border';
+const CARD_CLASS = cn(
+  'w-[250px] max-w-full min-w-0 overflow-hidden rounded-[18px] border',
+  'shadow-[0_2px_8px_-4px_rgba(0,0,0,0.10)]'
+);
 
 /**
  * 공유 카드. 볼 수 없는 대상이면 눌리지 않는다 — 보낼 땐 공개였던 일지가
@@ -27,8 +29,10 @@ const CARD_CLASS =
  */
 export function ChatShareCard({
   message,
+  isMine = false,
 }: {
   message: ChatMessage;
+  isMine?: boolean;
 }): React.ReactElement {
   const share = message.share;
   const path = chatSharePath(message);
@@ -44,21 +48,29 @@ export function ChatShareCard({
           url={share?.thumbnailUrl}
           category={share?.category}
           fallback={isDiary ? 'diary' : 'challenge'}
-          className="h-[116px] w-full rounded-none"
+          className="h-[118px] w-full rounded-none"
         />
       ) : null}
-      <div className="flex flex-col gap-1 p-2.5">
-        <div className="text-main-700 flex items-center gap-1">
-          <TypeIcon className="h-3 w-3" />
-          <Text size="caption4" weight="extrabold" className="text-inherit">
-            {isDiary ? '일지' : '챌린지'}
-          </Text>
-        </div>
-        <Text
-          size="caption2"
-          weight="bold"
+      <div className="flex flex-col px-3.5 pt-3 pb-3">
+        <span
           className={cn(
-            'line-clamp-2',
+            'inline-flex w-fit items-center gap-1 rounded-md px-1.5 py-[3px]',
+            'text-[10.5px] leading-none font-extrabold',
+            // 일지는 브랜드, 챌린지는 보라 — 두 종류를 색으로 먼저 가른다.
+            isDiary
+              ? 'bg-main-200 text-main-900'
+              : 'bg-[#ede7f6] text-[#5e35b1]'
+          )}
+        >
+          <TypeIcon className="h-3 w-3" />
+          {isDiary ? '일지' : '챌린지'}
+        </span>
+        <Text
+          as="h4"
+          size="caption1"
+          weight="extrabold"
+          className={cn(
+            'mt-[7px] line-clamp-2 tracking-[-0.02em]',
             available ? 'text-gray-900' : 'text-gray-500'
           )}
         >
@@ -73,15 +85,35 @@ export function ChatShareCard({
               : '볼 수 없는 게시물이에요'}
         </Text>
         {available && share?.subtitle ? (
-          <Text size="caption3" className="truncate text-gray-500">
+          <Text size="caption2" className="mt-1 line-clamp-2 text-gray-600">
             {share.subtitle}
           </Text>
         ) : null}
       </div>
+      {/* 하단 CTA — 카드가 눌러서 가는 것임을 말로 밝힌다(디자인). */}
+      {available ? (
+        <div
+          className={cn(
+            'text-main-800 flex items-center justify-between border-t',
+            'border-gray-100 px-3.5 py-2.5'
+          )}
+        >
+          <Text size="caption2" weight="extrabold" className="text-inherit">
+            {isDiary ? '일지 보기' : '챌린지 보기'}
+          </Text>
+          <ChevronRight className="h-3.5 w-3.5" />
+        </div>
+      ) : null}
     </>
   );
 
-  const className = cn(CARD_CLASS, 'border-gray-200 bg-white text-left');
+  // 내 메시지에서만 테두리에 브랜드 기를 준다 — 예전처럼 카드를 통째로
+  // 오렌지로 감싸지 않는다(디자인이 지목한 그 테두리).
+  const className = cn(
+    CARD_CLASS,
+    'bg-white text-left',
+    isMine ? 'border-main-400' : 'border-gray-200'
+  );
   if (!path) {
     return <div className={className}>{body}</div>;
   }
@@ -125,7 +157,7 @@ export function ChatLinkPreviewCard({
           src={image}
           alt=""
           loading="lazy"
-          className="h-[116px] w-full object-cover object-center"
+          className="h-[118px] w-full object-cover object-center"
         />
       ) : null}
       <div className="flex flex-col gap-1 p-2.5">

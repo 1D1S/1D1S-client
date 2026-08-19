@@ -55,7 +55,12 @@ function ShareAttachment({
   const TypeIcon = isDiary ? BookOpen : Flag;
   const url = resolveDiaryImageUrl(share.share?.thumbnailUrl);
   return (
-    <div className="flex items-center gap-2.5 rounded-xl bg-gray-100 p-2">
+    <div
+      className={cn(
+        'mb-2 flex items-center gap-2.5 rounded-[14px] border',
+        'border-gray-200 bg-gray-50 px-2.5 py-2'
+      )}
+    >
       <div
         className={cn(
           'flex h-10 w-10 shrink-0 items-center justify-center',
@@ -81,9 +86,12 @@ function ShareAttachment({
         type="button"
         aria-label="공유 빼기"
         onClick={onRemove}
-        className="flex h-6 w-6 shrink-0 items-center justify-center"
+        className={cn(
+          'flex h-[26px] w-[26px] shrink-0 items-center justify-center',
+          'rounded-full bg-gray-200 text-gray-600'
+        )}
       >
-        <X className="h-3.5 w-3.5 text-gray-600" />
+        <X className="h-3.5 w-3.5" />
       </button>
     </div>
   );
@@ -136,20 +144,16 @@ export function ChatComposer({
   return (
     <div
       className={cn(
-        'shrink-0 border-t border-gray-200 bg-white px-4 pt-2',
+        'shrink-0 border-t border-gray-100 bg-white px-3 pt-[9px]',
         // 홈 인디케이터 영역만큼 아래를 더 띄운다. 없는 기기에서는 0 이라
         // 기존 여백 그대로다.
         'pb-[calc(0.5rem+env(safe-area-inset-bottom))]'
       )}
     >
       {imageFile ? (
-        <div className="pb-2">
-          <ImageAttachment file={imageFile} onRemove={onRemoveAttachment} />
-        </div>
+        <ImageAttachment file={imageFile} onRemove={onRemoveAttachment} />
       ) : share ? (
-        <div className="pb-2">
-          <ShareAttachment share={share} onRemove={onRemoveAttachment} />
-        </div>
+        <ShareAttachment share={share} onRemove={onRemoveAttachment} />
       ) : null}
 
       <div className="flex items-end gap-2">
@@ -159,8 +163,11 @@ export function ChatComposer({
           disabled={!enabled}
           onClick={onOpenShareMenu}
           className={cn(
-            'flex h-10 w-9 shrink-0 items-center justify-center',
-            enabled ? 'text-gray-700' : 'text-gray-400'
+            'flex h-[38px] w-[38px] shrink-0 items-center justify-center',
+            'rounded-full transition-colors',
+            enabled
+              ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-gray-100 text-gray-400'
           )}
         >
           <Plus className="h-5 w-5" />
@@ -189,10 +196,10 @@ export function ChatComposer({
           }}
           placeholder={enabled ? '메시지를 입력하세요' : disabledPlaceholder}
           className={cn(
-            'max-h-[120px] min-h-10 flex-1 resize-none rounded-[20px]',
-            'bg-gray-100 px-3.5 py-2.5 leading-normal text-gray-900',
-            'placeholder:text-gray-500 focus:outline-none',
-            'disabled:cursor-not-allowed'
+            'max-h-[120px] min-h-[38px] flex-1 resize-none rounded-full',
+            'border border-gray-200 bg-gray-50 px-3.5 py-2 text-[13px]',
+            'leading-[22px] text-gray-900 placeholder:text-gray-400',
+            'focus:outline-none disabled:cursor-not-allowed'
           )}
         />
 
@@ -202,12 +209,14 @@ export function ChatComposer({
           disabled={!canSend}
           onClick={onSend}
           className={cn(
-            'flex h-10 w-10 shrink-0 items-center justify-center',
-            'rounded-full text-white transition-colors',
-            canSend ? 'bg-main-600' : 'bg-gray-300'
+            'flex h-[38px] w-[38px] shrink-0 items-center justify-center',
+            'rounded-full transition-colors',
+            canSend
+              ? 'bg-main-800 text-white shadow-[0_4px_12px_-4px_rgba(255,87,34,0.6)]'
+              : 'bg-gray-200 text-gray-400'
           )}
         >
-          <ArrowUp className="h-4.5 w-4.5" />
+          <ArrowUp className="h-[19px] w-[19px]" />
         </button>
       </div>
     </div>

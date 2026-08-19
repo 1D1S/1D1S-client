@@ -7,7 +7,10 @@ import React, { useEffect } from 'react';
 
 import { ChatMessage, ChatReadState, unreadCountFor } from '../type/chat';
 import { formatDateDivider, isSameChatDay } from '../utils/chatFormat';
-import { ChatMessageBubble } from './ChatMessageBubble';
+import {
+  type ChatBubbleGroupPosition,
+  ChatMessageBubble,
+} from './ChatMessageBubble';
 
 /** 시스템 안내. 대화가 아니라 표시이므로 가운데 칩으로 그린다. */
 function SystemChip({ text }: { text: string }): React.ReactElement {
@@ -102,6 +105,23 @@ export function ChatMessageList({
     );
   }
 
+  /**
+   * 두 메시지가 한 묶음인가. 같은 사람이 **같은 날** 잇달아 보낸 것만
+   * 묶는다 — 날짜 구분선이 사이에 들어가면 시각적으로 이미 끊긴다.
+   */
+  const grouped = (
+    one: ChatMessage | undefined,
+    two: ChatMessage | undefined
+  ): boolean =>
+    Boolean(
+      one &&
+        two &&
+        one.type !== 'SYSTEM' &&
+        two.type !== 'SYSTEM' &&
+        one.senderId === two.senderId &&
+        isSameChatDay(one.createdAt, two.createdAt)
+    );
+
   const children: React.ReactNode[] = [];
   messages.forEach((message, index) => {
     // 최신순이라 index+1 이 시간상 **이전** 메시지다.
@@ -110,6 +130,17 @@ export function ChatMessageList({
     // 아무것도 없으니 날짜를 보여 준다.
     const startsNewDay =
       !previous || !isSameChatDay(previous.createdAt, message.createdAt);
+    // 최신순 배열이라 index-1 이 시간상 **다음** 메시지다.
+    const next = messages[index - 1];
+    const hasPrevious = grouped(previous, message);
+    const hasNext = grouped(message, next);
+    const group: ChatBubbleGroupPosition = hasPrevious
+      ? hasNext
+        ? 'mid'
+        : 'last'
+      : hasNext
+        ? 'top'
+        : 'single';
 
     children.push(
       message.type === 'SYSTEM' ? (
@@ -120,8 +151,9 @@ export function ChatMessageList({
           message={message}
           isMine={message.senderId === myMemberId}
           unread={unreadCountFor(message, readStates)}
-          // 날짜가 갈리면 같은 사람이어도 닉네임을 다시 보여 준다.
-          showSender={startsNewDay || previous.senderId !== message.senderId}
+          group={group}
+          // 묶음의 첫 줄에만 닉네임을 보여 준다(날짜가 갈리면 다시).
+          showSender={!hasPrevious}
           isNotice={noticeId != null && message.id === noticeId}
           highlighted={highlightId != null && message.id === highlightId}
           onRetry={message.failed ? () => onRetry(message) : undefined}
