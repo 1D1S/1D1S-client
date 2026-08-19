@@ -2,17 +2,12 @@
 
 import { Icon } from '@1d1s/design-system';
 import { ChatEntryButton } from '@feature/chat/components/ChatEntryButton';
-import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
-import { useUnreadCount } from '@feature/notification/hooks/useNotificationQueries';
+import { NotificationBellButton } from '@feature/notification/components/NotificationBellButton';
 import { cn } from '@module/utils/cn';
 import Link from 'next/link';
 import React from 'react';
 
 export default function HomeMobileHeader(): React.ReactElement {
-  const isLoggedIn = useIsLoggedIn();
-  const { data: unreadData } = useUnreadCount({ enabled: isLoggedIn });
-  const hasUnread = isLoggedIn && (unreadData?.unreadCount ?? 0) > 0;
-
   return (
     <header
       className={cn(
@@ -39,27 +34,7 @@ export default function HomeMobileHeader(): React.ReactElement {
 
       <div className="flex items-center gap-2">
         <ChatEntryButton />
-
-        <Link
-          href="/notification"
-          aria-label="알림"
-          className={cn(
-            'relative flex h-9 w-9 items-center justify-center',
-            'rounded-2 bg-gray-100 text-gray-700',
-            'transition hover:bg-gray-200'
-          )}
-        >
-          <Icon name="Bell" size={16} />
-          {hasUnread ? (
-            <span
-              aria-hidden
-              className={cn(
-                'absolute top-2 right-2 h-1.5 w-1.5',
-                'bg-brand rounded-full'
-              )}
-            />
-          ) : null}
-        </Link>
+        <NotificationBellButton />
       </div>
     </header>
   );

@@ -167,7 +167,7 @@ export default function AppLayoutShell({
   // 인증/사이드바 상태는 별도 hook 으로 묶었다. shell 은 라우트 가시성 판단과
   // 핸들러 안정화에만 집중한다.
   const authState = useAuthLayoutState();
-  const { isLoggedIn, isAuthLoading, hasUnread, sidebarData, railChallenges } =
+  const { isLoggedIn, isAuthLoading, sidebarData, railChallenges } =
     authState;
 
   // 전화번호 미입력 시 프로필 아바타에 경고 배지를 띄운다. 사이드바 응답에는
@@ -250,7 +250,6 @@ export default function AppLayoutShell({
           activeId={activeNavId}
           isLoggedIn={isLoggedIn}
           isAuthLoading={isAuthLoading}
-          hasUnread={hasUnread}
           streakDays={sidebarData?.streakCount ?? 0}
           profileImageUrl={sidebarData?.profileUrl}
           showPhoneBadge={showPhoneBadge}

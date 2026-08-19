@@ -6,6 +6,7 @@ import FadeInImage from '@component/FadeInImage';
 import { ProfileAlertBadge } from '@component/ProfileAlertBadge';
 import { Skeleton } from '@component/Skeleton';
 import { ChatEntryButton } from '@feature/chat/components/ChatEntryButton';
+import { NotificationBellButton } from '@feature/notification/components/NotificationBellButton';
 import { cn } from '@module/utils/cn';
 import {
   buildLoginUrl,
@@ -40,7 +41,6 @@ interface AppTopNavProps {
   activeId: string;
   isLoggedIn: boolean;
   isAuthLoading?: boolean;
-  hasUnread: boolean;
   streakDays: number;
   profileImageUrl?: string;
   showPhoneBadge?: boolean;
@@ -52,7 +52,6 @@ export default function AppTopNav({
   activeId,
   isLoggedIn,
   isAuthLoading = false,
-  hasUnread,
   streakDays,
   profileImageUrl,
   showPhoneBadge = false,
@@ -121,28 +120,10 @@ export default function AppTopNav({
       </nav>
 
       <div className="ml-auto flex items-center gap-2">
+        {/* 둘 다 비로그인이면 스스로 사라진다 — 게스트 헤더에 남는
+            액션은 아래 로그인 진입뿐이다. */}
         <ChatEntryButton />
-
-        <Link
-          href="/notification"
-          aria-label="알림"
-          className={cn(
-            'relative flex h-9 w-9 items-center justify-center',
-            'rounded-2 bg-gray-100 text-gray-700',
-            'transition hover:bg-gray-200'
-          )}
-        >
-          <Icon name="Bell" size={16} />
-          {hasUnread ? (
-            <span
-              aria-hidden
-              className={cn(
-                'absolute top-2 right-2 h-1.5 w-1.5',
-                'bg-brand rounded-full'
-              )}
-            />
-          ) : null}
-        </Link>
+        <NotificationBellButton />
 
         {/*
           태블릿 이하에서만 로그인/아바타 클러스터 노출. 데스크탑은
