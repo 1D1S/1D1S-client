@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ChevronUp,
   PartyPopper,
+  Pin,
   X,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -55,22 +56,30 @@ function BannerCard({
   );
 }
 
-/** 배너 앞머리 태그 — [공지] / [미디어]. */
-function NoticeTag({
-  label,
-  brand = false,
-}: {
-  label: string;
-  brand?: boolean;
-}): React.ReactElement {
+/**
+ * 배너 앞머리 표시 — 공지(핀 + 브랜드 색 글자)와 [미디어] 보조 태그.
+ *
+ * 공지는 디자인의 `.nb` 그대로 **채우지 않고 글자 색만** 브랜드다. 채운
+ * 칩으로 두면 같은 배너 안의 HOST 칩·해제 액션과 무게가 겹쳐 어디를
+ * 봐야 할지 흩어진다.
+ */
+function NoticeLabel(): React.ReactElement {
+  return (
+    <span className="text-main-800 flex shrink-0 items-center gap-[5px]">
+      <Pin className="text-main-900 h-4 w-4" />
+      <Text size="caption4" weight="extrabold" className="text-inherit">
+        공지
+      </Text>
+    </span>
+  );
+}
+
+function NoticeSubTag({ label }: { label: string }): React.ReactElement {
   return (
     <span
       className={cn(
-        'shrink-0 rounded-md px-1.5 py-px text-[11px] leading-5',
-        'font-extrabold',
-        brand
-          ? 'bg-main-800 text-white'
-          : 'border border-gray-200 bg-white text-gray-600'
+        'shrink-0 rounded-md border border-gray-200 bg-white px-1.5',
+        'py-px text-[11px] leading-5 font-extrabold text-gray-600'
       )}
     >
       {label}
@@ -115,14 +124,20 @@ export function ChatNoticeBanner({
     <BannerCard onClick={() => onExpandedChange(!expanded)}>
       <div
         className={cn(
-          'flex gap-1.5 px-3.5 py-3',
-          expanded ? 'items-start' : 'items-center'
+          // 디자인 .notice — padding 10 13, 칸 사이 9(접힘)·7(펼침).
+          'flex px-[13px] py-2.5',
+          expanded ? 'items-start gap-[7px]' : 'items-center gap-[9px]'
         )}
       >
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <div
+          className={cn(
+            'flex min-w-0 flex-1 flex-col',
+            expanded ? 'gap-[7px]' : 'gap-0'
+          )}
+        >
           <div className="flex min-w-0 items-center gap-[9px]">
-            <NoticeTag label="공지" brand />
-            {hasMedia ? <NoticeTag label="미디어" /> : null}
+            <NoticeLabel />
+            {hasMedia ? <NoticeSubTag label="미디어" /> : null}
             {text && !expanded ? (
               <Text
                 size="caption2"
@@ -146,8 +161,8 @@ export function ChatNoticeBanner({
                 </div>
               ) : text ? (
                 <Text
-                  size="caption2"
-                  className="whitespace-pre-wrap text-gray-800"
+                  size="caption3"
+                  className="leading-[1.55] whitespace-pre-wrap text-gray-700"
                 >
                   {text}
                 </Text>
