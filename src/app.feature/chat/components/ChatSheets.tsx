@@ -14,6 +14,7 @@ import {
   ImageIcon,
   Pin,
   PinOff,
+  Siren,
   SquareArrowOutUpRight,
 } from 'lucide-react';
 import React from 'react';
@@ -132,6 +133,8 @@ export interface ChatMessageActionsState {
   /** 호스트만 공지를 걸고 푼다(서버도 403 CHAT-009 로 막는다). */
   canEditNotice: boolean;
   isNotice: boolean;
+  /** 내 메시지는 신고 대상이 아니다. */
+  canReport: boolean;
 }
 
 /** 말풍선 롱프레스·우클릭 메뉴. */
@@ -140,11 +143,13 @@ export function ChatMessageActionsSheet({
   onOpenChange,
   onCopy,
   onToggleNotice,
+  onReport,
 }: {
   state: ChatMessageActionsState | null;
   onOpenChange(open: boolean): void;
   onCopy(text: string): void;
   onToggleNotice(isNotice: boolean): void;
+  onReport(): void;
 }): React.ReactElement {
   const NoticeIcon = state?.isNotice ? PinOff : Pin;
   return (
@@ -170,6 +175,16 @@ export function ChatMessageActionsSheet({
           onClick={() => {
             onOpenChange(false);
             onToggleNotice(state.isNotice);
+          }}
+        />
+      ) : null}
+      {state?.canReport ? (
+        <SheetRow
+          icon={<Siren className="h-5 w-5 text-red-500" />}
+          label="신고하기"
+          onClick={() => {
+            onOpenChange(false);
+            onReport();
           }}
         />
       ) : null}

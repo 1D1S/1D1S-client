@@ -125,6 +125,23 @@ export interface ChatShareResolution {
   share?: ChatShare | null;
 }
 
+/** 신고 사유(ChatReportReason). 서버 enum 과 순서까지 맞춘다. */
+export const CHAT_REPORT_REASONS = [
+  { value: 'SPAM', label: '스팸 / 광고' },
+  { value: 'ABUSE', label: '욕설 / 괴롭힘' },
+  { value: 'SEXUAL', label: '선정적인 내용' },
+  { value: 'HATE', label: '혐오 표현' },
+  { value: 'OTHER', label: '기타 사유' },
+] as const;
+
+export type ChatReportReason = (typeof CHAT_REPORT_REASONS)[number]['value'];
+
+export interface ChatReportRequest {
+  reason: ChatReportReason;
+  /** 서버 @Size(max = 500). 기타 사유일 때만 필수로 받는다. */
+  detail?: string;
+}
+
 export interface ChatSendRequest {
   clientMessageId: string;
   type: ChatMessageType;

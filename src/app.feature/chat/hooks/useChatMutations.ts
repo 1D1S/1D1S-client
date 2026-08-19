@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { chatApi } from '../api/chatApi';
 import { CHAT_QUERY_KEYS } from '../consts/queryKeys';
-import { ChatRoomList } from '../type/chat';
+import { ChatReportRequest, ChatRoomList } from '../type/chat';
 
 /**
  * 방별 푸시 알림 토글 — 낙관적.
@@ -81,5 +81,24 @@ export function useClearChatNotice(): UseMutationResult<
         queryKey: CHAT_QUERY_KEYS.rooms(),
       });
     },
+  });
+}
+
+/**
+ * 메시지 신고. 서버는 접수(PENDING)만 하고 메시지를 곧바로 가리지 않으므로
+ * 캐시를 건드리지 않는다 — 숨김(HIDDEN)은 관리자가 승인했을 때 브로드캐스트/
+ * 재조회로 따라 들어온다.
+ */
+export function useReportChatMessage(): UseMutationResult<
+  void,
+  Error,
+  { messageId: number; data: ChatReportRequest }
+> {
+  return useMutation({
+    mutationFn: ({ messageId, data }) =>
+      chatApi.reportMessage(messageId, data),
+    // 신고 실패는 사유가 갈린다(중복 CHAT-010 / 한도 CHAT-013) — 호출부가
+    // 코드를 보고 문구를 정한다. 전역 토스트가 먼저 끼어들지 않게 한다.
+    meta: { skipGlobalErrorToast: true },
   });
 }
