@@ -6,6 +6,7 @@ import {
   ChatImagePresign,
   ChatMessage,
   ChatMessagePage,
+  ChatReadStates,
   ChatReportRequest,
   ChatRoomList,
   ChatSendRequest,
@@ -124,6 +125,16 @@ export const chatApi = {
       url: `/chat/messages/${messageId}/reports`,
       method: 'POST',
       data,
+    }),
+
+  /**
+   * 방 멤버 전원의 읽음 위치. 방에 들어갈 때 한 번 받아 두고, 이후 갱신은
+   * `/topic/chat/rooms/{id}/read` 구독으로 한 줄씩 받는다.
+   */
+  getReadStates: async (roomId: number): Promise<ChatReadStates> =>
+    requestData<ChatReadStates>(apiClient, {
+      url: `/chat/rooms/${roomId}/read-states`,
+      method: 'GET',
     }),
 
   markRead: async (roomId: number, lastReadMessageId: number): Promise<void> =>

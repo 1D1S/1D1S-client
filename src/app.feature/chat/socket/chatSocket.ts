@@ -6,6 +6,7 @@ import {
   ChatMessage,
   ChatMessageUpdate,
   ChatNoticeUpdate,
+  ChatReadReceipt,
   ChatSocketError,
 } from '../type/chat';
 
@@ -26,6 +27,7 @@ import {
  *   수신  /topic/chat/rooms/{roomId}            본문
  *         /topic/chat/rooms/{roomId}/notice     공지 설정·해제
  *         /topic/chat/rooms/{roomId}/updates    링크 프리뷰 지연 완성
+ *         /topic/chat/rooms/{roomId}/read       읽음 위치 갱신(한 줄)
  *   에러  /user/queue/chat-errors  {code,message} + x-failed-destination
  *
  * 전송은 소켓이 아니라 REST(POST /chat/rooms/{id}/messages)다 — 소켓이 아직
@@ -40,6 +42,8 @@ export interface ChatRoomHandlers {
   onMessage?(message: ChatMessage): void;
   onNotice?(update: ChatNoticeUpdate): void;
   onUpdate?(update: ChatMessageUpdate): void;
+  /** 누군가의 읽음 위치가 옮겨졌다. 그 한 줄만 갈아 끼우면 된다. */
+  onRead?(receipt: ChatReadReceipt): void;
   /** 이 방과 관련된 구독 거절. 방과 무관한 에러는 오지 않는다. */
   onError?(error: ChatSocketError): void;
   /**
@@ -49,9 +53,9 @@ export interface ChatRoomHandlers {
   onReconnect?(): void;
 }
 
-type RoomChannel = '' | '/notice' | '/updates';
+type RoomChannel = '' | '/notice' | '/updates' | '/read';
 
-const ROOM_CHANNELS: RoomChannel[] = ['', '/notice', '/updates'];
+const ROOM_CHANNELS: RoomChannel[] = ['', '/notice', '/updates', '/read'];
 
 const roomListeners = new Map<number, Set<ChatRoomHandlers>>();
 const subscriptions = new Map<string, StompSubscription>();
@@ -145,6 +149,13 @@ function subscribeChannel(roomId: number, channel: RoomChannel): void {
         const update = parseJson<ChatNoticeUpdate>(frame);
         if (update) {
           notifyRoom(roomId, (entry) => entry.onNotice?.(update));
+        }
+        return;
+      }
+      if (channel === '/read') {
+        const receipt = parseJson<ChatReadReceipt>(frame);
+        if (receipt) {
+          notifyRoom(roomId, (entry) => entry.onRead?.(receipt));
         }
         return;
       }

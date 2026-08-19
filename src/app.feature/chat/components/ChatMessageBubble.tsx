@@ -161,11 +161,19 @@ export function ChatBubbleBody({
   }
 }
 
+/**
+ * 안 읽은 수 색 — 카톡 관행대로 노랑. 브랜드 주황과 붙어 있어도 구분된다.
+ */
+const UNREAD_COLOR = 'text-[#f5a623]';
+
 function TimeLabel({
   message,
+  unread,
   onRetry,
 }: {
   message: ChatMessage;
+  /** 이 메시지를 아직 안 읽은 사람 수. 0 이면 안 그린다. */
+  unread: number;
   onRetry?(): void;
 }): React.ReactElement {
   if (message.failed) {
@@ -186,9 +194,16 @@ function TimeLabel({
     );
   }
   return (
-    <Text size="caption4" className="text-gray-500">
-      {message.pending ? '보내는 중' : formatBubbleTime(message.createdAt)}
-    </Text>
+    <div className="flex flex-col items-end">
+      {unread > 0 ? (
+        <Text size="caption4" weight="extrabold" className={UNREAD_COLOR}>
+          {unread}
+        </Text>
+      ) : null}
+      <Text size="caption4" className="text-gray-500">
+        {message.pending ? '보내는 중' : formatBubbleTime(message.createdAt)}
+      </Text>
+    </div>
   );
 }
 
@@ -226,6 +241,8 @@ interface ChatMessageBubbleProps {
   isNotice: boolean;
   /** 원본 이동 직후 잠깐 강조. */
   highlighted?: boolean;
+  /** 이 메시지를 아직 안 읽은 사람 수. */
+  unread?: number;
   onRetry?(): void;
   onOpenActions?(message: ChatMessage): void;
 }
@@ -236,6 +253,7 @@ export function ChatMessageBubble({
   showSender,
   isNotice,
   highlighted = false,
+  unread = 0,
   onRetry,
   onOpenActions,
 }: ChatMessageBubbleProps): React.ReactElement {
@@ -267,7 +285,7 @@ export function ChatMessageBubble({
         )}
       >
         <div className="shrink-0 pb-0.5">
-          <TimeLabel message={message} onRetry={onRetry} />
+          <TimeLabel message={message} unread={unread} onRetry={onRetry} />
         </div>
         <div
           role={onOpenActions ? 'button' : undefined}

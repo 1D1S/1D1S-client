@@ -90,7 +90,10 @@ export function ChatRoomScreen({
   const { data: sidebar } = useSidebar();
   const { data: roomList } = useChatRooms();
   const room = roomList?.rooms.find((item) => item.roomId === roomId);
-  const myNickname = sidebar?.nickname;
+  // 서버가 side-bar 에 memberId 를 싣기 전에는 닉네임 비교로 버텼다.
+  // 이제 내 회원 id 하나로 좌우 정렬·안 읽은 수·신고 가능 여부가 모두
+  // 정해진다.
+  const myMemberId = sidebar?.memberId;
 
   const {
     messages,
@@ -105,8 +108,9 @@ export function ChatRoomScreen({
     sendImage,
     sendShare,
     retry,
+    readStates,
   } = useChatRoom(roomId, {
-    myNickname,
+    myMemberId,
     challengeEnded: room?.challengeEnded,
   });
 
@@ -298,11 +302,8 @@ export function ChatRoomScreen({
     }
     const text = message.content?.trim() ?? '';
     const canEditNotice = room?.myRole === 'HOST';
-    // 웹은 자기 memberId 를 못 받아 닉네임으로 내 것을 가른다. 서버가
-    // memberId 를 내려주면 senderId 비교로 바꾼다(같은 선행조건을
-    // 메시지별 안읽음 수와 공유한다).
-    const isMine = Boolean(myNickname) && message.senderNickname === myNickname;
-    const canReport = !isMine;
+    // 내 메시지는 신고 대상이 아니다.
+    const canReport = message.senderId !== myMemberId;
     if (!text && !canEditNotice && !canReport) {
       return;
     }
@@ -466,7 +467,8 @@ export function ChatRoomScreen({
         ) : (
           <ChatMessageList
             messages={messages}
-            myNickname={myNickname}
+            myMemberId={myMemberId}
+            readStates={readStates}
             hasNextPage={hasNextPage}
             isFetchingNextPage={isFetchingNextPage}
             fetchNextPage={fetchNextPage}
