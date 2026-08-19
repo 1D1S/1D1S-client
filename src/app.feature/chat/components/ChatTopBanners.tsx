@@ -28,9 +28,11 @@ function BannerCard({
   children: React.ReactNode;
   onClick?(): void;
 }): React.ReactElement {
+  // 디자인: main-100 바탕 + main-200 테두리, radius 14. 하드코딩 색을
+  // 걷어내고 토큰으로 되돌린다.
   const className = cn(
-    'border-main-300 mx-3 mt-2.5 mb-0.5 overflow-hidden rounded-2xl',
-    'border bg-[#fff4e5] text-left'
+    'border-main-200 bg-main-100 mx-3 mt-2.5 mb-0.5 overflow-hidden',
+    'rounded-[14px] border text-left'
   );
   if (!onClick) {
     return <div className={className}>{children}</div>;
@@ -64,10 +66,10 @@ function NoticeTag({
   return (
     <span
       className={cn(
-        'shrink-0 rounded-full px-1.5 py-px text-[10px] leading-5',
+        'shrink-0 rounded-md px-1.5 py-px text-[11px] leading-5',
         'font-extrabold',
         brand
-          ? 'bg-main-600 text-white'
+          ? 'bg-main-800 text-white'
           : 'border border-gray-200 bg-white text-gray-600'
       )}
     >
@@ -110,11 +112,15 @@ export function ChatNoticeBanner({
         )}
       >
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <div className="flex min-w-0 items-center gap-1.5">
+          <div className="flex min-w-0 items-center gap-[9px]">
             <NoticeTag label="공지" brand />
             {hasMedia ? <NoticeTag label="미디어" /> : null}
             {text && !expanded ? (
-              <Text size="caption2" className="truncate text-gray-800">
+              <Text
+                size="caption2"
+                weight="semibold"
+                className="min-w-0 flex-1 truncate text-gray-800"
+              >
                 {text.replace(/\n/g, ' ')}
               </Text>
             ) : null}

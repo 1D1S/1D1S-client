@@ -70,7 +70,8 @@ export function isSameChatDay(left: string, right: string): boolean {
 export function roomPreview(room: ChatRoom): string {
   const last = room.lastMessage;
   if (last && last.preview.trim()) {
-    return `${last.senderNickname}: ${last.preview.replace(/\n/g, ' ')}`;
+    // 보낸 사람은 행이 따로 그린다 — 여기서 또 붙이면 "노근 노근: …" 이 된다.
+    return last.preview.replace(/\n/g, ' ');
   }
   const notice = room.notice?.content;
   if (notice && notice.trim()) {

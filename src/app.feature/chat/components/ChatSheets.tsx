@@ -68,7 +68,44 @@ function Sheet({
   );
 }
 
-/** + 버튼 — 무엇을 붙일지 먼저 고른다. */
+/** 첨부 시트의 한 칸 — 아이콘 타일 + 라벨(디자인 .sh). */
+function SheetTile({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick(): void;
+}): React.ReactElement {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex flex-col items-center gap-[7px]"
+    >
+      <span
+        className={cn(
+          'bg-main-200 text-main-900 flex h-[54px] w-[54px] items-center',
+          'justify-center rounded-[18px] transition-colors',
+          'hover:bg-main-300'
+        )}
+      >
+        {icon}
+      </span>
+      <Text size="caption3" weight="bold" className="text-gray-700">
+        {label}
+      </Text>
+    </button>
+  );
+}
+
+/**
+ * + 버튼 — 무엇을 붙일지 먼저 고른다.
+ *
+ * 세로 목록이 아니라 **4열 그리드 타일**이다(디자인). 항목이 셋뿐이라
+ * 목록으로 두면 시트가 세로로 길고 손가락 이동도 멀다.
+ */
 export function ChatShareMenuSheet({
   open,
   onOpenChange,
@@ -83,23 +120,28 @@ export function ChatShareMenuSheet({
     onSelect(kind);
   };
   return (
-    <Sheet open={open} onOpenChange={onOpenChange} title="보낼 것 고르기">
-      <SheetRow
-        icon={<ImageIcon className="h-5 w-5" />}
-        label="사진"
-        onClick={pick('photo')}
-      />
-      <SheetRow
-        icon={<Flag className="h-5 w-5" />}
-        label="챌린지 공유"
-        onClick={pick('challenge')}
-      />
-      <SheetRow
-        icon={<BookOpen className="h-5 w-5" />}
-        label="일지 공유"
-        onClick={pick('diary')}
-      />
-    </Sheet>
+    <BottomSheet open={open} onOpenChange={onOpenChange}>
+      <BottomSheetContent className="px-3 pt-4 pb-5">
+        <BottomSheetTitle className="sr-only">보낼 것 고르기</BottomSheetTitle>
+        <div className="grid grid-cols-4 gap-2.5">
+          <SheetTile
+            icon={<ImageIcon className="h-6 w-6" />}
+            label="사진"
+            onClick={pick('photo')}
+          />
+          <SheetTile
+            icon={<Flag className="h-6 w-6" />}
+            label="챌린지"
+            onClick={pick('challenge')}
+          />
+          <SheetTile
+            icon={<BookOpen className="h-6 w-6" />}
+            label="일지"
+            onClick={pick('diary')}
+          />
+        </div>
+      </BottomSheetContent>
+    </BottomSheet>
   );
 }
 
