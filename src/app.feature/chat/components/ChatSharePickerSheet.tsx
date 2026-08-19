@@ -6,6 +6,7 @@ import {
   BottomSheetTitle,
   Text,
 } from '@1d1s/design-system';
+import { isChallengeEnded } from '@feature/challenge/board/utils/challengePeriod';
 import { useMyDiariesInfinite } from '@feature/diary/board/hooks/useDiaryQueries';
 import { useSidebar } from '@feature/member/hooks/useMemberQueries';
 import { cn } from '@module/utils/cn';
@@ -82,7 +83,12 @@ export function ChatSharePickerSheet({
   const { data: diaryPages, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useMyDiariesInfinite(20);
 
-  const challenges = sidebar?.challengeList ?? [];
+  // 끝난 챌린지는 공유해도 받는 사람이 할 수 있는 게 없다 — 진행 중인
+  // 것만 고르게 한다. 무기한(종료일이 먼 미래)은 진행 중으로 본다:
+  // isChallengeEnded 가 그 규칙을 이미 갖고 있다.
+  const challenges = (sidebar?.challengeList ?? []).filter(
+    (challenge) => !isChallengeEnded(challenge.endDate)
+  );
   const diaries = diaryPages?.pages.flatMap((page) => page.items) ?? [];
   const isChallenge = kind === 'challenge';
   const empty = isChallenge ? challenges.length === 0 : diaries.length === 0;
@@ -123,7 +129,7 @@ export function ChatSharePickerSheet({
             <div className="py-12 text-center">
               <Text size="body2" className="text-gray-500">
                 {isChallenge
-                  ? '참여 중인 챌린지가 없어요.'
+                  ? '진행 중인 챌린지가 없어요.'
                   : '작성한 일지가 없어요.'}
               </Text>
             </div>

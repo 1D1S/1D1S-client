@@ -34,6 +34,9 @@ export function ChatRoomThumbnail({
   const FallbackIcon = fallback === 'diary' ? BookOpen : Flag;
   const wrapper = cn(
     'relative shrink-0 overflow-hidden rounded-[10px] bg-gray-100',
+    // 둥근 모서리 안쪽을 확실히 자른다 — 이미지든 줄무늬 폴백이든
+    // 코너가 테두리 밖으로 삐져나오지 않게(사파리 클리핑 보정).
+    '[transform:translateZ(0)]',
     className
   );
 

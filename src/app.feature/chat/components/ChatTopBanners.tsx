@@ -80,8 +80,15 @@ function NoticeTag({
 
 interface ChatNoticeBannerProps {
   notice: ChatMessage;
-  /** 호스트에게만 해제 버튼을 준다. */
+  /** 호스트에게만 해제 액션을 준다. */
   canEdit: boolean;
+  /**
+   * 펼침 상태는 **밖에서 들고 있다**. 리스트 상단 여백(inset)을 접힘 높이로
+   * 묶어 두려면 화면이 이 상태를 알아야 한다 — 펼칠 때마다 여백이 따라
+   * 늘어나면 대화가 통째로 아래로 밀린다.
+   */
+  expanded: boolean;
+  onExpandedChange(expanded: boolean): void;
   onClear(): void;
   /** 원본이 이미 화면에 있으면 그리로 보낸다. 없으면 버튼을 안 그린다. */
   onJumpToOrigin?(): void;
@@ -91,10 +98,11 @@ interface ChatNoticeBannerProps {
 export function ChatNoticeBanner({
   notice,
   canEdit,
+  expanded,
+  onExpandedChange,
   onClear,
   onJumpToOrigin,
 }: ChatNoticeBannerProps): React.ReactElement {
-  const [expanded, setExpanded] = useState(false);
   const text = notice.content?.trim() ?? '';
   // 사진이든 공유 카드든 "글 말고 뭔가 더 있다" 는 표시가 필요하다.
   const hasMedia =
@@ -104,7 +112,7 @@ export function ChatNoticeBanner({
   const Chevron = expanded ? ChevronUp : ChevronDown;
 
   return (
-    <BannerCard onClick={() => setExpanded((value) => !value)}>
+    <BannerCard onClick={() => onExpandedChange(!expanded)}>
       <div
         className={cn(
           'flex gap-1.5 px-3.5 py-3',
@@ -144,38 +152,46 @@ export function ChatNoticeBanner({
                   {text}
                 </Text>
               ) : null}
-              {onJumpToOrigin ? (
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onJumpToOrigin();
-                  }}
-                  className="text-main-700 flex w-fit items-center gap-0.5 pt-1"
-                >
-                  <Text size="caption3" weight="bold" className="text-inherit">
-                    원본 보기
-                  </Text>
-                  <ChevronRight className="h-3 w-3" />
-                </button>
-              ) : null}
+              <div className="flex items-center gap-3 pt-1">
+                {onJumpToOrigin ? (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onJumpToOrigin();
+                    }}
+                    className="text-main-700 flex w-fit items-center gap-0.5"
+                  >
+                    <Text size="caption3" weight="bold" className="text-inherit">
+                      원본 보기
+                    </Text>
+                    <ChevronRight className="h-3 w-3" />
+                  </button>
+                ) : null}
+                {/* 무엇을 하는 버튼인지 말로 밝힌다. 아이콘만 두면 "배너
+                    닫기" 로 읽혀 공지를 실수로 내리게 된다. */}
+                {canEdit ? (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onClear();
+                    }}
+                    className="flex w-fit items-center gap-1 text-gray-500"
+                  >
+                    <X className="h-3 w-3" />
+                    <Text size="caption3" weight="bold" className="text-inherit">
+                      공지 해제하기
+                    </Text>
+                  </button>
+                ) : null}
+              </div>
             </>
           ) : null}
         </div>
+        {/* 접고 펴는 것은 chevron 하나가 맡는다. X 는 "닫기" 로 읽혀
+            공지 해제와 헷갈렸다 — 해제는 아래 라벨 액션으로 뺐다. */}
         <Chevron className="mt-1 h-3.5 w-3.5 shrink-0 text-gray-500" />
-        {canEdit ? (
-          <button
-            type="button"
-            aria-label="공지 해제"
-            onClick={(event) => {
-              event.stopPropagation();
-              onClear();
-            }}
-            className="flex h-7 w-7 shrink-0 items-center justify-center"
-          >
-            <X className="h-3.5 w-3.5 text-gray-600" />
-          </button>
-        ) : null}
       </div>
     </BannerCard>
   );

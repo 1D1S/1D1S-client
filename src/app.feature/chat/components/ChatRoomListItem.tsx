@@ -114,11 +114,12 @@ export function ChatRoomListItem({
         className="absolute inset-0 z-0 rounded-2xl"
       />
 
-      {/* 52 정사각. 챌린지 대표 이미지는 3:2 라 가운데를 기준으로 잘린다. */}
+      {/* 챌린지 대표 이미지가 3:2 라 그 비율 그대로 둔다 — 정사각으로
+          자르면 좌우가 잘려 무슨 챌린지인지 알아보기 어려웠다. */}
       <ChatRoomThumbnail
         url={room.challengeThumbnailUrl}
         category={room.category}
-        className="pointer-events-none z-[1] h-13 w-13 rounded-2xl"
+        className="pointer-events-none z-[1] h-13 w-[78px] rounded-2xl"
       />
 
       <div className="pointer-events-none z-[1] flex min-w-0 flex-1 flex-col">
@@ -131,6 +132,13 @@ export function ChatRoomListItem({
           >
             {room.challengeTitle}
           </Text>
+          {/* 참여자 수는 **제목 옆**이다. 썸네일 위 배지로 두면 안 읽은
+              수와 생김새가 겹쳐 서로 헷갈린다. */}
+          {room.memberCount != null && room.memberCount > 0 ? (
+            <Text size="caption3" className="shrink-0 text-gray-400">
+              {`${room.memberCount}명`}
+            </Text>
+          ) : null}
           {room.myRole === 'HOST' ? (
             <RoomChip label="HOST" tone="host" />
           ) : null}
