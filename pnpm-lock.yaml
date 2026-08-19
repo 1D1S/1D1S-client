@@ -22,8 +22,8 @@ importers:
   .:
     dependencies:
       '@1d1s/design-system':
-        specifier: ^2.12.0
-        version: 2.12.0(@types/react-dom@19.1.5(@types/react@19.0.12))(@types/react@19.0.12)(next@16.2.10(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        specifier: ^2.12.1
+        version: 2.12.1(@types/react-dom@19.1.5(@types/react@19.0.12))(@types/react@19.0.12)(next@16.2.10(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@hookform/resolvers':
         specifier: ^5.0.1
         version: 5.0.1(react-hook-form@7.55.0(react@19.2.4))
@@ -265,8 +265,8 @@ importers:
 
 packages:
 
-  '@1d1s/design-system@2.12.0':
-    resolution: {integrity: sha512-pRQidxkz/aEz8fW2Zegz9hctOwan6xBPiyVi2GeHi0WJJLcahKHcvB8zOH7a3Lj+KvZ0W0hhcYRceF3SE6KQmQ==}
+  '@1d1s/design-system@2.12.1':
+    resolution: {integrity: sha512-ZzS7vLlcWGWRnNB48BH5wSuUHdNOfXLWTOY7xXFDZ1kO614Hy0HlUe09pM1bNO7G04nmI8aHOTGxv2Ay3uLQ+w==}
     peerDependencies:
       next: ^14.0.0 || ^15.0.0
       react: ^19.0.0
@@ -5150,7 +5150,7 @@ packages:
 
 snapshots:
 
-  '@1d1s/design-system@2.12.0(@types/react-dom@19.1.5(@types/react@19.0.12))(@types/react@19.0.12)(next@16.2.10(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@1d1s/design-system@2.12.1(@types/react-dom@19.1.5(@types/react@19.0.12))(@types/react@19.0.12)(next@16.2.10(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@radix-ui/react-accordion': 1.2.16(@types/react-dom@19.1.5(@types/react@19.0.12))(@types/react@19.0.12)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@radix-ui/react-checkbox': 1.1.5(@types/react-dom@19.1.5(@types/react@19.0.12))(@types/react@19.0.12)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
