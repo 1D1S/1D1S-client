@@ -192,7 +192,13 @@ export function ChatNoticeBanner({
                       event.stopPropagation();
                       onClear();
                     }}
-                    className="flex w-fit items-center gap-1 text-gray-500"
+                    className={cn(
+                      // 누를 수 있는 것으로 보이게 테두리와 바탕을 준다 —
+                      // 글자만 있으면 안내문과 구분이 안 돼 지나친다.
+                      'flex w-fit items-center gap-1 rounded-lg border',
+                      'border-gray-200 bg-white px-2.5 py-1.5 text-gray-700',
+                      'transition-colors hover:bg-gray-50'
+                    )}
                   >
                     <X className="h-3 w-3" />
                     <Text size="caption3" weight="bold" className="text-inherit">
