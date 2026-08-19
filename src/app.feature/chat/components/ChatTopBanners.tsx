@@ -236,12 +236,11 @@ export function ChatEndedBanner({
 
   return (
     <BannerCard>
-      <div
-        className={cn(
-          'flex gap-2 px-3.5 py-3',
-          collapsed ? 'items-center' : 'items-start'
-        )}
-      >
+      {/* 접힘·펼침 모두 items-start 다. collapsed 에서 items-center 로
+          바꾸면 28px 짜리 chevron 버튼이 행 높이를 잡아 제목이 아래로
+          내려앉고, 펼치는 순간 다시 올라와 배너가 삐걱인다. 세로 정렬은
+          아이콘 쪽 마진으로 맞춘다 — 공지 배너와 같은 방식. */}
+      <div className="flex items-start gap-2 px-[13px] py-2.5">
         <PartyPopper className="text-main-600 mt-0.5 h-3.5 w-3.5 shrink-0" />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <Text size="caption2" weight="bold" className="truncate text-gray-800">
@@ -288,7 +287,11 @@ export function ChatEndedBanner({
           type="button"
           aria-label={collapsed ? '펼치기' : '접기'}
           onClick={() => setCollapsed((value) => !value)}
-          className="flex h-7 w-7 shrink-0 items-center justify-center"
+          className={cn(
+            'flex h-7 w-7 shrink-0 items-center justify-center',
+            // 탭 영역은 28px 로 두되 제목 줄 높이와 중심을 맞춘다.
+            '-mt-1'
+          )}
         >
           <Chevron className="h-3.5 w-3.5 text-gray-500" />
         </button>
@@ -306,7 +309,7 @@ export function ChatEndedBanner({
 export function ChatArchivedBanner(): React.ReactElement {
   return (
     <BannerCard>
-      <div className="flex items-start gap-2 px-3.5 py-3">
+      <div className="flex items-start gap-2 px-[13px] py-2.5">
         <Archive className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gray-500" />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <Text size="caption2" weight="bold" className="text-gray-800">
@@ -333,7 +336,7 @@ export function ChatNoticeMessageBanner({
 }): React.ReactElement {
   return (
     <BannerCard>
-      <div className="px-3.5 py-2.5">
+      <div className="px-[13px] py-2.5">
         <Text size="caption2" className="text-gray-800">
           {text}
         </Text>
