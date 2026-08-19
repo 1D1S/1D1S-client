@@ -1,6 +1,6 @@
 'use client';
 
-import { Text } from '@1d1s/design-system';
+import { SegmentedControl, Text } from '@1d1s/design-system';
 import EmptyState from '@component/EmptyState';
 import { SubPageShell } from '@component/layout/SubPageShell';
 import { Skeleton } from '@component/Skeleton';
@@ -12,7 +12,6 @@ import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React, { useState } from 'react';
 
 import { ChatRoomListItem } from '../components/ChatRoomListItem';
-import { ChatSegmentedTabs } from '../components/ChatSegmentedTabs';
 import { useToggleChatPush } from '../hooks/useChatMutations';
 import { useChatRooms } from '../hooks/useChatQueries';
 import { ChatRoom } from '../type/chat';
@@ -102,13 +101,14 @@ export function ChatRoomListScreen(): React.ReactElement {
       ) : (
         <div className="flex flex-col gap-3">
           {showFilters ? (
-            <ChatSegmentedTabs<ChatRoomFilterKey>
+            <SegmentedControl
+              aria-label="채팅방 필터"
               options={FILTERS.map((option) => ({
                 value: option.key,
                 label: option.label,
               }))}
               value={filterKey}
-              onChange={setFilterKey}
+              onValueChange={(next) => setFilterKey(next as ChatRoomFilterKey)}
             />
           ) : null}
 
