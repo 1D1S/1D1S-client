@@ -234,6 +234,30 @@ function TimeLabel({
   );
 }
 
+/** 아바타 지름과, 그만큼 버블을 들여쓸 폭(아바타 + gap). */
+const AVATAR_SIZE = 'h-10 w-10';
+const AVATAR_INDENT = 'pl-[48px]';
+
+/**
+ * 상대 프로필. 서버가 메시지에 프로필 이미지를 싣지 않아 **닉네임 첫 글자**를
+ * 브랜드 톤 원에 넣는다 — 빈 회색 원보다 누구인지가 읽힌다. 이미지가
+ * 계약에 생기면 이 자리만 바꾸면 된다.
+ */
+function SenderAvatar({ nickname }: { nickname: string }): React.ReactElement {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        AVATAR_SIZE,
+        'from-main-400 to-main-600 flex shrink-0 items-center justify-center',
+        'rounded-full bg-gradient-to-br text-[15px] font-extrabold text-white'
+      )}
+    >
+      {nickname.trim().charAt(0) || '?'}
+    </span>
+  );
+}
+
 const LONG_PRESS_MS = 450;
 
 /** 터치 롱프레스. 스크롤로 손가락이 움직이면 취소한다. */
@@ -321,15 +345,22 @@ export function ChatMessageBubble({
         highlighted && 'bg-main-100/60 -mx-2 rounded-xl px-2 py-1'
       )}
     >
+      {/* 카톡식 — 아바타가 **그룹 좌상단**에 서고 오른쪽에 닉네임,
+          그 아래로 말풍선이 쌓인다. 연속 발화면 첫 줄에만 그린다. */}
       {!isMine && showSender ? (
-        <Text size="caption3" weight="medium" className="pb-1 pl-1 text-gray-600">
-          {message.senderNickname}
-        </Text>
+        <div className="flex items-center gap-2 pb-1">
+          <SenderAvatar nickname={message.senderNickname} />
+          <Text size="caption2" weight="medium" className="text-gray-600">
+            {message.senderNickname}
+          </Text>
+        </div>
       ) : null}
       <div
         className={cn(
           'flex max-w-[86%] items-end gap-1.5',
-          isMine ? 'flex-row' : 'flex-row-reverse'
+          isMine ? 'flex-row' : 'flex-row-reverse',
+          // 말풍선은 아바타 폭만큼 들여써 닉네임 아래 선에 맞춘다.
+          !isMine && AVATAR_INDENT
         )}
       >
         <div className="shrink-0 pb-0.5">

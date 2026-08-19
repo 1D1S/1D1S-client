@@ -132,12 +132,25 @@ export function ChatRoomScreen({
   const [highlightId, setHighlightId] = useState<number | null>(null);
   /** 신고 시트를 연 메시지. null 이면 닫혀 있다. */
   const [reportTarget, setReportTarget] = useState<number | null>(null);
+  /** 공지를 펼쳐 놓았는가. 리스트 여백을 접힘 높이로 묶는 데 쓴다. */
+  const [noticeExpanded, setNoticeExpanded] = useState(false);
+  /** 마지막으로 잰 **접힘 상태** 배너 높이. */
+  const [collapsedInset, setCollapsedInset] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** 이미 물어본 링크. 같은 글을 다시 물어보지 않는다. */
   const lastResolvedUrl = useRef<string | null>(null);
 
   const { ref: bannerRef, height: bannerInset } = useMeasuredHeight();
+  // 펼치면 배너가 길어지지만 리스트 여백은 **접힘 높이 그대로** 둔다 —
+  // 여백이 따라 늘면 대화가 통째로 아래로 밀려 읽던 자리를 잃는다.
+  // 펼친 동안 배너는 메시지 위에 겹쳐 있을 뿐이다.
+  useEffect(() => {
+    if (!noticeExpanded) {
+      setCollapsedInset(bannerInset);
+    }
+  }, [bannerInset, noticeExpanded]);
+  const topInset = noticeExpanded ? collapsedInset : bannerInset;
   const { mutate: togglePush } = useToggleChatPush();
   const { mutate: setNotice } = useSetChatNotice();
   const { mutate: clearNotice } = useClearChatNotice();
@@ -438,6 +451,8 @@ export function ChatRoomScreen({
             <ChatNoticeBanner
               notice={notice}
               canEdit={room?.myRole === 'HOST'}
+              expanded={noticeExpanded}
+              onExpandedChange={setNoticeExpanded}
               onClear={() =>
                 clearNotice(
                   { roomId },
@@ -472,7 +487,7 @@ export function ChatRoomScreen({
             hasNextPage={hasNextPage}
             isFetchingNextPage={isFetchingNextPage}
             fetchNextPage={fetchNextPage}
-            topInset={bannerInset}
+            topInset={topInset}
             canSend={canSend}
             archived={archived}
             noticeId={notice?.id}

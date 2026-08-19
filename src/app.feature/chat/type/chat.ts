@@ -98,6 +98,12 @@ export interface ChatRoom {
    * **입력창 잠금은 이 값이 정본이다** — 클라가 조건을 다시 조립하지 않는다.
    */
   canSend?: boolean;
+
+  /**
+   * 방 참여자 수. 목록에서 제목 옆에 "N명" 으로 붙는다.
+   * ⚠️ 서버가 아직 안 준다 — 오면 그대로 켜진다(자리만 잡아 둔 값).
+   */
+  memberCount?: number;
 }
 
 export interface ChatRoomList {

@@ -20,8 +20,18 @@ import { ChatRoomThumbnail } from './ChatRoomThumbnail';
 // 자리가 모자라면 카드가 말풍선에 맞춰 줄어든다.
 const CARD_CLASS = cn(
   'w-[250px] max-w-full min-w-0 overflow-hidden rounded-[18px] border',
-  'shadow-[0_2px_8px_-4px_rgba(0,0,0,0.10)]'
+  'shadow-[0_2px_8px_-4px_rgba(0,0,0,0.10)]',
+  // 라운드 + 보더 + 자식 이미지 조합에서 코너가 깨져 보이던 것을 막는다.
+  // 사파리는 `overflow:hidden` 만으로는 둥근 모서리 안쪽을 늘 정확히
+  // 자르지 않는다 — 새 합성 레이어를 만들면 클리핑이 확실해진다.
+  '[transform:translateZ(0)]'
 );
+
+/**
+ * 카드 안쪽 상단 이미지에 줄 라운드. 보더 두께(1px)만큼 작아야 테두리와
+ * 이미지 사이에 각진 틈이 안 생긴다.
+ */
+const CARD_TOP_CLIP = 'rounded-t-[17px]';
 
 /**
  * 공유 카드. 볼 수 없는 대상이면 눌리지 않는다 — 보낼 땐 공개였던 일지가
@@ -48,7 +58,7 @@ export function ChatShareCard({
           url={share?.thumbnailUrl}
           category={share?.category}
           fallback={isDiary ? 'diary' : 'challenge'}
-          className="h-[118px] w-full rounded-none"
+          className={cn('h-[118px] w-full rounded-none', CARD_TOP_CLIP)}
         />
       ) : null}
       <div className="flex flex-col px-3.5 pt-3 pb-3">
@@ -157,7 +167,10 @@ export function ChatLinkPreviewCard({
           src={image}
           alt=""
           loading="lazy"
-          className="h-[118px] w-full object-cover object-center"
+          className={cn(
+            'h-[118px] w-full object-cover object-center',
+            CARD_TOP_CLIP
+          )}
         />
       ) : null}
       <div className="flex flex-col gap-1 p-2.5">
