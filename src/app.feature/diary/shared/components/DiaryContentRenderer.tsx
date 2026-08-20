@@ -69,7 +69,16 @@ export function DiaryContentRenderer({
         'prose prose-sm max-w-none text-gray-700',
         // typography 플러그인이 없어 prose 가 무효 → <p> 마진이 0이 되어
         // 문단 줄바꿈이 사라진다. 문단 간격과 빈 줄을 직접 복원한다.
-        '[&>p]:my-2 [&>p:empty]:min-h-[1.5em]',
+        //
+        // 세 간격이 서로 구분돼야 읽힌다. 줄 사이(0.5em) < 한 칸 개행
+        // (1.05em) < 두 칸 개행(2.6em). 예전엔 줄 사이가 0.9em 인데 문단
+        // 사이는 겨우 0.5em 더해져서, 문단이 바뀐 것인지 줄이 넘어간
+        // 것인지 구분이 안 됐다 — 줄 간격을 조이고 문단 간격을 키웠다.
+        'leading-[1.5]',
+        '[&>p]:my-[0.55em]',
+        // 빈 문단은 딱 한 줄 높이다. 본문 문단과 같은 여백까지 두면 두 칸
+        // 개행 한 번에 세 줄 가까이 벌어져 글이 뚝뚝 끊긴다.
+        '[&>p:empty]:my-0 [&>p:empty]:h-[1em]',
         '[&_img]:max-h-80 [&_img]:rounded-lg',
         '[&_li]:mb-1 [&_ol]:list-decimal [&_ol]:pl-5',
         '[&_ul]:list-disc [&_ul]:pl-5',

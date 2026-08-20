@@ -1,3 +1,4 @@
+import { hasHtmlText } from '@module/utils/html';
 import { add, format } from 'date-fns';
 
 import { CreateChallengeRequest } from '../../board/type/challenge';
@@ -12,12 +13,7 @@ const ENDLESS_CHALLENGE_END_DATE = '9999-12-31';
  * 그대로 보내면 참여자 일지가 빈 양식으로 시작하고, 개요에도 빈 섹션이
  * 뜬다 — 태그를 걷어낸 실제 글자가 있을 때만 양식으로 친다.
  */
-export function hasTemplateContent(html?: string | null): boolean {
-  if (!html) {
-    return false;
-  }
-  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0;
-}
+export const hasTemplateContent = hasHtmlText;
 
 export function resolveChallengeDurationDays(
   values: ChallengeCreateFormValues

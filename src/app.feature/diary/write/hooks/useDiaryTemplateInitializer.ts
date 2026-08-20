@@ -1,10 +1,6 @@
+import { hasHtmlText } from '@module/utils/html';
 import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-
-/** 본문에 글자가 있는가. 빈 에디터는 `<p></p>` 같은 껍데기를 낸다. */
-function hasText(html: string): boolean {
-  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0;
-}
 
 interface UseDiaryTemplateInitializerParams {
   /** 수정 모드에는 주입하지 않는다 — 쓰던 글을 양식이 덮어쓴다. */
@@ -44,14 +40,14 @@ export function useDiaryTemplateInitializer({
   const filledForChallengeRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (isEditMode || !challengeId || !template || !hasText(template)) {
+    if (isEditMode || !challengeId || !template || !hasHtmlText(template)) {
       return;
     }
     if (filledForChallengeRef.current === challengeId) {
       return;
     }
     filledForChallengeRef.current = challengeId;
-    if (hasText(content)) {
+    if (hasHtmlText(content)) {
       return;
     }
     setContent(template);
