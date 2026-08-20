@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ChallengeCreateFormValues } from '../hooks/useChallengeCreateForm';
 import {
   formatFormValues,
+  hasTemplateContent,
   resolveChallengeDurationDays,
   resolveMaxParticipantCnt,
 } from './challengeCreatePayload';
@@ -162,5 +163,33 @@ describe('formatFormValues', () => {
   it('defaults an empty description to an empty string', () => {
     const payload = formatFormValues(makeValues({ description: undefined }));
     expect(payload.description).toBe('');
+  });
+
+  it('omits an untouched diary template', () => {
+    // 빈 에디터가 내는 껍데기. 그대로 보내면 참여자 일지가 빈 양식으로
+    // 시작하고 개요에도 빈 섹션이 뜬다.
+    const payload = formatFormValues(makeValues({ diaryTemplate: '<p></p>' }));
+    expect(payload.diaryTemplate).toBeUndefined();
+  });
+
+  it('sends a diary template that has text', () => {
+    const values = makeValues({ diaryTemplate: '<p>오늘 한 일</p>' });
+    expect(formatFormValues(values).diaryTemplate).toBe('<p>오늘 한 일</p>');
+  });
+});
+
+describe('hasTemplateContent', () => {
+  it.each([
+    ['', false],
+    [undefined, false],
+    [null, false],
+    ['<p></p>', false],
+    ['<p><br></p>', false],
+    ['<p>&nbsp;</p>', false],
+    ['<ul><li></li></ul>', false],
+    ['<p>목표</p>', true],
+    ['<ul><li>운동</li></ul>', true],
+  ])('%s -> %s', (html, expected) => {
+    expect(hasTemplateContent(html)).toBe(expected);
   });
 });

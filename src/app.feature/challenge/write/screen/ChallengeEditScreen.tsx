@@ -16,6 +16,7 @@ import { Form } from '@component/ui/Form';
 import { useChallengeDetail } from '@feature/challenge/board/hooks/useChallengeQueries';
 import { isChallengeOngoing } from '@feature/challenge/board/utils/challengePeriod';
 import { useUpdateChallenge } from '@feature/challenge/detail/hooks/useChallengeMutations';
+import { ChallengeDiaryTemplateSection } from '@feature/challenge/write/components/ChallengeDiaryTemplateSection';
 import { ChallengeEditBannerSection } from '@feature/challenge/write/components/ChallengeEditBannerSection';
 import { ChallengeEditDialog } from '@feature/challenge/write/components/ChallengeEditDialog';
 import { ChallengeEditGoalSection } from '@feature/challenge/write/components/ChallengeEditGoalSection';
@@ -29,6 +30,7 @@ import {
   type EditableChallengeCategory,
   useChallengeEditForm,
 } from '@feature/challenge/write/hooks/useChallengeEditForm';
+import { hasTemplateContent } from '@feature/challenge/write/utils/challengeCreatePayload';
 import { getChallengeEditCtaHint } from '@feature/challenge/write/utils/challengeCtaHint';
 import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { useNativeSubmitBar } from '@module/hooks/useNativeSubmitBar';
@@ -88,6 +90,7 @@ function buildEditDefaults(
     memberCount: memberDefaults.memberCount,
     memberCountNumber: memberDefaults.memberCountNumber,
     allowMidJoin: detail.allowMidJoin ?? false,
+    diaryTemplate: detail.diaryTemplate ?? '',
     thumbnailImageKey: undefined,
     thumbnailPreviewUrl: summary.thumbnailImage ?? undefined,
     goals: (goals ?? []).map((goal) => goal.content),
@@ -149,6 +152,19 @@ function buildUpdatePayload(
       payload.goals = nextGoals;
     }
   }
+  // 양식은 비운 것과 안 건드린 것이 다르다. 지웠으면 null 로 해제를
+  // 명시한다 — 빈 문자열이나 <p></p> 를 보내면 빈 양식이 남는다.
+  const nextTemplate = values.diaryTemplate ?? '';
+  const hadTemplate = hasTemplateContent(defaults.diaryTemplate);
+  const hasTemplate = hasTemplateContent(nextTemplate);
+  if (hasTemplate) {
+    if (nextTemplate !== defaults.diaryTemplate) {
+      payload.diaryTemplate = nextTemplate;
+    }
+  } else if (hadTemplate) {
+    payload.diaryTemplate = null;
+  }
+
   if (values.thumbnailRemoved) {
     payload.thumbnailImage = null;
   } else if (values.thumbnailImageKey) {
@@ -265,6 +281,7 @@ function ChallengeEditScreenContent({
                 startDate={startDate}
                 endDate={endDate}
               />
+              <ChallengeDiaryTemplateSection step={5} />
             </div>
 
             <aside className="hidden lg:block">

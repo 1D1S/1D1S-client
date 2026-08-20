@@ -5,6 +5,20 @@ import { ChallengeCreateFormValues } from '../hooks/useChallengeCreateForm';
 
 const ENDLESS_CHALLENGE_END_DATE = '9999-12-31';
 
+/**
+ * 일지 양식에 실제로 쓸 내용이 있는가.
+ *
+ * 리치텍스트 에디터는 아무것도 안 써도 `<p></p>` 같은 빈 껍데기를 낸다.
+ * 그대로 보내면 참여자 일지가 빈 양식으로 시작하고, 개요에도 빈 섹션이
+ * 뜬다 — 태그를 걷어낸 실제 글자가 있을 때만 양식으로 친다.
+ */
+export function hasTemplateContent(html?: string | null): boolean {
+  if (!html) {
+    return false;
+  }
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0;
+}
+
 export function resolveChallengeDurationDays(
   values: ChallengeCreateFormValues
 ): number {
@@ -73,5 +87,9 @@ export function formatFormValues(
       values.challengeType === 'PRIVATE'
         ? values.password?.trim()
         : undefined,
+    // 빈 에디터는 <p></p> 를 내므로 길이로 판정하지 않는다.
+    diaryTemplate: hasTemplateContent(values.diaryTemplate)
+      ? values.diaryTemplate
+      : undefined,
   };
 }

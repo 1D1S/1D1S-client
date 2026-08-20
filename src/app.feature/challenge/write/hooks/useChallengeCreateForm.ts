@@ -4,6 +4,8 @@ import { startOfToday } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { DIARY_TEMPLATE_MAX_LENGTH } from '../../board/type/challenge';
+
 function isWholeNumberString(value?: string): boolean {
   return Boolean(value && /^\d+$/.test(value));
 }
@@ -52,6 +54,14 @@ export const challengeCreateFormSchema = z
     password: z.string().optional(),
     thumbnailImageKey: z.string().optional(),
     thumbnailPreviewUrl: z.string().optional(),
+    // 일지 양식(HTML). 상한만 막는다 — 태그 제한은 에디터가 맡는다.
+    diaryTemplate: z
+      .string()
+      .max(
+        DIARY_TEMPLATE_MAX_LENGTH,
+        `일지 양식은 ${DIARY_TEMPLATE_MAX_LENGTH}자 이하로 입력해주세요.`
+      )
+      .optional(),
     goals: z.array(
       z.object({
         value: z
@@ -175,6 +185,7 @@ export function useChallengeCreateForm(): ReturnType<
       postEndWriteAllowed: true,
       challengeType: 'PUBLIC',
       password: '',
+      diaryTemplate: '',
       goals: [],
     },
   });

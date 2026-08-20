@@ -51,6 +51,8 @@ export default function DiaryCreateScreen(): React.ReactElement {
     setTitle,
     content,
     setContent,
+    canRemoveTemplate,
+    removeTemplate,
     selectedMood,
     setSelectedMood,
     achievedDate,
@@ -283,13 +285,23 @@ export default function DiaryCreateScreen(): React.ReactElement {
           <section>{thumbnailSlot}</section>
 
           <section>
-            <Text
-              size="caption1"
-              weight="bold"
-              className="mb-2 block text-gray-600"
-            >
-              오늘 이야기
-            </Text>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <Text size="caption1" weight="bold" className="text-gray-600">
+                오늘 이야기
+              </Text>
+              {/* 양식을 손대기 전에만 켜진다. 한 글자라도 쓰고 나면 이
+                  버튼이 그 글까지 지우게 되므로 꺼진다. */}
+              {canRemoveTemplate ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={removeTemplate}
+                >
+                  양식 제거하기
+                </Button>
+              ) : null}
+            </div>
             <DiaryContentEditor content={content} onChange={setContent} />
           </section>
         </div>
