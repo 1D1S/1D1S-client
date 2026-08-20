@@ -267,7 +267,10 @@ export function DiaryContentEditor({
             className={cn(
               'prose prose-sm max-w-none text-gray-700 outline-none',
               // prose 무효 → <p> 마진 0. 작성 화면도 본문과 같은 문단 간격.
-              '[&_.tiptap>p]:my-2 [&_.tiptap>p:empty]:min-h-[1.5em]',
+              // 값이 갈리면 쓰면서 본 간격과 저장 후 간격이 달라진다.
+              'leading-[1.5]',
+              '[&_.tiptap>p]:my-[0.55em]',
+              '[&_.tiptap>p:empty]:my-0 [&_.tiptap>p:empty]:h-[1em]',
               isTemplate
                 ? '[&_.tiptap]:min-h-[180px]'
                 : '[&_.tiptap]:min-h-[380px]',

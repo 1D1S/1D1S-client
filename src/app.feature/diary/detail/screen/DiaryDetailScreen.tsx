@@ -352,7 +352,9 @@ function DiaryDetailView({
                   >
                     <DiaryContentRenderer
                       html={diaryData.contentHtml}
-                      className="text-[15px] leading-[1.9]"
+                      // 줄 간격은 렌더러가 정한다. 여기서 1.9 를 덮어쓰던
+                      // 탓에 줄 사이가 문단 사이보다 넓어 보였다.
+                      className="text-[15px]"
                     />
                   </div>
                 ) : null}
