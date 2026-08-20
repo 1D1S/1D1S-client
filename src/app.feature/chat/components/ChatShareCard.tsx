@@ -8,6 +8,7 @@ import Link from 'next/link';
 import React from 'react';
 
 import { ChatLinkPreview, ChatMessage, chatSharePath } from '../type/chat';
+import { isSafeHttpUrl } from '../utils/chatShareLink';
 import { ChatRoomThumbnail } from './ChatRoomThumbnail';
 
 // 공유 카드와 링크 미리보기의 폭. 둘이 제각각이면 말풍선 줄이 들쭉날쭉해
@@ -146,20 +147,19 @@ export function ChatLinkPreviewCard({
 }): React.ReactElement {
   const image = resolveDiaryImageUrl(preview.imageUrl);
   const siteName = preview.siteName ?? '';
+  // 스킴이 수상하면 카드는 그려도 링크로 만들지 않는다. 미리보기 내용을
+  // 지워 버리면 멀쩡한 프리뷰까지 잃는다.
+  const href = isSafeHttpUrl(preview.url) ? preview.url : null;
   // 유튜브 표시는 **배지에만** 빨강을 쓴다. 글씨나 테두리를 칠하지 않는다.
   const isYoutube = siteName.toLowerCase() === 'youtube';
 
-  return (
-    <a
-      href={preview.url}
-      target="_blank"
-      rel="noreferrer noopener"
-      onClick={(event) => event.stopPropagation()}
-      className={cn(
-        CARD_CLASS,
-        'block border-gray-200 bg-white transition-colors hover:bg-gray-50'
-      )}
-    >
+  const className = cn(
+    CARD_CLASS,
+    'block border-gray-200 bg-white',
+    href ? 'transition-colors hover:bg-gray-50' : null
+  );
+  const body = (
+    <>
       {image ? (
         // 외부 OG 이미지라 next/image remotePatterns 로 호스트를 고정할 수 없다.
         // eslint-disable-next-line @next/next/no-img-element
@@ -204,6 +204,21 @@ export function ChatLinkPreviewCard({
           </Text>
         ) : null}
       </div>
+    </>
+  );
+
+  if (!href) {
+    return <div className={className}>{body}</div>;
+  }
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer noopener"
+      onClick={(event) => event.stopPropagation()}
+      className={className}
+    >
+      {body}
     </a>
   );
 }
