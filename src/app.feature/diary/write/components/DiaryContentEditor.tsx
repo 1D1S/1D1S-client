@@ -268,9 +268,13 @@ export function DiaryContentEditor({
               'prose prose-sm max-w-none text-gray-700 outline-none',
               // prose 무효 → <p> 마진 0. 작성 화면도 본문과 같은 문단 간격.
               // 값이 갈리면 쓰면서 본 간격과 저장 후 간격이 달라진다.
-              'leading-[1.5]',
-              '[&_.tiptap>p]:my-[0.55em]',
-              '[&_.tiptap>p:empty]:my-0 [&_.tiptap>p:empty]:h-[1em]',
+              // 렌더러(DiaryContentRenderer)와 같은 값 — 앱 확정치다.
+              'text-[15px] leading-[1.5]',
+              '[&_.tiptap>p]:my-0 [&_.tiptap>p+p]:mt-[6px]',
+              // ProseMirror 는 빈 문단을 `<p><br></p>` 로 그려 :empty 가
+              // 걸리지 않지만, 저장본이 `<p></p>` 인 글을 다시 열 때를
+              // 위해 렌더러와 같은 규칙을 둔다.
+              '[&_.tiptap>p:empty]:h-[1.5em]',
               isTemplate
                 ? '[&_.tiptap]:min-h-[180px]'
                 : '[&_.tiptap]:min-h-[380px]',
