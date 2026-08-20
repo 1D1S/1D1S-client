@@ -76,6 +76,7 @@ export function NotificationOptInPrompt({
         friendEnabled: true,
         diaryEnabled: true,
         challengeEnabled: true,
+        chatEnabled: true,
       },
       {
         onSettled: () => {

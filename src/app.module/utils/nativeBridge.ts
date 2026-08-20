@@ -342,6 +342,20 @@ export function isNativeModalAvailable(): boolean {
 }
 
 /**
+ * 네이티브 쉘이 자기 채팅 화면을 갖고 있는가.
+ *
+ * 갖고 있으면 웹은 채팅 진입점을 그리지 않는다 — 같은 기능이 두 벌 노출되면
+ * 사용자는 어느 쪽이 진짜인지 알 수 없고, 웹 소켓 연결까지 겹친다.
+ * 반응형으로 읽어야 한다(useNativeCapability) — 핸드셰이크가 늦으면 게이트가
+ * false 로 굳는다.
+ */
+export function isNativeChatAvailable(): boolean {
+  return (
+    getNativeWindow()?.[CHANNEL_NAME] != null && hasNativeFeature('chat_native')
+  );
+}
+
+/**
  * SPA 데이터 요청이 끝나기 전에 네이티브 화면을 먼저 연다. 앱이 아닌
  * 환경에서는 false를 반환하므로 호출자가 router.push로 폴백할 수 있다.
  */

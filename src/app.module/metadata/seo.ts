@@ -87,9 +87,9 @@ export interface PublicChallengeMeta {
 }
 
 // 챌린지 상세는 비인증 GET /challenges/{id} 가 열려 있어(dev tip 248a99d~)
-// 게스트 응답으로 제목·설명·썸네일을 그대로 OG 에 채운다. 비공개(403)·예약 전
-// 공식(404)·네트워크 오류는 null 을 반환해 루트 기본 OG 로 폴백한다(정보
-// 노출 없음).
+// 게스트 응답으로 제목·설명·썸네일을 그대로 OG 에 채운다. 비공개(403 또는
+// 응답의 challengeType=PRIVATE)·예약 전 공식(404)·네트워크 오류는 null 을
+// 반환해 루트 기본 OG 로 폴백한다(정보 노출 없음).
 export async function fetchPublicChallengeMeta(
   id: string
 ): Promise<PublicChallengeMeta | null> {
@@ -109,18 +109,33 @@ export async function fetchPublicChallengeMeta(
     }
     const body = (await res.json()) as {
       data?: {
-        challengeSummary?: { title?: string; thumbnailImage?: string | null };
+        challengeSummary?: {
+          title?: string;
+          thumbnailImage?: string | null;
+          challengeType?: string;
+        };
         challengeDetail?: { description?: string | null };
       };
     };
-    const title = body.data?.challengeSummary?.title;
+    const summary = body.data?.challengeSummary;
+    // 비공개 챌린지는 제목 한 글자도 싣지 않는다(SEC-1).
+    //
+    // 이 요청은 **비인증**이라 서버가 잠금을 안 걸면 200 + 상세가 그대로
+    // 온다. 그걸 OG 에 넣으면 화면의 비밀번호 게이트와 무관하게 제목·설명이
+    // 페이지 소스에 남고, 카톡 등 스크레이퍼가 비공개 챌린지 링크 프리뷰를
+    // 만들며, revalidate 캐시로 5분간 모든 방문자에게 같은 값이 나간다.
+    // 403 만 믿지 않고 응답 내용으로도 한 번 더 막는다.
+    if (summary?.challengeType === 'PRIVATE') {
+      return null;
+    }
+    const title = summary?.title;
     if (!title) {
       return null;
     }
     return {
       title,
       description: body.data?.challengeDetail?.description,
-      thumbnailImage: body.data?.challengeSummary?.thumbnailImage,
+      thumbnailImage: summary?.thumbnailImage,
     };
   } catch {
     return null;

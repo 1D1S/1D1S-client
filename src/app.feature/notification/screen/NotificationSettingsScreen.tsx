@@ -145,6 +145,7 @@ export function NotificationSettingsScreen(): React.ReactElement {
       friendEnabled: true,
       diaryEnabled: true,
       challengeEnabled: true,
+      chatEnabled: true,
     });
   }, [data, status, updatePreferences]);
 
@@ -286,6 +287,14 @@ export function NotificationSettingsScreen(): React.ReactElement {
               value={data.challengeEnabled}
               disabled={!data.pushEnabled}
               onChange={(next) => handleChange('challengeEnabled', next)}
+            />
+            {/* 방별 종 토글 위의 상위 스위치다 — 여기서 끄면 어느 방도 안 온다. */}
+            <ToggleRow
+              label="채팅 알림"
+              description="그룹 채팅 새 메시지 알림을 받습니다"
+              value={data.chatEnabled}
+              disabled={!data.pushEnabled}
+              onChange={(next) => handleChange('chatEnabled', next)}
             />
           </div>
         </section>

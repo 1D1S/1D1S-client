@@ -7,6 +7,7 @@ import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { formatChallengeTypeLabel } from '@feature/challenge/shared/utils/challengeDisplay';
+import { ChallengeChatEntry } from '@feature/chat/components/ChallengeChatEntry';
 import { resolveSidebarMemberId } from '@feature/diary/detail/utils/diaryViewData';
 import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
 import { useMarkDetailAsRead } from '@feature/notification/hooks/useMarkDetailAsRead';
@@ -485,9 +486,20 @@ export function ChallengeDetailScreen({
     );
   };
 
-  // 비공개 챌린지(403)는 비밀번호 검증 모달로 유도한다.
+  // 비공개 챌린지는 비밀번호 검증 모달로 유도한다.
+  //
+  // 서버 403 이 정본이지만, 그것만 믿으면 서버가 200 + 상세를 주는 순간
+  // (SEC-1) 웹이 그대로 본문을 그린다. 응답 안에 이미 판단 재료가 있으므로
+  // 같은 판정을 한 번 더 한다 — 서버가 고쳐진 뒤에는 403 이 먼저 오므로
+  // 이 조건은 조용히 잠들어 있다가 회귀 때만 깨어난다.
+  //
+  // 조건을 `myStatus === 'NONE'`(아예 남이다) 으로 좁힌 것은 의도적이다.
+  // PENDING·ACCEPTED 처럼 애매한 상태까지 클라가 막으면, 서버는 허용하는데
+  // 화면만 잠기는 반대쪽 사고가 난다. 신고된 누출 경로(링크로 직접 진입한
+  // 외부인)는 언제나 NONE 이다.
   const isPrivateChallengeLocked =
-    isError && normalizeApiError(error).status === 403;
+    (isError && normalizeApiError(error).status === 403) ||
+    (summary?.challengeType === 'PRIVATE' && myStatus === 'NONE');
 
   if (showSkeleton) {
     return nativeSkeleton ? null : <ChallengeDetailSkeleton />;
@@ -694,6 +706,15 @@ export function ChallengeDetailScreen({
           {summary.challengeType === 'OFFICIAL' ? (
             <OfficialChallengeGuideBanner />
           ) : null}
+          {/* 채팅방 진입은 히어로 바로 아래에 둔다. 우측 레일에 두면
+              모바일(1열)에서 탭 콘텐츠 전부 뒤로 밀려, 페이지 맨 끝까지
+              스크롤해야 보였다 — 사실상 없는 버튼이었다. */}
+          <ChallengeChatEntry
+            challengeId={challengeId}
+            enabled={isParticipating && isGroupChallenge}
+            className="mb-4"
+          />
+
           <div
             className={cn(
               'grid grid-cols-1 gap-4',

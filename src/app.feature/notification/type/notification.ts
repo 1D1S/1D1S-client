@@ -55,6 +55,11 @@ export interface NotificationPreferences {
   friendEnabled: boolean;
   diaryEnabled: boolean;
   challengeEnabled: boolean;
+  /**
+   * 채팅 푸시 전체 스위치. 방별 pushEnabled 와 **다른 층**이라, 끄면 방별
+   * 설정과 무관하게 아무 방도 푸시가 오지 않는다(서버가 AND 로 건다).
+   */
+  chatEnabled: boolean;
 }
 
 export interface NotificationEndpoint {
