@@ -97,8 +97,20 @@ export interface ChallengeListItem {
   randomParticipants?: RandomParticipant[];
 }
 
+/**
+ * 일지 양식(diaryTemplate) HTML 상한. 서버 400 은 이 값 초과일 때만 난다.
+ * 서버 허용 태그는 p br strong em u ul ol li pre code 뿐이고 나머지는
+ * 저장 시 스트립된다 — 양식 에디터는 이 목록 밖 노드를 만들지 않는다.
+ */
+export const DIARY_TEMPLATE_MAX_LENGTH = 50000;
+
 export interface ChallengeDetail {
   description: string;
+  /**
+   * 호스트가 정해 둔 일지 양식(HTML). 새 일지 본문의 출발점이 된다.
+   * 없거나 해제된 챌린지는 null/부재다.
+   */
+  diaryTemplate?: string | null;
   allowMidJoin?: boolean;
   // 인증샷(사진) 필수 여부(서버 JSON 키: photoRequired).
   photoRequired?: boolean;
@@ -178,6 +190,8 @@ export interface CreateChallengeRequest {
   challengeType: ChallengeType;
   // PRIVATE 일 때만 동봉하는 참여 비밀번호.
   password?: string;
+  // 일지 양식(HTML). 비워 두면 보내지 않는다.
+  diaryTemplate?: string;
 }
 
 // 변경할 필드만 포함 (생략 시 기존 값 유지, null 명시 시 삭제)
@@ -189,6 +203,8 @@ export interface UpdateChallengeRequest {
   allowMidJoin?: boolean;
   maxParticipantCnt?: number;
   goals?: string[];
+  /** 부재=미변경, null=양식 해제. 빈 문자열로 지우지 않는다. */
+  diaryTemplate?: string | null;
 }
 
 export interface CreateChallengeResponse {

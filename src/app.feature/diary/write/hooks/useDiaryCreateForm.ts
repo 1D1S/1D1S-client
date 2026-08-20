@@ -30,6 +30,7 @@ import { useAchievedDateGuard } from './useAchievedDateGuard';
 import { useDiaryEditInitializer } from './useDiaryEditInitializer';
 import { useDiaryImagePicker } from './useDiaryImagePicker';
 import { useDiarySubmit } from './useDiarySubmit';
+import { useDiaryTemplateInitializer } from './useDiaryTemplateInitializer';
 
 const EMPTY_GOALS: ChallengeGoal[] = [];
 
@@ -58,6 +59,9 @@ interface UseDiaryCreateFormResult {
   thumbnailIndex: number;
   /** 선택한 챌린지가 인증샷(사진) 필수인지 여부. */
   isPhotoRequired: boolean;
+  /** 본문이 주입된 일지 양식 그대로일 때만 true. */
+  canRemoveTemplate: boolean;
+  removeTemplate(): void;
   submitButtonLabel: string;
   canSubmit: boolean;
   isSubmitting: boolean;
@@ -320,6 +324,16 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     setThumbnailImageUrl: imagePicker.setThumbnailImageUrl,
   });
 
+  // 새 일지에만 챌린지 양식을 채운다. challengeDetail 은 위에서 이미
+  // 받아 오고 있으므로 쿼리를 더 늘리지 않는다.
+  const { canRemoveTemplate, removeTemplate } = useDiaryTemplateInitializer({
+    isEditMode,
+    template: challengeDetail?.challengeDetail?.diaryTemplate,
+    challengeId: selectedChallenge?.challengeId,
+    content,
+    setContent,
+  });
+
   useEffect(() => {
     if (
       isEditMode ||
@@ -413,6 +427,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     imagePreviewUrls: imagePicker.imagePreviewUrls,
     thumbnailIndex: imagePicker.thumbnailIndex,
     isPhotoRequired,
+    canRemoveTemplate,
+    removeTemplate,
     submitButtonLabel,
     canSubmit,
     isSubmitting,
