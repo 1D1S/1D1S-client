@@ -52,6 +52,8 @@ interface ChatMessageListProps {
   fetchNextPage(): void;
   /** 떠 있는 배너에 가리지 않도록 리스트 위에 비워 둘 높이(실측값). */
   topInset: number;
+  /** memberId -> 프로필 이미지. 메시지 계약에 없어 밖에서 넣어 준다. */
+  senderAvatars?: Map<number, string>;
   /** 이 방에 쓸 수 있는가. 빈 화면 문구가 갈린다. */
   canSend: boolean;
   /** 보관된 방인가. 빈 화면 문구가 한 번 더 갈린다. */
@@ -75,6 +77,7 @@ export function ChatMessageList({
   isFetchingNextPage,
   fetchNextPage,
   topInset,
+  senderAvatars,
   canSend,
   archived = false,
   noticeId,
@@ -93,7 +96,10 @@ export function ChatMessageList({
   if (messages.length === 0) {
     return (
       <div className="flex h-full items-center justify-center px-6">
-        <Text size="body2" className="text-center whitespace-pre-line text-gray-600">
+        <Text
+          size="body2"
+          className="text-center whitespace-pre-line text-gray-600"
+        >
           {/* 못 보내는 방에서 "첫 메시지를 보내 보세요" 는 모순이다. */}
           {canSend
             ? '아직 대화가 없어요.\n첫 메시지를 보내 보세요.'
@@ -144,9 +150,13 @@ export function ChatMessageList({
 
     children.push(
       message.type === 'SYSTEM' ? (
-        <SystemChip key={`m-${message.id}-${index}`} text={message.content ?? ''} />
+        <SystemChip
+          key={`m-${message.id}-${index}`}
+          text={message.content ?? ''}
+        />
       ) : (
         <ChatMessageBubble
+          senderImageUrl={senderAvatars?.get(message.senderId)}
           key={message.clientMessageId ?? `m-${message.id}-${index}`}
           message={message}
           isMine={message.senderId === myMemberId}
@@ -165,7 +175,10 @@ export function ChatMessageList({
     if (startsNewDay) {
       // flex-col-reverse 라 DOM 상 뒤에 둔 것이 화면에서는 위에 온다.
       children.push(
-        <DateDivider key={`d-${message.id}-${index}`} value={message.createdAt} />
+        <DateDivider
+          key={`d-${message.id}-${index}`}
+          value={message.createdAt}
+        />
       );
     }
   });

@@ -24,6 +24,7 @@ import {
   ChatRoomMenuSheet,
   type ChatShareKind,
   ChatShareMenuSheet,
+  ChatStatsVariantSheet,
 } from '../components/ChatSheets';
 import {
   ChatArchivedBanner,
@@ -40,9 +41,14 @@ import {
 } from '../hooks/useChatMutations';
 import { useChatRooms } from '../hooks/useChatQueries';
 import { useChatRoom } from '../hooks/useChatRoom';
+import { useChatSenderAvatars } from '../hooks/useChatSenderAvatars';
 import { useEndedBannerDismissal } from '../hooks/useEndedBannerDismissal';
 import { useMeasuredHeight } from '../hooks/useMeasuredHeight';
-import { ChatMessage, ChatShareResolution } from '../type/chat';
+import {
+  ChatMessage,
+  ChatShareResolution,
+  type ChatStatsVariant,
+} from '../type/chat';
 import {
   canSendInChatRoom,
   formatChatClosesIn,
@@ -107,6 +113,7 @@ export function ChatRoomScreen({
     sendText,
     sendImage,
     sendShare,
+    sendStats,
     retry,
     readStates,
   } = useChatRoom(roomId, {
@@ -124,6 +131,9 @@ export function ChatRoomScreen({
   const [sending, setSending] = useState(false);
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [roomMenuOpen, setRoomMenuOpen] = useState(false);
+  // 메시지에는 프로필이 안 실려 온다 — 챌린지 참여자에서 찾아 넘긴다.
+  const senderAvatars = useChatSenderAvatars(room?.challengeId);
+  const [statsSheetOpen, setStatsSheetOpen] = useState(false);
   const [pickerKind, setPickerKind] = useState<'challenge' | 'diary' | null>(
     null
   );
@@ -275,7 +285,24 @@ export function ChatRoomScreen({
       fileInputRef.current?.click();
       return;
     }
+    if (kind === 'stats') {
+      setStatsSheetOpen(true);
+      return;
+    }
     setPickerKind(kind);
+  };
+
+  const handlePickStats = (variant: ChatStatsVariant): void => {
+    void (async () => {
+      setSending(true);
+      try {
+        await sendStats(variant);
+      } catch {
+        toast.error('통계를 보내지 못했습니다.');
+      } finally {
+        setSending(false);
+      }
+    })();
   };
 
   const handlePickFile = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -488,6 +515,7 @@ export function ChatRoomScreen({
             isFetchingNextPage={isFetchingNextPage}
             fetchNextPage={fetchNextPage}
             topInset={topInset}
+            senderAvatars={senderAvatars}
             canSend={canSend}
             archived={archived}
             noticeId={notice?.id}
@@ -526,6 +554,11 @@ export function ChatRoomScreen({
         open={shareMenuOpen}
         onOpenChange={setShareMenuOpen}
         onSelect={handleShareKind}
+      />
+      <ChatStatsVariantSheet
+        open={statsSheetOpen}
+        onOpenChange={setStatsSheetOpen}
+        onSelect={handlePickStats}
       />
       <ChatSharePickerSheet
         kind={pickerKind}
