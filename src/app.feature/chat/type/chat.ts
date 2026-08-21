@@ -8,6 +8,8 @@ export const CHAT_MESSAGE_TYPES = [
   'DIARY_SHARE',
   // 공지 설정/해제 안내. 클라가 보내면 서버가 CHAT-005 로 막는다.
   'SYSTEM',
+  // 통계 자랑. 보낼 땐 statsVariant 만 고르고 숫자는 서버가 채운다.
+  'STATS_SHARE',
 ] as const;
 
 export type ChatMessageType = (typeof CHAT_MESSAGE_TYPES)[number];
@@ -33,6 +35,37 @@ export interface ChatLinkPreview {
   siteName?: string | null;
 }
 
+/** 통계 카드 레이아웃. 그리는 모양만 고르는 값이다. */
+export const CHAT_STATS_VARIANTS = [
+  'WEEK',
+  'CURRENT_STREAK',
+  'MAX_STREAK',
+] as const;
+
+export type ChatStatsVariant = (typeof CHAT_STATS_VARIANTS)[number];
+
+/**
+ * 통계 자랑 카드 내용(ChatStatsShareResponse).
+ *
+ * **숫자는 variant 와 무관하게 항상 다 온다** — 서버 계약 그대로다. 화면은
+ * 고른 레이아웃에 필요한 값만 골라 그리고, 값을 다시 계산하지 않는다.
+ * 박제된 시점의 기록이라 지금 값과 다를 수 있는 것이 정상이다.
+ */
+export interface ChatStatsShare {
+  /** 없으면 WEEK. variant 가 없던 시절 카드가 그렇게 온다. */
+  variant?: ChatStatsVariant | null;
+  capturedAt: string;
+  /** 집계한 주의 월요일(KST). */
+  weekStart: string;
+  currentStreak: number;
+  maxStreak: number;
+  /** 이번 주에 쓴 일지 수. 하루 여러 편이면 그만큼 늘어난다. */
+  weekDiaryCount: number;
+  /** 이번 주에 일지를 쓴 날짜(오름차순, 하루 한 번). */
+  weekDates: string[];
+  totalDiaryCount: number;
+}
+
 export interface ChatMessage {
   id: number;
   roomId: number;
@@ -48,6 +81,7 @@ export interface ChatMessage {
   createdAt: string;
   share?: ChatShare | null;
   linkPreview?: ChatLinkPreview | null;
+  stats?: ChatStatsShare | null;
   /** 서버 응답에는 없는 클라 전용 표시. */
   pending?: boolean;
   failed?: boolean;
@@ -226,6 +260,12 @@ export interface ChatSendRequest {
   content?: string;
   imageUploadId?: string;
   sharedTargetId?: number;
+  /**
+   * STATS_SHARE 의 레이아웃. 생략하면 서버가 WEEK 로 읽는다.
+   * 다른 타입에서는 무시되지만 **보내지 않는다** — 계약이 무시한다고
+   * 해서 뜻 없는 값을 실어 보낼 이유는 없다.
+   */
+  statsVariant?: ChatStatsVariant;
 }
 
 export interface ChatImagePresign {

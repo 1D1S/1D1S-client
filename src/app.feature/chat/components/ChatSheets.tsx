@@ -9,6 +9,7 @@ import {
 import { cn } from '@module/utils/cn';
 import {
   BookOpen,
+  ChevronRight,
   Copy,
   Flag,
   ImageIcon,
@@ -16,10 +17,13 @@ import {
   PinOff,
   Siren,
   SquareArrowOutUpRight,
+  TrendingUp,
 } from 'lucide-react';
 import React from 'react';
 
-export type ChatShareKind = 'photo' | 'challenge' | 'diary';
+import type { ChatStatsVariant } from '../type/chat';
+
+export type ChatShareKind = 'photo' | 'challenge' | 'diary' | 'stats';
 
 function SheetRow({
   icon,
@@ -103,7 +107,7 @@ function SheetTile({
 /**
  * + 버튼 — 무엇을 붙일지 먼저 고른다.
  *
- * 세로 목록이 아니라 **4열 그리드 타일**이다(디자인). 항목이 셋뿐이라
+ * 세로 목록이 아니라 **4열 그리드 타일**이다(디자인). 항목이 적어
  * 목록으로 두면 시트가 세로로 길고 손가락 이동도 멀다.
  */
 export function ChatShareMenuSheet({
@@ -138,6 +142,11 @@ export function ChatShareMenuSheet({
             icon={<BookOpen className="h-6 w-6" />}
             label="일지"
             onClick={pick('diary')}
+          />
+          <SheetTile
+            icon={<TrendingUp className="h-6 w-6" />}
+            label="통계"
+            onClick={pick('stats')}
           />
         </div>
       </BottomSheetContent>
@@ -231,5 +240,67 @@ export function ChatMessageActionsSheet({
         />
       ) : null}
     </Sheet>
+  );
+}
+
+/**
+ * 통계 자랑 — 어떤 카드로 보낼지 고른다.
+ *
+ * 숫자는 서버가 채우므로 여기서 미리 보여 줄 값이 없다. 고르는 것은
+ * **모양**뿐이라 설명을 곁들여 무엇이 강조되는지 알린다.
+ */
+export function ChatStatsVariantSheet({
+  open,
+  onOpenChange,
+  onSelect,
+}: {
+  open: boolean;
+  onOpenChange(open: boolean): void;
+  onSelect(variant: ChatStatsVariant): void;
+}): React.ReactElement {
+  const pick = (variant: ChatStatsVariant) => (): void => {
+    onOpenChange(false);
+    onSelect(variant);
+  };
+  const items: Array<{
+    variant: ChatStatsVariant;
+    label: string;
+    hint: string;
+  }> = [
+    { variant: 'WEEK', label: '이번 주 기록', hint: '요일별 작성 현황' },
+    { variant: 'CURRENT_STREAK', label: '현재 스트릭', hint: '연속 작성 일수' },
+    { variant: 'MAX_STREAK', label: '최장 스트릭', hint: '역대 최고 기록' },
+  ];
+  return (
+    <BottomSheet open={open} onOpenChange={onOpenChange}>
+      <BottomSheetContent className="px-3 pt-4 pb-5">
+        <BottomSheetTitle className="px-1 pb-2 text-left">
+          어떤 기록을 자랑할까요?
+        </BottomSheetTitle>
+        <div className="flex flex-col">
+          {items.map((item) => (
+            <button
+              key={item.variant}
+              type="button"
+              onClick={pick(item.variant)}
+              className={cn(
+                'flex items-center justify-between gap-3 rounded-xl px-3',
+                'py-3 text-left transition-colors hover:bg-gray-100'
+              )}
+            >
+              <span className="flex min-w-0 flex-col">
+                <Text size="body2" weight="bold" className="text-gray-900">
+                  {item.label}
+                </Text>
+                <Text size="caption3" className="text-gray-500">
+                  {item.hint}
+                </Text>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-gray-400" />
+            </button>
+          ))}
+        </div>
+      </BottomSheetContent>
+    </BottomSheet>
   );
 }

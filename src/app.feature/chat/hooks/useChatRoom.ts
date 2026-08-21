@@ -17,6 +17,7 @@ import {
   ChatReadState,
   ChatShareResolution,
   ChatSocketError,
+  type ChatStatsVariant,
 } from '../type/chat';
 import {
   applyChatLinkPreview,
@@ -76,6 +77,8 @@ export interface UseChatRoomResult {
     resolution: ChatShareResolution,
     caption?: string
   ): Promise<void>;
+  /** 통계 자랑. 레이아웃만 고르고 숫자는 서버가 채운다. */
+  sendStats(variant: ChatStatsVariant): Promise<void>;
   retry(message: ChatMessage): Promise<void>;
 }
 
@@ -371,6 +374,21 @@ export function useChatRoom(
     [optimisticMessage, send]
   );
 
+  const sendStats = useCallback(
+    async (variant: ChatStatsVariant) => {
+      const clientMessageId = crypto.randomUUID();
+      // 숫자는 서버가 채운다 — 낙관적 말풍선에는 stats 를 넣지 않고,
+      // 서버 확정본이 오면 카드가 그려진다. 클라가 지어낸 숫자를 잠깐
+      // 보여 주면 그게 박제값과 다를 때 더 이상하다.
+      await send(
+        clientMessageId,
+        optimisticMessage(clientMessageId, 'STATS_SHARE'),
+        async () => ({ type: 'STATS_SHARE', statsVariant: variant })
+      );
+    },
+    [optimisticMessage, send]
+  );
+
   const retry = useCallback(
     async (message: ChatMessage) => {
       const clientMessageId = message.clientMessageId;
@@ -411,6 +429,7 @@ export function useChatRoom(
     sendText,
     sendImage,
     sendShare,
+    sendStats,
     retry,
   };
 }
