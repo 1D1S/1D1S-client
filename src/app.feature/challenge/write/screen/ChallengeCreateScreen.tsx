@@ -24,6 +24,7 @@ import { ChallengeCreatePostEndWriteSection } from '@feature/challenge/write/com
 import { ChallengeCreatePreviewCard } from '@feature/challenge/write/components/ChallengeCreatePreviewCard';
 import { ChallengeCreateSuccessDialog } from '@feature/challenge/write/components/ChallengeCreateSuccessDialog';
 import { ChallengeCreateVisibilitySection } from '@feature/challenge/write/components/ChallengeCreateVisibilitySection';
+import { ChallengeDiaryTemplateSection } from '@feature/challenge/write/components/ChallengeDiaryTemplateSection';
 import {
   ChallengeCreateFormValues,
   useChallengeCreateForm,
@@ -207,6 +208,7 @@ export default function ChallengeCreateScreen(): React.ReactElement {
               <ChallengeCreateVisibilitySection />
               <ChallengeCreatePhotoSection />
               <ChallengeCreatePostEndWriteSection />
+              <ChallengeDiaryTemplateSection step={8} />
             </div>
 
             <aside className="hidden lg:block">

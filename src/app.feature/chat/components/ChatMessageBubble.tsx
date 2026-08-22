@@ -15,6 +15,7 @@ import {
   ChatShareCard,
   hasLinkPreviewContent,
 } from './ChatShareCard';
+import { ChatStatsCard } from './ChatStatsCard';
 
 /**
  * 사진 말풍선. 세로로 긴 사진이 말풍선을 화면 높이만큼 밀어내지 않도록
@@ -159,6 +160,14 @@ export function ChatBubbleBody({
     case 'CHALLENGE_SHARE':
     case 'DIARY_SHARE':
       return withCaption(<ChatShareCard message={message} isMine={isMine} />);
+    case 'STATS_SHARE':
+      // 보내는 중(낙관적)에는 아직 숫자가 없다 — 서버 확정본이 오면
+      // 카드가 채워진다. 그때까지는 무엇을 보냈는지만 알린다.
+      return message.stats ? (
+        withCaption(<ChatStatsCard stats={message.stats} isMine={isMine} />)
+      ) : (
+        <BubbleText value="통계를 보내는 중…" isMine={isMine} muted />
+      );
     case 'IMAGE':
       return withCaption(<ImageBody message={message} />);
     case 'TEXT': {
@@ -239,11 +248,42 @@ const AVATAR_SIZE = 'h-10 w-10';
 const AVATAR_INDENT = 'pl-[48px]';
 
 /**
- * 상대 프로필. 서버가 메시지에 프로필 이미지를 싣지 않아 **닉네임 첫 글자**를
- * 브랜드 톤 원에 넣는다 — 빈 회색 원보다 누구인지가 읽힌다. 이미지가
- * 계약에 생기면 이 자리만 바꾸면 된다.
+ * 상대 프로필.
+ *
+ * **채팅 메시지 계약에는 프로필 이미지가 없다**(ChatMessageResponse 확인).
+ * 그래서 방이 속한 챌린지의 참여자 목록에서 senderId 로 찾아 쓴다. 목록에
+ * 없거나(탈퇴·강퇴) 이미지를 안 걸어 둔 사람은 닉네임 첫 글자를 브랜드 톤
+ * 원에 넣는다 — 빈 회색 원보다 누구인지가 읽힌다.
  */
-function SenderAvatar({ nickname }: { nickname: string }): React.ReactElement {
+function SenderAvatar({
+  nickname,
+  imageUrl,
+}: {
+  nickname: string;
+  imageUrl?: string | null;
+}): React.ReactElement {
+  const resolved = resolveDiaryImageUrl(imageUrl);
+  if (resolved) {
+    return (
+      <span
+        className={cn(
+          AVATAR_SIZE,
+          'shrink-0 overflow-hidden rounded-full bg-gray-100'
+        )}
+      >
+        {/* 프로필은 S3 호스트가 가변이라 next/image remotePatterns 로
+            고정할 수 없다. 깨지면 아래 이니셜로 못 떨어지므로, 로드
+            실패는 alt 가 아니라 배경 회색 원으로 남는다. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={resolved}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover"
+        />
+      </span>
+    );
+  }
   return (
     <span
       aria-hidden
@@ -303,6 +343,8 @@ interface ChatMessageBubbleProps {
   highlighted?: boolean;
   /** 이 메시지를 아직 안 읽은 사람 수. */
   unread?: number;
+  /** 발신자 프로필. 메시지 계약에 없어 참여자 목록에서 찾아 넘긴다. */
+  senderImageUrl?: string | null;
   onRetry?(): void;
   onOpenActions?(message: ChatMessage): void;
 }
@@ -315,6 +357,7 @@ export function ChatMessageBubble({
   group = 'single',
   highlighted = false,
   unread = 0,
+  senderImageUrl,
   onRetry,
   onOpenActions,
 }: ChatMessageBubbleProps): React.ReactElement {
@@ -325,7 +368,8 @@ export function ChatMessageBubble({
     !hidden &&
     (message.type === 'IMAGE' ||
       message.type === 'CHALLENGE_SHARE' ||
-      message.type === 'DIARY_SHARE');
+      message.type === 'DIARY_SHARE' ||
+      message.type === 'STATS_SHARE');
   // 꼬리는 묶음의 바깥쪽 한 군데에만 붙는다. 상대는 맨 위, 나는 맨 아래다.
   const tail = isMine
     ? group === 'single' || group === 'last'
@@ -349,7 +393,10 @@ export function ChatMessageBubble({
           그 아래로 말풍선이 쌓인다. 연속 발화면 첫 줄에만 그린다. */}
       {!isMine && showSender ? (
         <div className="flex items-center gap-2 pb-1">
-          <SenderAvatar nickname={message.senderNickname} />
+          <SenderAvatar
+            nickname={message.senderNickname}
+            imageUrl={senderImageUrl}
+          />
           <Text size="caption2" weight="medium" className="text-gray-600">
             {message.senderNickname}
           </Text>

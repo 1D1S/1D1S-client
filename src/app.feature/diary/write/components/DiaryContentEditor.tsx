@@ -29,6 +29,13 @@ const lowlight = createLowlight(common);
 interface DiaryContentEditorProps {
   content: string;
   onChange(html: string): void;
+  /**
+   * 'template' 은 챌린지 일지 양식용이다. 서버가 양식에서 허용하는 태그는
+   * p br strong em u ul ol li pre code 뿐이라, 툴바에 없더라도 입력 규칙
+   * (`# `·`> `·`---`)으로 만들어지는 제목·인용·구분선을 **아예 끈다**.
+   * 켜 두면 호스트가 제목을 넣어 저장한 뒤 서버가 스트립해 조용히 사라진다.
+   */
+  variant?: 'diary' | 'template';
 }
 
 // 코드 블록이 문서 맨 위에 있고 첫 줄에 커서가 있을 때 ArrowUp을 누르면
@@ -143,12 +150,24 @@ function toggleCodeBlockMerged(editor: Editor): void {
 export function DiaryContentEditor({
   content,
   onChange,
+  variant = 'diary',
 }: DiaryContentEditorProps): React.ReactElement {
+  const isTemplate = variant === 'template';
   const lastSyncedHtmlRef = useRef('');
   const editor = useEditor({
     extensions: [
       // underline 은 StarterKit v3 에 포함 — 별도 등록 시 중복 경고
-      StarterKit.configure({ codeBlock: false }),
+      StarterKit.configure({
+        codeBlock: false,
+        ...(isTemplate
+          ? {
+              heading: false as const,
+              blockquote: false as const,
+              horizontalRule: false as const,
+              link: false as const,
+            }
+          : {}),
+      }),
       CodeBlockWithEscape.configure({ lowlight, defaultLanguage: 'plaintext' }),
       // TiptapImage, // 본문 이미지 삽입 기능은 임시 비활성화
     ],
@@ -242,14 +261,24 @@ export function DiaryContentEditor({
           </ToolbarButton>
         </div>
 
-        <div className="min-h-[420px] p-4">
+        <div className={cn(isTemplate ? 'min-h-[220px]' : 'min-h-[420px]', 'p-4')}>
           <EditorContent
             editor={editor}
             className={cn(
               'prose prose-sm max-w-none text-gray-700 outline-none',
               // prose 무효 → <p> 마진 0. 작성 화면도 본문과 같은 문단 간격.
-              '[&_.tiptap>p]:my-2 [&_.tiptap>p:empty]:min-h-[1.5em]',
-              '[&_.tiptap]:min-h-[380px] [&_.tiptap]:outline-none',
+              // 값이 갈리면 쓰면서 본 간격과 저장 후 간격이 달라진다.
+              // 렌더러(DiaryContentRenderer)와 같은 값 — 앱 확정치다.
+              'text-[15px] leading-[1.5]',
+              '[&_.tiptap>p]:my-0 [&_.tiptap>p+p]:mt-[6px]',
+              // ProseMirror 는 빈 문단을 `<p><br></p>` 로 그려 :empty 가
+              // 걸리지 않지만, 저장본이 `<p></p>` 인 글을 다시 열 때를
+              // 위해 렌더러와 같은 규칙을 둔다.
+              '[&_.tiptap>p:empty]:h-[1.5em]',
+              isTemplate
+                ? '[&_.tiptap]:min-h-[180px]'
+                : '[&_.tiptap]:min-h-[380px]',
+              '[&_.tiptap]:outline-none',
               '[&_.tiptap_img]:max-h-80 [&_.tiptap_img]:rounded-lg',
               '[&_li]:mb-1 [&_ol]:list-decimal [&_ol]:pl-5',
               '[&_ul]:list-disc [&_ul]:pl-5',

@@ -3,10 +3,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, type UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
-import type {
-  ChallengeCategory,
-  GoalType,
-  ParticipationType,
+import {
+  type ChallengeCategory,
+  DIARY_TEMPLATE_MAX_LENGTH,
+  type GoalType,
+  type ParticipationType,
 } from '../../board/type/challenge';
 
 function isWholeNumberString(value?: string): boolean {
@@ -45,6 +46,13 @@ export const challengeEditFormSchema = z
     thumbnailImageKey: z.string().optional(),
     thumbnailPreviewUrl: z.string().optional(),
     thumbnailRemoved: z.boolean(),
+    diaryTemplate: z
+      .string()
+      .max(
+        DIARY_TEMPLATE_MAX_LENGTH,
+        `일지 양식은 ${DIARY_TEMPLATE_MAX_LENGTH}자 이하로 입력해주세요.`
+      )
+      .optional(),
     goals: z.array(
       z.object({
         value: z
@@ -107,6 +115,7 @@ export interface ChallengeEditFormDefaults {
   allowMidJoin: boolean;
   thumbnailImageKey?: string;
   thumbnailPreviewUrl?: string;
+  diaryTemplate: string;
   goals: string[];
   participationType: ParticipationType;
   goalType: GoalType;
@@ -130,6 +139,7 @@ export function useChallengeEditForm(
       thumbnailImageKey: defaults.thumbnailImageKey,
       thumbnailPreviewUrl: defaults.thumbnailPreviewUrl,
       thumbnailRemoved: false,
+      diaryTemplate: defaults.diaryTemplate,
       goals: defaults.goals.map((value) => ({ value })),
       isGroup: defaults.participationType === 'GROUP',
       isFixedGoal: defaults.goalType === 'FIXED',

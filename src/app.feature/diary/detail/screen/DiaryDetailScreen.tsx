@@ -350,10 +350,9 @@ function DiaryDetailView({
                         : 'lg:mt-3.5'
                     )}
                   >
-                    <DiaryContentRenderer
-                      html={diaryData.contentHtml}
-                      className="text-[15px] leading-[1.9]"
-                    />
+                    {/* 글자 크기·줄 간격·문단 간격은 렌더러가 앱과 맞춘
+                        값으로 정한다. 여기서 덮어쓰면 앱과 갈라진다. */}
+                    <DiaryContentRenderer html={diaryData.contentHtml} />
                   </div>
                 ) : null}
               </section>

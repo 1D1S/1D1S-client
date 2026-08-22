@@ -47,6 +47,7 @@ import { ChallengeDetailMobileHeader } from '../components/ChallengeDetailMobile
 import { ChallengeDiaryCalendar } from '../components/ChallengeDiaryCalendar';
 import { ChallengeDiaryDateFilter } from '../components/ChallengeDiaryDateFilter';
 import { ChallengeDiaryList } from '../components/ChallengeDiaryList';
+import { ChallengeDiaryTemplateCard } from '../components/ChallengeDiaryTemplateCard';
 import { ChallengeGoalModals } from '../components/ChallengeGoalModals';
 import { ChallengeInfoCard } from '../components/ChallengeInfoCard';
 import { ChallengeLeaderboardCard } from '../components/ChallengeLeaderboardCard';
@@ -791,6 +792,12 @@ export function ChallengeDetailScreen({
                       editLabel={rulesEditLabel}
                       onEdit={rulesOnEdit}
                     />
+
+                    {detail.diaryTemplate?.trim() ? (
+                      <ChallengeDiaryTemplateCard
+                        template={detail.diaryTemplate}
+                      />
+                    ) : null}
 
                     <ChallengeInfoCard
                       dateRangeText={dateRangeText}
