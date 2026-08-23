@@ -18,6 +18,7 @@ import React, { useEffect, useMemo } from 'react';
 
 import type { ChallengeGoal } from '../../../challenge/board/type/challenge';
 import { DiaryCreateChallengeSection } from '../components/DiaryCreateChallengeSection';
+import { DiaryCreatedDialog } from '../components/DiaryCreatedDialog';
 import { DiaryCreateGoalsSection } from '../components/DiaryCreateGoalsSection';
 import { DiaryCreateMoodSelector } from '../components/DiaryCreateMoodSelector';
 import { DiaryCreateThumbnailSection } from '../components/DiaryCreateThumbnailSection';
@@ -53,6 +54,8 @@ export default function DiaryCreateScreen(): React.ReactElement {
     setContent,
     canRemoveTemplate,
     removeTemplate,
+    created,
+    clearCreated,
     selectedMood,
     setSelectedMood,
     achievedDate,
@@ -395,6 +398,25 @@ export default function DiaryCreateScreen(): React.ReactElement {
         title="새 일지를 작성할 수 없습니다."
         description="최근 3일 동안 작성 가능한 날짜를 모두 사용했습니다."
       />
+
+      {/* 저장하자마자 이동하지 않고 완료를 알린다(앱과 동일). 어디로 갈지는
+          사용자가 고른다 — 예전엔 조용히 목록으로 튕겨 저장됐는지 몰랐다. */}
+      {created ? (
+        <DiaryCreatedDialog
+          open
+          streakIncreased={created.streakIncreased}
+          streakDays={created.streakDays}
+          canViewDiary={created.diaryId !== null}
+          onViewDiary={() => {
+            clearCreated();
+            router.push(`/diary/${created.diaryId}`);
+          }}
+          onBack={() => {
+            clearCreated();
+            router.push('/diary');
+          }}
+        />
+      ) : null}
     </div>
   );
 }
