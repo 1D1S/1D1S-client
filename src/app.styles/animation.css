@@ -476,3 +476,58 @@
     animation: none;
   }
 }
+
+/* 일지 작성 완료 축하 — 색종이 한 번 터짐(앱 AppConfetti 와 같은 계약).
+   조각마다 --dx/--dy/--rot/--delay 를 인라인으로 받아 키프레임 하나를
+   공유한다. 조각 수만큼 키프레임을 만들면 CSS 가 통째로 불어난다.
+
+   중력까지 흉내 내려고 두 단계로 쪼갠다 — 등속으로 날면 종이가 아니라
+   광선처럼 보인다(앱 주석과 같은 이유). */
+@keyframes confettiPiece {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  65% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--rot));
+  }
+}
+
+.animate-confetti-piece {
+  animation: confettiPiece 1100ms cubic-bezier(0.15, 0.6, 0.5, 1) forwards;
+  animation-delay: var(--delay, 0ms);
+}
+
+/* 축하 배지 팝인 — 앱 CelebrationBadge 의 팝인 톤. 한 번만 돈다. */
+@keyframes celebratePop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-celebrate-pop {
+  animation: celebratePop 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-confetti-piece {
+    animation: none;
+    opacity: 0;
+  }
+  .animate-celebrate-pop {
+    animation: none;
+  }
+}
