@@ -29,7 +29,7 @@ import {
 import { useAchievedDateGuard } from './useAchievedDateGuard';
 import { useDiaryEditInitializer } from './useDiaryEditInitializer';
 import { useDiaryImagePicker } from './useDiaryImagePicker';
-import { useDiarySubmit } from './useDiarySubmit';
+import { type DiaryCreatedResult, useDiarySubmit } from './useDiarySubmit';
 import { useDiaryTemplateInitializer } from './useDiaryTemplateInitializer';
 
 const EMPTY_GOALS: ChallengeGoal[] = [];
@@ -63,6 +63,9 @@ interface UseDiaryCreateFormResult {
   canRemoveTemplate: boolean;
   removeTemplate(): void;
   submitButtonLabel: string;
+  /** 작성 완료 모달 상태(새 일지만). */
+  created: DiaryCreatedResult | null;
+  clearCreated(): void;
   canSubmit: boolean;
   isSubmitting: boolean;
   isMissingChallengeDialogOpen: boolean;
@@ -270,7 +273,13 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
       ) && !isSelectedChallengeArchived
     : false;
 
-  const { handleSubmit, isSubmitting, submitButtonLabel } = useDiarySubmit({
+  const {
+    handleSubmit,
+    isSubmitting,
+    submitButtonLabel,
+    created,
+    clearCreated,
+  } = useDiarySubmit({
     isEditMode,
     requestedDiaryId,
     selectedChallenge,
@@ -430,6 +439,8 @@ export function useDiaryCreateForm(): UseDiaryCreateFormResult {
     canRemoveTemplate,
     removeTemplate,
     submitButtonLabel,
+    created,
+    clearCreated,
     canSubmit,
     isSubmitting,
     isMissingChallengeDialogOpen,

@@ -1,10 +1,12 @@
+import { MEMBER_QUERY_KEYS } from '@feature/member/consts/queryKeys';
 import { getApiErrorCode } from '@module/api/error';
 import { uploadImagesViaPresigned } from '@module/api/presignedUpload';
 import { toast } from '@module/providers/toast';
 import { formatDateISO } from '@module/utils/date';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import type { MutableRefObject } from 'react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import type { ChallengeListItem } from '../../../challenge/board/type/challenge';
 import type { Feeling } from '../../board/type/diary';
@@ -45,10 +47,20 @@ interface UseDiarySubmitParams {
   submitSuccessRef: MutableRefObject<boolean>;
 }
 
+/** 저장 성공 후 완료 모달에 넘길 값. null 이면 모달을 안 띄운다. */
+export interface DiaryCreatedResult {
+  diaryId: number | null;
+  streakIncreased: boolean;
+  streakDays: number;
+}
+
 export interface UseDiarySubmitResult {
   handleSubmit(): Promise<void>;
   isSubmitting: boolean;
   submitButtonLabel: string;
+  /** 작성 완료 모달 상태. 앱과 달리 웹은 저장 후 바로 이동했었다. */
+  created: DiaryCreatedResult | null;
+  clearCreated(): void;
 }
 
 /**
@@ -73,8 +85,39 @@ export function useDiarySubmit({
   submitSuccessRef,
 }: UseDiarySubmitParams): UseDiarySubmitResult {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const createDiary = useCreateDiary();
   const updateDiary = useUpdateDiary();
+  const [created, setCreated] = useState<DiaryCreatedResult | null>(null);
+
+  /**
+   * 현재 스트릭. 사이드바가 이미 주는 값(streakCount)을 그대로 읽는다 —
+   * 앱이 /widget/summary 에서 읽는 것과 같은 숫자다.
+   *
+   * ponytail: 서버가 일지 생성 응답에 streak 를 실어 주면 저장 전후 두 번
+   * 읽는 이 경로를 통째로 지운다. 스트릭 판정은 원래 서버 몫이다 —
+   * achievedDate 기준에 유예가 붙어 클라가 "오늘 첫 작성인가" 로 흉내 내면
+   * 틀린다(앱도 같은 이유로 같은 우회를 쓴다).
+   */
+  const readStreak = useCallback(
+    async (refetch: boolean): Promise<number | null> => {
+      try {
+        if (refetch) {
+          await queryClient.refetchQueries({
+            queryKey: MEMBER_QUERY_KEYS.sidebar(),
+          });
+        }
+        const data = queryClient.getQueryData<{ streakCount?: number }>(
+          MEMBER_QUERY_KEYS.sidebar()
+        );
+        return data?.streakCount ?? null;
+      } catch {
+        // 스트릭을 못 읽어도 저장은 성공이다 — 모달만 기본 분기로 간다.
+        return null;
+      }
+    },
+    [queryClient]
+  );
 
   const isSubmitting =
     createDiary.isPending || updateDiary.isPending || isUploadingImages;
@@ -158,11 +201,16 @@ export function useDiarySubmit({
           },
         });
 
+        // 수정은 앱과 같이 토스트로만 알린다(완료 모달은 새 일지 전용).
+        toast.success('일지를 수정했어요.');
         router.push(`/diary/${requestedDiaryId}`);
         return;
       }
 
-      await createDiary.mutateAsync({
+      // 저장 전 스트릭. 캐시에 이미 있는 값이라 왕복이 늘지 않는다.
+      const streakBefore = await readStreak(false);
+
+      const createdDiary = await createDiary.mutateAsync({
         challengeId: selectedChallenge.challengeId,
         title: trimmedTitle,
         content,
@@ -174,7 +222,18 @@ export function useDiarySubmit({
         thumbnailUrl,
       });
 
-      router.push('/diary');
+      // 저장 후 스트릭. mutation 이 사이드바를 무효화하므로 다시 받아 온다.
+      const streakAfter = await readStreak(true);
+
+      // 이동하지 않고 완료 모달을 띄운다 — 어디로 갈지는 사용자가 고른다.
+      setCreated({
+        diaryId: createdDiary?.id ?? null,
+        streakIncreased:
+          streakBefore != null &&
+          streakAfter != null &&
+          streakAfter > streakBefore,
+        streakDays: streakAfter ?? 0,
+      });
     } catch (error) {
       submitSuccessRef.current = false;
       // 프론트에서 이미 막지만, 백엔드 도메인 위반 응답도 방어적으로 처리한다.
@@ -201,6 +260,7 @@ export function useDiarySubmit({
     requestedDiaryId,
     selectedChallenge,
     selectedMood,
+    readStreak,
     setIsUploadingImages,
     submitSuccessRef,
     thumbnailImageUrl,
@@ -215,5 +275,13 @@ export function useDiarySubmit({
     isEditMode,
   });
 
-  return { handleSubmit, isSubmitting, submitButtonLabel };
+  const clearCreated = useCallback(() => setCreated(null), []);
+
+  return {
+    handleSubmit,
+    isSubmitting,
+    submitButtonLabel,
+    created,
+    clearCreated,
+  };
 }
