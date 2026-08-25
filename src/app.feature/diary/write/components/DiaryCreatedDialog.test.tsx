@@ -45,6 +45,15 @@ describe('DiaryCreatedDialog — 앱 showDiaryCreatedModal 과 같은 분기', (
     expect(screen.getByText('돌아가기')).toBeDefined();
   });
 
+  // 상용에서 모달이 화면 맨 아래에 떴던 회귀. className 에 position
+  // 유틸을 얹으면 tailwind-merge 가 DialogContent 의 `fixed` 를 지운다.
+  it('카드는 fixed 로 화면 중앙에 선다', () => {
+    open();
+    const card = screen.getByRole('dialog');
+    expect(card.className).toContain('fixed');
+    expect(card.className.split(/\s+/)).not.toContain('relative');
+  });
+
   it('바깥을 눌러 닫으면 돌아가기와 같게 다룬다', () => {
     const onBack = vi.fn();
     open({ onBack });
