@@ -1,6 +1,7 @@
 import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSkeleton';
 import { ChallengeDetailPreview } from '@feature/challenge/detail/components/ChallengeDetailPreview';
 import { ChallengeDetailScreen } from '@feature/challenge/detail/screen/ChallengeDetailScreen';
+import { buildChallengeJsonLd, JsonLd } from '@module/metadata/jsonLd';
 import {
   buildPageMetadata,
   fetchPublicChallenge,
@@ -66,19 +67,34 @@ export default async function ChallengeDetail({
   const challenge = await fetchPublicChallenge(id);
 
   return (
-    <Suspense
-      fallback={
-        challenge ? (
-          <ChallengeDetailPreview challenge={challenge} />
-        ) : (
-          <ChallengeDetailSkeleton />
-        )
-      }
-    >
-      <ChallengeDetailScreen
-        id={id}
-        initialChallenge={challenge ?? undefined}
-      />
-    </Suspense>
+    <>
+      {challenge ? (
+        <JsonLd
+          data={buildChallengeJsonLd({
+            id,
+            title: challenge.title,
+            description: challenge.description,
+            imageUrl: challenge.thumbnailImage,
+            startDate: challenge.startDate,
+            endDate: challenge.endDate,
+            participantCnt: challenge.participantCnt,
+          })}
+        />
+      ) : null}
+      <Suspense
+        fallback={
+          challenge ? (
+            <ChallengeDetailPreview challenge={challenge} />
+          ) : (
+            <ChallengeDetailSkeleton />
+          )
+        }
+      >
+        <ChallengeDetailScreen
+          id={id}
+          initialChallenge={challenge ?? undefined}
+        />
+      </Suspense>
+    </>
   );
 }
