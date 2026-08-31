@@ -1,3 +1,4 @@
+import { CHALLENGE_SEARCH_PARAM } from '@constants/challengeSearch';
 import React from 'react';
 
 import {
@@ -48,9 +49,10 @@ export function buildOrganizationJsonLd(): Record<string, unknown> {
 }
 
 /**
- * WebSite. potentialAction(SearchAction)은 넣지 않는다 — 챌린지 검색어가
- * URL 파라미터가 아니라 화면 로컬 상태라, 검색 결과를 가리키는 주소가
- * 아직 없다. 없는 주소를 선언하면 크롤러가 404 를 받는다.
+ * WebSite + SearchAction.
+ *
+ * 챌린지 검색이 `/challenge?keyword=` 로 주소를 갖게 되면서 검색엔진이
+ * 사이트 내 검색으로 바로 보낼 수 있다. 쿼리 키는 화면과 같은 상수를 쓴다.
  */
 export function buildWebSiteJsonLd(): Record<string, unknown> {
   return {
@@ -62,6 +64,16 @@ export function buildWebSiteJsonLd(): Record<string, unknown> {
     description: SITE_DESCRIPTION,
     inLanguage: 'ko-KR',
     publisher: { '@id': ORGANIZATION_ID },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: toAbsoluteUrl(
+          `/challenge?${CHALLENGE_SEARCH_PARAM}={search_term_string}`
+        ),
+      },
+      'query-input': 'required name=search_term_string',
+    },
   };
 }
 
@@ -138,6 +150,53 @@ export function buildFaqJsonLd(
       '@type': 'Question',
       name: question,
       acceptedAnswer: { '@type': 'Answer', text: answer },
+    })),
+  };
+}
+
+interface ArticleJsonLdInput {
+  slug: string;
+  title: string;
+  description: string;
+  updated: string;
+}
+
+/** 주제별 가이드 글 = Article. 작성자는 서비스 자신(Organization)이다. */
+export function buildArticleJsonLd({
+  slug,
+  title,
+  description,
+  updated,
+}: ArticleJsonLdInput): Record<string, unknown> {
+  const url = toAbsoluteUrl(`/guide/${slug}`);
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: title,
+    description,
+    url,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    inLanguage: 'ko-KR',
+    datePublished: updated,
+    dateModified: updated,
+    image: toAbsoluteUrl(DEFAULT_OG_IMAGE_PATH),
+    author: { '@id': ORGANIZATION_ID },
+    publisher: { '@id': ORGANIZATION_ID },
+  };
+}
+
+export function buildBreadcrumbJsonLd(
+  trail: ReadonlyArray<{ name: string; path: string }>
+): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: trail.map(({ name, path }, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name,
+      item: toAbsoluteUrl(path),
     })),
   };
 }

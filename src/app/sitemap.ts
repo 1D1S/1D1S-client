@@ -1,3 +1,4 @@
+import { GUIDE_ARTICLE_SLUGS } from '@feature/guide/consts/guideArticles';
 import { fetchAllPublicChallenges, SITE_URL } from '@module/metadata/seo';
 import type { MetadataRoute } from 'next';
 
@@ -13,6 +14,7 @@ const PUBLIC_PATHS = [
   '/inquiry',
   '/terms',
   '/privacy',
+  ...GUIDE_ARTICLE_SLUGS.map((slug) => `/guide/${slug}`),
 ];
 
 // lastModified 는 넣지 않는다. GET /challenges 응답에 수정 시각
