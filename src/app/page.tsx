@@ -1,6 +1,11 @@
 import HomeMobileHeader from '@feature/home/components/HomeMobileHeader';
 import HomeScreen from '@feature/home/screen/HomeScreen';
 import StoryRingSkeleton from '@feature/stories/components/StoryRingSkeleton';
+import {
+  buildOrganizationJsonLd,
+  buildWebSiteJsonLd,
+  JsonLd,
+} from '@module/metadata/jsonLd';
 import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 
@@ -39,6 +44,8 @@ function HomeLoadingSkeleton(): React.ReactElement {
 export default function MainPage(): React.ReactElement {
   return (
     <div className="flex min-h-screen w-full flex-col bg-white">
+      <JsonLd data={buildOrganizationJsonLd()} />
+      <JsonLd data={buildWebSiteJsonLd()} />
       <HomeMobileHeader />
       <Suspense fallback={<HomeLoadingSkeleton />}>
         <HomeScreen />
