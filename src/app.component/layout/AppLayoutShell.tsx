@@ -95,6 +95,9 @@ function resolveActiveNavId(pathname: string): string {
   if (pathname.startsWith('/diary')) {
     return 'diary';
   }
+  if (pathname.startsWith('/guide')) {
+    return 'guide';
+  }
   if (pathname.startsWith('/mypage')) {
     return 'mypage';
   }
