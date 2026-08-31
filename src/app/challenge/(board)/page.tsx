@@ -1,6 +1,18 @@
 import { ChallengeBoardSkeleton } from '@component/skeletons/ChallengeBoardSkeleton';
 import ChallengeBoardScreen from '@feature/challenge/board/screen/ChallengeBoardScreen';
+import {
+  buildPageMetadata,
+  fetchPublicChallengeList,
+} from '@module/metadata/seo';
+import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
+
+export const metadata: Metadata = buildPageMetadata({
+  title: '챌린지 | 1Day 1Streak',
+  description: '지금 모집 중인 챌린지를 찾아 매일의 기록을 시작하세요.',
+  path: '/challenge',
+  type: 'website',
+});
 
 /**
  * 데이터 프리페치는 클라이언트 React Query(useChallengeList)로 이관했다.
@@ -15,9 +27,15 @@ import React, { Suspense } from 'react';
  * 에만 fallback 이 적용된다. (ChallengeBoardScreen 의 useSearchParams CSR
  * bailout 경계도 겸한다.)
  */
-export default function ChallengeListPage(): React.ReactElement {
+// 초기 HTML(=fallback)에 실을 챌린지 수. 목록 자체는 하이드레이션 후
+// 무한스크롤이 채우므로 첫 화면 분량이면 충분하다.
+const SSR_CHALLENGE_COUNT = 12;
+
+export default async function ChallengeListPage(): Promise<React.ReactElement> {
+  const challenges = await fetchPublicChallengeList(SSR_CHALLENGE_COUNT);
+
   return (
-    <Suspense fallback={<ChallengeBoardSkeleton />}>
+    <Suspense fallback={<ChallengeBoardSkeleton challenges={challenges} />}>
       <ChallengeBoardScreen />
     </Suspense>
   );

@@ -1,5 +1,4 @@
-import { API_BASE_URL } from '@module/api/config';
-import { SITE_URL } from '@module/metadata/seo';
+import { fetchPublicChallengeList, SITE_URL } from '@module/metadata/seo';
 import type { MetadataRoute } from 'next';
 
 // 일지는 전부 비공개라 목록·상세 모두 제외한다(robots.ts 에서도 disallow).
@@ -16,44 +15,17 @@ const PUBLIC_PATHS = [
   '/privacy',
 ];
 
+// lastModified 는 넣지 않는다. GET /challenges 응답에 수정 시각
+// (updatedAt/createdAt)이 없어서 지금 넣을 수 있는 값은 "사이트맵 생성
+// 시각"뿐인데, 그건 실제 갱신과 무관해 Google 이 lastmod 전체를 무시하게
+// 만든다. 서버가 목록 항목에 updatedAt 을 실어주면 그때 채운다.
+//
 // ponytail: 커서 페이지네이션을 끝까지 돌지 않고 첫 페이지만 싣는다.
 // 챌린지가 이 수를 넘어 색인 누락이 문제가 되면 그때 while 루프를 붙인다.
 const CHALLENGE_SITEMAP_LIMIT = 100;
 
-// 공개 목록(GET /challenges)을 비인증으로 조회한다. 실패하면 정적 경로만
-// 담긴 사이트맵을 내보낸다 — 백엔드가 느려도 /sitemap.xml 은 200 이어야 한다.
-async function fetchPublicChallengeIds(): Promise<number[]> {
-  if (!API_BASE_URL) {
-    return [];
-  }
-
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/challenges?limit=${CHALLENGE_SITEMAP_LIMIT}`,
-      {
-        headers: { accept: 'application/json' },
-        next: { revalidate: 3_600 },
-        signal: AbortSignal.timeout(5_000),
-      }
-    );
-    if (!res.ok) {
-      return [];
-    }
-
-    const body = (await res.json()) as {
-      data?: { items?: Array<{ challengeId?: number }> };
-    };
-
-    return (body.data?.items ?? [])
-      .map((item) => item.challengeId)
-      .filter((id): id is number => typeof id === 'number');
-  } catch {
-    return [];
-  }
-}
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const challengeIds = await fetchPublicChallengeIds();
+  const challenges = await fetchPublicChallengeList(CHALLENGE_SITEMAP_LIMIT);
 
   return [
     ...PUBLIC_PATHS.map((path) => ({
@@ -61,8 +33,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: path === '/' ? ('daily' as const) : ('weekly' as const),
       priority: path === '/' ? 1 : 0.7,
     })),
-    ...challengeIds.map((id) => ({
-      url: new URL(`/challenge/${id}`, SITE_URL).toString(),
+    ...challenges.map(({ challengeId }) => ({
+      url: new URL(`/challenge/${challengeId}`, SITE_URL).toString(),
       changeFrequency: 'daily' as const,
       priority: 0.8,
     })),

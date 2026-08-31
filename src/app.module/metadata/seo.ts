@@ -35,18 +35,32 @@ export function toAbsoluteUrl(path: string): string {
   }
 }
 
-interface ResourceMetadataInput {
+interface PageMetadataInput {
   title: string;
   description: string;
+  // 자기참조 canonical 과 og:url 의 경로('/challenge/12' 등).
+  path: string;
   // 리소스의 대표 이미지(S3 썸네일 등). 없으면 기본 OG 이미지로 폴백.
   imageUrl?: string | null;
+  type?: 'website' | 'article';
 }
 
-export function buildResourceMetadata({
+/**
+ * 페이지별 title/description/OG + **자기참조 canonical** 을 만든다.
+ *
+ * canonical 을 루트 레이아웃에 두면 모든 하위 페이지가 홈 URL 을 정답으로
+ * 선언해 색인에서 "대체 페이지"로 접히므로, 페이지마다 자기 경로로 넣는다.
+ * og:url 도 같은 이유로 여기서 채운다 — Next 는 하위에서 openGraph 를
+ * 정의하면 부모 openGraph 를 상속하지 않고 통째로 대체하기 때문에,
+ * 이 함수를 쓰지 않는 페이지는 루트의 홈 URL 을 그대로 물고 나간다.
+ */
+export function buildPageMetadata({
   title,
   description,
+  path,
   imageUrl,
-}: ResourceMetadataInput): Metadata {
+  type = 'article',
+}: PageMetadataInput): Metadata {
   const isDefault = !imageUrl;
   const absoluteImage = toAbsoluteUrl(imageUrl || DEFAULT_OG_IMAGE_PATH);
   // 기본 이미지만 크기를 아는 값(1200×630)으로 명시한다. S3 썸네일은 크기를
@@ -63,12 +77,14 @@ export function buildResourceMetadata({
   return {
     title,
     description,
+    alternates: { canonical: path },
     openGraph: {
       title,
       description,
+      url: toAbsoluteUrl(path),
       siteName: SITE_TITLE,
       locale: 'ko_KR',
-      type: 'article',
+      type,
       images: [image],
     },
     twitter: {
@@ -84,13 +100,19 @@ export interface PublicChallengeMeta {
   title: string;
   description?: string | null;
   thumbnailImage?: string | null;
+  category?: string | null;
+  challengeType?: string | null;
+  goalType?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  participantCnt?: number | null;
 }
 
 // 챌린지 상세는 비인증 GET /challenges/{id} 가 열려 있어(dev tip 248a99d~)
 // 게스트 응답으로 제목·설명·썸네일을 그대로 OG 에 채운다. 비공개(403 또는
 // 응답의 challengeType=PRIVATE)·예약 전 공식(404)·네트워크 오류는 null 을
 // 반환해 루트 기본 OG 로 폴백한다(정보 노출 없음).
-export async function fetchPublicChallengeMeta(
+export async function fetchPublicChallenge(
   id: string
 ): Promise<PublicChallengeMeta | null> {
   if (!API_BASE_URL) {
@@ -113,6 +135,11 @@ export async function fetchPublicChallengeMeta(
           title?: string;
           thumbnailImage?: string | null;
           challengeType?: string;
+          category?: string | null;
+          goalType?: string | null;
+          startDate?: string | null;
+          endDate?: string | null;
+          participantCnt?: number | null;
         };
         challengeDetail?: { description?: string | null };
       };
@@ -136,8 +163,56 @@ export async function fetchPublicChallengeMeta(
       title,
       description: body.data?.challengeDetail?.description,
       thumbnailImage: summary?.thumbnailImage,
+      category: summary?.category,
+      challengeType: summary?.challengeType,
+      goalType: summary?.goalType,
+      startDate: summary?.startDate,
+      endDate: summary?.endDate,
+      participantCnt: summary?.participantCnt,
     };
   } catch {
     return null;
+  }
+}
+
+export interface PublicChallengeListItem {
+  challengeId: number;
+  title: string;
+  startDate?: string | null;
+  endDate?: string | null;
+}
+
+/**
+ * 공개 챌린지 목록(비인증 GET /challenges).
+ *
+ * 사이트맵의 URL 목록과, 챌린지 보드의 초기 HTML 콘텐츠가 같은 응답을 쓴다.
+ * 실패하면 빈 배열 — 백엔드가 느려도 /sitemap.xml 과 /challenge 는 떠야 한다.
+ */
+export async function fetchPublicChallengeList(
+  limit: number
+): Promise<PublicChallengeListItem[]> {
+  if (!API_BASE_URL) {
+    return [];
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/challenges?limit=${limit}`, {
+      headers: { accept: 'application/json' },
+      next: { revalidate: 3_600 },
+      signal: AbortSignal.timeout(5_000),
+    });
+    if (!res.ok) {
+      return [];
+    }
+
+    const body = (await res.json()) as {
+      data?: { items?: PublicChallengeListItem[] };
+    };
+
+    return (body.data?.items ?? []).filter(
+      (item) => typeof item?.challengeId === 'number' && Boolean(item.title)
+    );
+  } catch {
+    return [];
   }
 }
