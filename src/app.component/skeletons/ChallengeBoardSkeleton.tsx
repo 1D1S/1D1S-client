@@ -1,6 +1,8 @@
 import { Skeleton } from '@component/Skeleton';
 import { ChallengeCardSkeletonGrid } from '@component/skeletons/ChallengeCardSkeleton';
+import type { PublicChallengeListItem } from '@module/metadata/seo';
 import { cn } from '@module/utils/cn';
+import Link from 'next/link';
 import React from 'react';
 
 /**
@@ -14,7 +16,26 @@ import React from 'react';
  * (서버 컴포넌트라 `@1d1s/design-system` 의 Text 를 직접 import 할 수 없어
  *  동등한 Tailwind 클래스를 쓴다.)
  */
-export function ChallengeBoardSkeleton(): React.ReactElement {
+interface ChallengeBoardSkeletonProps {
+  /**
+   * 서버가 비인증 GET /challenges 로 미리 읽어 둔 공개 목록. 있으면 카드
+   * 스켈레톤 대신 실제 챌린지 링크를 그린다 — 이 fallback 이 곧 크롤러가
+   * 보는 초기 HTML 이라, 비어 있으면 목록 페이지가 알맹이 없이 색인된다.
+   */
+  challenges?: PublicChallengeListItem[];
+}
+
+function formatPeriod({ startDate, endDate }: PublicChallengeListItem): string {
+  if (!startDate || !endDate) {
+    return '';
+  }
+
+  return `${startDate.replaceAll('-', '.')} ~ ${endDate.replaceAll('-', '.')}`;
+}
+
+export function ChallengeBoardSkeleton({
+  challenges,
+}: ChallengeBoardSkeletonProps = {}): React.ReactElement {
   return (
     <div data-skeleton-group className="w-full">
       {/* 모바일 sticky 헤더 */}
@@ -106,8 +127,41 @@ export function ChallengeBoardSkeleton(): React.ReactElement {
           </div>
         </div>
 
-        {/* 카드 그리드 */}
-        <ChallengeCardSkeletonGrid count={8} className="mt-4 gap-4 lg:mt-6" />
+        {/* 카드 그리드 — 공개 목록을 받았으면 실제 챌린지 링크를 그린다. */}
+        {challenges?.length ? (
+          <ul
+            className={cn(
+              'mt-4 grid grid-cols-2 gap-4 lg:mt-6',
+              'md:grid-cols-3 xl:grid-cols-4'
+            )}
+          >
+            {challenges.map((challenge) => (
+              <li key={challenge.challengeId}>
+                <Link
+                  href={`/challenge/${challenge.challengeId}`}
+                  className={cn(
+                    'flex h-full flex-col gap-1.5 rounded-[14px]',
+                    'border border-gray-100 bg-white p-4'
+                  )}
+                >
+                  <h2
+                    className={cn(
+                      'line-clamp-2 text-base font-bold break-keep',
+                      'text-gray-900'
+                    )}
+                  >
+                    {challenge.title}
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    {formatPeriod(challenge)}
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <ChallengeCardSkeletonGrid count={8} className="mt-4 gap-4 lg:mt-6" />
+        )}
       </div>
     </div>
   );

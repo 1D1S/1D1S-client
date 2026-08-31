@@ -1,7 +1,12 @@
 import HomeMobileHeader from '@feature/home/components/HomeMobileHeader';
 import HomeScreen from '@feature/home/screen/HomeScreen';
 import StoryRingSkeleton from '@feature/stories/components/StoryRingSkeleton';
+import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
+
+// canonical 은 페이지마다 자기 경로여야 해서 루트 레이아웃에 두지 않는다.
+// 홈만 '/' 를 선언하고, 나머지 공개 페이지는 buildPageMetadata 가 채운다.
+export const metadata: Metadata = { alternates: { canonical: '/' } };
 
 function HomeLoadingSkeleton(): React.ReactElement {
   return (

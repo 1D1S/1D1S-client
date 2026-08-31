@@ -62,19 +62,6 @@ export interface NotificationPreferences {
   chatEnabled: boolean;
 }
 
-export interface NotificationEndpoint {
-  id: number;
-  endpointUrl: string;
-  isActive: boolean;
-  lastSeenAt: string;
-}
-
-export interface WebPushEndpointRequest {
-  endpointUrl: string;
-  p256dh: string;
-  authSecret: string;
-}
-
 export interface UnreadCount {
   unreadCount: number;
 }

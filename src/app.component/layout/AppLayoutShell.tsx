@@ -3,11 +3,9 @@
 import { Button } from '@1d1s/design-system';
 import { AppInstallPrompt } from '@feature/install/components/AppInstallPrompt';
 import { usePhoneNumberMissing } from '@feature/member/hooks/usePhoneNumberMissing';
-import { BrowserPermissionPrompt } from '@feature/notification/components/BrowserPermissionPrompt';
 import VoteFloatingScreen from '@feature/vote/screen/VoteFloatingScreen';
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { useMarkReadFromDeepLink } from '@module/hooks/useMarkReadFromDeepLink';
-import { useServiceWorkerNavigation } from '@module/hooks/useServiceWorkerNavigation';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
 import { buildLoginUrl } from '@module/utils/returnTo';
 import { ArrowLeft } from 'lucide-react';
@@ -160,15 +158,12 @@ export default function AppLayoutShell({
   }, [isNativeApp]);
 
   useTokenRefreshOnResume();
-  // 알림 클릭 시 서비스워커가 보낸 딥링크를 라우터 push 로 처리(뒤로가기 보존).
-  useServiceWorkerNavigation();
   useMarkReadFromDeepLink();
 
   // 인증/사이드바 상태는 별도 hook 으로 묶었다. shell 은 라우트 가시성 판단과
   // 핸들러 안정화에만 집중한다.
   const authState = useAuthLayoutState();
-  const { isLoggedIn, isAuthLoading, sidebarData, railChallenges } =
-    authState;
+  const { isLoggedIn, isAuthLoading, sidebarData, railChallenges } = authState;
 
   // 전화번호 미입력 시 프로필 아바타에 경고 배지를 띄운다. 사이드바 응답에는
   // phoneNumber 가 없어 my-page 쿼리를 재사용한다(동일 queryKey dedupe).
@@ -297,7 +292,6 @@ export default function AppLayoutShell({
         <AppBottomNav activeId={activeNavId} className={bottomNavRespClass} />
       ) : null}
 
-      {!isLoginPage && !isNativeApp ? <BrowserPermissionPrompt /> : null}
       {/* 모바일 웹으로 들어온 사용자에게만 앱을 권한다. 스스로 데스크톱·
           네이티브 웹뷰·홈 화면 PWA 를 걸러내므로 여기서는 조건을 겹치지
           않는다(가시성 규칙이 두 곳에 흩어지면 한쪽만 바뀐다). */}

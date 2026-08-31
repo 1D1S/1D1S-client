@@ -10,11 +10,9 @@ import { notificationApi } from '../api/notificationApi';
 import { NOTIFICATION_QUERY_KEYS } from '../consts/queryKeys';
 import {
   MarkTargetAsReadParams,
-  NotificationEndpoint,
   NotificationListData,
   NotificationPreferences,
   UnreadCount,
-  WebPushEndpointRequest,
 } from '../type/notification';
 
 interface PrefContext {
@@ -145,17 +143,6 @@ export function useUpdateNotificationPreferences(): UseMutationResult<
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: prefKey });
     },
-  });
-}
-
-export function useRegisterEndpoint(): UseMutationResult<
-  NotificationEndpoint,
-  Error,
-  WebPushEndpointRequest
-> {
-  return useMutation({
-    mutationFn: (data: WebPushEndpointRequest) =>
-      notificationApi.registerEndpoint(data),
   });
 }
 

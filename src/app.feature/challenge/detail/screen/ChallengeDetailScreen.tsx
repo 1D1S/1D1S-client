@@ -16,6 +16,7 @@ import { notifyApiError } from '@module/api/errorNotify';
 import { useNativeCapability } from '@module/hooks/useNativeCapability';
 import { useSafeBack } from '@module/hooks/useSafeBack';
 import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
+import type { PublicChallengeMeta } from '@module/metadata/seo';
 import { toast } from '@module/providers/toast';
 import { cn } from '@module/utils/cn';
 import { formatDateISO } from '@module/utils/date';
@@ -44,6 +45,7 @@ import {
 import { ChallengeDetailCompactHeader } from '../components/ChallengeDetailCompactHeader';
 import { ChallengeDetailHero } from '../components/ChallengeDetailHero';
 import { ChallengeDetailMobileHeader } from '../components/ChallengeDetailMobileHeader';
+import { ChallengeDetailPreview } from '../components/ChallengeDetailPreview';
 import { ChallengeDiaryCalendar } from '../components/ChallengeDiaryCalendar';
 import { ChallengeDiaryDateFilter } from '../components/ChallengeDiaryDateFilter';
 import { ChallengeDiaryList } from '../components/ChallengeDiaryList';
@@ -90,6 +92,13 @@ import {
 
 interface ChallengeDetailScreenProps {
   id: string;
+  /**
+   * 서버가 비인증 GET /challenges/{id} 로 미리 읽어 둔 공개 정보.
+   * 로딩 스켈레톤 대신 실제 제목·설명을 그리는 데 쓴다 — 이 화면이 SSR 될 때
+   * 초기 HTML 에 콘텐츠가 실려야 크롤러가 빈 페이지로 보지 않는다(SEO).
+   * 비공개·조회 실패면 undefined 라 기존 스켈레톤으로 폴백한다.
+   */
+  initialChallenge?: PublicChallengeMeta;
 }
 
 // 자유 목표 비공개 챌린지에 목표 없이 참여 시도할 때 백엔드가 내려주는 코드.
@@ -103,6 +112,7 @@ const PARTICIPANT_PREVIEW_SIZE = 10;
 
 export function ChallengeDetailScreen({
   id,
+  initialChallenge,
 }: ChallengeDetailScreenProps): React.ReactElement | null {
   const challengeId = Number(id);
   const router = useRouter();
@@ -503,7 +513,17 @@ export function ChallengeDetailScreen({
     (summary?.challengeType === 'PRIVATE' && myStatus === 'NONE');
 
   if (showSkeleton) {
-    return nativeSkeleton ? null : <ChallengeDetailSkeleton />;
+    if (nativeSkeleton) {
+      return null;
+    }
+    // 공개 정보를 미리 받았으면 스켈레톤 대신 그걸 그린다. 참여 상태·목표
+    // 같은 인증 데이터는 아직 없으므로 히어로와 소개만 나오고, 쿼리가 오면
+    // 전체 화면으로 교체된다.
+    return initialChallenge ? (
+      <ChallengeDetailPreview challenge={initialChallenge} />
+    ) : (
+      <ChallengeDetailSkeleton />
+    );
   }
 
   if (isPrivateChallengeLocked) {
