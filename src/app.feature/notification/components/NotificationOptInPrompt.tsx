@@ -5,28 +5,20 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { useUpdateNotificationPreferences } from '../hooks/useNotificationMutations';
 import { useNotificationPreferences } from '../hooks/useNotificationQueries';
-import { useWebPushSubscription } from '../hooks/useWebPushSubscription';
 
 interface NotificationOptInPromptProps {
   active: boolean;
   onComplete(): void;
 }
 
-function shouldRequestBrowserPermission(): boolean {
-  if (typeof window === 'undefined' || !('Notification' in window)) {
-    return false;
-  }
-  return Notification.permission === 'default';
-}
-
 /**
- * 로그인 직후 서비스 푸시 설정과 브라우저 알림 권한을 함께 점검하는 프롬프트.
+ * 로그인 직후 서비스 푸시 설정을 점검하는 프롬프트. 여기서 켜는 건 서버의
+ * 알림 설정(앱 푸시에도 적용)이다 — 웹 푸시(브라우저 권한·구독)는 제거됐다.
  *
  * - pushEnabled === false → 활성화 여부를 묻는 ConfirmDialog 노출.
- *   - 확인: 4개 알림 모두 활성화 + 브라우저 권한 요청 후 onComplete.
+ *   - 확인: 알림 전체 활성화 후 onComplete.
  *   - 취소/닫기: 변경 없이 onComplete.
- * - pushEnabled === true → 브라우저 권한이 'default' 면 권한 요청 후 onComplete.
- *   - 'granted' / 'denied' 인 경우엔 즉시 onComplete.
+ * - pushEnabled === true → 즉시 onComplete.
  */
 export function NotificationOptInPrompt({
   active,
@@ -39,7 +31,6 @@ export function NotificationOptInPrompt({
     enabled: active,
   });
   const { mutate: updatePrefs, isPending } = useUpdateNotificationPreferences();
-  const { subscribe } = useWebPushSubscription();
 
   useEffect(() => {
     if (!active || handled.current) {
@@ -60,12 +51,8 @@ export function NotificationOptInPrompt({
       return;
     }
     handled.current = true;
-    if (shouldRequestBrowserPermission()) {
-      void subscribe().finally(onComplete);
-      return;
-    }
     onComplete();
-  }, [active, prefs, isError, onComplete, subscribe]);
+  }, [active, prefs, isError, onComplete]);
 
   function handleConfirm(): void {
     // prefs 갱신으로 useEffect 가 재실행되어 onComplete 가 중복 호출되는 것을 방지.
@@ -81,10 +68,6 @@ export function NotificationOptInPrompt({
       {
         onSettled: () => {
           setDismissed(true);
-          if (shouldRequestBrowserPermission()) {
-            void subscribe().finally(onComplete);
-            return;
-          }
           onComplete();
         },
       }

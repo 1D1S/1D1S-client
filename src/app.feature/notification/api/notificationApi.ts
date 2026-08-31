@@ -3,12 +3,10 @@ import { requestData } from '@module/api/request';
 
 import {
   MarkTargetAsReadParams,
-  NotificationEndpoint,
   NotificationListData,
   NotificationListParams,
   NotificationPreferences,
   UnreadCount,
-  WebPushEndpointRequest,
 } from '../type/notification';
 
 export const notificationApi = {
@@ -27,33 +25,6 @@ export const notificationApi = {
       url: '/notifications/unread-count',
       method: 'GET',
     }),
-
-  getWebPushPublicKey: async (): Promise<{ publicKey: string }> =>
-    requestData<{ publicKey: string }>(apiClient, {
-      url: '/notifications/web-push/public-key',
-      method: 'GET',
-    }),
-
-  registerEndpoint: async (
-    data: WebPushEndpointRequest
-  ): Promise<NotificationEndpoint> =>
-    requestData<NotificationEndpoint, WebPushEndpointRequest>(apiClient, {
-      url: '/notifications/endpoints',
-      method: 'POST',
-      data,
-    }),
-
-  getEndpoints: async (): Promise<NotificationEndpoint[]> =>
-    requestData<NotificationEndpoint[]>(apiClient, {
-      url: '/notifications/endpoints',
-      method: 'GET',
-    }),
-
-  deleteEndpoint: async (endpointUrl: string): Promise<void> => {
-    await apiClient.delete('/notifications/endpoints', {
-      data: { endpointUrl },
-    });
-  },
 
   getPreferences: async (): Promise<NotificationPreferences> =>
     requestData<NotificationPreferences>(apiClient, {
