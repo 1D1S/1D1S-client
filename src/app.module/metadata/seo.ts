@@ -180,39 +180,107 @@ export interface PublicChallengeListItem {
   title: string;
   startDate?: string | null;
   endDate?: string | null;
+  challengeType?: string | null;
+  // 서버가 이미 거르지만 사이트맵에 실리는 값이라 클라에서도 확인한다.
+  deleted?: boolean;
+  scheduled?: boolean;
 }
 
 /**
- * 공개 챌린지 목록(비인증 GET /challenges).
+ * 공개 챌린지 한 페이지(비인증 GET /challenges).
  *
- * 사이트맵의 URL 목록과, 챌린지 보드의 초기 HTML 콘텐츠가 같은 응답을 쓴다.
- * 실패하면 빈 배열 — 백엔드가 느려도 /sitemap.xml 과 /challenge 는 떠야 한다.
+ * 서버가 비공개·삭제·예약(미공개) 챌린지를 이미 걸러서 내려주지만, 사이트맵과
+ * 초기 HTML 에 그대로 실리는 값이라 응답으로도 한 번 더 막는다.
+ * 실패하면 빈 페이지 — 백엔드가 느려도 /sitemap.xml 과 /challenge 는 떠야 한다.
  */
-export async function fetchPublicChallengeList(
-  limit: number
-): Promise<PublicChallengeListItem[]> {
+async function fetchPublicChallengePage(
+  limit: number,
+  cursor?: string
+): Promise<{ items: PublicChallengeListItem[]; nextCursor: string | null }> {
   if (!API_BASE_URL) {
-    return [];
+    return { items: [], nextCursor: null };
+  }
+
+  const query = new URLSearchParams({ limit: String(limit) });
+  if (cursor) {
+    query.set('cursor', cursor);
   }
 
   try {
-    const res = await fetch(`${API_BASE_URL}/challenges?limit=${limit}`, {
+    const res = await fetch(`${API_BASE_URL}/challenges?${query.toString()}`, {
       headers: { accept: 'application/json' },
       next: { revalidate: 3_600 },
       signal: AbortSignal.timeout(5_000),
     });
     if (!res.ok) {
-      return [];
+      return { items: [], nextCursor: null };
     }
 
     const body = (await res.json()) as {
-      data?: { items?: PublicChallengeListItem[] };
+      data?: {
+        items?: Array<PublicChallengeListItem & Record<string, unknown>>;
+        pageInfo?: { hasNextPage?: boolean; nextCursor?: string | null };
+      };
     };
 
-    return (body.data?.items ?? []).filter(
-      (item) => typeof item?.challengeId === 'number' && Boolean(item.title)
+    const items = (body.data?.items ?? []).filter(
+      (item) =>
+        typeof item?.challengeId === 'number' &&
+        Boolean(item.title) &&
+        item.challengeType !== 'PRIVATE' &&
+        item.deleted !== true &&
+        item.scheduled !== true
     );
+    const pageInfo = body.data?.pageInfo;
+
+    return {
+      items,
+      nextCursor: pageInfo?.hasNextPage ? (pageInfo.nextCursor ?? null) : null,
+    };
   } catch {
-    return [];
+    return { items: [], nextCursor: null };
   }
+}
+
+/** 공개 챌린지 첫 페이지. 목록 화면의 초기 HTML 용. */
+export async function fetchPublicChallengeList(
+  limit: number
+): Promise<PublicChallengeListItem[]> {
+  const { items } = await fetchPublicChallengePage(limit);
+  return items;
+}
+
+/**
+ * 공개 챌린지 **전량**. 커서를 끝까지 따라간다(사이트맵 전용).
+ *
+ * maxPages 는 무한 루프 방지용 안전핀이다 — 서버가 같은 커서를 계속 주거나
+ * hasNextPage 가 안 꺼지는 경우 빌드가 멈추지 않게 한다. 상한에 걸리면
+ * 몇 개까지 실었는지 로그로 남긴다(조용한 누락 금지).
+ */
+export async function fetchAllPublicChallenges(
+  pageSize = 100,
+  maxPages = 50
+): Promise<PublicChallengeListItem[]> {
+  const all: PublicChallengeListItem[] = [];
+  const seenCursors = new Set<string>();
+  let cursor: string | undefined;
+
+  for (let page = 0; page < maxPages; page += 1) {
+    const { items, nextCursor } = await fetchPublicChallengePage(
+      pageSize,
+      cursor
+    );
+    all.push(...items);
+
+    if (!nextCursor || seenCursors.has(nextCursor)) {
+      return all;
+    }
+    seenCursors.add(nextCursor);
+    cursor = nextCursor;
+  }
+
+  console.warn(
+    `[sitemap] 공개 챌린지가 ${maxPages}페이지(${all.length}건)를 넘어 나머지를 싣지 못했습니다.`
+  );
+  return all;
 }

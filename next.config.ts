@@ -2,6 +2,11 @@
 const isDev = process.env.NODE_ENV !== 'production';
 
 const nextConfig = {
+  // /api/og 의 브랜드 OG 이미지가 읽는 한글 서브셋 폰트를 서버리스 함수
+  // 번들에 포함시킨다. public/ 은 정적 서빙 대상이라 함수에는 안 들어간다.
+  outputFileTracingIncludes: {
+    '/api/og': ['./public/fonts/og/**'],
+  },
   compiler: {
     removeConsole: isDev ? false : { exclude: ['error', 'warn'] },
   },
