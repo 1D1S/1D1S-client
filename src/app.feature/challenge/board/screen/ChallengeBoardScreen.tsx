@@ -14,14 +14,15 @@ import {
   getCategoryLabel,
   getCategoryStripeTone,
 } from '@constants/categories';
+import { CHALLENGE_SEARCH_PARAM } from '@constants/challengeSearch';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
 import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { cn } from '@module/utils/cn';
 import { X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import React, { useCallback, useEffect,useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ChallengeBoardFilters } from '../components/ChallengeBoardFilters';
 import { toCategoryParam } from '../consts/categoryFilters';
@@ -78,13 +79,21 @@ ChallengeBoardCardItem.displayName = 'ChallengeBoardCardItem';
 
 export default function ChallengeBoardScreen(): React.ReactElement {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const isLoggedIn = useIsLoggedIn();
+
+  // 검색어는 URL(?keyword=)이 원본이다. 결과가 주소를 가져야 공유·뒤로가기가
+  // 되고, WebSite 구조화 데이터의 SearchAction 이 가리킬 대상이 생긴다.
+  const urlKeyword = searchParams.get(CHALLENGE_SEARCH_PARAM) ?? '';
 
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [loginDialogDescription, setLoginDialogDescription] =
     useState('로그인 후 이용할 수 있습니다.');
-  const [inputValue, setInputValue] = useState('');
-  const [query, setQuery] = useState('');
+  const [inputValue, setInputValue] = useState(urlKeyword);
+  // 입력 중 매 글자마다 URL 을 갈아끼우면 라우터 왕복이 붙으므로, 확정된
+  // 검색어(query)만 URL 과 맞춘다.
+  const [query, setQuery] = useState(urlKeyword);
   const [category, setCategory] = useState<ChallengeCategory>('ALL');
   const [challengeType, setChallengeType] = useState<
     ChallengeTypeFilter | 'ALL'
@@ -113,32 +122,59 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     window.scrollTo(0, 0);
   }, []);
 
+  // 뒤로가기·딥링크·SearchAction 진입으로 URL 이 바뀌면 화면을 맞춘다.
+  // 우리가 replace 한 직후엔 같은 값이라 no-op.
+  useEffect(() => {
+    setInputValue(urlKeyword);
+    setQuery(urlKeyword);
+  }, [urlKeyword]);
+
+  const syncKeywordToUrl = useCallback(
+    (keyword: string): void => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (keyword) {
+        params.set(CHALLENGE_SEARCH_PARAM, keyword);
+      } else {
+        params.delete(CHALLENGE_SEARCH_PARAM);
+      }
+      const queryString = params.toString();
+      // 검색할 때마다 history 를 쌓으면 뒤로가기가 검색어를 거슬러 올라가야
+      // 목록을 벗어난다. replace 로 주소만 갱신한다.
+      router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams]
+  );
+
   const handleSearch = useCallback((): void => {
     setQuery(inputValue);
+    syncKeywordToUrl(inputValue);
     scrollListToTop();
-  }, [inputValue, scrollListToTop]);
+  }, [inputValue, scrollListToTop, syncKeywordToUrl]);
 
   const handleClear = useCallback((): void => {
     setInputValue('');
     setQuery('');
+    syncKeywordToUrl('');
     scrollListToTop();
-  }, [scrollListToTop]);
+  }, [scrollListToTop, syncKeywordToUrl]);
 
-  // 네이티브 쉘의 검색 다이얼로그. 검색 상태가 로컬 useState 뿐이라 URL
-  // 파라미터로는 전달할 수 없어 bridge 이벤트로 직접 꽂는다. 웹 검색
-  // 필드는 네이티브에서 숨겨지고(data-native-hide) 이 이벤트가 유일한
-  // 검색 입력 경로가 된다.
+  // 네이티브 쉘의 검색 다이얼로그. 웹 검색 필드는 네이티브에서 숨겨지므로
+  // (data-native-hide) 이 이벤트가 유일한 검색 입력 경로다. 웹과 같은
+  // 경로를 타도록 URL 까지 맞춘다.
   useEffect(() => {
     const listener = (event: Event): void => {
       const detail = (event as CustomEvent<{ keyword?: string }>).detail;
       const keyword = detail?.keyword ?? '';
       setInputValue(keyword);
       setQuery(keyword);
+      syncKeywordToUrl(keyword);
       scrollListToTop();
     };
     window.addEventListener('native:board_search', listener);
     return () => window.removeEventListener('native:board_search', listener);
-  }, [scrollListToTop]);
+  }, [scrollListToTop, syncKeywordToUrl]);
 
   // 네이티브 툴바의 필터 선택. 검색과 같은 방식 — 카테고리/종류/상태를
   // 한 번에 받아 로컬 상태에 반영한다.
