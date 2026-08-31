@@ -17,6 +17,7 @@ import { cn } from '@module/utils/cn';
 import { useRouter } from 'next/navigation';
 import React, { useCallback } from 'react';
 
+import { ExploreGuideStrip } from '../components/ExploreGuideStrip';
 import { useExploreOfficialChallenges } from '../hooks/useExploreOfficialChallenges';
 
 // 탐색 상단 배너 높이. 모바일 5:2, md+ 는 고정 높이로 상한(넓은 뷰 과대높이
@@ -115,6 +116,9 @@ export default function ExploreScreen(): React.ReactElement {
             <HomeNoticeStrip />
             <HomeQuickActions />
           </div>
+
+          {/* 가이드 진입점. 네비 탭을 늘리지 않고 여기 한 칸으로만 연결한다. */}
+          <ExploreGuideStrip />
 
           <HomeRandomChallengesSection
             challenges={officialChallenges}

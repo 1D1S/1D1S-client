@@ -12,7 +12,7 @@ import {
   buildLoginUrl,
   loginUrlFromCurrentLocation,
 } from '@module/utils/returnTo';
-import { BookOpen, Compass, Newspaper, User } from 'lucide-react';
+import { BookOpen, Compass, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -34,9 +34,6 @@ const NAV_ITEMS: ReadonlyArray<{
     NavIcon: ChallengeTrophyIcon,
   },
   { id: 'diary', label: '일지', href: '/diary', NavIcon: BookOpen },
-  // 가이드(주제별 글)는 지금까지 마이페이지 > 설정 안에만 있어서 일반
-  // 내비게이션으로는 닿을 수 없었다. 콘텐츠 진입점을 최상위로 올린다.
-  { id: 'guide', label: '가이드', href: '/guide', NavIcon: Newspaper },
   { id: 'mypage', label: '마이페이지', href: '/mypage', NavIcon: User },
 ];
 
