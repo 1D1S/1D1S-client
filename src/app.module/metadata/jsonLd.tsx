@@ -153,3 +153,50 @@ export function buildFaqJsonLd(
     })),
   };
 }
+
+interface ArticleJsonLdInput {
+  slug: string;
+  title: string;
+  description: string;
+  updated: string;
+}
+
+/** 주제별 가이드 글 = Article. 작성자는 서비스 자신(Organization)이다. */
+export function buildArticleJsonLd({
+  slug,
+  title,
+  description,
+  updated,
+}: ArticleJsonLdInput): Record<string, unknown> {
+  const url = toAbsoluteUrl(`/guide/${slug}`);
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: title,
+    description,
+    url,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    inLanguage: 'ko-KR',
+    datePublished: updated,
+    dateModified: updated,
+    image: toAbsoluteUrl(DEFAULT_OG_IMAGE_PATH),
+    author: { '@id': ORGANIZATION_ID },
+    publisher: { '@id': ORGANIZATION_ID },
+  };
+}
+
+export function buildBreadcrumbJsonLd(
+  trail: ReadonlyArray<{ name: string; path: string }>
+): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: trail.map(({ name, path }, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name,
+      item: toAbsoluteUrl(path),
+    })),
+  };
+}

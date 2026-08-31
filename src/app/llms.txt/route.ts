@@ -3,6 +3,7 @@ import {
   INQUIRY_ABOUT_ITEMS,
   INQUIRY_FAQ_ITEMS,
 } from '@constants/consts/inquiryData';
+import { GUIDE_ARTICLES } from '@feature/guide/consts/guideArticles';
 import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '@module/metadata/seo';
 
 /**
@@ -63,6 +64,13 @@ export function GET(): Response {
       link('/privacy', '개인정보 처리방침'),
       link('/sitemap.xml', '사이트맵', '공개 챌린지 전체 URL 목록'),
     ]),
+    '',
+    section(
+      '주제별 가이드',
+      GUIDE_ARTICLES.map(({ slug, title, description }) =>
+        link(`/guide/${slug}`, title, description)
+      )
+    ),
     '',
     section(
       '자주 묻는 질문',

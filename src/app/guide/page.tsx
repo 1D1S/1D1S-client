@@ -1,3 +1,4 @@
+import { GuideArticleList } from '@feature/guide/components/GuideArticleList';
 import GuideScreen from '@feature/guide/screen/GuideScreen';
 import { buildPageMetadata } from '@module/metadata/seo';
 import type { Metadata } from 'next';
@@ -12,5 +13,12 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default function GuidePage(): React.ReactElement {
-  return <GuideScreen />;
+  return (
+    <>
+      <GuideScreen />
+      {/* 주제별 가이드 글 목록. 서버 컴포넌트라 링크가 초기 HTML 에 실려
+          크롤러가 글들을 발견한다(내부 링크 진입점). */}
+      <GuideArticleList />
+    </>
+  );
 }
