@@ -103,6 +103,8 @@ export interface PublicChallengeMeta {
   category?: string | null;
   challengeType?: string | null;
   goalType?: string | null;
+  participationType?: string | null;
+  maxParticipantCnt?: number | null;
   startDate?: string | null;
   endDate?: string | null;
   participantCnt?: number | null;
@@ -137,6 +139,8 @@ export async function fetchPublicChallenge(
           challengeType?: string;
           category?: string | null;
           goalType?: string | null;
+          participationType?: string | null;
+          maxParticipantCnt?: number | null;
           startDate?: string | null;
           endDate?: string | null;
           participantCnt?: number | null;
@@ -166,6 +170,8 @@ export async function fetchPublicChallenge(
       category: summary?.category,
       challengeType: summary?.challengeType,
       goalType: summary?.goalType,
+      participationType: summary?.participationType,
+      maxParticipantCnt: summary?.maxParticipantCnt,
       startDate: summary?.startDate,
       endDate: summary?.endDate,
       participantCnt: summary?.participantCnt,
