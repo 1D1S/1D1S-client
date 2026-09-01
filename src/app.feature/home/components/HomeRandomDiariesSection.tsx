@@ -1,10 +1,10 @@
 import { SectionHeader, Text } from '@1d1s/design-system';
-import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import MasonryColumns from '@component/MasonryColumns';
 import { DiaryCardSkeleton } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { type DiaryItem } from '@feature/diary/board/type/diary';
+import DiaryCard from '@feature/diary/shared/components/DiaryCard';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { cn } from '@module/utils/cn';
 import { formatMonthDayKR } from '@module/utils/date';

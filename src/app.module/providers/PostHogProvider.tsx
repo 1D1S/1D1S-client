@@ -1,11 +1,8 @@
 'use client';
 
-import { useAuthStatus } from '@module/hooks/useAuthStatus';
 import { usePathname, useSearchParams } from 'next/navigation';
 import type { PostHog } from 'posthog-js';
 import React, { Suspense, useEffect } from 'react';
-
-import { useSidebar } from '@/app.feature/member/hooks/useMemberQueries';
 
 const DEFAULT_HOST = 'https://us.i.posthog.com';
 
@@ -88,24 +85,22 @@ function PostHogPageView(): null {
 }
 
 /**
- * 로그인 확정 시 nickname 으로 식별, 로그아웃 시 reset.
+ * 로그인 확정 시 식별자를 붙인다.
+ *
+ * "누가 로그인했는가"는 member 도메인이 아는 정보라, 이 모듈은 식별 함수만
+ * 내보내고 값은 도메인 쪽(PostHogIdentity)에서 넣는다 — 코어 레이어가
+ * feature 훅을 직접 부르지 않게 하려는 것이다.
+ *
  * 서버가 memberId 를 클라이언트에 노출하지 않으므로 안정 식별자로 nickname 을
  * 쓴다. 민감정보(이메일·전화번호·생년월일)는 전송하지 않는다.
  */
-function PostHogIdentify(): null {
-  const status = useAuthStatus();
-  const { data: sidebar } = useSidebar();
-  const nickname = sidebar?.nickname;
+export function identifyPostHog(nickname: string): void {
+  withPostHog((ph) => ph.identify(nickname, { nickname }));
+}
 
-  useEffect(() => {
-    if (status === 'authenticated' && nickname) {
-      withPostHog((ph) => ph.identify(nickname, { nickname }));
-    } else if (status === 'guest') {
-      withPostHog((ph) => ph.reset());
-    }
-  }, [status, nickname]);
-
-  return null;
+/** 로그아웃 시 익명 상태로 되돌린다. */
+export function resetPostHog(): void {
+  withPostHog((ph) => ph.reset());
 }
 
 export function PostHogProvider({
@@ -123,7 +118,6 @@ export function PostHogProvider({
       <Suspense fallback={null}>
         <PostHogPageView />
       </Suspense>
-      <PostHogIdentify />
       {children}
     </>
   );

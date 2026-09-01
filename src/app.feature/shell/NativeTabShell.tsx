@@ -1,8 +1,8 @@
 'use client';
 
-import { ChallengeBoardSkeleton } from '@component/skeletons/ChallengeBoardSkeleton';
 import { DiaryBoardSkeleton } from '@component/skeletons/DiaryBoardSkeleton';
 import { MyPageSkeleton } from '@component/skeletons/MyPageSkeleton';
+import { ChallengeBoardSkeleton } from '@feature/challenge/board/components/ChallengeBoardSkeleton';
 import HomeMobileHeader from '@feature/home/components/HomeMobileHeader';
 import HomeScreen from '@feature/home/screen/HomeScreen';
 import dynamic from 'next/dynamic';

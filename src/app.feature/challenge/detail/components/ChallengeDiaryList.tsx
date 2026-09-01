@@ -1,7 +1,6 @@
 'use client';
 
 import { Button, Tag, Text } from '@1d1s/design-system';
-import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
 import MasonryColumns from '@component/MasonryColumns';
@@ -11,6 +10,7 @@ import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
+import DiaryCard from '@feature/diary/shared/components/DiaryCard';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { normalizeApiError } from '@module/api/error';
 import { useAuthStatus } from '@module/hooks/useAuthStatus';
@@ -129,9 +129,7 @@ export function ChallengeDiaryList({
     activeDate,
     isLoggedIn
   );
-  const showSkeleton = useMinimumLoading(
-    isLoading || authStatus === 'unknown'
-  );
+  const showSkeleton = useMinimumLoading(isLoading || authStatus === 'unknown');
   const { ref } = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,

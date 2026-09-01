@@ -1,7 +1,6 @@
 'use client';
 
 import { MobileHeader, Text } from '@1d1s/design-system';
-import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
@@ -10,6 +9,7 @@ import { DiaryCardSkeletonGrid } from '@component/skeletons/DiaryCardSkeleton';
 import { getCategoryLabel } from '@constants/categories';
 import { useLikeToggle } from '@feature/diary/board/hooks/useLikeToggle';
 import { DiaryItem } from '@feature/diary/board/type/diary';
+import DiaryCard from '@feature/diary/shared/components/DiaryCard';
 import { mapFeelingToEmotion } from '@feature/diary/shared/utils/feeling';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useMemberProfileDiariesInfinite } from '@feature/member/hooks/useMemberQueries';

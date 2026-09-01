@@ -5,7 +5,6 @@ import { ChallengeChip } from '@component/cards/ChallengeChip';
 import FadeInImage from '@component/FadeInImage';
 import LikeBurst from '@component/LikeBurst';
 import { Skeleton } from '@component/Skeleton';
-import { EMOTION_TONE } from '@feature/diary/shared/utils/feeling';
 import { cn } from '@module/utils/cn';
 import { createActivationKeydownHandler } from '@module/utils/event';
 import {
@@ -16,6 +15,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 
+import { EMOTION_TONE } from '../utils/feeling';
+
 export type DiaryEmotion = 'happy' | 'soso' | 'sad';
 
 const EMOTION_IMAGE: Record<DiaryEmotion, { src: string; alt: string }> = {
@@ -25,7 +26,7 @@ const EMOTION_IMAGE: Record<DiaryEmotion, { src: string; alt: string }> = {
 };
 
 // 감정별 무드 컬러(달성률 텍스트·체크 원)는 카드·상세 공유 단일 소스
-// (@feature/diary/shared/utils/feeling)에서 가져온다.
+// (../utils/feeling)에서 가져온다.
 
 // next/image는 절대 URL이거나 / 시작 상대 경로만 허용한다. 백엔드가 raw key를
 // 줄 때 next/image의 URL 파서가 throw 하므로 안전한 형태만 통과시킨다.

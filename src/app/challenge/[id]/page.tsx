@@ -1,5 +1,5 @@
-import { ChallengeDetailSkeleton } from '@component/skeletons/ChallengeDetailSkeleton';
 import { ChallengeDetailPreview } from '@feature/challenge/detail/components/ChallengeDetailPreview';
+import { ChallengeDetailSkeleton } from '@feature/challenge/detail/components/ChallengeDetailSkeleton';
 import { ChallengeDetailScreen } from '@feature/challenge/detail/screen/ChallengeDetailScreen';
 import { buildChallengeJsonLd, JsonLd } from '@module/metadata/jsonLd';
 import {
