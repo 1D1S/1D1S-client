@@ -1,4 +1,9 @@
-import { GoalAddList, Icon, SegmentedControl, Text } from '@1d1s/design-system';
+import {
+  GoalAddList,
+  Icon,
+  SegmentedControl,
+  Text,
+} from '@1d1s/design-system';
 import { useFormContext } from 'react-hook-form';
 
 import {

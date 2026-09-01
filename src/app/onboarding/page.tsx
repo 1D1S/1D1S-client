@@ -159,7 +159,11 @@ export default function OnboardingPage(): React.ReactElement {
       {/* CTA */}
       <section className="px-6 py-8">
         <div className="mx-auto max-w-lg">
-          <Button asChild variant="primary" className="h-14 w-full text-base">
+          <Button
+            asChild
+            variant="primary"
+            className="h-14 w-full text-base"
+          >
             <Link href="/challenge">지금 시작하기</Link>
           </Button>
         </div>

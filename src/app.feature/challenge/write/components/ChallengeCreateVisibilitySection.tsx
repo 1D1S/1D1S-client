@@ -90,8 +90,7 @@ export function ChallengeCreateVisibilitySection(): React.ReactElement {
             weight="regular"
             className="block text-gray-500"
           >
-            생성 후 참여 링크와 함께 비밀번호를 공유하면 친구를 초대할 수
-            있어요.
+            생성 후 참여 링크와 함께 비밀번호를 공유하면 친구를 초대할 수 있어요.
           </Text>
         </div>
       ) : null}

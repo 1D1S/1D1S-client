@@ -1,4 +1,6 @@
-import NativeTabShell, { type ShellTabId } from '@feature/shell/NativeTabShell';
+import NativeTabShell, {
+  type ShellTabId,
+} from '@feature/shell/NativeTabShell';
 import React from 'react';
 
 // 네이티브 앱 전용 진입점. 브라우저 사용자는 오지 않는다(앱이 이 URL 을

@@ -45,10 +45,14 @@ export function ChallengeDiaryTemplateSection({
   const tooLong = value.length > DIARY_TEMPLATE_MAX_LENGTH;
 
   return (
-    <ChallengeCreateSectionCard step={step} title="일지 양식" hint="선택">
+    <ChallengeCreateSectionCard
+      step={step}
+      title="일지 양식"
+      hint="선택"
+    >
       <Text size="caption2" className="mb-3 block text-gray-500">
-        참여자가 새 일지를 쓸 때 본문에 기본으로 채워집니다. 비워 두면 양식 없이
-        시작합니다.
+        참여자가 새 일지를 쓸 때 본문에 기본으로 채워집니다. 비워 두면
+        양식 없이 시작합니다.
       </Text>
       <DiaryContentEditor
         variant="template"

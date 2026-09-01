@@ -58,11 +58,7 @@ function Kpi({
             'rounded-[8px]'
           )}
         >
-          <Icon
-            className="text-main-800 size-3.5"
-            strokeWidth={2}
-            aria-hidden
-          />
+          <Icon className="text-main-800 size-3.5" strokeWidth={2} aria-hidden />
         </span>
         <Text size="caption2" weight="bold" className="text-gray-500">
           {label}
