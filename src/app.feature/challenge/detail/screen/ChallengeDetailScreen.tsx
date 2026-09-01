@@ -81,11 +81,12 @@ import { usePokeMembers } from '../hooks/usePokeMembers';
 import { buildHeroGradient, getCategoryAccent } from '../utils/challengeAccent';
 import { buildChallengeCta } from '../utils/challengeCta';
 import {
+  buildChallengeHeroMeta,
+  buildChallengeParticipantsLabel,
   EMPTY_GOALS,
   EMPTY_PARTICIPANTS,
   formatDateRange,
   formatRelativeJoinedText,
-  getRemainingLabel,
   hasSelectableDiaryDate,
   PARTICIPATING_STATUS,
 } from '../utils/challengeLabels';
@@ -557,17 +558,17 @@ export function ChallengeDetailScreen({
   const accentColor = getCategoryAccent(summary.category);
   const heroGradient = buildHeroGradient(accentColor);
   const dateRangeText = formatDateRange(summary.startDate, summary.endDate);
-  const remainingLabel = getRemainingLabel(summary.endDate);
-  // 표시 규칙:
-  //   - 개인 챌린지: "개인 챌린지"
-  //   - 단체 + 최대 인원 지정: "X/Y명 참여"
-  //   - 단체 + 제한없음: "X명 참여 · 제한없음"
-  const participantsLabel = !isGroupChallenge
-    ? '개인 챌린지'
-    : summaryMaxParticipantCnt > 0
-      ? `${summaryParticipantCnt}/${summaryMaxParticipantCnt}명 참여`
-      : `${summaryParticipantCnt}명 참여 · 제한없음`;
-  const heroMetaLabel = `${participantsLabel} · ${remainingLabel}`;
+  const participantsLabel = buildChallengeParticipantsLabel({
+    participationType: summary.participationType,
+    participantCnt: summaryParticipantCnt,
+    maxParticipantCnt: summaryMaxParticipantCnt,
+  });
+  const heroMetaLabel = buildChallengeHeroMeta({
+    participationType: summary.participationType,
+    participantCnt: summaryParticipantCnt,
+    maxParticipantCnt: summaryMaxParticipantCnt,
+    endDate: summary.endDate,
+  });
 
   const ctaConfig = buildChallengeCta({
     isHost,
@@ -634,7 +635,12 @@ export function ChallengeDetailScreen({
       <div
         className={cn(
           'allow-user-select',
-          'data-fade-in min-h-screen w-full bg-white',
+          'min-h-screen w-full bg-white',
+          // data-fade-in 은 opacity 0.35 에서 시작한다. 스켈레톤 뒤에 나오면
+          // "콘텐츠가 떠오르는" 연출이지만, 프리뷰(이미 실제 제목·소개가
+          // 보이는 화면) 뒤에 나오면 화면이 뚝 어두워졌다 밝아지는 깜빡임이
+          // 된다. 프리뷰를 거쳐 온 경우에는 페이드를 걸지 않는다.
+          !initialChallenge && 'data-fade-in',
           ctaConfig.show ? 'pb-mobile-action-bar lg:pb-12' : 'pb-12'
         )}
       >

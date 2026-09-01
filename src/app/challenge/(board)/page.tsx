@@ -1,9 +1,7 @@
 import { ChallengeBoardSkeleton } from '@component/skeletons/ChallengeBoardSkeleton';
+import { fetchPublicChallengeBoardPage } from '@feature/challenge/board/api/publicChallengeList';
 import ChallengeBoardScreen from '@feature/challenge/board/screen/ChallengeBoardScreen';
-import {
-  buildPageMetadata,
-  fetchPublicChallengeList,
-} from '@module/metadata/seo';
+import { buildPageMetadata } from '@module/metadata/seo';
 import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 
@@ -32,11 +30,16 @@ export const metadata: Metadata = buildPageMetadata({
 const SSR_CHALLENGE_COUNT = 12;
 
 export default async function ChallengeListPage(): Promise<React.ReactElement> {
-  const challenges = await fetchPublicChallengeList(SSR_CHALLENGE_COUNT);
+  // 화면이 처음 요청하는 것과 **같은 조건**(모집중·진행중)으로 읽는다.
+  // 같은 응답을 fallback 과 화면 양쪽에 넘겨, 하이드레이션 직후 스켈레톤으로
+  // 되돌아가지 않게 한다.
+  const initialPage = await fetchPublicChallengeBoardPage(SSR_CHALLENGE_COUNT);
 
   return (
-    <Suspense fallback={<ChallengeBoardSkeleton challenges={challenges} />}>
-      <ChallengeBoardScreen />
+    <Suspense
+      fallback={<ChallengeBoardSkeleton challenges={initialPage.items} />}
+    >
+      <ChallengeBoardScreen initialPage={initialPage} />
     </Suspense>
   );
 }

@@ -10,7 +10,7 @@ import React from 'react';
 
 import type { ChallengeCategory } from '../../board/type/challenge';
 import { buildHeroGradient, getCategoryAccent } from '../utils/challengeAccent';
-import { formatDateRange } from '../utils/challengeLabels';
+import { buildChallengeHeroMeta } from '../utils/challengeLabels';
 import { ChallengeDetailHero } from './ChallengeDetailHero';
 
 interface ChallengeDetailPreviewProps {
@@ -49,18 +49,23 @@ export function ChallengeDetailPreview({
   const categoryLabel = getCategoryLabel(challenge.category);
   const typeLabel = formatChallengeTypeLabel(challenge.goalType);
   const description = challenge.description?.trim();
-  const period =
-    challenge.startDate && challenge.endDate
-      ? formatDateRange(challenge.startDate, challenge.endDate)
-      : null;
-  const participants =
-    typeof challenge.participantCnt === 'number'
-      ? `${challenge.participantCnt}명 참여`
-      : null;
-  const metaLabel = [period, participants].filter(Boolean).join(' · ');
+  // 실화면과 **같은 함수**로 만든다. 문구가 다르면 교체 순간 한 줄이 바뀐다.
+  const metaLabel = buildChallengeHeroMeta({
+    participationType: challenge.participationType,
+    participantCnt: challenge.participantCnt,
+    maxParticipantCnt: challenge.maxParticipantCnt,
+    endDate: challenge.endDate,
+  });
 
   return (
-    <div className={cn('min-h-screen w-full bg-white', 'pb-12')}>
+    // 하단 패딩까지 실화면과 맞춘다. 모바일 CTA 바가 붙는 만큼을 비워두지
+    // 않으면 교체 순간 스크롤 높이가 튄다.
+    <div
+      className={cn(
+        'allow-user-select min-h-screen w-full bg-white',
+        'pb-mobile-action-bar lg:pb-12'
+      )}
+    >
       <div className="relative">
         <ChallengeDetailHero
           title={challenge.title}

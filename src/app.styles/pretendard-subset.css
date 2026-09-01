@@ -3,8 +3,36 @@
    분할 서브셋으로 대체 — 첫 화면은 보통 수십 KB 만 받는다.
    재생성: pnpm pretendard 업데이트 후 scripts 참고 없이 이 파일 헤더의
    추출 규칙(  font-weight 400/500/700, woff2 전용, /fonts/pretendard/subset/ 경로) 그대로. */
+/* 폴백 폰트 메트릭 보정.
+   Pretendard 는 display:swap 이라 서브셋이 도착하기 전까지 시스템 폰트로
+   그려진다. 시스템 폰트(SF Pro/Roboto/맑은 고딕)는 줄 높이 메트릭이 달라,
+   교체되는 순간 모든 줄 상자의 높이가 바뀌며 문단 아래 콘텐츠가 밀린다
+   (CLS). 폴백 페이스에 Pretendard 와 같은 세로 메트릭을 덮어써서 교체
+   전후의 줄 높이를 맞춘다.
+
+   값 출처: Pretendard-Regular.otf 실측
+     unitsPerEm 2048 / hhea ascender 1950 / descender -494 / lineGap 0
+     → 95.21% / 24.12% / 0%
+
+   size-adjust(가로 폭 보정)는 넣지 않는다. 정확한 값을 구하려면 폴백
+   폰트의 평균 글리프 폭을 알아야 하는데 기기마다 다르다. 추측값을 넣으면
+   글자 크기가 미묘하게 틀어져 오히려 손해다. 세로 밀림만 잡는다. */
+@font-face {
+  font-family: 'Pretendard Fallback';
+  src:
+    local('Apple SD Gothic Neo'),
+    local('Noto Sans KR'),
+    local('Malgun Gothic'),
+    local('Roboto'),
+    local('Arial');
+  ascent-override: 95.21%;
+  descent-override: 24.12%;
+  line-gap-override: 0%;
+}
+
 :root {
-  --font-pretendard: 'Pretendard', system-ui, -apple-system, sans-serif;
+  --font-pretendard:
+    'Pretendard', 'Pretendard Fallback', system-ui, -apple-system, sans-serif;
 }
 @font-face {
 	font-family: 'Pretendard';

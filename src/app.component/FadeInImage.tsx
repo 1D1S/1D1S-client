@@ -51,15 +51,21 @@ function FadeInImage({
   fallbackSrc,
   ...rest
 }: FadeInImageProps): React.ReactElement {
+  // priority 이미지는 첫 화면(above-the-fold) 이라 대개 LCP 후보다.
+  // LCP 는 **픽셀이 실제로 칠해진 시점**에 기록되는데, opacity 0 인 동안은
+  // 후보로 잡히지 않는다. 즉 preload 로 빨리 받아와도 페이드가 시작될
+  // 때까지 LCP 가 밀린다. 첫 화면 이미지에는 페이드가 손해라 건너뛴다.
+  // (아래로 스크롤해서 만나는 이미지들은 그대로 페이드인한다.)
+  const isPriority = rest.priority === true;
   // 이미 로드된 적 있는 src 면 처음부터 opacity-100 (페이드·깜빡임 없음).
-  const [loaded, setLoaded] = useState(() => isSrcCached(src));
+  const [loaded, setLoaded] = useState(() => isPriority || isSrcCached(src));
   const [errored, setErrored] = useState(false);
   // src 가 바뀌면(다른 이미지로 교체) 로드/에러 상태를 초기화한다. 단
   // 이미 캐시된 src 로 바뀌면 즉시 표시해 깜빡임을 막는다.
   const [trackedSrc, setTrackedSrc] = useState(src);
   if (trackedSrc !== src) {
     setTrackedSrc(src);
-    setLoaded(isSrcCached(src));
+    setLoaded(isPriority || isSrcCached(src));
     setErrored(false);
   }
 
