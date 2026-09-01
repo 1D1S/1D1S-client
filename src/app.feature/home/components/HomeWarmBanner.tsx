@@ -69,7 +69,7 @@ function fromServerBanner(banner: ServerBanner): CarouselBanner {
 const DEFAULT_HEIGHT_CLASS = 'aspect-[5/2] max-h-[240px] min-h-0';
 
 interface HomeWarmBannerProps {
-  /** 항상 캐러셀 맨 뒤에 고정되는 배너(디스코드·사용가이드·통계). */
+  /** 항상 캐러셀 맨 뒤에 고정되는 배너(사용가이드·통계). */
   pinnedBanners?: HomeMainBanner[];
   /** 인증/사이드바 확정 전 — 배너 자리를 스켈레톤으로 예약한다. */
   isLoading?: boolean;
