@@ -50,7 +50,7 @@ const ROUTES = [
     path: '/',
     must: ['1D1S'],
     minText: 150,
-    jsBudgetKb: 1200,
+    jsBudgetKb: 940,
     canonical: '/',
     jsonLd: 2,
   },
@@ -58,28 +58,31 @@ const ROUTES = [
     path: '/challenge',
     must: ['챌린지 보드', '새로운 습관을 만들고'],
     minText: 400,
-    jsBudgetKb: 1210,
+    jsBudgetKb: 1000,
     canonical: '/challenge',
   },
   {
     path: '/explore',
     must: ['탐색', '공식 챌린지', '습관·스트릭·독서 챌린지'],
     minText: 350,
-    jsBudgetKb: 1290,
+    jsBudgetKb: 1070,
     canonical: '/explore',
   },
   {
+    // /guide 만 예산이 크다. GuidePhoneMock 이 앱 화면들을 목업으로 그려
+    // 달력·히트맵·배너 등 디자인 시스템을 폭넓게 끌어온다(react-day-picker
+    // 포함). 다른 라우트와 성격이 다르니 숫자만 보고 놀라지 말 것.
     path: '/guide',
     must: ['주제별 가이드', '습관 만들기'],
     minText: 1500,
-    jsBudgetKb: 1175,
+    jsBudgetKb: 1240,
     canonical: '/guide',
   },
   {
     path: '/guide/streak',
     must: ['스트릭', '자주 묻는 질문', '함께 읽으면 좋은 글'],
     minText: 1500,
-    jsBudgetKb: 1175,
+    jsBudgetKb: 910,
     canonical: '/guide/streak',
     jsonLd: 3,
   },
@@ -88,7 +91,7 @@ const ROUTES = [
     // 아코디언이 닫힌 채로도 답변이 DOM 에 있어야 한다(forceMount).
     must: ['1D1S는 어떤 서비스인가요', '습관 형성 플랫폼'],
     minText: 800,
-    jsBudgetKb: 1185,
+    jsBudgetKb: 945,
     canonical: '/inquiry',
     jsonLd: 1,
   },
@@ -98,7 +101,7 @@ const ROUTES = [
     path: '/terms',
     must: ['제1조', '1D1S 홈으로', '챌린지 둘러보기'],
     minText: 2000,
-    jsBudgetKb: 1180,
+    jsBudgetKb: 915,
     canonical: '/terms',
   },
 ];
