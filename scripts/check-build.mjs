@@ -43,6 +43,9 @@ const BASE = values.base.replace(/\/$/, '');
  *   실제 데이터에 의존하는 값(챌린지 제목 등)은 넣지 않는다 — dev/운영
  *   데이터가 달라 깨진다. 코드가 만드는 문구만 고정한다.
  * `minText`: 봇이 읽는 텍스트 최소 길이. 콘텐츠가 통째로 사라지면 잡힌다.
+ *   목록 페이지는 항목 수가 데이터에 따라 변하므로 느슨하게 잡고, 대신
+ *   `mustMatch` 로 "목록이 실제로 렌더됐는지"를 구조로 확인한다.
+ * `mustMatch`: [정규식, 최소 개수]. 데이터 값이 아니라 **구조**를 본다.
  * `jsBudgetKb`: 초기 스크립트 합계 상한(원본 기준, KB).
  */
 const ROUTES = [
@@ -57,7 +60,11 @@ const ROUTES = [
   {
     path: '/challenge',
     must: ['챌린지 보드', '새로운 습관을 만들고'],
-    minText: 400,
+    // 목록 항목 수는 그날의 모집중·진행중 챌린지 수에 따라 변한다
+    // (실제로 10개 → 3개로 줄어 minText 400 에 걸린 적이 있다).
+    // 길이 대신 "상세로 가는 링크가 하나라도 SSR 됐는가"를 본다.
+    mustMatch: [/href="\/challenge\/\d+"/g, 1],
+    minText: 250,
     jsBudgetKb: 1000,
     canonical: '/challenge',
   },
@@ -164,6 +171,16 @@ async function run() {
 
     for (const needle of route.must) {
       check(route.path, `초기 HTML 에 "${needle}" 없음`, text.includes(needle));
+    }
+
+    if (route.mustMatch) {
+      const [pattern, min] = route.mustMatch;
+      const found = (html.match(pattern) ?? []).length;
+      check(
+        route.path,
+        `${pattern} 매치 ${found}개 (최소 ${min}개)`,
+        found >= min
+      );
     }
 
     if (route.canonical) {

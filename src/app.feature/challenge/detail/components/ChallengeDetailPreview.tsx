@@ -168,48 +168,43 @@ export function ChallengeDetailPreview({
             </div>
 
             <div className="mt-4 flex min-w-0 flex-col gap-3.5 lg:gap-4">
+              {/* 실화면(ChallengeDetailScreen 의 소개 섹션)과 **같은 마크업**이다.
+                  예전엔 배경(gray-50 vs white)·제목 크기(body1 vs heading2)·
+                  설명 줄수(전체 vs line-clamp-1)가 달라, 교체 순간 카드가
+                  하얗게 바뀌고 제목이 커지고 높이가 확 줄며 번쩍였다. */}
               <section
                 className={cn(
-                  'rounded-[14px] border border-gray-100 bg-gray-50',
-                  'lg:border-gray-200 lg:bg-white',
+                  'rounded-[14px] border border-gray-200 bg-white',
                   'p-4 sm:p-5 lg:p-6'
                 )}
               >
                 <Text
                   as="h2"
-                  size="body1"
-                  weight="bold"
-                  className="mb-3 block text-gray-900"
+                  size="heading2"
+                  weight="extrabold"
+                  className="mb-3 block tracking-[-0.3px] text-gray-900"
                 >
                   챌린지 소개
                 </Text>
                 {description ? (
-                  <Text
-                    as="p"
-                    size="body2"
-                    className="break-keep whitespace-pre-wrap text-gray-700"
-                  >
+                  <p className="line-clamp-1 break-keep whitespace-pre-wrap text-gray-600">
                     {description}
-                  </Text>
+                  </p>
                 ) : (
-                  <div className="flex flex-col gap-2">
-                    <Skeleton
-                      pulse={false}
-                      shape="text"
-                      className="h-3.5 w-full"
-                    />
-                    <Skeleton
-                      pulse={false}
-                      shape="text"
-                      className="h-3.5 w-[92%]"
-                    />
-                    <Skeleton
-                      pulse={false}
-                      shape="text"
-                      className="h-3.5 w-[60%]"
-                    />
-                  </div>
+                  <Skeleton
+                    pulse={false}
+                    shape="text"
+                    className="h-5 w-[70%]"
+                  />
                 )}
+                <div className="mt-3 hidden flex-wrap items-center gap-1.5 lg:flex">
+                  <Tag tone="brand" size="sm">
+                    {categoryLabel}
+                  </Tag>
+                  <Tag tone="gray" size="sm">
+                    {typeLabel}
+                  </Tag>
+                </div>
               </section>
             </div>
           </div>
