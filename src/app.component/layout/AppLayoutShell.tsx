@@ -1,9 +1,10 @@
 'use client';
 
 import { Button } from '@1d1s/design-system';
+import { PostHogIdentity } from '@feature/member/components/PostHogIdentity';
 import { usePhoneNumberMissing } from '@feature/member/hooks/usePhoneNumberMissing';
+import { useMarkReadFromDeepLink } from '@feature/notification/hooks/useMarkReadFromDeepLink';
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
-import { useMarkReadFromDeepLink } from '@module/hooks/useMarkReadFromDeepLink';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
 import { buildLoginUrl } from '@module/utils/returnTo';
 import { ArrowLeft } from 'lucide-react';
@@ -338,6 +339,9 @@ export default function AppLayoutShell({
         />
       ) : null}
       {isNativeApp ? <NativeBridge authState={authState} /> : null}
+      {/* PostHog 식별자 연결(렌더 없음). 분석 모듈이 member 도메인을 직접
+          부르지 않도록, 값을 아는 쪽에서 넣는다. */}
+      <PostHogIdentity />
     </div>
   );
 }

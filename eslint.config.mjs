@@ -193,14 +193,27 @@ const eslintConfig = [
     },
   },
   {
-    // P4 에서 제거할 기존 위반(추가 금지).
+    // 전역 셸의 알려진 결합 — 보류 중(추가 금지).
+    //
+    // 아래 4개는 전역 셸이 feature 의 훅·컴포넌트를 직접 부른다:
+    //   AppBottomNav       → useSidebar
+    //   AppLayoutShell     → usePhoneNumberMissing, 설치/투표 위젯, 알림 딥링크
+    //   AppTopNav          → ChatEntryButton, NotificationBellButton
+    //   useAuthLayoutState → useSidebar, useUnreadCount
+    //
+    // 파일 이동으로는 풀리지 않는다. member 훅을 코어 레이어로 "승격"하는
+    // 것도 해결이 아니다 — member API·타입이 통째로 따라와 결합만 옮긴다.
+    // 제대로 된 해법은 의존성 역전이다: 루트 레이아웃(합성 루트)이 feature
+    // 위젯을 만들어 셸에 슬롯으로 주입하고, 셸은 자리만 갖는 구조.
+    //
+    // 지금 하지 않는 이유: 전역 셸 조립 방식을 바꾸는 변경이라 전 페이지와
+    // 네이티브 셸에 영향이 가는데, 실기기 확인 수단이 없다. 확인이 가능해질
+    // 때 한 번에 처리한다. 그때까지 새 위반은 위 규칙이 계속 막는다.
     files: [
       'src/app.component/layout/AppBottomNav.tsx',
       'src/app.component/layout/AppLayoutShell.tsx',
       'src/app.component/layout/AppTopNav.tsx',
       'src/app.component/layout/useAuthLayoutState.ts',
-      'src/app.module/hooks/useMarkReadFromDeepLink.ts',
-      'src/app.module/providers/PostHogProvider.tsx',
     ],
     rules: {
       '@typescript-eslint/no-restricted-imports': 'off',

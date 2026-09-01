@@ -1,8 +1,9 @@
 'use client';
 
-import { useMarkAsRead } from '@feature/notification/hooks/useNotificationMutations';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
+
+import { useMarkAsRead } from './useNotificationMutations';
 
 /**
  * 알림 딥링크(`...?notifId=<id>`)로 진입하면 해당 알림을 읽음 처리한다.
