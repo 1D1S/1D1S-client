@@ -34,6 +34,15 @@ const nextConfig = {
     },
     webpackMemoryOptimizations: true,
     // 큰 라이브러리의 트리쉐이킹을 활성화해 초기 번들 크기를 줄인다.
+    //
+    // ⚠️ '@1d1s/design-system' 은 현재 **아무 효과가 없다**(2.12.2 실측:
+    // 넣고 빼도 7개 라우트 전부 바이트 차이 0). 이 옵션은 배럴 import 를
+    // 하위 경로 import 로 바꿔치기하는 방식인데, 패키지 exports 에 "." 와
+    // CSS 뿐이라 가리킬 하위 경로가 없다. dist 도 index.es.js 한 장이라
+    // 컴포넌트 하나만 써도 112개 전부가 한 청크(317KB)로 들어오고, 그
+    // 청크를 모든 라우트가 받는다(전역 셸이 Button 을 쓰기 때문).
+    // 패키지가 컴포넌트별 subpath exports 를 내보내면 그때 실효가 생기므로
+    // 항목은 남겨 둔다.
     optimizePackageImports: [
       'lucide-react',
       'date-fns',
