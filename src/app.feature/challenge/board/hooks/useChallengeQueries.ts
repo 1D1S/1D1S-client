@@ -70,7 +70,13 @@ export function useRandomChallenges(
 
 // 챌린지 리스트 불러오기 (무한 스크롤)
 export function useChallengeList(
-  params: ChallengeListParams = {}
+  params: ChallengeListParams = {},
+  /**
+   * 서버가 같은 조건으로 미리 읽어 둔 첫 페이지. 있으면 로딩 없이 그 목록을
+   * 그대로 그리고 백그라운드에서 다시 받는다(initialDataUpdatedAt: 0).
+   * **조건이 다른 필터에는 넘기면 안 된다** — 다른 목록이 잠깐 보인다.
+   */
+  initialPage?: ChallengeListResponse
 ): UseInfiniteQueryResult<InfiniteData<ChallengeListResponse>, Error> {
   return useInfiniteQuery({
     queryKey: CHALLENGE_QUERY_KEYS.list(params),
@@ -79,6 +85,16 @@ export function useChallengeList(
         ...params,
         cursor: pageParam,
       }),
+    ...(initialPage
+      ? {
+          initialData: {
+            pages: [initialPage],
+            pageParams: [undefined as string | undefined],
+          },
+          // 0 으로 두면 즉시 stale 이라 마운트 직후 조용히 최신화한다.
+          initialDataUpdatedAt: 0,
+        }
+      : {}),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => {
       const pageInfo = lastPage?.pageInfo;

@@ -1,5 +1,6 @@
+import { fetchAllPublicChallenges } from '@feature/challenge/board/api/publicChallengeList';
 import { GUIDE_ARTICLE_SLUGS } from '@feature/guide/consts/guideArticles';
-import { fetchAllPublicChallenges, SITE_URL } from '@module/metadata/seo';
+import { SITE_URL } from '@module/metadata/seo';
 import type { MetadataRoute } from 'next';
 
 // 일지는 전부 비공개라 목록·상세 모두 제외한다(robots.ts 에서도 disallow).

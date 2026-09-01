@@ -93,6 +93,9 @@ export interface ChallengeListItem {
   likeCnt: number;
   // 공개 범위 — OFFICIAL 일 때 카드를 공식 챌린지로 강조한다.
   challengeType?: ChallengeType;
+  // 서버가 목록에서 이미 걸러주지만, 사이트맵·초기 HTML 로 그대로 나가는
+  // 값이라 공개 목록 조회에서 한 번 더 확인한다.
+  deleted?: boolean;
   thumbnailImage?: string;
   randomParticipants?: RandomParticipant[];
 }

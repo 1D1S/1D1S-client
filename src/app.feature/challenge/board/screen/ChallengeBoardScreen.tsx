@@ -24,12 +24,14 @@ import { X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { BOARD_DEFAULT_STATUSES } from '../api/publicChallengeList';
 import { ChallengeBoardFilters } from '../components/ChallengeBoardFilters';
 import { toCategoryParam } from '../consts/categoryFilters';
 import { useChallengeList } from '../hooks/useChallengeQueries';
 import type {
   ChallengeCategory,
   ChallengeListItem,
+  ChallengeListResponse,
   ChallengeStatus,
   ChallengeTypeFilter,
 } from '../type/challenge';
@@ -77,7 +79,17 @@ const ChallengeBoardCardItem = React.memo(
 );
 ChallengeBoardCardItem.displayName = 'ChallengeBoardCardItem';
 
-export default function ChallengeBoardScreen(): React.ReactElement {
+interface ChallengeBoardScreenProps {
+  /**
+   * 서버가 기본 필터(모집중·진행중)로 미리 읽어 둔 첫 페이지.
+   * 필터·검색이 기본 상태일 때만 쓴다 — 조건이 다르면 다른 목록이 잠깐 보인다.
+   */
+  initialPage?: ChallengeListResponse;
+}
+
+export default function ChallengeBoardScreen({
+  initialPage,
+}: ChallengeBoardScreenProps = {}): React.ReactElement {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -235,16 +247,29 @@ export default function ChallengeBoardScreen(): React.ReactElement {
     );
   }, [requireAuth, router]);
 
+  // SSR 첫 페이지는 "서버가 읽어 온 조건 그대로"일 때만 쓸 수 있다.
+  // 사용자가 필터나 검색어를 건드린 순간부터는 다른 목록이므로 넘기지 않는다.
+  const isDefaultView =
+    !query &&
+    category === 'ALL' &&
+    challengeType === 'ALL' &&
+    statuses.length === BOARD_DEFAULT_STATUSES.length &&
+    BOARD_DEFAULT_STATUSES.every((status) => statuses.includes(status));
+  const seededPage = isDefaultView ? initialPage : undefined;
+
   // 미선택 필터는 undefined 로 넘겨 요청에서 키 자체가 빠지게 한다
   // (빈 값 전송 시 서버 enum 변환 400). status 빈 배열도 동일.
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useChallengeList({
-      limit: 12,
-      keyword: query || undefined,
-      category: toCategoryParam(category),
-      challengeType: challengeType === 'ALL' ? undefined : challengeType,
-      status: statuses.length > 0 ? statuses : undefined,
-    });
+    useChallengeList(
+      {
+        limit: 12,
+        keyword: query || undefined,
+        category: toCategoryParam(category),
+        challengeType: challengeType === 'ALL' ? undefined : challengeType,
+        status: statuses.length > 0 ? statuses : undefined,
+      },
+      seededPage
+    );
 
   const { ref } = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
@@ -427,8 +452,12 @@ export default function ChallengeBoardScreen(): React.ReactElement {
         ) : challenges.length > 0 ? (
           <div
             className={cn(
-              'data-fade-in grid gap-4',
-              'xs:grid-cols-2 grid-cols-1 sm:grid-cols-3'
+              'grid gap-4',
+              'xs:grid-cols-2 grid-cols-1 sm:grid-cols-3',
+              // data-fade-in 은 opacity 0.35 에서 시작한다. 스켈레톤 뒤엔
+              // 등장 연출이지만, SSR 목록이 이미 보이는 상태에서 걸면
+              // 화면이 어두워졌다 밝아지는 깜빡임이 된다.
+              !seededPage && 'data-fade-in'
             )}
           >
             {challenges.map((challenge) => (

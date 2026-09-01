@@ -1,7 +1,7 @@
 import { Skeleton } from '@component/Skeleton';
 import { ChallengeCardSkeletonGrid } from '@component/skeletons/ChallengeCardSkeleton';
+import type { ChallengeListItem } from '@feature/challenge/board/type/challenge';
 import { formatDateRange } from '@feature/challenge/detail/utils/challengeLabels';
-import type { PublicChallengeListItem } from '@module/metadata/seo';
 import { cn } from '@module/utils/cn';
 import Link from 'next/link';
 import React from 'react';
@@ -23,13 +23,13 @@ interface ChallengeBoardSkeletonProps {
    * 스켈레톤 대신 실제 챌린지 링크를 그린다 — 이 fallback 이 곧 크롤러가
    * 보는 초기 HTML 이라, 비어 있으면 목록 페이지가 알맹이 없이 색인된다.
    */
-  challenges?: PublicChallengeListItem[];
+  challenges?: ChallengeListItem[];
 }
 
 // 기간 표기는 카드/상세와 같은 함수를 쓴다. 직접 만들었더니 무기한
 // 챌린지의 종료일 센티넬(9999-12-31)을 그대로 찍어, 초기 HTML 에만
 // "2026.08.31 ~ 9999.12.31" 이 노출됐다.
-function formatPeriod({ startDate, endDate }: PublicChallengeListItem): string {
+function formatPeriod({ startDate, endDate }: ChallengeListItem): string {
   if (!startDate || !endDate) {
     return '';
   }
