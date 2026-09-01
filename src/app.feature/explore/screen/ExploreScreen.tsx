@@ -125,8 +125,15 @@ export default function ExploreScreen({
             <HomeQuickActions />
           </div>
 
-          {/* 가이드 진입점. 네비 탭을 늘리지 않고 여기 한 칸으로만 연결한다. */}
-          <ExploreGuideStrip />
+          {/* 가이드 진입점. 네비 탭을 늘리지 않고 여기 한 칸으로만 연결한다.
+
+              모바일에선 섹션 간격(gap-10=40px)을 음수 마진으로 상쇄해 위
+              공지·문의 스트립(내부 간격 12px)과 한 덩어리로 보이게 한다.
+              한 줄짜리 진입 링크가 40px 씩 떨어져 있으면 혼자 떠 보인다.
+              데스크톱은 기존 간격 그대로. */}
+          <div className="-my-6 lg:my-0">
+            <ExploreGuideStrip />
+          </div>
 
           <HomeRandomChallengesSection
             challenges={officialChallenges}
