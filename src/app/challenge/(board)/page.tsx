@@ -1,5 +1,5 @@
-import { ChallengeBoardSkeleton } from '@component/skeletons/ChallengeBoardSkeleton';
 import { fetchPublicChallengeBoardPage } from '@feature/challenge/board/api/publicChallengeList';
+import { ChallengeBoardSkeleton } from '@feature/challenge/board/components/ChallengeBoardSkeleton';
 import ChallengeBoardScreen from '@feature/challenge/board/screen/ChallengeBoardScreen';
 import { buildPageMetadata } from '@module/metadata/seo';
 import type { Metadata } from 'next';

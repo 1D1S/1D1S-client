@@ -1,9 +1,6 @@
 import { Icon, Stripe, Tag, Text } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
-import {
-  CATEGORY_OPTIONS,
-  getCategoryStripeTone,
-} from '@constants/categories';
+import { CATEGORY_OPTIONS, getCategoryStripeTone } from '@constants/categories';
 import { cn } from '@module/utils/cn';
 import React from 'react';
 

@@ -172,14 +172,20 @@ const eslintConfig = [
   {
     files: ['src/app.component/**/*.{ts,tsx}', 'src/app.module/**/*.{ts,tsx}'],
     rules: {
-      'no-restricted-imports': [
+      // 기본 규칙 대신 TS 판을 쓴다 — allowTypeImports 가 필요하다.
+      'no-restricted-imports': 'off',
+      '@typescript-eslint/no-restricted-imports': [
         'error',
         {
           patterns: [
             {
               group: ['@feature/*', '@/app.feature/*', '**/app.feature/*'],
+              // `import type` 은 빌드 시 사라져 런타임 결합이 없다. 도메인
+              // 타입을 공용 레이어로 끌어올리면 오히려 타입의 주인이
+              // 흐려지므로, 값 import 만 막는다.
+              allowTypeImports: true,
               message:
-                'app.component/app.module 은 app.feature 에 의존할 수 없습니다. 공용으로 올리거나 호출부에서 주입하세요.',
+                'app.component/app.module 은 app.feature 에 의존할 수 없습니다(값 import). 공용으로 올리거나 호출부에서 주입하세요.',
             },
           ],
         },
@@ -189,19 +195,15 @@ const eslintConfig = [
   {
     // P4 에서 제거할 기존 위반(추가 금지).
     files: [
-      'src/app.component/cards/DiaryCard.tsx',
       'src/app.component/layout/AppBottomNav.tsx',
       'src/app.component/layout/AppLayoutShell.tsx',
       'src/app.component/layout/AppTopNav.tsx',
       'src/app.component/layout/useAuthLayoutState.ts',
-      'src/app.component/skeletons/ChallengeBoardSkeleton.tsx',
-      'src/app.component/skeletons/ChallengeDetailSkeleton.tsx',
-      'src/app.module/api/serverApi.ts',
       'src/app.module/hooks/useMarkReadFromDeepLink.ts',
       'src/app.module/providers/PostHogProvider.tsx',
     ],
     rules: {
-      'no-restricted-imports': 'off',
+      '@typescript-eslint/no-restricted-imports': 'off',
     },
   },
 ];

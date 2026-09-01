@@ -1,4 +1,4 @@
-import { ChallengeBoardSkeleton } from '@component/skeletons/ChallengeBoardSkeleton';
+import { ChallengeBoardSkeleton } from '@feature/challenge/board/components/ChallengeBoardSkeleton';
 
 export default function Loading(): React.ReactElement {
   return (

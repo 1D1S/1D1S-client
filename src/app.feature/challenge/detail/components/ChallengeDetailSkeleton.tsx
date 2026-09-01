@@ -2,11 +2,12 @@
 
 import { MobileBottomActionBar } from '@component/layout/MobileBottomActionBar';
 import { Skeleton } from '@component/Skeleton';
-import { CHALLENGE_HERO_ASPECT } from '@feature/challenge/detail/consts/heroLayout';
 import { cn } from '@module/utils/cn';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+
+import { CHALLENGE_HERO_ASPECT } from '../consts/heroLayout';
 
 export function ChallengeDetailSkeleton(): React.ReactElement {
   const router = useRouter();
@@ -126,54 +127,54 @@ export function ChallengeDetailSkeleton(): React.ReactElement {
               </div>
 
               <div className="mt-4 flex min-w-0 flex-col gap-3.5 lg:gap-4">
-              {/* 챌린지 소개 카드 */}
-              <section
-                className={cn(
-                  'rounded-[14px] border border-gray-100 bg-gray-50',
-                  'lg:border-gray-200 lg:bg-white',
-                  'p-4 sm:p-5 lg:p-6'
-                )}
-              >
-                <Skeleton shape="text" className="mb-3 h-5 w-32" />
-                <div className="flex flex-col gap-2">
-                  <Skeleton shape="text" className="h-3.5 w-full" />
-                  <Skeleton shape="text" className="h-3.5 w-[92%]" />
-                  <Skeleton shape="text" className="h-3.5 w-[60%]" />
-                </div>
-                <div className="mt-3 hidden flex-wrap items-center gap-1.5 lg:flex">
-                  <Skeleton shape="pill" className="h-5 w-16" />
-                  <Skeleton shape="pill" className="h-5 w-16" />
-                </div>
-              </section>
+                {/* 챌린지 소개 카드 */}
+                <section
+                  className={cn(
+                    'rounded-[14px] border border-gray-100 bg-gray-50',
+                    'lg:border-gray-200 lg:bg-white',
+                    'p-4 sm:p-5 lg:p-6'
+                  )}
+                >
+                  <Skeleton shape="text" className="mb-3 h-5 w-32" />
+                  <div className="flex flex-col gap-2">
+                    <Skeleton shape="text" className="h-3.5 w-full" />
+                    <Skeleton shape="text" className="h-3.5 w-[92%]" />
+                    <Skeleton shape="text" className="h-3.5 w-[60%]" />
+                  </div>
+                  <div className="mt-3 hidden flex-wrap items-center gap-1.5 lg:flex">
+                    <Skeleton shape="pill" className="h-5 w-16" />
+                    <Skeleton shape="pill" className="h-5 w-16" />
+                  </div>
+                </section>
 
-              {/* 목표 카드 */}
-              <section
-                className={cn(
-                  'rounded-[14px] border border-gray-100 bg-gray-50',
-                  'lg:border-gray-200 lg:bg-white',
-                  'p-4 sm:p-5 lg:p-6'
-                )}
-              >
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <Skeleton shape="text" className="h-5 w-12" />
-                  <Skeleton shape="rounded" className="h-8 w-16" />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <div
-                      key={index}
-                      className={cn(
-                        'flex items-start gap-2.5 rounded-[10px]',
-                        'border border-gray-100 bg-white px-3.5 py-2.5',
-                        'lg:bg-gray-50'
-                      )}
-                    >
-                      <Skeleton shape="text" className="mt-0.5 h-4 w-4" />
-                      <Skeleton shape="text" className="h-5 w-[70%]" />
-                    </div>
-                  ))}
-                </div>
-              </section>
+                {/* 목표 카드 */}
+                <section
+                  className={cn(
+                    'rounded-[14px] border border-gray-100 bg-gray-50',
+                    'lg:border-gray-200 lg:bg-white',
+                    'p-4 sm:p-5 lg:p-6'
+                  )}
+                >
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <Skeleton shape="text" className="h-5 w-12" />
+                    <Skeleton shape="rounded" className="h-8 w-16" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className={cn(
+                          'flex items-start gap-2.5 rounded-[10px]',
+                          'border border-gray-100 bg-white px-3.5 py-2.5',
+                          'lg:bg-gray-50'
+                        )}
+                      >
+                        <Skeleton shape="text" className="mt-0.5 h-4 w-4" />
+                        <Skeleton shape="text" className="h-5 w-[70%]" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
               </div>
             </div>
 

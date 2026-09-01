@@ -1,10 +1,11 @@
 import { Skeleton } from '@component/Skeleton';
 import { ChallengeCardSkeletonGrid } from '@component/skeletons/ChallengeCardSkeleton';
-import type { ChallengeListItem } from '@feature/challenge/board/type/challenge';
-import { formatDateRange } from '@feature/challenge/detail/utils/challengeLabels';
 import { cn } from '@module/utils/cn';
 import Link from 'next/link';
 import React from 'react';
+
+import { formatDateRange } from '../../detail/utils/challengeLabels';
+import type { ChallengeListItem } from '../type/challenge';
 
 /**
  * 챌린지 보드 페이지 진입 시 Suspense fallback 으로 사용.

@@ -1,13 +1,13 @@
 'use client';
 
 import { Text } from '@1d1s/design-system';
-import DiaryCard from '@component/cards/DiaryCard';
 import EmptyState from '@component/EmptyState';
 import type { DiaryItem } from '@feature/diary/board/type/diary';
 import {
   useLikeDiary,
   useUnlikeDiary,
 } from '@feature/diary/detail/hooks/useDiaryMutations';
+import DiaryCard from '@feature/diary/shared/components/DiaryCard';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { cn } from '@module/utils/cn';
 import Link from 'next/link';
