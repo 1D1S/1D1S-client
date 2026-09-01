@@ -7,6 +7,7 @@ import {
   type GuideArticle,
   type GuideBlock,
 } from '../consts/guideArticles';
+import { GuideCtaLink } from './GuideCtaLink';
 
 /**
  * 주제별 가이드 본문 렌더러.
@@ -171,16 +172,28 @@ export function GuideArticleBody({
 
       <h1
         className={cn(
-          'mt-2 text-[28px] leading-[1.35] font-extrabold break-keep',
-          'text-gray-900 lg:text-[34px]'
+          'mt-2 text-[25px] leading-[1.32] font-extrabold break-keep',
+          'text-gray-900 sm:text-[28px] lg:text-[34px]'
         )}
       >
         {article.title}
       </h1>
 
-      <p className="mt-3 text-[13.5px] text-gray-400">
-        <time dateTime={article.updated}>{article.updated}</time> 업데이트 · 약{' '}
-        {article.readingMinutes}분
+      {/* 메타는 한 줄 고정. "업데이트"·"약" 같은 군말을 빼고 날짜와 분량만
+          남긴다. 구분점은 앞뒤로 공백을 하나씩 둬서(gap 으로) 두 항목이
+          붙어 보이지 않게 한다. whitespace-nowrap 이라 좁은 폭에서도 줄이
+          안 접힌다. */}
+      <p
+        className={cn(
+          'mt-2.5 flex items-center gap-1.5',
+          'text-[13px] whitespace-nowrap text-gray-400'
+        )}
+      >
+        <time dateTime={article.updated}>
+          {article.updated.replaceAll('-', '.')}
+        </time>
+        <span aria-hidden>·</span>
+        <span>{article.readingMinutes}분 읽기</span>
       </p>
 
       <p
@@ -233,8 +246,10 @@ export function GuideArticleBody({
           1D1S 에서 챌린지를 찾아 참여하거나 직접 만들고, 매일의 기록을 남길 수
           있습니다.
         </p>
+        {/* 앱 웹뷰에서는 네이티브 화면으로 넘긴다(GuideCtaLink). 웹에서는
+            평소대로 라우팅되고, 마크업에는 실제 href 가 남는다. */}
         <div className="mt-5 flex flex-wrap justify-center gap-2.5">
-          <Link
+          <GuideCtaLink
             href="/challenge"
             className={cn(
               'bg-main-800 inline-flex items-center rounded-full',
@@ -243,8 +258,8 @@ export function GuideArticleBody({
             )}
           >
             챌린지 둘러보기
-          </Link>
-          <Link
+          </GuideCtaLink>
+          <GuideCtaLink
             href="/challenge/create"
             className={cn(
               'text-main-800 inline-flex items-center rounded-full',
@@ -253,7 +268,7 @@ export function GuideArticleBody({
             )}
           >
             챌린지 만들기
-          </Link>
+          </GuideCtaLink>
         </div>
       </div>
     </article>

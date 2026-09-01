@@ -40,17 +40,19 @@ export function headersMiddleware(res: NextResponse, pathname = ''): void {
   const appleAuthOrigin = 'https://appleid.apple.com';
   const connectSrcValue =
     allowedOrigins.length > 0
-      ? `connect-src 'self' ${allowedOrigins.join(' ')} ${kakaoOrigins} ${appleAuthOrigin} https://vercel.live https://*.vercel.live;`
-      : `connect-src 'self' ${kakaoOrigins} ${appleAuthOrigin} https://vercel.live https://*.vercel.live;`;
+      ? `connect-src 'self' ${allowedOrigins.join(' ')} ${kakaoOrigins} ${appleAuthOrigin};`
+      : `connect-src 'self' ${kakaoOrigins} ${appleAuthOrigin};`;
   const imgSrcValue = "img-src 'self' blob: data: https: http:;";
-  const scriptSrcValue =
-    `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://t1.kakaocdn.net ${appleScriptOrigin} https://vercel.live https://*.vercel.live;`;
+  const scriptSrcValue = `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://t1.kakaocdn.net ${appleScriptOrigin};`;
   // 애플 SDK 가 인증 처리에 iframe 을 쓰는 경우가 있어 frame-src 를 명시한다.
-  // vercel.live 는 이미 script-src/connect-src 에서 허용 중인 Vercel 프리뷰
-  // 툴바다. frame-src 명시 전에는 default-src 'self' 폴백으로 막혀 있었고,
-  // 같은 의도를 유지하려 여기서도 함께 허용한다(프리뷰 툴바 iframe 용).
-  const frameSrcValue =
-    `frame-src 'self' ${appleAuthOrigin} https://vercel.live https://*.vercel.live;`;
+  //
+  // vercel.live(프리뷰 툴바)는 허용 목록에서 뺐다. 앱 웹뷰에서 이 툴바가
+  // 뜨면 탭 시 외부 브라우저가 열려 앱 흐름이 끊긴다. 상용 도메인에는 원래
+  // 주입되지 않지만(실측: 상용 HTML 에 vercel.live 스크립트 0건), 프리뷰
+  // 배포를 웹뷰로 열면 나타난다. CSP 에서 막아 두면 어느 배포에서도 뜨지
+  // 않는다. 프리뷰 코멘트 기능이 필요해지면 Vercel 프로젝트 설정에서
+  // 켜는 것과 함께 여기도 되돌려야 한다.
+  const frameSrcValue = `frame-src 'self' ${appleAuthOrigin};`;
 
   // const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   const cspHeader = `
