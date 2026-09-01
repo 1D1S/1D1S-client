@@ -58,6 +58,13 @@ export async function generateMetadata({
  * 경계를 겸한다 — 정적 렌더로 떨어지는 경우에도 fallback 에 같은 공개
  * 정보가 실리도록 preview 를 쓴다.
  *
+ * route-level loading.tsx 는 두지 않는다. 두면 서버가 공개 데이터를 await
+ * 하는 동안 그 스켈레톤이 먼저 스트리밍돼 **스켈레톤 → 프리뷰 → 실화면**
+ * 3단계가 되고, 사용자에게는 화면이 번쩍이는 것으로 읽힌다(실기 피드백).
+ * 없애면 프리뷰부터 시작하는 2단계가 된다. 대신 클라이언트 네비게이션에서
+ * 이전 화면이 잠깐 더 남는데, 빈 스켈레톤이 끼어드는 것보다 낫다.
+ * (공개 조회는 revalidate 300 으로 캐시돼 대개 즉시 끝난다.)
+ *
  * 인증 가드는 `src/app.module/middleware/auth.ts` 의 미들웨어가 처리한다.
  */
 export default async function ChallengeDetail({
