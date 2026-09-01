@@ -1,6 +1,10 @@
 import { API_BASE_URL } from '@module/api/config';
 
-import type { ChallengeListResponse, ChallengeStatus } from '../type/challenge';
+import type {
+  ChallengeListResponse,
+  ChallengeStatus,
+  ChallengeTypeFilter,
+} from '../type/challenge';
 
 /**
  * 서버에서 인증 없이 읽는 공개 챌린지 목록.
@@ -26,12 +30,15 @@ interface PublicChallengePageParams {
   cursor?: string;
   /** 미지정 시 서버 기본(전체). 보드 첫 화면은 모집중·진행중만 본다. */
   status?: ChallengeStatus[];
+  /** 'OFFICIAL' 이면 공식 챌린지만. 탐색 화면의 공식 섹션이 쓴다. */
+  challengeType?: ChallengeTypeFilter;
 }
 
 export async function fetchPublicChallengePage({
   limit,
   cursor,
   status,
+  challengeType,
 }: PublicChallengePageParams): Promise<ChallengeListResponse> {
   if (!API_BASE_URL) {
     return EMPTY_PAGE;
@@ -40,6 +47,9 @@ export async function fetchPublicChallengePage({
   const query = new URLSearchParams({ limit: String(limit) });
   if (cursor) {
     query.set('cursor', cursor);
+  }
+  if (challengeType) {
+    query.set('challengeType', challengeType);
   }
   // 배열은 같은 키 반복으로 직렬화한다(challengeBoardApi 와 동일 규칙).
   status?.forEach((value) => query.append('status', value));
@@ -95,6 +105,25 @@ export async function fetchPublicChallengeBoardPage(
     limit,
     status: BOARD_DEFAULT_STATUSES,
   });
+}
+
+/**
+ * 탐색 화면 공식 챌린지 섹션의 노출 개수.
+ *
+ * 서버 컴포넌트(탐색 page)와 클라이언트 훅이 같이 읽어야 해서 여기 둔다 —
+ * 훅 파일에 두면 page 가 그 파일을 import 하면서 클라이언트 전용 코드까지
+ * RSC 로 끌고 와 빌드가 깨진다.
+ */
+export const OFFICIAL_CHALLENGES_LIMIT = 10;
+
+/**
+ * 탐색 화면의 공식 챌린지 섹션과 **같은 조건**으로 첫 페이지를 읽는다.
+ * (useExploreOfficialChallenges 의 파라미터와 맞춰야 한다.)
+ */
+export async function fetchPublicOfficialChallengePage(
+  limit = OFFICIAL_CHALLENGES_LIMIT
+): Promise<ChallengeListResponse> {
+  return fetchPublicChallengePage({ limit, challengeType: 'OFFICIAL' });
 }
 
 /**

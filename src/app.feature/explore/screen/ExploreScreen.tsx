@@ -3,6 +3,7 @@
 import { Text } from '@1d1s/design-system';
 import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
 import { LoginRequiredDialog } from '@component/LoginRequiredDialog';
+import type { ChallengeListResponse } from '@feature/challenge/board/type/challenge';
 import HomeNoticeStrip from '@feature/home/components/HomeNoticeStrip';
 import HomeQuickActions from '@feature/home/components/HomeQuickActions';
 import HomeRandomChallengesSection from '@feature/home/components/HomeRandomChallengesSection';
@@ -28,7 +29,14 @@ const EXPLORE_BANNER_HEIGHT =
 // 탐색(/explore): 홈에서 분리한 "둘러보기" 콘텐츠. 배너는 제외하고 오늘 시작해볼
 // 챌린지·오늘의 응원(추천 일지)만 노출한다. 비로그인도 열람 가능하며, 카드
 // 클릭 시 로그인 유도 다이얼로그를 띄운다.
-export default function ExploreScreen(): React.ReactElement {
+interface ExploreScreenProps {
+  /** 서버가 미리 읽어 둔 공식 챌린지 첫 페이지(초기 HTML 용). */
+  initialOfficialPage?: ChallengeListResponse;
+}
+
+export default function ExploreScreen({
+  initialOfficialPage,
+}: ExploreScreenProps = {}): React.ReactElement {
   const router = useRouter();
   const isLoggedIn = useIsLoggedIn();
   const { showLoginDialog, setShowLoginDialog, onLikeToggle } =
@@ -60,7 +68,7 @@ export default function ExploreScreen(): React.ReactElement {
     isLoading: isOfficialLoading,
     isError: isOfficialError,
     errorMessage: officialErrorMessage,
-  } = useExploreOfficialChallenges();
+  } = useExploreOfficialChallenges(initialOfficialPage);
 
   // 스플래시 dismiss 신호: 탐색 3개 섹션(공식/추천 챌린지/추천 일지)이 모두
   // 로드(성공 또는 에러 확정)된 뒤 1회 발화.
