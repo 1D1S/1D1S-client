@@ -59,6 +59,17 @@
   animation: none;
 }
 
+/* 자리만 잡고 깜빡이지 않는 스켈레톤.
+   route-level loading.tsx 처럼 "곧 실제 콘텐츠로 교체될" 단계에 쓴다.
+   상세 진입은 스켈레톤 → SSR 프리뷰 → 실화면 3단계라, 첫 단계가 펄스하면
+   사용자에게는 로딩이 아니라 화면이 번쩍이는 것으로 읽힌다(실기 피드백).
+   컨테이너와 자손 펄스를 모두 끈다. */
+[data-skeleton-static],
+[data-skeleton-static] [data-skeleton-group],
+[data-skeleton-static] .skeleton-pulse {
+  animation: none;
+}
+
 .animate-draw-check-1 {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
@@ -425,8 +436,8 @@
     opacity: 1;
   }
   100% {
-    transform: rotate(var(--lb-angle))
-      translateY(calc(var(--lb-dist) * -1.4)) scale(0.5);
+    transform: rotate(var(--lb-angle)) translateY(calc(var(--lb-dist) * -1.4))
+      scale(0.5);
     opacity: 0;
   }
 }

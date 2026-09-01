@@ -20,6 +20,10 @@ interface ChallengeDetailPreviewProps {
 /**
  * 상세 페이지의 **초기 HTML 콘텐츠**.
  *
+ * 자리 예약은 전부 `pulse={false}` 다. 이미 제목·기간·소개가 실제로 보이는
+ * 화면에서 placeholder 만 깜빡이면, 사용자에게는 로딩이 아니라 "화면이
+ * 반짝인다"로 읽힌다(실기 피드백).
+ *
  * ChallengeDetailScreen 은 인증이 필요한 데이터를 클라이언트에서 받아오므로
  * 그 사이 화면이 비어 있었고, SSR 결과 = 크롤러가 보는 전부가 스켈레톤뿐이라
  * 색인에서 빈 페이지로 취급됐다. 그래서 비인증 GET /challenges/{id} 로 읽은
@@ -113,7 +117,11 @@ export function ChallengeDetailPreview({
             {metaLabel}
           </Text>
           {/* 좋아요 버튼 자리 — 수는 로그인 응답에 있어 아직 모른다. */}
-          <Skeleton shape="pill" className="h-[26px] w-14 shrink-0" />
+          <Skeleton
+            pulse={false}
+            shape="pill"
+            className="h-[26px] w-14 shrink-0"
+          />
         </div>
         {/* 진행률 바 자리 — 실화면과 같은 높이로 예약. */}
         <div
@@ -130,7 +138,7 @@ export function ChallengeDetailPreview({
             진행률
           </Text>
           <div className="h-[7px] flex-1 overflow-hidden rounded-full bg-white" />
-          <Skeleton shape="text" className="h-5 w-16 shrink-0" />
+          <Skeleton pulse={false} shape="text" className="h-5 w-16 shrink-0" />
         </div>
       </div>
 
@@ -185,9 +193,21 @@ export function ChallengeDetailPreview({
                   </Text>
                 ) : (
                   <div className="flex flex-col gap-2">
-                    <Skeleton shape="text" className="h-3.5 w-full" />
-                    <Skeleton shape="text" className="h-3.5 w-[92%]" />
-                    <Skeleton shape="text" className="h-3.5 w-[60%]" />
+                    <Skeleton
+                      pulse={false}
+                      shape="text"
+                      className="h-3.5 w-full"
+                    />
+                    <Skeleton
+                      pulse={false}
+                      shape="text"
+                      className="h-3.5 w-[92%]"
+                    />
+                    <Skeleton
+                      pulse={false}
+                      shape="text"
+                      className="h-3.5 w-[60%]"
+                    />
                   </div>
                 )}
               </section>
@@ -202,10 +222,18 @@ export function ChallengeDetailPreview({
             )}
           >
             <div className="rounded-2xl border border-gray-100 bg-white p-[18px]">
-              <Skeleton shape="text" className="h-3.5 w-16" />
-              <Skeleton shape="text" className="mt-2 h-10 w-20" />
-              <Skeleton shape="rounded" className="mt-2.5 h-2.5 w-full" />
-              <Skeleton shape="rounded" className="mt-3.5 h-10 w-full" />
+              <Skeleton pulse={false} shape="text" className="h-3.5 w-16" />
+              <Skeleton pulse={false} shape="text" className="mt-2 h-10 w-20" />
+              <Skeleton
+                pulse={false}
+                shape="rounded"
+                className="mt-2.5 h-2.5 w-full"
+              />
+              <Skeleton
+                pulse={false}
+                shape="rounded"
+                className="mt-3.5 h-10 w-full"
+              />
             </div>
           </aside>
         </div>
