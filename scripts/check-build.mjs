@@ -50,7 +50,7 @@ const ROUTES = [
     path: '/',
     must: ['1D1S'],
     minText: 150,
-    jsBudgetKb: 1400,
+    jsBudgetKb: 1200,
     canonical: '/',
     jsonLd: 2,
   },
@@ -58,28 +58,28 @@ const ROUTES = [
     path: '/challenge',
     must: ['챌린지 보드', '새로운 습관을 만들고'],
     minText: 400,
-    jsBudgetKb: 1400,
+    jsBudgetKb: 1210,
     canonical: '/challenge',
   },
   {
     path: '/explore',
     must: ['탐색', '공식 챌린지', '습관·스트릭·독서 챌린지'],
     minText: 350,
-    jsBudgetKb: 1400,
+    jsBudgetKb: 1290,
     canonical: '/explore',
   },
   {
     path: '/guide',
     must: ['주제별 가이드', '습관 만들기'],
     minText: 1500,
-    jsBudgetKb: 1350,
+    jsBudgetKb: 1175,
     canonical: '/guide',
   },
   {
     path: '/guide/streak',
     must: ['스트릭', '자주 묻는 질문', '함께 읽으면 좋은 글'],
     minText: 1500,
-    jsBudgetKb: 1350,
+    jsBudgetKb: 1175,
     canonical: '/guide/streak',
     jsonLd: 3,
   },
@@ -88,9 +88,18 @@ const ROUTES = [
     // 아코디언이 닫힌 채로도 답변이 DOM 에 있어야 한다(forceMount).
     must: ['1D1S는 어떤 서비스인가요', '습관 형성 플랫폼'],
     minText: 800,
-    jsBudgetKb: 1400,
+    jsBudgetKb: 1185,
     canonical: '/inquiry',
     jsonLd: 1,
+  },
+  {
+    // 법적 고지는 상단 네비 없이 본문만 나온다(BARE_CHROME_ROUTES).
+    // 막다른 길이 되지 않도록 문서 끝 복귀 CTA 가 반드시 있어야 한다.
+    path: '/terms',
+    must: ['제1조', '1D1S 홈으로', '챌린지 둘러보기'],
+    minText: 2000,
+    jsBudgetKb: 1180,
+    canonical: '/terms',
   },
 ];
 

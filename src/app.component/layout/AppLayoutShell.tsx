@@ -1,22 +1,45 @@
 'use client';
 
 import { Button } from '@1d1s/design-system';
-import { AppInstallPrompt } from '@feature/install/components/AppInstallPrompt';
 import { usePhoneNumberMissing } from '@feature/member/hooks/usePhoneNumberMissing';
-import VoteFloatingScreen from '@feature/vote/screen/VoteFloatingScreen';
 import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { useMarkReadFromDeepLink } from '@module/hooks/useMarkReadFromDeepLink';
 import { useTokenRefreshOnResume } from '@module/hooks/useTokenRefreshOnResume';
 import { buildLoginUrl } from '@module/utils/returnTo';
 import { ArrowLeft } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useCallback, useEffect } from 'react';
 
 import AppBottomNav from './AppBottomNav';
 import AppRightRail from './AppRightRail';
 import AppTopNav from './AppTopNav';
-import NativeBridge from './NativeBridge';
 import { useAuthLayoutState } from './useAuthLayoutState';
+
+/**
+ * 전역 셸에 매달려 있지만 첫 화면에 필요 없는 것들.
+ *
+ * 정적 import 면 조건이 false 인 라우트에서도 청크가 초기 번들에 들어간다
+ * (모든 페이지가 투표 위젯·설치 유도·네이티브 브릿지 코드를 받고 있었다).
+ * 렌더 조건과 로딩 조건을 맞춰, 필요한 화면에서만 내려받게 한다.
+ *
+ * ssr: false — 셋 다 클라이언트에서만 의미가 있고(브라우저 감지·설치 배너·
+ * 네이티브 핸드셰이크) 초기 HTML 에 나올 필요가 없다.
+ */
+const AppInstallPrompt = dynamic(
+  () =>
+    import('@feature/install/components/AppInstallPrompt').then(
+      (mod) => mod.AppInstallPrompt
+    ),
+  { ssr: false }
+);
+
+const VoteFloatingScreen = dynamic(
+  () => import('@feature/vote/screen/VoteFloatingScreen'),
+  { ssr: false }
+);
+
+const NativeBridge = dynamic(() => import('./NativeBridge'), { ssr: false });
 
 const TOP_NAV_HIDDEN_ROUTES = [
   '/auth/login',
@@ -24,6 +47,14 @@ const TOP_NAV_HIDDEN_ROUTES = [
   '/auth/signup',
   '/signup',
 ];
+
+// 법적 고지 페이지는 읽고 나가는 문서다. 앱 탐색 동선이 필요 없어 상단
+// 네비 없이 본문만 둔다(하단 네비는 원래 최상위 탭에만 뜬다). 대신 문서
+// 끝에 서비스로 돌아가는 CTA 를 둬서 막다른 길이 되지 않게 한다.
+//
+// 가이드 글(/guide/*)은 여기 넣지 않는다 — 검색으로 들어온 사람을 앱으로
+// 데려가는 입구라 네비가 그대로 필요하다.
+const BARE_CHROME_ROUTES = ['/terms', '/privacy'];
 
 // 홈(`/`)은 한때 본문이 스트릭·참여 중 챌린지·일지 쓰기를 직접 소유한다는
 // 이유로 레일을 숨겼다. 그러나 모든 화면이 `max-w-[1200px] mx-auto` 라
@@ -200,7 +231,8 @@ export default function AppLayoutShell({
   const isLoginPage = matchesRoute(pathname, TOP_NAV_HIDDEN_ROUTES);
   // TopNav 가시성: 로그인/회원가입 페이지면 완전 제거. 네이티브 쉘 숨김은
   // BottomNav 와 같은 이유로 `native-hide` 클래스(CSS) 에 맡긴다.
-  const showTopNav = !isLoginPage;
+  const isBareChromeRoute = matchesRoute(pathname, BARE_CHROME_ROUTES);
+  const showTopNav = !isLoginPage && !isBareChromeRoute;
   // 모든 라우트에서 `lg`(1024px) 기준으로 데스크탑/태블릿 전환을 통일한다.
   // - 데스크탑(≥lg): 글로벌 TopNav 노출
   // - 태블릿/모바일(<lg): 글로벌 TopNav 숨김, BottomNav 노출
@@ -296,11 +328,15 @@ export default function AppLayoutShell({
           네이티브 웹뷰·홈 화면 PWA 를 걸러내므로 여기서는 조건을 겹치지
           않는다(가시성 규칙이 두 곳에 흩어지면 한쪽만 바뀐다). */}
       <AppInstallPrompt isNativeApp={isNativeAppFromServer} />
-      <VoteFloatingScreen
-        enabled={isLoggedIn && !isLoginPage && isVoteWidgetRoute}
-        hasBottomNav={showBottomNav && !isNativeApp}
-        hasRightRail={showRightRail}
-      />
+      {/* enabled 를 내부에서 보던 것을 바깥으로 올렸다. dynamic 은 렌더될 때
+          청크를 받으므로, 조건을 안쪽에 두면 꺼진 라우트에서도 내려받는다. */}
+      {isLoggedIn && !isLoginPage && isVoteWidgetRoute ? (
+        <VoteFloatingScreen
+          enabled
+          hasBottomNav={showBottomNav && !isNativeApp}
+          hasRightRail={showRightRail}
+        />
+      ) : null}
       {isNativeApp ? <NativeBridge authState={authState} /> : null}
     </div>
   );

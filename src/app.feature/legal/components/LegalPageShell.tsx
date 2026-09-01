@@ -2,6 +2,7 @@
 
 import { MobileHeader, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -100,6 +101,37 @@ export function LegalPageShell({
               {footer}
             </Text>
           ) : null}
+
+          {/* 이 페이지들은 상단 네비 없이 본문만 나오므로(AppLayoutShell 의
+              BARE_CHROME_ROUTES) 문서 끝에 돌아갈 길을 둔다. */}
+          <nav
+            aria-label="서비스로 돌아가기"
+            className={cn(
+              'mt-10 flex flex-wrap items-center gap-2.5',
+              'border-t border-gray-100 pt-8'
+            )}
+          >
+            <Link
+              href="/"
+              className={cn(
+                'bg-main-800 inline-flex items-center rounded-full',
+                'px-6 py-3 text-[15px] font-extrabold text-white',
+                'transition hover:brightness-95'
+              )}
+            >
+              1D1S 홈으로
+            </Link>
+            <Link
+              href="/challenge"
+              className={cn(
+                'text-main-800 inline-flex items-center rounded-full',
+                'border border-gray-200 bg-white px-6 py-3',
+                'text-[15px] font-extrabold transition hover:brightness-95'
+              )}
+            >
+              챌린지 둘러보기
+            </Link>
+          </nav>
         </div>
       </section>
     </div>
