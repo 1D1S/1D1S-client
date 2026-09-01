@@ -7,6 +7,7 @@ import { useDeleteMember } from '@feature/member/hooks/useMemberMutations';
 import { ConfirmDialog } from '@feature/member/settings/components/ConfirmDialog';
 import { getApiErrorCode } from '@module/api/error';
 import { notifyApiError } from '@module/api/errorNotify';
+import { useIsNativeApp } from '@module/hooks/useIsNativeApp';
 import { cn } from '@module/utils/cn';
 import {
   Ban,
@@ -93,6 +94,12 @@ function SettingsRow({
 
 export default function SettingsScreen(): React.ReactElement {
   const router = useRouter();
+  // 알림 설정은 네이티브 앱 전용이다. 웹 푸시를 걷어낸 뒤로 브라우저에서는
+  // 이 설정이 켜져 있어도 웹으로 알림이 오지 않는다 — 켤 수 없는 스위치를
+  // 보여주면 안 온다는 문의만 는다. 다만 화면 자체는 지우지 않는다:
+  // 여기 토글은 서버 설정이라 앱 푸시(친구·일지·챌린지·채팅)를 그대로
+  // 제어하고, 앱은 이 웹 화면을 웹뷰로 띄운다.
+  const isNativeApp = useIsNativeApp(false);
   const logout = useLogout();
   const deleteMember = useDeleteMember();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
@@ -149,13 +156,17 @@ export default function SettingsScreen(): React.ReactElement {
             description="닉네임·프로필 이미지·연동 계정"
             onClick={() => router.push('/mypage/settings/profile')}
           />
-          <div className="h-px w-full bg-gray-100" />
-          <SettingsRow
-            icon={<Bell className="h-5 w-5" />}
-            label="알림 설정"
-            description="알림 수신 항목을 관리해요"
-            onClick={() => router.push('/mypage/settings/notifications')}
-          />
+          {isNativeApp ? (
+            <>
+              <div className="h-px w-full bg-gray-100" />
+              <SettingsRow
+                icon={<Bell className="h-5 w-5" />}
+                label="알림 설정"
+                description="알림 수신 항목을 관리해요"
+                onClick={() => router.push('/mypage/settings/notifications')}
+              />
+            </>
+          ) : null}
           <div className="h-px w-full bg-gray-100" />
           <SettingsRow
             icon={<Ban className="h-5 w-5" />}
