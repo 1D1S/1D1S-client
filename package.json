@@ -18,6 +18,7 @@
     "knip:report": "knip --reporter=json",
     "test": "vitest run",
     "test:watch": "vitest",
+    "check:build": "node scripts/check-build.mjs",
     "prepare": "husky"
   },
   "dependencies": {

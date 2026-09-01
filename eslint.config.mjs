@@ -163,6 +163,47 @@ const eslintConfig = [
       'react/jsx-no-useless-fragment': 'warn',
     },
   },
+  // 레이어 경계 — 공용(app.component)·코어(app.module)는 기능(app.feature)에
+  // 의존하지 않는다. 반대로 의존하면 기능 하나를 고칠 때 전역 셸이 흔들린다.
+  //
+  // 지금 위반이 9개 파일에 남아 있어 아래 예외 목록으로 막아 두었다.
+  // **새 위반만 차단**하는 것이 목적이고, 예외는 계획서 P4(레이어 경계 정리)
+  // 에서 하나씩 지운다. 새 파일을 예외에 추가하지 말 것.
+  {
+    files: ['src/app.component/**/*.{ts,tsx}', 'src/app.module/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@feature/*', '@/app.feature/*', '**/app.feature/*'],
+              message:
+                'app.component/app.module 은 app.feature 에 의존할 수 없습니다. 공용으로 올리거나 호출부에서 주입하세요.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // P4 에서 제거할 기존 위반(추가 금지).
+    files: [
+      'src/app.component/cards/DiaryCard.tsx',
+      'src/app.component/layout/AppBottomNav.tsx',
+      'src/app.component/layout/AppLayoutShell.tsx',
+      'src/app.component/layout/AppTopNav.tsx',
+      'src/app.component/layout/useAuthLayoutState.ts',
+      'src/app.component/skeletons/ChallengeBoardSkeleton.tsx',
+      'src/app.component/skeletons/ChallengeDetailSkeleton.tsx',
+      'src/app.module/api/serverApi.ts',
+      'src/app.module/hooks/useMarkReadFromDeepLink.ts',
+      'src/app.module/providers/PostHogProvider.tsx',
+    ],
+    rules: {
+      'no-restricted-imports': 'off',
+    },
+  },
 ];
 
 export default eslintConfig;
