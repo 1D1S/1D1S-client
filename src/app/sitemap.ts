@@ -14,6 +14,7 @@ const PUBLIC_PATHS = [
   '/inquiry',
   '/terms',
   '/privacy',
+  '/account-deletion',
   ...GUIDE_ARTICLE_SLUGS.map((slug) => `/guide/${slug}`),
 ];
 
