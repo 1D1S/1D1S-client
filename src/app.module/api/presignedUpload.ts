@@ -20,14 +20,11 @@ interface PresignedUrlRequestItem {
 async function requestPresignedUrls(
   files: PresignedUrlRequestItem[]
 ): Promise<PresignedUrlItem[]> {
-  return requestData<PresignedUrlItem[], PresignedUrlRequestItem[]>(
-    apiClient,
-    {
-      url: '/image/presigned-urls',
-      method: 'POST',
-      data: files,
-    }
-  );
+  return requestData<PresignedUrlItem[], PresignedUrlRequestItem[]>(apiClient, {
+    url: '/image/presigned-urls',
+    method: 'POST',
+    data: files,
+  });
 }
 
 // presigned PUT 시 S3 오브젝트에 저장되는 캐시 정책. 백엔드가 presigned
@@ -71,20 +68,24 @@ export async function putToStorage(
 /**
  * 단건 presigned 발급 + PUT 업로드 후 objectKey 를 반환한다.
  * 프로필/챌린지 배너 등 단일 이미지 업로드 경로가 공유한다.
+ *
+ * 압축은 presign **이전에** 한다 — 서버가 서명에 fileType 을 넣는 경로가
+ * 있어서, 압축으로 타입이 바뀌면 PUT 헤더와 서명이 어긋나 403 이 난다.
  */
 export async function uploadImageViaPresignedSingle(
   file: File
 ): Promise<string> {
+  const compressed = await compressImageFile(file);
   const { presignedUrl, objectKey } = await requestData<{
     presignedUrl: string;
     objectKey: string;
   }>(apiClient, {
     url: '/image/presigned-url',
     method: 'POST',
-    data: { fileName: file.name, fileType: file.type },
+    data: { fileName: compressed.name, fileType: compressed.type },
   });
 
-  await putToStorage(presignedUrl, file);
+  await putToStorage(presignedUrl, compressed);
   return objectKey;
 }
 

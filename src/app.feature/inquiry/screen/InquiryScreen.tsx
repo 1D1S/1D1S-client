@@ -76,7 +76,12 @@ export function InquiryScreen(): React.ReactElement {
                     {item.question}
                   </Text>
                 </AccordionTrigger>
-                <AccordionContent className="pb-4">
+                {/* forceMount: 닫힌 항목도 DOM 에 남긴다. Radix 기본은
+                    언마운트라 답변이 초기 HTML 에 아예 없었고, JS 를 실행하지
+                    않는 크롤러는 질문만 읽었다. FAQPage 구조화 데이터가
+                    "페이지에 보이는 답변"을 전제로 하므로 근거도 함께 사라진다.
+                    닫힘 상태는 Radix 가 hidden 으로 유지해 화면은 그대로다. */}
+                <AccordionContent forceMount className="pb-4">
                   <Text size="body2" weight="regular" className="text-gray-500">
                     {item.answer}
                   </Text>
@@ -113,7 +118,12 @@ export function InquiryScreen(): React.ReactElement {
                     {item.question}
                   </Text>
                 </AccordionTrigger>
-                <AccordionContent className="pb-4">
+                {/* forceMount: 닫힌 항목도 DOM 에 남긴다. Radix 기본은
+                    언마운트라 답변이 초기 HTML 에 아예 없었고, JS 를 실행하지
+                    않는 크롤러는 질문만 읽었다. FAQPage 구조화 데이터가
+                    "페이지에 보이는 답변"을 전제로 하므로 근거도 함께 사라진다.
+                    닫힘 상태는 Radix 가 hidden 으로 유지해 화면은 그대로다. */}
+                <AccordionContent forceMount className="pb-4">
                   <Text
                     size="body2"
                     weight="regular"

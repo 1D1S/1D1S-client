@@ -23,6 +23,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
+import { compressImageFile } from '@/app.lib/compressImage';
+
 import { authApi } from '../api/authApi';
 import { BrandPanel } from '../components/BrandPanel';
 import { useLogout } from '../hooks/useAuthMutations';
@@ -116,11 +118,14 @@ export function SignUpScreen(): React.ReactElement {
       let profileImageKey: string | undefined;
 
       if (values.img) {
+        // presign 전에 압축한다 — 서명에 들어가는 파일명·타입이 실제로
+        // 올라갈 파일과 같아야 한다(다른 업로드 경로와 동일한 순서).
+        const image = await compressImageFile(values.img);
         const { data: presigned } = await authApi.getPresignedUrl({
-          fileName: values.img.name,
-          fileType: values.img.type,
+          fileName: image.name,
+          fileType: image.type,
         });
-        await putToStorage(presigned.presignedUrl, values.img);
+        await putToStorage(presigned.presignedUrl, image);
         profileImageKey = presigned.objectKey;
       }
 
