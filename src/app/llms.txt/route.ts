@@ -1,5 +1,4 @@
 import {
-  DISCORD_INVITE_URL,
   INQUIRY_ABOUT_ITEMS,
   INQUIRY_FAQ_ITEMS,
 } from '@constants/consts/inquiryData';
@@ -84,7 +83,7 @@ export function GET(): Response {
       '- 챌린지 상세 페이지는 로그인 없이 볼 수 있으며 제목·소개·기간·참여자 수가 HTML 에 포함됩니다.',
       '- 일지 상세와 회원 페이지는 비공개라 크롤링 대상이 아닙니다(robots.txt 참조).',
       '- 비공개(비밀번호) 챌린지는 목록·사이트맵·메타데이터 어디에도 노출하지 않습니다.',
-      `- 커뮤니티/문의: ${DISCORD_INVITE_URL}`,
+      link('/inquiry', '문의', '자주 묻는 질문과 문의 경로'),
     ]),
   ].join('\n');
 

@@ -58,7 +58,11 @@ function Kpi({
             'rounded-[8px]'
           )}
         >
-          <Icon className="text-main-800 size-3.5" strokeWidth={2} aria-hidden />
+          <Icon
+            className="text-main-800 size-3.5"
+            strokeWidth={2}
+            aria-hidden
+          />
         </span>
         <Text size="caption2" weight="bold" className="text-gray-500">
           {label}
@@ -115,7 +119,12 @@ export function ChallengeStatisticsSection({
   );
 
   if (isPending) {
-    return <Skeleton style={{ height: 320 }} className="w-full" />;
+    // 320px 짜리 큰 블록이라 펄스가 붙으면 화면 절반이 깜빡인다.
+    // 상세는 이미 실제 콘텐츠가 보이는 상태에서 이 섹션만 늦게 오므로,
+    // 조용히 자리만 잡아 둔다.
+    return (
+      <Skeleton pulse={false} style={{ height: 320 }} className="w-full" />
+    );
   }
 
   if (isError) {
