@@ -23,7 +23,8 @@ import { StatisticsCard } from './StatisticsCard';
  * 감정 분포 — 도넛 + 감정별 비율 범례.
  */
 export function FeelingDistributionSection(): React.ReactElement {
-  const { data, isPending, isSuccess, isError, error } = useFeelingStatistics();
+  const { data, isPending, isSuccess, isError, error } =
+    useFeelingStatistics();
 
   const total = data?.total ?? 0;
   const countByFeeling = new Map<Feeling, number>();
@@ -83,7 +84,8 @@ export function FeelingDistributionSection(): React.ReactElement {
           {visibleFeelings.map((feeling) => {
             const count = countByFeeling.get(feeling) ?? 0;
             const ratio =
-              ratioByFeeling.get(feeling) ?? (total > 0 ? count / total : 0);
+              ratioByFeeling.get(feeling) ??
+              (total > 0 ? count / total : 0);
             const mood = FEELING_MOOD_IMAGE[feeling];
             const fg = FEELING_FG[feeling];
             return (

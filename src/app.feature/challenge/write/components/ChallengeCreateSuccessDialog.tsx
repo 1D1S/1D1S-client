@@ -238,9 +238,7 @@ export function ChallengeCreateSuccessDialog({
                 variant="secondary"
                 type="button"
                 fullWidth
-                onClick={() =>
-                  copyText(shareLink, '참여 링크가 복사되었습니다.')
-                }
+                onClick={() => copyText(shareLink, '참여 링크가 복사되었습니다.')}
               >
                 <Link2 className="mr-1.5 h-4 w-4" />
                 링크 복사

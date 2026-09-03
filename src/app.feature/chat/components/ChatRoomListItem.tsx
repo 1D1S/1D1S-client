@@ -35,19 +35,13 @@ function PreviewKindLabel({
 function PreviewKind({ room }: { room: ChatRoom }): React.ReactElement | null {
   const kind = room.lastMessage?.type;
   if (kind === 'IMAGE') {
-    return (
-      <PreviewKindLabel icon={<ImageIcon className="h-3 w-3" />} label="사진" />
-    );
+    return <PreviewKindLabel icon={<ImageIcon className="h-3 w-3" />} label="사진" />;
   }
   if (kind === 'CHALLENGE_SHARE') {
-    return (
-      <PreviewKindLabel icon={<Flag className="h-3 w-3" />} label="챌린지" />
-    );
+    return <PreviewKindLabel icon={<Flag className="h-3 w-3" />} label="챌린지" />;
   }
   if (kind === 'DIARY_SHARE') {
-    return (
-      <PreviewKindLabel icon={<BookOpen className="h-3 w-3" />} label="일지" />
-    );
+    return <PreviewKindLabel icon={<BookOpen className="h-3 w-3" />} label="일지" />;
   }
   return null;
 }

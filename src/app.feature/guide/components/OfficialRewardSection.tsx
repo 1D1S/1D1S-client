@@ -59,9 +59,7 @@ export function OfficialRewardSection(): React.ReactElement {
               <span className="text-[12px] font-bold opacity-90">GIFT</span>
               <Gift className="h-5 w-5" strokeWidth={2} />
             </div>
-            <div className="text-[13px] font-medium opacity-90">
-              네이버 포인트
-            </div>
+            <div className="text-[13px] font-medium opacity-90">네이버 포인트</div>
             <div className="mt-0.5 text-[30px] font-extrabold tracking-tight">
               10,000
               <span className="ml-1 text-[15px] font-bold">원</span>
@@ -192,8 +190,8 @@ export function OfficialRewardSection(): React.ReactElement {
         weight="regular"
         className="animate-pop-in mx-auto mt-4.5 block max-w-[640px] text-center leading-relaxed break-keep text-gray-400"
       >
-        보상 종류·금액·수량 및 지급 조건은 챌린지별 공지에 따라 달라질 수
-        있으며, 부정 참여가 확인되면 지급이 제한될 수 있습니다.
+        보상 종류·금액·수량 및 지급 조건은 챌린지별 공지에 따라 달라질 수 있으며,
+        부정 참여가 확인되면 지급이 제한될 수 있습니다.
       </Text>
     </section>
   );

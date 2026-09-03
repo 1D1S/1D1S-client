@@ -114,7 +114,9 @@ function DiaryCreateChallengeSectionComponent({
           challengeTitle={selectedChallenge.title}
           challengeType={formatChallengeTypeLabel(selectedChallenge.goalType)}
           challengeCategory={getCategoryLabel(selectedChallenge.category)}
-          categoryIcon={<CategoryIcon category={selectedChallenge.category} />}
+          categoryIcon={
+            <CategoryIcon category={selectedChallenge.category} />
+          }
           imageUrl={selectedChallenge.thumbnailImage}
           currentUserCount={selectedChallenge.participantCnt}
           maxUserCount={selectedChallenge.maxParticipantCnt}

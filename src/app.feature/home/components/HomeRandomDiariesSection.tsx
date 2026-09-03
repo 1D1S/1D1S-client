@@ -49,7 +49,8 @@ const HomeDiaryItem = React.memo(
       <DiaryCard
         imageUrl={resolveDiaryThumbnail(item.thumbnailUrl)}
         profileImageUrl={
-          resolveDiaryImageUrl(item.authorInfoDto?.profileImage) ?? undefined
+          resolveDiaryImageUrl(item.authorInfoDto?.profileImage) ??
+          undefined
         }
         percent={getDiaryAchievementRate(
           item.achievementRate,
@@ -148,11 +149,7 @@ export default function HomeRandomDiariesSection({
         </MasonryColumns>
       ) : null}
       {!showSkeleton && !isError && diaries.length === 0 ? (
-        <EmptyState
-          variant="diary"
-          title="표시할 일지가 없어요"
-          className="py-8"
-        />
+        <EmptyState variant="diary" title="표시할 일지가 없어요" className="py-8" />
       ) : null}
     </section>
   );

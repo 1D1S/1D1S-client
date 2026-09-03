@@ -76,7 +76,10 @@ export default function InstallGuideScreen(): React.ReactElement {
 
   return (
     <div className="min-h-screen w-full bg-white">
-      <MobileHeader title="홈 화면에 추가하기" onBack={() => router.back()} />
+      <MobileHeader
+        title="홈 화면에 추가하기"
+        onBack={() => router.back()}
+      />
 
       <section
         className={cn(

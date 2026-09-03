@@ -80,12 +80,8 @@ export function ChatSharePickerSheet({
   onSelect,
 }: ChatSharePickerSheetProps): React.ReactElement {
   const { data: sidebar } = useSidebar();
-  const {
-    data: diaryPages,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = useMyDiariesInfinite(20);
+  const { data: diaryPages, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useMyDiariesInfinite(20);
 
   // 끝난 챌린지는 공유해도 받는 사람이 할 수 있는 게 없다 — 진행 중인
   // 것만 고르게 한다. 무기한(종료일이 먼 미래)은 진행 중으로 본다:

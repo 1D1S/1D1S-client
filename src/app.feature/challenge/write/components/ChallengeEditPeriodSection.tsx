@@ -26,7 +26,7 @@ export function ChallengeEditPeriodSection({
   const ended = isChallengeEnded(endDate);
   const durationDays = isEndless
     ? 0
-    : (getInclusiveDayCount(startDate, endDate) ?? 0);
+    : getInclusiveDayCount(startDate, endDate) ?? 0;
   const parsedStart = parseDateValue(startDate);
   const parsedEnd = parseDateValue(endDate);
   const startLabel = parsedStart ? formatDateKR(parsedStart) : '-';

@@ -74,7 +74,7 @@ export function PendingMemberItem({
         >
           <CircleAvatar
             size="md"
-            imageUrl={withdrawn ? undefined : (profileImg ?? undefined)}
+            imageUrl={withdrawn ? undefined : profileImg ?? undefined}
             tone="cream"
           />
           <div className="flex min-w-0 flex-col items-start gap-1">

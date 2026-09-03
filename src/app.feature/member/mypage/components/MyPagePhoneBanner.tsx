@@ -46,7 +46,10 @@ export function MyPagePhoneBanner({
           상품 수령에 필요해요.
         </Text>
       </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-amber-600" aria-hidden />
+      <ChevronRight
+        className="h-4 w-4 shrink-0 text-amber-600"
+        aria-hidden
+      />
     </Link>
   );
 }

@@ -97,12 +97,7 @@ export function LoginMobileView({
               'bg-[linear-gradient(135deg,#fff8f5_0%,#ffe9e0_100%)]'
             )}
           >
-            <Icon
-              name="Flame"
-              size={56}
-              className="text-main-700"
-              aria-hidden
-            />
+            <Icon name="Flame" size={56} className="text-main-700" aria-hidden />
             <span
               className={cn(
                 'bg-main-800 absolute right-1 -bottom-1.5 rounded-full',

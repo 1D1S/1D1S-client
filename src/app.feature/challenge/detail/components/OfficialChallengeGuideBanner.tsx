@@ -52,7 +52,11 @@ export function OfficialChallengeGuideBanner(): React.ReactElement | null {
         <Trophy className="h-5 w-5 text-white" strokeWidth={2} aria-hidden />
       </span>
       <div className="min-w-0 flex-1">
-        <Text size="body2" weight="extrabold" className="block text-gray-900">
+        <Text
+          size="body2"
+          weight="extrabold"
+          className="block text-gray-900"
+        >
           공식 챌린지가 처음이라면?
         </Text>
         <Text

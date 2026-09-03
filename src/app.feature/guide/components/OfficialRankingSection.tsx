@@ -63,37 +63,12 @@ const CRITERIA: Array<{
 // 순위 산정 미리보기 — 참여자 순위 목업(동점 tiebreak 시나리오 포함)
 function LeaderboardMock(): React.ReactElement {
   const rows = [
-    {
-      r: 1,
-      u: '러닝하는민지',
-      streak: 30,
-      goals: 30,
-      likes: 210,
-      tone: '#ffe0b2',
-    },
+    { r: 1, u: '러닝하는민지', streak: 30, goals: 30, likes: 210, tone: '#ffe0b2' },
     { r: 2, u: '새벽별', streak: 28, goals: 25, likes: 142, tone: '#c8f4e1' },
-    {
-      r: 2,
-      u: '꾸준함이답',
-      streak: 28,
-      goals: 25,
-      likes: 118,
-      tone: '#deecfb',
-    },
-    {
-      r: 4,
-      u: '오늘도한걸음',
-      streak: 24,
-      goals: 22,
-      likes: 96,
-      tone: '#fff3e0',
-    },
+    { r: 2, u: '꾸준함이답', streak: 28, goals: 25, likes: 118, tone: '#deecfb' },
+    { r: 4, u: '오늘도한걸음', streak: 24, goals: 22, likes: 96, tone: '#fff3e0' },
   ];
-  const medal: Record<number, string> = {
-    1: '#FCD34D',
-    2: '#D5DAE1',
-    3: '#E2A56E',
-  };
+  const medal: Record<number, string> = { 1: '#FCD34D', 2: '#D5DAE1', 3: '#E2A56E' };
   return (
     <div
       className={cn(
@@ -269,11 +244,7 @@ export function OfficialRankingSection(): React.ReactElement {
                 </div>
                 {i < CRITERIA.length - 1 ? (
                   <div className="flex items-center justify-center gap-2 py-2 text-gray-400">
-                    <Text
-                      size="caption1"
-                      weight="bold"
-                      className="text-gray-400"
-                    >
+                    <Text size="caption1" weight="bold" className="text-gray-400">
                       같으면
                     </Text>
                     <ArrowDown className="h-4 w-4" strokeWidth={2.2} />
@@ -306,11 +277,7 @@ export function OfficialRankingSection(): React.ReactElement {
           <Medal className="h-5 w-5 text-[#ffd479]" strokeWidth={2} />
         </span>
         <div>
-          <Text
-            size="body1"
-            weight="extrabold"
-            className="mb-1.5 block text-white"
-          >
+          <Text size="body1" weight="extrabold" className="mb-1.5 block text-white">
             동점자는 같은 등수예요
           </Text>
           <Text

@@ -44,7 +44,10 @@ function Bar({
   const widthPct = max > 0 ? Math.max(4, (value / max) * 100) : 4;
   return (
     <div className="flex items-center gap-2">
-      <Text size="caption4" className="w-16 shrink-0 truncate text-gray-400">
+      <Text
+        size="caption4"
+        className="w-16 shrink-0 truncate text-gray-400"
+      >
         {caption}
       </Text>
       <ProgressBar
@@ -131,7 +134,8 @@ export function FriendComparisonSection(): React.ReactElement {
   } = useFriendComparison(effectiveId, period);
 
   const hasFriends = (friends?.length ?? 0) > 0;
-  const friendName = withdrawnDisplayName(selectedFriend?.nickname) || '친구';
+  const friendName =
+    withdrawnDisplayName(selectedFriend?.nickname) || '친구';
 
   return (
     <StatisticsCard

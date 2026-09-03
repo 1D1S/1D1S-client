@@ -74,7 +74,7 @@ function ParticipantRow({
       </span>
       <CircleAvatar
         size="sm"
-        imageUrl={withdrawn ? undefined : (participant.profileImg ?? undefined)}
+        imageUrl={withdrawn ? undefined : participant.profileImg ?? undefined}
         tone="cream"
       />
       <div className="flex min-w-0 flex-1 flex-col">
@@ -130,7 +130,9 @@ export function ChallengeParticipantListScreen({
   );
   // 인증 확인 중(unknown)에도 스켈레톤을 유지한다 — 딥링크/콜드 진입에서
   // 세션 주입 전 게스트로 단정해 로그인 안내가 뜨던 문제 방지(일지 탭과 동일).
-  const showSkeleton = useMinimumLoading(isLoading || authStatus === 'unknown');
+  const showSkeleton = useMinimumLoading(
+    isLoading || authStatus === 'unknown'
+  );
   const { ref } = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,

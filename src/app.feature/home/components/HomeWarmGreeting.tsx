@@ -37,7 +37,9 @@ export default function HomeWarmGreeting({
       <div className="w-full">
         <span
           aria-hidden
-          className={cn('skeleton-pulse block h-7 w-44 rounded bg-gray-100')}
+          className={cn(
+            'skeleton-pulse block h-7 w-44 rounded bg-gray-100'
+          )}
         />
         <span
           aria-hidden

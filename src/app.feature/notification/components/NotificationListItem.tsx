@@ -4,7 +4,10 @@ import { CircleAvatar, Text } from '@1d1s/design-system';
 import { cn } from '@module/utils/cn';
 import { getRelativeTimeLabel } from '@module/utils/date';
 import { createActivationKeydownHandler } from '@module/utils/event';
-import { isWithdrawnMember, maskWithdrawnInText } from '@module/utils/nickname';
+import {
+  isWithdrawnMember,
+  maskWithdrawnInText,
+} from '@module/utils/nickname';
 import { useRouter } from 'next/navigation';
 
 import { Notification } from '../type/notification';
@@ -90,7 +93,7 @@ export function NotificationListItem({
           imageUrl={
             isWithdrawnMember(actorNickname)
               ? undefined
-              : (actorProfileUrl ?? undefined)
+              : actorProfileUrl ?? undefined
           }
           size="sm"
         />

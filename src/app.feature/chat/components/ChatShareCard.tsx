@@ -194,11 +194,7 @@ export function ChatLinkPreviewCard({
           )
         ) : null}
         {preview.title ? (
-          <Text
-            size="caption2"
-            weight="bold"
-            className="line-clamp-2 text-gray-900"
-          >
+          <Text size="caption2" weight="bold" className="line-clamp-2 text-gray-900">
             {preview.title}
           </Text>
         ) : null}

@@ -273,11 +273,7 @@ export default function ProfileSettingsScreen(): React.ReactElement {
                   전화번호가 저장되었습니다.
                 </Text>
               ) : (
-                <Text
-                  size="caption1"
-                  weight="regular"
-                  className="text-gray-400"
-                >
+                <Text size="caption1" weight="regular" className="text-gray-400">
                   {hasPhone
                     ? '상품 발송 시에만 사용하고 외부에 공개하지 않아요.'
                     : '상품 발송을 위해 번호를 등록해 주세요. 외부에 공개되지 않아요.'}

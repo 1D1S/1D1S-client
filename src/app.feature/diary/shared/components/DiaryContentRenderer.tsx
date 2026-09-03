@@ -37,7 +37,8 @@ export function DiaryContentRenderer({
       return;
     }
 
-    const blocks = container.querySelectorAll<HTMLElement>('pre code');
+    const blocks =
+      container.querySelectorAll<HTMLElement>('pre code');
     if (blocks.length === 0) {
       return;
     }

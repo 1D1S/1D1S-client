@@ -41,7 +41,10 @@ export default function HomePopup({
   // 쿠키(다시 보지 않기, 영구) + sessionStorage(그냥 닫기, 세션 한정).
   const [dismissedKeys] = useState(
     () =>
-      new Set([...getDismissedPopupKeys(), ...getSessionDismissedPopupKeys()])
+      new Set([
+        ...getDismissedPopupKeys(),
+        ...getSessionDismissedPopupKeys(),
+      ])
   );
   const [closed, setClosed] = useState(false);
   const [index, setIndex] = useState(0);

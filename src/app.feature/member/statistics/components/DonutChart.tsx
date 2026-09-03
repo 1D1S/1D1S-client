@@ -29,7 +29,10 @@ const RADIUS = 40;
 // 12시 방향 기준 각도(deg) → 원 위의 좌표.
 function pointAt(angleDeg: number): [number, number] {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
-  return [CENTER + RADIUS * Math.cos(rad), CENTER + RADIUS * Math.sin(rad)];
+  return [
+    CENTER + RADIUS * Math.cos(rad),
+    CENTER + RADIUS * Math.sin(rad),
+  ];
 }
 
 // 시계 방향 아크 패스. dasharray 원 트릭 대신 명시적 패스로 그려
