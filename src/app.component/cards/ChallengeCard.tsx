@@ -63,8 +63,12 @@ export interface ChallengeCardProps {
   isOfficial?: boolean;
   hasReward?: boolean;
   host?: ChallengeCardHost | null;
-  /** 독서 챌린지 책 — 썸네일 안쪽 하단 바. */
-  book?: { title: string; coverUrl?: string | null } | null;
+  /** 독서 챌린지 책 — 썸네일 안쪽 하단 바. moreCount 는 "외 N권" 의 N. */
+  book?: {
+    title: string;
+    coverUrl?: string | null;
+    moreCount?: number;
+  } | null;
   liked?: boolean;
   onToggleLike?(): void;
 }
@@ -242,10 +246,12 @@ function ChallengeCard({
           <span
             className={cn(
               'absolute inset-x-0 bottom-0 flex items-center gap-2',
-              'bg-gradient-to-t from-black/70 to-transparent px-2 pt-5 pb-2'
+              'bg-gradient-to-t from-black/70 to-transparent px-2 pt-5 pb-1.5'
             )}
           >
             {book.coverUrl ? (
+              // 표지는 외부 CDN(카카오) 썸네일이라 그대로 쓴다 — 변환하면
+              // 원본이 없는 크기를 요구하게 된다.
               <img
                 src={book.coverUrl}
                 alt=""
@@ -255,6 +261,11 @@ function ChallengeCard({
             <span className="truncate text-[12px] font-bold text-white">
               {book.title}
             </span>
+            {book.moreCount && book.moreCount > 0 ? (
+              <span className="shrink-0 text-[12px] font-bold text-white/80">
+                외 {book.moreCount}
+              </span>
+            ) : null}
           </span>
         ) : null}
       </div>
@@ -371,7 +382,7 @@ function ChallengeCard({
                 imageUrl={host.profileImg ?? undefined}
                 alt={host.nickname}
               />
-              <span className="truncate text-[12px] font-medium text-gray-600">
+              <span className="truncate text-[12px] font-bold text-[#767676]">
                 {host.nickname}
               </span>
             </>

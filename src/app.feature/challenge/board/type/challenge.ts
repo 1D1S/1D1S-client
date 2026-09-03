@@ -36,7 +36,25 @@ export interface RandomParticipant {
   profileImg: string | null;
 }
 
-export interface ChallengeSummary {
+/**
+ * 카드 맨 밑줄이 쓰는 값 — 목록/요약 응답이 함께 준다.
+ *
+ * 서버가 이 필드들을 목록에 실은 이유가 카드별
+ * `/challenges/{id}/books` 호출을 없애는 것이다(카드 20장이면 20번).
+ * 개별 조회로 되돌리지 말 것.
+ */
+export interface ChallengeCardExtras {
+  // 만든 사람. 레벨까지 응답이 함께 주므로 memberId 로 다시 묻지 않는다.
+  hostMemberNickname?: string | null;
+  hostProfileImage?: string | null;
+  hostLevel?: number | null;
+  // 대표책 — 독서 카테고리만 채워진다. bookCount 가 0 이면 책 바를 안 그린다.
+  representativeBookThumbnailUrl?: string | null;
+  representativeBookTitle?: string | null;
+  bookCount?: number;
+}
+
+export interface ChallengeSummary extends ChallengeCardExtras {
   challengeId: number;
   title: string;
   category: ChallengeCategory;
@@ -75,7 +93,7 @@ export interface MyChallengeItem {
   completed?: boolean;
 }
 
-export interface ChallengeListItem {
+export interface ChallengeListItem extends ChallengeCardExtras {
   challengeId: number;
   title: string;
   category: ChallengeCategory;

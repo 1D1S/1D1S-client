@@ -2,7 +2,10 @@ import type { ChallengeCardProps } from '@component/cards/ChallengeCard';
 import { getCategoryLabel } from '@constants/categories';
 
 import { getDdayLabel } from '../../detail/utils/challengeLabels';
-import type { ChallengeType } from '../type/challenge';
+import type {
+  ChallengeCardExtras,
+  ChallengeType,
+} from '../type/challenge';
 import {
   isInfiniteChallengeEndDate,
   resolveChallengeCardStatus,
@@ -15,7 +18,7 @@ import {
  * 각각 조금씩 다른 타입인데 카드가 쓰는 필드는 같다. 교집합을 여기 한 번
  * 적어 두면 화면마다 변환을 다시 쓰지 않아도 된다.
  */
-export interface ChallengeCardSource {
+export interface ChallengeCardSource extends ChallengeCardExtras {
   title: string;
   category?: string | null;
   startDate: string;
@@ -140,6 +143,48 @@ export function challengeParticipantsLabel(
   return max > 0 ? `${count}/${max}명` : `${count}명`;
 }
 
+/**
+ * 만든 사람 — 닉네임이 없으면 그리지 않는다(공식 챌린지는 태그가 대신한다).
+ *
+ * 레벨은 목록 응답의 `hostLevel` 을 그대로 넘긴다. 젬 자체는 레벨 기능(S3)
+ * 몫이지만, 값을 지금 연결해 두면 그때 렌더만 붙이면 된다.
+ */
+function toCardHost(
+  challenge: ChallengeCardSource
+): ChallengeCardProps['host'] {
+  const nickname = challenge.hostMemberNickname?.trim();
+  if (!nickname) {
+    return null;
+  }
+  return {
+    nickname,
+    profileImg: challenge.hostProfileImage ?? null,
+    level: challenge.hostLevel ?? null,
+  };
+}
+
+/**
+ * 대표책 — `bookCount > 0` 일 때만 그린다(독서 카테고리만 채워진다).
+ *
+ * "외 N권" 의 N 은 대표책을 뺀 나머지다. 카드마다
+ * `/challenges/{id}/books` 를 부르지 않으려고 서버가 목록에 실어 준
+ * 값이므로, 여기서 개별 조회로 되돌리지 말 것.
+ */
+function toCardBook(
+  challenge: ChallengeCardSource
+): ChallengeCardProps['book'] {
+  const count = challenge.bookCount ?? 0;
+  const title = challenge.representativeBookTitle?.trim();
+  if (count <= 0 || !title) {
+    return null;
+  }
+  return {
+    title,
+    coverUrl: challenge.representativeBookThumbnailUrl ?? null,
+    moreCount: count - 1,
+  };
+}
+
 export function toChallengeCardProps(
   challenge: ChallengeCardSource,
   href: string,
@@ -165,9 +210,7 @@ export function toChallengeCardProps(
     isPhotoRequired: challenge.photoRequired,
     isOfficial: challenge.challengeType === 'OFFICIAL',
     hasReward: challenge.hasReward,
-    // 호스트·책은 목록 응답에 아직 없다. 서버가 실어 주면 여기만 채우면 된다
-    // (카드는 이미 자리를 그린다).
-    host: null,
-    book: null,
+    host: toCardHost(challenge),
+    book: toCardBook(challenge),
   };
 }
