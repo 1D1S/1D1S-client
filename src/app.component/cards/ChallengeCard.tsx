@@ -1,415 +1,391 @@
 'use client';
 
-import { Card, CircleAvatar, Icon, Stripe } from '@1d1s/design-system';
+import { CircleAvatar, Icon } from '@1d1s/design-system';
 import FadeInImage from '@component/FadeInImage';
+import { CategoryIcon, getCategoryStripeTone } from '@constants/categories';
 import { cn } from '@module/utils/cn';
-import { getInclusiveDayCount, parseDateValue } from '@module/utils/date';
-import { createActivationKeydownHandler } from '@module/utils/event';
-import { CalendarDays, Camera, Target, Users } from 'lucide-react';
+import {
+  Calendar,
+  Camera,
+  Clock,
+  Gift,
+  Heart,
+  Repeat2,
+  User,
+  Users,
+} from 'lucide-react';
 import Link from 'next/link';
-import React, { useMemo } from 'react';
+import React from 'react';
 
-export type ChallengeCardGoalType = 'FIXED' | 'FLEXIBLE';
+/**
+ * 챌린지 카드 — **앱(challenge_board_card.dart)과 1:1**.
+ *
+ * 앱이 카드를 재설계한 뒤 웹이 못 따라와 있었다. 아이덴티티 기준점이라
+ * 수치까지 앱 소스를 정본으로 옮긴다. 캡처(1080×2400 @2.625, 논리 411×914)로
+ * 구조·색을 확인했고, 숫자는 앱 상수에서 가져왔다.
+ *
+ *   카드      radius 12 · border 1px gray300 (보상 카드는 2px main800 + 글로우)
+ *   썸네일    **풀블리드** aspect 4/3 (예전 웹의 px-3 pt-3 인셋은 앱이 걷어냈다)
+ *   인원 뱃지 좌상단 top/left 8 — 상태 알약이 있던 자리를 물려받았다
+ *   본문      padding 10/9/10/8 · 플래그줄 → 6 → 제목 → 6 → 메타(간격 4)
+ *   글자      제목 15 extrabold · 메타 12
+ *
+ * 상태는 알약이 아니라 **본문 마지막 줄의 색**으로 말한다:
+ *   시작 전 파랑 #1666BA · 진행 중 민트 #1D9C6D · 종료 회색 #767676
+ */
 
 export type ChallengeCardStatus = 'UPCOMING' | 'ONGOING' | 'ENDED';
-
-// 모집중/진행중이 카드에서 구분되지 않아 아직 시작 안 한 챌린지도 진행중처럼
-// 보였다. 썸네일 좌상단에 상태 배지를 항상 띄운다.
-const STATUS_BADGE: Record<
-  ChallengeCardStatus,
-  { label: string; className: string }
-> = {
-  UPCOMING: { label: '모집 중', className: 'bg-blue-600 text-white' },
-  ONGOING: { label: '진행 중', className: 'bg-emerald-600 text-white' },
-  ENDED: { label: '종료', className: 'bg-gray-700 text-white' },
-};
 
 export interface ChallengeCardParticipant {
   memberId: number;
   nickname: string;
-  profileImg: string | null;
+  profileImg?: string | null;
+}
+
+export interface ChallengeCardHost {
+  nickname: string;
+  profileImg?: string | null;
+  /** 레벨 젬 — 아직 웹에 레벨 기능이 없어 옵셔널이다(S3 에서 채운다). */
+  level?: number | null;
 }
 
 export interface ChallengeCardProps {
+  href: string;
   title: string;
-  category: string;
-  categoryIcon?: React.ReactNode;
-  stripeTone?: string;
-  imageUrl?: string;
-  currentParticipantCount: number;
-  maxParticipantCount?: number;
-  remainingLabel: string;
-  startDate?: string;
-  endDate?: string;
-  isInfinite?: boolean;
-  goalType?: ChallengeCardGoalType;
-  isGroup?: boolean;
-  isEnded?: boolean;
-  /** 모집중/진행중/종료 배지. 생략하면 isEnded 로 추론한다. */
+  category?: string | null;
+  categoryLabel?: string;
+  imageUrl?: string | null;
   status?: ChallengeCardStatus;
-  // 인증샷 필수 챌린지 — 카메라 배지로 표시한다.
+  /** 본문 마지막 줄 문구 — "4일 뒤 (월) 시작" · "진행 중 · D-88" · "종료됨". */
+  statusLabel?: string;
+  /** 주기 알약 — "매일" · "주 5일". */
+  cadenceLabel?: string;
+  /** 기간 알약 — "23일 동안" · "제한 없음". */
+  durationLabel?: string;
+  /** 인원 뱃지 — "개인" · "12명" · "24/50명". */
+  participantsLabel?: string;
+  isGroup?: boolean;
   isPhotoRequired?: boolean;
-  // 공식 챌린지 — 브랜드 링/글로우 + "공식" 배지로 강조한다.
   isOfficial?: boolean;
-  participants?: ChallengeCardParticipant[];
-  /** 지정 시 카드 전체가 <Link> 가 된다(stretched-link). 뷰포트 진입 시
-   *  자동 prefetch 되고 onClick 은 무시된다. 로그인 게이팅처럼 이동 대신
-   *  다른 동작이 필요하면 href 를 생략하고 onClick 을 사용한다. */
-  href?: string;
-  onClick?(): void;
-  className?: string;
+  hasReward?: boolean;
+  host?: ChallengeCardHost | null;
+  /** 독서 챌린지 책 — 썸네일 안쪽 하단 바. */
+  book?: { title: string; coverUrl?: string | null } | null;
+  liked?: boolean;
+  onToggleLike?(): void;
 }
 
-const AVATAR_TONES = ['peach', 'rose', 'peach'] as const;
-
-const GOAL_TYPE_LABELS: Record<ChallengeCardGoalType, string> = {
-  FIXED: '고정 목표',
-  FLEXIBLE: '자유 목표',
+const STATUS_COLOR: Record<ChallengeCardStatus, string> = {
+  UPCOMING: 'text-[#1666BA]',
+  ONGOING: 'text-[#1D9C6D]',
+  ENDED: 'text-[#767676]',
 };
 
-function pad2(value: number): string {
-  return value < 10 ? `0${value}` : `${value}`;
+/** 앱 AppFont: size3xs 12 · sizeSm 15 (내부 _up=2 반영값). */
+const META_TEXT = 'text-[12px] leading-[1.4]';
+
+function FlagChip({
+  icon,
+  label,
+  tone,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  tone?: string;
+}): React.ReactElement {
+  return (
+    <span
+      className={cn(
+        'inline-flex shrink-0 items-center gap-1 rounded-full',
+        'px-2 py-[3px] text-[12px] font-bold'
+      )}
+      style={tone ? { backgroundColor: `${tone}1F`, color: tone } : undefined}
+    >
+      {icon}
+      {label}
+    </span>
+  );
 }
 
-function formatFullDate(date: Date): string {
-  return `${date.getFullYear()}.${pad2(date.getMonth() + 1)}.${pad2(
-    date.getDate()
-  )}`;
-}
-
-function formatShortDate(date: Date): string {
-  return `${pad2(date.getMonth() + 1)}.${pad2(date.getDate())}`;
-}
-
-interface PeriodInfo {
-  rangeLabel: string;
-  durationLabel: string | null;
-}
-
-function buildPeriodInfo(
-  startDate?: string,
-  endDate?: string,
-  isInfinite?: boolean
-): PeriodInfo | null {
-  if (!startDate) {
-    return null;
-  }
-
-  const start = parseDateValue(startDate);
-  if (!start) {
-    return null;
-  }
-
-  const startLabel = formatFullDate(start);
-
-  if (isInfinite) {
-    return { rangeLabel: `${startLabel} ~ 무제한`, durationLabel: null };
-  }
-
-  if (!endDate) {
-    return { rangeLabel: startLabel, durationLabel: null };
-  }
-
-  const end = parseDateValue(endDate);
-  if (!end) {
-    return { rangeLabel: startLabel, durationLabel: null };
-  }
-
-  const sameYear = start.getFullYear() === end.getFullYear();
-  const endLabel = sameYear ? formatShortDate(end) : formatFullDate(end);
-  const days = getInclusiveDayCount(startDate, endDate);
-
-  return {
-    rangeLabel: `${startLabel} ~ ${endLabel}`,
-    durationLabel: days === null ? null : `${days}일`,
-  };
+function MetaRow({
+  icon,
+  children,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}): React.ReactElement {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="shrink-0 text-gray-500 [&_svg]:h-[14px] [&_svg]:w-[14px]">
+        {icon}
+      </span>
+      {children}
+    </div>
+  );
 }
 
 function ChallengeCard({
+  href,
   title,
   category,
-  categoryIcon,
-  stripeTone = 'var(--main-600)',
+  categoryLabel,
   imageUrl,
-  currentParticipantCount,
-  maxParticipantCount,
-  remainingLabel,
-  startDate,
-  endDate,
-  isInfinite = false,
-  goalType,
-  isGroup = true,
-  isEnded = false,
-  status,
+  status = 'ONGOING',
+  statusLabel,
+  cadenceLabel,
+  durationLabel,
+  participantsLabel,
+  isGroup = false,
   isPhotoRequired = false,
   isOfficial = false,
-  participants,
-  href,
-  onClick,
-  className,
+  hasReward = false,
+  host,
+  book,
+  liked = false,
+  onToggleLike,
 }: ChallengeCardProps): React.ReactElement {
-  const handleKeyDown = createActivationKeydownHandler<HTMLDivElement>(onClick);
-  // href 모드에서는 내부의 stretched-link 가 키보드 포커스/활성화를 담당
-  // 하므로 루트에 button 시맨틱을 주지 않는다 (탭 스톱 중복 방지).
-  const rootInteractiveProps = href
-    ? {}
-    : {
-        role: 'button' as const,
-        tabIndex: 0,
-        onClick,
-        onKeyDown: handleKeyDown,
-      };
-
-  const statusBadge = STATUS_BADGE[status ?? (isEnded ? 'ENDED' : 'ONGOING')];
-  const participationLabel = isGroup ? '단체' : '개인';
-  const goalLabel = goalType ? GOAL_TYPE_LABELS[goalType] : null;
-  const visibleParticipants = (participants ?? []).slice(0, 3);
-  const visibleAvatars =
-    visibleParticipants.length > 0
-      ? visibleParticipants.length
-      : Math.min(3, Math.max(0, currentParticipantCount));
-  const extraCount = Math.max(0, currentParticipantCount - visibleAvatars);
-  // 날짜 파싱·포맷팅은 startDate/endDate/isInfinite 가 바뀔 때만 재계산.
-  // 보드 스크롤·필터 변경처럼 부모가 재렌더돼도 동일 props 면 캐시 유지.
-  const period = useMemo(
-    () => buildPeriodInfo(startDate, endDate, isInfinite),
-    [startDate, endDate, isInfinite]
-  );
-  const hasMaxCount =
-    typeof maxParticipantCount === 'number' && maxParticipantCount > 0;
-  const participantCountLabel = hasMaxCount
-    ? `${currentParticipantCount}/${maxParticipantCount}명`
-    : `${currentParticipantCount}명`;
+  const tone = getCategoryStripeTone(category);
+  const isEnded = status === 'ENDED';
+  // 보상 카드 변형은 **공식 + 보상**일 때만이다(앱 highlighted 와 같은 조건).
+  const highlighted = isOfficial && hasReward;
 
   return (
-    <Card
-      interactive
-      radius="md"
-      {...rootInteractiveProps}
+    <div
       className={cn(
-        'transition-[translate,scale,box-shadow] duration-500 ease-out',
-        'hover:shadow-warm',
-        // 화면 밖 카드의 레이아웃/페인트를 건너뛴다(DiaryCard 와 동일).
-        // 챌린지 보드는 이 한 줄이 없어 누적된 카드 전부를 매 스크롤에
-        // 페인트하고 있었다.
-        '[contain-intrinsic-size:auto_320px] [content-visibility:auto]',
-        isOfficial &&
-          'ring-main-800 shadow-[0_10px_30px_-8px_rgba(255,89,0,0.45)] ring-2',
-        isEnded && 'opacity-60',
-        href && 'relative',
-        className
+        'relative flex flex-col overflow-hidden rounded-[12px] bg-white',
+        highlighted ? 'border-2 border-[#ff5900]' : 'border border-[#E3E3E3]',
+        isEnded && 'opacity-60'
       )}
+      style={
+        highlighted
+          ? { boxShadow: '0 10px 30px -8px rgba(255,89,0,0.45)' }
+          : undefined
+      }
     >
-      {href ? (
-        // z-[2]: Card.Thumb(relative) 와 오버레이(z-[1]) 위로 올려 썸네일
-        // 영역 클릭도 링크에 닿게 한다.
-        <Link
-          href={href}
-          aria-label={`${title} 챌린지 보기`}
-          className="absolute inset-0 z-[2]"
-        />
-      ) : null}
-      <Card.Thumb className="px-3 pt-3">
-        <div className="bg-main-100 relative aspect-[3/2] overflow-hidden rounded-lg">
-          {imageUrl ? (
-            <FadeInImage
-              src={imageUrl}
-              alt={title}
-              fill
-              sizes="(min-width: 1024px) 280px, 50vw"
-              className="object-cover"
-            />
-          ) : (
-            <>
-              <Stripe tone={stripeTone} />
-              {/* 커버 이미지가 없는 챌린지: 깨진 플레이스홀더처럼 보이던 작은
-                  글리프 대신, 카테고리 아이콘 배지 + 라벨로 "의도된 기본 커버"를
-                  그린다. 색은 stripeTone(카테고리 색)을 그대로 쓴다. */}
-              <div
-                className={cn(
-                  'pointer-events-none absolute inset-0 z-[1] flex',
-                  'flex-col items-center justify-center gap-1.5 text-white'
-                )}
-              >
-                {isOfficial ? (
-                  <span
-                    className={cn(
-                      'flex h-10 w-10 items-center justify-center',
-                      'rounded-full bg-white shadow-md'
-                    )}
-                  >
-                    <Icon name="Logo" size={22} className="text-main-800" />
-                  </span>
-                ) : categoryIcon ? (
-                  <span
-                    className={cn(
-                      'flex h-10 w-10 items-center justify-center',
-                      'rounded-full bg-white/20 ring-1 ring-white/30',
-                      '[&_svg]:!h-5 [&_svg]:!w-5'
-                    )}
-                  >
-                    {categoryIcon}
-                  </span>
-                ) : null}
-                {isOfficial ? (
-                  <span
-                    className={cn(
-                      'rounded-full bg-white px-2 py-0.5',
-                      'text-[11px] font-extrabold tracking-tight',
-                      'text-main-800 shadow-md'
-                    )}
-                  >
-                    공식 챌린지
-                  </span>
-                ) : category ? (
-                  <span
-                    className={cn(
-                      'text-[11px] font-bold tracking-tight',
-                      'text-white/95 drop-shadow-sm'
-                    )}
-                  >
-                    {category}
-                  </span>
-                ) : null}
-              </div>
-            </>
-          )}
-          <div
-            className={cn(
-              // pointer-events-none: stretched-link 위의 장식 배지가 클릭
-              // 데드존이 되지 않도록 포인터 이벤트를 통과시킨다.
-              // left-2 로 폭을 제한하고 flex-wrap+justify-end 로 좁은 카드에서
-              // 배지가 겹치지 않고 우측 정렬을 유지한 채 다음 줄로 넘어가게 한다.
-              'pointer-events-none absolute top-2 right-2 left-2 z-10 flex',
-              'flex-wrap items-center justify-end gap-1'
-            )}
+      {/* 썸네일 — 풀블리드 4:3. 바깥 컨테이너가 모서리를 잘라 준다. */}
+      <div
+        className="relative aspect-[4/3] w-full overflow-hidden"
+        style={{ backgroundColor: tone }}
+      >
+        {imageUrl ? (
+          <FadeInImage
+            src={imageUrl}
+            alt={title}
+            fill
+            sizes="(min-width: 1024px) 280px, 50vw"
+            className="object-cover"
+          />
+        ) : (
+          <span
+            className={cn('absolute inset-0 flex items-center justify-center')}
+            aria-hidden
           >
-            <span
-              className={cn(
-                'inline-flex shrink-0 items-center rounded-full px-2.5 py-1',
-                'text-[11px] font-bold whitespace-nowrap shadow-sm',
-                statusBadge.className
-              )}
-            >
-              {statusBadge.label}
-            </span>
-            {isPhotoRequired ? (
-              <span
-                aria-label="인증샷 필수"
-                className={cn(
-                  'inline-flex shrink-0 items-center gap-1 rounded-full',
-                  'bg-main-800 px-2 py-1 text-[10px] font-bold text-white',
-                  'whitespace-nowrap shadow-sm'
-                )}
-              >
-                <Camera className="h-3 w-3 shrink-0" />
-                인증샷
-              </span>
-            ) : null}
-            {goalLabel ? (
+            {isOfficial ? (
               <span
                 className={cn(
-                  'inline-flex shrink-0 items-center rounded-full bg-white/95',
-                  'px-2 py-1 text-[10px] font-bold text-gray-700',
-                  'whitespace-nowrap shadow-sm'
+                  'flex h-[52px] w-[52px] items-center justify-center',
+                  'rounded-full bg-white shadow-md'
                 )}
               >
-                {goalLabel}
+                <Icon name="Logo" size={26} className="text-[#ff5900]" />
               </span>
-            ) : null}
-            <span
-              className={cn(
-                'inline-flex shrink-0 items-center rounded-full px-2.5 py-1',
-                'text-[11px] font-bold whitespace-nowrap shadow-sm',
-                isGroup ? 'bg-main-800 text-white' : 'bg-white text-gray-900'
-              )}
-            >
-              {participationLabel}
-            </span>
-          </div>
-        </div>
-      </Card.Thumb>
-      <Card.Body>
-        <Card.Title className="min-h-[2.6em]">{title}</Card.Title>
-        <ul
-          className={cn(
-            'mt-1 flex flex-col gap-1 text-[11px] text-gray-500',
-            'sm:text-xs'
-          )}
-        >
-          {period ? (
-            <li className="flex items-center gap-1.5">
-              <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">
-                {period.rangeLabel}
-                {period.durationLabel ? (
-                  <span className="text-gray-400">
-                    {' · '}
-                    {period.durationLabel}
-                  </span>
-                ) : null}
+            ) : (
+              <span
+                className={cn(
+                  'flex h-[52px] w-[52px] items-center justify-center',
+                  'rounded-full bg-white/20',
+                  '[&_svg]:!h-6 [&_svg]:!w-6 [&_svg]:text-white'
+                )}
+              >
+                <CategoryIcon category={category} />
               </span>
-            </li>
-          ) : null}
-          <li className="flex items-center gap-1.5">
-            <Users className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">
-              <span className="font-semibold text-gray-700">
-                {participantCountLabel}
-              </span>{' '}
-              참여중
-            </span>
-          </li>
-          {goalLabel ? (
-            <li className="flex items-center gap-1.5 sm:hidden">
-              <Target className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{goalLabel}</span>
-            </li>
-          ) : null}
-        </ul>
-        <Card.Meta className="mt-2 border-t border-gray-100 pt-2">
-          {/* 참여자가 0명일 때도 행 높이가 줄지 않도록 아바타 슬롯 높이를
-              고정해 종료 라벨의 수직 위치를 다른 카드와 맞춘다. */}
-          {/* pointer-events-none: 아바타(내부적으로 relative)가
-              stretched-link 위 클릭 데드존이 되지 않게 한다. */}
+            )}
+          </span>
+        )}
+
+        {/* 인원 뱃지 — 좌상단 고정(앱: Positioned top 8 left 8). */}
+        {participantsLabel ? (
           <span
             className={cn(
-              'pointer-events-none inline-flex min-h-8 items-center gap-2'
+              'absolute top-2 left-2 inline-flex items-center gap-1',
+              'rounded-full bg-black/55 px-2 py-[3px]',
+              'text-[12px] font-bold text-white'
             )}
           >
-            <span className="flex -space-x-2">
-              {visibleParticipants.length > 0
-                ? visibleParticipants.map((participant, index) => (
-                    <CircleAvatar
-                      key={participant.memberId}
-                      size="sm"
-                      tone={AVATAR_TONES[index % AVATAR_TONES.length]}
-                      imageUrl={participant.profileImg ?? undefined}
-                      alt={participant.nickname}
-                      ring
-                    />
-                  ))
-                : Array.from({ length: visibleAvatars }).map((_, index) => (
-                    <CircleAvatar
-                      key={index}
-                      size="sm"
-                      tone={AVATAR_TONES[index % AVATAR_TONES.length]}
-                      ring
-                    />
-                  ))}
-            </span>
-            {extraCount > 0 ? (
-              <span className="text-gray-500">+{extraCount}</span>
-            ) : null}
+            {isGroup ? (
+              <Users className="h-3.5 w-3.5" />
+            ) : (
+              <User className="h-3.5 w-3.5" />
+            )}
+            {participantsLabel}
           </span>
-          <span className="text-brand font-bold">{remainingLabel}</span>
-        </Card.Meta>
-      </Card.Body>
-    </Card>
+        ) : null}
+
+        {/* 좋아요 — 우상단 흰 원. */}
+        <button
+          type="button"
+          aria-label={liked ? '좋아요 취소' : '좋아요'}
+          onClick={(event) => {
+            event.preventDefault();
+            onToggleLike?.();
+          }}
+          className={cn(
+            'absolute top-2 right-2 z-[2] flex h-9 w-9 items-center',
+            'justify-center rounded-full bg-white/90 transition',
+            'hover:bg-white'
+          )}
+        >
+          <Heart
+            className={cn(
+              'h-[18px] w-[18px]',
+              liked ? 'fill-[#ff5900] text-[#ff5900]' : 'text-gray-500'
+            )}
+          />
+        </button>
+
+        {/* 독서 책 바 — 이미지 위라 카드 높이가 늘지 않는다. */}
+        {book ? (
+          <span
+            className={cn(
+              'absolute inset-x-0 bottom-0 flex items-center gap-2',
+              'bg-gradient-to-t from-black/70 to-transparent px-2 pt-5 pb-2'
+            )}
+          >
+            {book.coverUrl ? (
+              <img
+                src={book.coverUrl}
+                alt=""
+                className="h-8 w-[22px] shrink-0 rounded-[2px] object-cover"
+              />
+            ) : null}
+            <span className="truncate text-[12px] font-bold text-white">
+              {book.title}
+            </span>
+          </span>
+        ) : null}
+      </div>
+
+      <div className="flex flex-col px-[10px] pt-[9px] pb-2">
+        {/* 플래그 줄 — 카테고리 + 인증샷(이 순서). 카테고리는 항상 있다. */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {categoryLabel ? (
+            <FlagChip
+              tone={tone}
+              icon={
+                <span className="[&_svg]:!h-3.5 [&_svg]:!w-3.5">
+                  <CategoryIcon category={category} />
+                </span>
+              }
+              label={categoryLabel}
+            />
+          ) : null}
+          {isPhotoRequired ? (
+            <span
+              className={cn(
+                'inline-flex shrink-0 items-center gap-1 rounded-full',
+                'bg-gray-100 px-2 py-[3px] text-[12px] font-bold text-gray-600'
+              )}
+            >
+              <Camera className="h-3.5 w-3.5" />
+              인증샷
+            </span>
+          ) : null}
+        </div>
+
+        <h3
+          className={cn(
+            'mt-1.5 line-clamp-2 min-h-[2.6em] text-[15px] font-extrabold',
+            'leading-snug tracking-[-0.2px] break-keep text-gray-900'
+          )}
+        >
+          <Link href={href} className="after:absolute after:inset-0">
+            {title}
+          </Link>
+        </h3>
+
+        <div className="mt-1.5 flex flex-col gap-1">
+          {cadenceLabel ? (
+            <MetaRow icon={<Repeat2 />}>
+              <span
+                className={cn(
+                  'rounded-full bg-[#FFEBE3] px-2 py-[2px]',
+                  'text-[#ff5900]',
+                  META_TEXT,
+                  'font-bold'
+                )}
+              >
+                {cadenceLabel}
+              </span>
+            </MetaRow>
+          ) : null}
+          {durationLabel ? (
+            <MetaRow icon={<Calendar />}>
+              <span
+                className={cn(
+                  'rounded-full bg-gray-100 px-2 py-[2px] text-gray-600',
+                  META_TEXT,
+                  'font-bold'
+                )}
+              >
+                {durationLabel}
+              </span>
+            </MetaRow>
+          ) : null}
+          {statusLabel ? (
+            <MetaRow icon={<Clock />}>
+              <span
+                className={cn(META_TEXT, 'font-bold', STATUS_COLOR[status])}
+              >
+                {statusLabel}
+              </span>
+            </MetaRow>
+          ) : null}
+        </div>
+
+        {/* 만든 주체 — 공식이면 태그, 아니면 프로필+닉네임(+레벨 젬). */}
+        <div className="mt-1.5 flex min-h-[24px] flex-wrap items-center gap-1.5">
+          {isOfficial ? (
+            <>
+              <span
+                className={cn(
+                  'inline-flex shrink-0 items-center gap-1 rounded-full',
+                  'bg-[#ff5900] px-2 py-[3px]',
+                  'text-[12px] font-bold text-white'
+                )}
+              >
+                <Icon name="Logo" size={13} />
+                공식챌린지
+              </span>
+              {hasReward ? (
+                <span
+                  className={cn(
+                    'inline-flex shrink-0 items-center gap-1 rounded-full',
+                    'bg-[#FFEBE3] px-2 py-[3px]',
+                    'text-[12px] font-bold text-[#ff3c00]'
+                  )}
+                >
+                  <Gift className="h-3.5 w-3.5" />
+                  보상
+                </span>
+              ) : null}
+            </>
+          ) : host ? (
+            <>
+              {/* 레벨 젬 자리 — 레벨 기능(S3) 이전엔 비운다. */}
+              <CircleAvatar
+                size="sm"
+                imageUrl={host.profileImg ?? undefined}
+                alt={host.nickname}
+              />
+              <span className="truncate text-[12px] font-medium text-gray-600">
+                {host.nickname}
+              </span>
+            </>
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 }
 
-// 보드/리스트에서 12+ 개 카드를 렌더하므로 React.memo 로 동일 props 시 재렌더를
-// 건너뛴다. 부모(ChallengeBoardScreen) 는 onClick 을 useCallback 으로 안정화해야
-// 효과를 얻는다.
 export default React.memo(ChallengeCard);

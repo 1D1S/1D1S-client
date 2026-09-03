@@ -87,6 +87,10 @@ export interface ChallengeListItem {
   participantCnt: number;
   // 인증샷(사진) 필수 여부(서버 JSON 키: photoRequired).
   photoRequired?: boolean;
+  // 주 몇 회 목표인가 — 카드의 주기 알약('매일'·'주 5일')이 쓴다.
+  weeklyGoalCount?: number;
+  // 공식 챌린지의 보상 유무 — 카드 강조(2px 테두리 + 글로우) 조건이다.
+  hasReward?: boolean;
   // 종료 후 2일 유예 동안 일지 작성 허용 여부.
   postEndWriteAllowed?: boolean;
   liked: boolean;

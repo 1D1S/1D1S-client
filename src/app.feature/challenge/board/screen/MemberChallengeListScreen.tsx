@@ -5,11 +5,7 @@ import ChallengeCard from '@component/cards/ChallengeCard';
 import EmptyState from '@component/EmptyState';
 import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
 import { ChallengeCardSkeletonGrid } from '@component/skeletons/ChallengeCardSkeleton';
-import {
-  CategoryIcon,
-  getCategoryLabel,
-  getCategoryStripeTone,
-} from '@constants/categories';
+import { toChallengeCardProps } from '@feature/challenge/board/utils/challengeCardProps';
 import { normalizeApiError } from '@module/api/error';
 import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { cn } from '@module/utils/cn';
@@ -19,7 +15,7 @@ import React from 'react';
 
 import { useMemberChallenges } from '../hooks/useChallengeQueries';
 import type { ChallengeListItem } from '../type/challenge';
-import { resolveChallengeCardStatus } from '../utils/challengePeriod';
+import {} from '../utils/challengePeriod';
 
 interface MemberChallengeCardItemProps {
   challenge: ChallengeListItem;
@@ -28,36 +24,14 @@ interface MemberChallengeCardItemProps {
 // 보드와 동일한 매핑. React.memo(ChallengeCard) 가 재렌더를 건너뛰도록
 // 파생 계산을 컴포넌트로 분리한다.
 const MemberChallengeCardItem = React.memo(
-  ({ challenge }: MemberChallengeCardItemProps): React.ReactElement => {
-    const { status, isInfinite, isEnded, remainingLabel } =
-      resolveChallengeCardStatus(challenge);
-
-    return (
-      <ChallengeCard
-        title={challenge.title}
-        category={getCategoryLabel(challenge.category)}
-        categoryIcon={
-          <CategoryIcon category={challenge.category} className="h-3 w-3" />
-        }
-        stripeTone={getCategoryStripeTone(challenge.category)}
-        imageUrl={challenge.thumbnailImage}
-        currentParticipantCount={challenge.participantCnt}
-        maxParticipantCount={challenge.maxParticipantCnt}
-        remainingLabel={remainingLabel}
-        startDate={challenge.startDate}
-        endDate={challenge.endDate}
-        isInfinite={isInfinite}
-        goalType={challenge.goalType}
-        isGroup={challenge.participationType === 'GROUP'}
-        isEnded={isEnded}
-        status={status}
-        isPhotoRequired={challenge.photoRequired}
-        isOfficial={challenge.challengeType === 'OFFICIAL'}
-        participants={challenge.randomParticipants}
-        href={`/challenge/${challenge.challengeId}`}
-      />
-    );
-  }
+  ({ challenge }: MemberChallengeCardItemProps): React.ReactElement => (
+    <ChallengeCard
+      {...toChallengeCardProps(
+        challenge,
+        `/challenge/${challenge.challengeId}`
+      )}
+    />
+  )
 );
 MemberChallengeCardItem.displayName = 'MemberChallengeCardItem';
 

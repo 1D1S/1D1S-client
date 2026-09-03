@@ -7,18 +7,11 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@1d1s/design-system';
-import ChallengeCard, {
-  type ChallengeCardGoalType,
-} from '@component/cards/ChallengeCard';
+import ChallengeCard from '@component/cards/ChallengeCard';
 import EmptyState from '@component/EmptyState';
 import { BoardScreenLayout } from '@component/layout/BoardScreenLayout';
 import { ChallengeCardSkeletonGrid } from '@component/skeletons/ChallengeCardSkeleton';
-import {
-  CATEGORY_OPTIONS,
-  CategoryIcon,
-  getCategoryLabel,
-  getCategoryStripeTone,
-} from '@constants/categories';
+import { CATEGORY_OPTIONS, CategoryIcon } from '@constants/categories';
 import { useSignalPageReady } from '@module/hooks/useSignalPageReady';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
@@ -30,7 +23,7 @@ import { ChallengeCompletedBadge } from '../../shared/components/ChallengeComple
 import { FilterDisclosure } from '../components/FilterDisclosure';
 import { useMyChallenges } from '../hooks/useChallengeQueries';
 import type { MyChallengeItem } from '../type/challenge';
-import { resolveChallengeCardStatus } from '../utils/challengePeriod';
+import { toChallengeCardProps } from '../utils/challengeCardProps';
 import {
   getMyChallengeState,
   type MyChallengeState,
@@ -64,33 +57,15 @@ interface MyChallengeCardItemProps {
 const MyChallengeCardItem = React.memo(
   ({ item }: MyChallengeCardItemProps): React.ReactElement => {
     const { challenge } = item;
-    const { status, isInfinite, isEnded, remainingLabel } =
-      resolveChallengeCardStatus(challenge);
     const hasLeft = item.participationStatus === 'LEAVE';
 
     return (
       <div className="relative">
         <ChallengeCard
-          title={challenge.title}
-          category={getCategoryLabel(challenge.category)}
-          categoryIcon={
-            <CategoryIcon category={challenge.category} className="h-3 w-3" />
-          }
-          stripeTone={getCategoryStripeTone(challenge.category)}
-          imageUrl={challenge.thumbnailImage ?? undefined}
-          currentParticipantCount={challenge.participantCnt}
-          maxParticipantCount={challenge.maxParticipantCnt}
-          remainingLabel={remainingLabel}
-          startDate={challenge.startDate}
-          endDate={challenge.endDate}
-          isInfinite={isInfinite}
-          goalType={challenge.goalType as ChallengeCardGoalType}
-          isGroup={challenge.participationType === 'GROUP'}
-          isEnded={isEnded}
-          status={status}
-          isOfficial={challenge.challengeType === 'OFFICIAL'}
-          participants={challenge.randomParticipants}
-          href={`/challenge/${challenge.challengeId}`}
+          {...toChallengeCardProps(
+            challenge,
+            `/challenge/${challenge.challengeId}`
+          )}
         />
         {/* 과거참여·완료 표시 — 카드 링크를 막지 않도록 pointer-events-none.
             둘 다 붙을 수 있어 한 행에 나란히 둔다. */}

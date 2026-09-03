@@ -2,17 +2,8 @@ import { Icon, SectionHeader, Text } from '@1d1s/design-system';
 import ChallengeCard from '@component/cards/ChallengeCard';
 import EmptyState from '@component/EmptyState';
 import { ChallengeCardSkeleton } from '@component/skeletons/ChallengeCardSkeleton';
-import {
-  CategoryIcon,
-  getCategoryLabel,
-  getCategoryStripeTone,
-} from '@constants/categories';
 import { type ChallengeListItem } from '@feature/challenge/board/type/challenge';
-import {
-  formatChallengeRemainingLabel,
-  isChallengeEndedOrArchived,
-  isInfiniteChallengeEndDate,
-} from '@feature/challenge/board/utils/challengePeriod';
+import { toChallengeCardProps } from '@feature/challenge/board/utils/challengeCardProps';
 import { cn } from '@module/utils/cn';
 import { useMinimumLoading } from '@module/utils/useMinimumLoading';
 import React from 'react';
@@ -100,52 +91,19 @@ export default function HomeRandomChallengesSection({
             'sm:py-0 lg:grid-cols-4'
           )}
         >
-          {challenges.map((challenge) => {
-            const isInfinite = isInfiniteChallengeEndDate(challenge.endDate);
-            const ended = isChallengeEndedOrArchived(
-              challenge.endDate,
-              challenge.participantCnt,
-              challenge.challengeType
-            );
-            const remainingLabel = formatChallengeRemainingLabel(
-              challenge.endDate,
-              isInfinite,
-              ended
-            );
-
-            return (
+          {challenges.map((challenge) => (
               <div
                 key={challenge.challengeId}
                 className="w-[200px] shrink-0 sm:w-auto sm:shrink"
               >
                 <ChallengeCard
-                  title={challenge.title}
-                  category={getCategoryLabel(challenge.category)}
-                  categoryIcon={
-                    <CategoryIcon
-                      category={challenge.category}
-                      className="h-3 w-3"
-                    />
-                  }
-                  stripeTone={getCategoryStripeTone(challenge.category)}
-                  imageUrl={challenge.thumbnailImage}
-                  currentParticipantCount={challenge.participantCnt}
-                  maxParticipantCount={challenge.maxParticipantCnt}
-                  remainingLabel={remainingLabel}
-                  startDate={challenge.startDate}
-                  endDate={challenge.endDate}
-                  isInfinite={isInfinite}
-                  goalType={challenge.goalType}
-                  isGroup={challenge.participationType === 'GROUP'}
-                  isOfficial={challenge.challengeType === 'OFFICIAL'}
-                  isEnded={ended}
-                  isPhotoRequired={challenge.photoRequired}
-                  participants={challenge.randomParticipants}
-                  href={`/challenge/${challenge.challengeId}`}
+                  {...toChallengeCardProps(
+                    challenge,
+                    `/challenge/${challenge.challengeId}`
+                  )}
                 />
               </div>
-            );
-          })}
+            ))}
         </div>
       ) : null}
       {!showSkeleton && !isError && challenges.length === 0 ? (

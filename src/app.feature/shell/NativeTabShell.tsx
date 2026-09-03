@@ -44,7 +44,7 @@ const MyPageScreen = dynamic(
  * 계약 (앱 ↔ 웹):
  *  - 앱 → 웹: CustomEvent('native:tab_change', { detail: { tab } })
  *    tab ∈ home | explore | challenge | diary | mypage
- *  - 웹 → 앱: 전환 후 history.replaceState 로 URL 을 실제 탭 경로(/, 
+ *  - 웹 → 앱: 전환 후 history.replaceState 로 URL 을 실제 탭 경로(/,
  *    /explore, …)로 바꾼다. Next 14+ 가 이를 usePathname 에 동기화하므로
  *    NativeBridge 의 nav_state 보고가 **그대로** 나간다 — 앱의 크롬 판정
  *    (RouteUtils)이 아무 변경 없이 동작한다.

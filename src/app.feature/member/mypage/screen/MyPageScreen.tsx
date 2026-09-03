@@ -138,10 +138,7 @@ export default function MyPageScreen(): React.ReactElement | null {
             hasMore={hasMoreDiaries}
             viewAllHref="/mypage/diary"
             action={
-              <Button
-                size="sm"
-                onClick={() => router.push('/diary/create')}
-              >
+              <Button size="sm" onClick={() => router.push('/diary/create')}>
                 새 일지 작성하기
               </Button>
             }

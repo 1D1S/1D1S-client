@@ -9,12 +9,8 @@ import {
   ChallengeCardSkeleton,
   ChallengeCardSkeletonGrid,
 } from '@component/skeletons/ChallengeCardSkeleton';
-import {
-  CategoryIcon,
-  getCategoryLabel,
-  getCategoryStripeTone,
-} from '@constants/categories';
 import { CHALLENGE_SEARCH_PARAM } from '@constants/challengeSearch';
+import { toChallengeCardProps } from '@feature/challenge/board/utils/challengeCardProps';
 import { useIsLoggedIn } from '@feature/member/hooks/useIsLoggedIn';
 import { useInfiniteScroll } from '@module/hooks/useInfiniteScroll';
 import { useSignalAppReady } from '@module/hooks/useSignalAppReady';
@@ -35,7 +31,7 @@ import type {
   ChallengeStatus,
   ChallengeTypeFilter,
 } from '../type/challenge';
-import { resolveChallengeCardStatus } from '../utils/challengePeriod';
+import {} from '../utils/challengePeriod';
 
 interface ChallengeBoardCardItemProps {
   challenge: ChallengeListItem;
@@ -46,36 +42,9 @@ interface ChallengeBoardCardItemProps {
 // 카드 매핑에서 인라인 람다·파생 계산을 제거해 React.memo(ChallengeCard) 가
 // 실제로 재렌더를 건너뛸 수 있도록 한다.
 const ChallengeBoardCardItem = React.memo(
-  ({ challenge, href }: ChallengeBoardCardItemProps): React.ReactElement => {
-    const { status, isInfinite, isEnded, remainingLabel } =
-      resolveChallengeCardStatus(challenge);
-
-    return (
-      <ChallengeCard
-        title={challenge.title}
-        category={getCategoryLabel(challenge.category)}
-        categoryIcon={
-          <CategoryIcon category={challenge.category} className="h-3 w-3" />
-        }
-        stripeTone={getCategoryStripeTone(challenge.category)}
-        imageUrl={challenge.thumbnailImage}
-        currentParticipantCount={challenge.participantCnt}
-        maxParticipantCount={challenge.maxParticipantCnt}
-        remainingLabel={remainingLabel}
-        startDate={challenge.startDate}
-        endDate={challenge.endDate}
-        isInfinite={isInfinite}
-        goalType={challenge.goalType}
-        isGroup={challenge.participationType === 'GROUP'}
-        isEnded={isEnded}
-        status={status}
-        isPhotoRequired={challenge.photoRequired}
-        isOfficial={challenge.challengeType === 'OFFICIAL'}
-        participants={challenge.randomParticipants}
-        href={href}
-      />
-    );
-  }
+  ({ challenge, href }: ChallengeBoardCardItemProps): React.ReactElement => (
+    <ChallengeCard {...toChallengeCardProps(challenge, href)} />
+  )
 );
 ChallengeBoardCardItem.displayName = 'ChallengeBoardCardItem';
 

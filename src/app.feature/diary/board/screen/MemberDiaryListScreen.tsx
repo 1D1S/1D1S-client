@@ -126,8 +126,7 @@ export function MemberDiaryListScreen({
   const hasDiaries = diaryItems.length > 0;
 
   const handleLikeToggle = useCallback(
-    (diary: DiaryItem): void =>
-      toggleLike(diary.id, diary.likeInfo.likedByMe),
+    (diary: DiaryItem): void => toggleLike(diary.id, diary.likeInfo.likedByMe),
     [toggleLike]
   );
 

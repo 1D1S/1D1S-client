@@ -181,7 +181,8 @@ function MiniChallengeCard({ c }: { c: MiniChallenge }): React.ReactElement {
         >
           <Users className="h-2.5 w-2.5 shrink-0" />
           <span>
-            <span className="font-semibold text-gray-700">{c.count}</span> 참여중
+            <span className="font-semibold text-gray-700">{c.count}</span>{' '}
+            참여중
           </span>
         </div>
         <div
@@ -327,7 +328,9 @@ function MockCreate(): React.ReactElement {
         </div>
       </div>
       <div className="mb-[9px]">
-        <div className="mb-1 text-[9px] font-bold text-gray-500">오늘의 목표</div>
+        <div className="mb-1 text-[9px] font-bold text-gray-500">
+          오늘의 목표
+        </div>
         <div className="flex flex-wrap gap-1">
           {['5km 달리기', '스트레칭 10분'].map((g) => (
             <span
@@ -438,9 +441,7 @@ function MockDiary(): React.ReactElement {
                   className={cn(
                     'flex h-3.5 w-3.5 shrink-0 items-center justify-center',
                     'rounded-full',
-                    g.done
-                      ? 'bg-main-700'
-                      : 'border-[1.5px] border-gray-300'
+                    g.done ? 'bg-main-700' : 'border-[1.5px] border-gray-300'
                   )}
                 >
                   {g.done ? (
@@ -488,7 +489,7 @@ function MockDiary(): React.ReactElement {
                 fill="currentColor"
                 aria-hidden
               >
-                { }
+                {}
                 <path d="M12 21s-7.5-4.6-10-9.3C.4 8.4 2 5 5.4 5c2 0 3.3 1.1 4.1 2.3.8-1.2 2.1-2.3 4.1-2.3 3.4 0 5 3.4 3.4 6.7C19.5 16.4 12 21 12 21z" />
               </svg>
               24

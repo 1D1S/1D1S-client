@@ -261,7 +261,9 @@ export function DiaryContentEditor({
           </ToolbarButton>
         </div>
 
-        <div className={cn(isTemplate ? 'min-h-[220px]' : 'min-h-[420px]', 'p-4')}>
+        <div
+          className={cn(isTemplate ? 'min-h-[220px]' : 'min-h-[420px]', 'p-4')}
+        >
           <EditorContent
             editor={editor}
             className={cn(

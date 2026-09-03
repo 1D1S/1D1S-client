@@ -161,7 +161,7 @@ function MemberRow({
         ) : null}
         <CircleAvatar
           size="sm"
-          imageUrl={withdrawn ? undefined : entry.profileImg ?? undefined}
+          imageUrl={withdrawn ? undefined : (entry.profileImg ?? undefined)}
           tone="cream"
         />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -200,7 +200,8 @@ function MemberRow({
               weight="regular"
               className="truncate text-gray-400"
             >
-              {entry.streak ?? 0}일 연속 · 목표 {entry.completedGoalCount ?? 0}개
+              {entry.streak ?? 0}일 연속 · 목표 {entry.completedGoalCount ?? 0}
+              개
             </Text>
           ) : null}
         </div>
@@ -314,8 +315,7 @@ export function ChallengeLeaderboardCard({
             const isMe =
               (currentMemberId !== null &&
                 entry.memberId === currentMemberId) ||
-              (Boolean(currentNickname) &&
-                entry.nickname === currentNickname);
+              (Boolean(currentNickname) && entry.nickname === currentNickname);
             const showPoke =
               canPoke && !isMe && !isWithdrawnMember(entry.nickname);
             const isPoking = pokingMemberId === entry.memberId;

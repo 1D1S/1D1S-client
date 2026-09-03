@@ -61,8 +61,6 @@ const DIFF: Array<{
   },
 ];
 
-
-
 function SummaryCards(): React.ReactElement {
   return (
     <section className="animate-pop-in">
@@ -143,7 +141,11 @@ function DiffCard(): React.ReactElement {
               >
                 <div className="mb-3 flex items-center gap-2">
                   <DiffIcon className="text-main-800 h-[17px] w-[17px]" />
-                  <Text size="caption1" weight="extrabold" className="text-gray-900">
+                  <Text
+                    size="caption1"
+                    weight="extrabold"
+                    className="text-gray-900"
+                  >
                     {d.label}
                   </Text>
                 </div>
@@ -253,7 +255,11 @@ function ClosingCta(): React.ReactElement {
           <ArrowRight className="h-[17px] w-[17px]" strokeWidth={2.4} />
         </Link>
       </div>
-      <Text size="caption2" weight="regular" className="mt-10 block text-gray-400">
+      <Text
+        size="caption2"
+        weight="regular"
+        className="mt-10 block text-gray-400"
+      >
         1 Day 1 Streak — 매일의 기록이 만드는 변화
       </Text>
     </section>

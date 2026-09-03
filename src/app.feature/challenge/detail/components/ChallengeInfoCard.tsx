@@ -94,7 +94,10 @@ export function ChallengeInfoCard({
             <Text
               size="caption1"
               weight="semibold"
-              className={cn('min-w-0 flex-1 truncate text-right', 'text-gray-900')}
+              className={cn(
+                'min-w-0 flex-1 truncate text-right',
+                'text-gray-900'
+              )}
             >
               {row.value}
             </Text>

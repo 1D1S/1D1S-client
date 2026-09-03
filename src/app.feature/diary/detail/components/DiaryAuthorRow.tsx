@@ -46,12 +46,12 @@ export function DiaryAuthorRow({
       )}
     >
       <CircleAvatar
-        imageUrl={withdrawn ? undefined : authorProfileImage ?? undefined}
+        imageUrl={withdrawn ? undefined : (authorProfileImage ?? undefined)}
         size="md"
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <Text size="body2" weight="bold" className="truncate text-gray-900">
-          {withdrawn ? WITHDRAWN_MEMBER_LABEL : authorName ?? '익명'}
+          {withdrawn ? WITHDRAWN_MEMBER_LABEL : (authorName ?? '익명')}
         </Text>
         <Text size="caption2" weight="regular" className="text-gray-500">
           {relativeDateLabel}

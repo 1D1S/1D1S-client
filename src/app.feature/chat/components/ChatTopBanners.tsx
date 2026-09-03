@@ -177,7 +177,11 @@ export function ChatNoticeBanner({
                     }}
                     className="text-main-700 flex w-fit items-center gap-0.5"
                   >
-                    <Text size="caption3" weight="bold" className="text-inherit">
+                    <Text
+                      size="caption3"
+                      weight="bold"
+                      className="text-inherit"
+                    >
                       원본 보기
                     </Text>
                     <ChevronRight className="h-3 w-3" />
@@ -201,7 +205,11 @@ export function ChatNoticeBanner({
                     )}
                   >
                     <X className="h-3 w-3" />
-                    <Text size="caption3" weight="bold" className="text-inherit">
+                    <Text
+                      size="caption3"
+                      weight="bold"
+                      className="text-inherit"
+                    >
                       공지 해제하기
                     </Text>
                   </button>
@@ -243,7 +251,11 @@ export function ChatEndedBanner({
       <div className="flex items-start gap-2 px-[13px] py-2.5">
         <PartyPopper className="text-main-600 mt-0.5 h-3.5 w-3.5 shrink-0" />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <Text size="caption2" weight="bold" className="truncate text-gray-800">
+          <Text
+            size="caption2"
+            weight="bold"
+            className="truncate text-gray-800"
+          >
             챌린지가 종료되었습니다!
           </Text>
           {!collapsed ? (
@@ -263,7 +275,11 @@ export function ChatEndedBanner({
                     'bg-main-600 rounded-lg px-2.5 py-1.5 text-white'
                   )}
                 >
-                  <Text size="caption4" weight="extrabold" className="text-inherit">
+                  <Text
+                    size="caption4"
+                    weight="extrabold"
+                    className="text-inherit"
+                  >
                     챌린지 둘러보기
                   </Text>
                 </Link>
@@ -275,7 +291,11 @@ export function ChatEndedBanner({
                     'text-gray-700'
                   )}
                 >
-                  <Text size="caption4" weight="extrabold" className="text-inherit">
+                  <Text
+                    size="caption4"
+                    weight="extrabold"
+                    className="text-inherit"
+                  >
                     다시 보지 않기
                   </Text>
                 </button>

@@ -233,8 +233,7 @@ export function Step1({ onNext, onExit }: Step1Props): React.ReactElement {
 
         <div>
           <FieldLabel>
-            생년월일{' '}
-            <span className="font-normal text-gray-400">(선택)</span>
+            생년월일 <span className="font-normal text-gray-400">(선택)</span>
           </FieldLabel>
           {/* DS SelectTrigger 는 min-w-[150px] 이라 3열이면 모바일 폭을
               넘겨 오른쪽으로 잘린다. 각 트리거에 min-w-0 을 줘서 fr 비율이

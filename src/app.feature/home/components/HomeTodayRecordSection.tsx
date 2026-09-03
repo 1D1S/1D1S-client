@@ -6,8 +6,9 @@ import {
   getCategoryLabel,
   getCategoryStripeTone,
 } from '@constants/categories';
-import {   formatChallengeRemainingLabel,
-isInfiniteChallengeEndDate ,
+import {
+  formatChallengeRemainingLabel,
+  isInfiniteChallengeEndDate,
 } from '@feature/challenge/board/utils/challengePeriod';
 import type { SidebarChallenge } from '@feature/member/type/member';
 import { cn } from '@module/utils/cn';
@@ -31,8 +32,7 @@ const MAX_GOALS = 3;
 const GOALS_BLOCK = 'min-h-[62px]';
 // 카드 최소 높이를 고정해 로딩→확정, 목표 개수 변화에도 그리드가 흔들리지
 // 않게 한다.
-const CARD_BASE =
-  'flex min-h-[148px] flex-col gap-2.5 rounded-3 border p-3.5';
+const CARD_BASE = 'flex min-h-[148px] flex-col gap-2.5 rounded-3 border p-3.5';
 
 interface RecordCardProps {
   challenge: SidebarChallenge;
@@ -63,10 +63,7 @@ function GoalsBlock({
   return (
     <ul className={cn(GOALS_BLOCK, 'flex flex-col gap-1')}>
       {shown.map((goal, index) => (
-        <li
-          key={`${goal}-${index}`}
-          className="flex items-start gap-1.5"
-        >
+        <li key={`${goal}-${index}`} className="flex items-start gap-1.5">
           <span
             aria-hidden
             className="bg-main-400 mt-[7px] h-1 w-1 shrink-0 rounded-full"
@@ -221,8 +218,7 @@ export default function HomeTodayRecordSection({
   const ordered = useMemo(
     () =>
       [...items].sort(
-        (left, right) =>
-          Number(left.writtenToday) - Number(right.writtenToday)
+        (left, right) => Number(left.writtenToday) - Number(right.writtenToday)
       ),
     [items]
   );
@@ -300,7 +296,12 @@ export default function HomeTodayRecordSection({
               'text-gray-800'
             )}
           >
-            <Icon name="Trophy" size={16} className="text-main-800" aria-hidden />
+            <Icon
+              name="Trophy"
+              size={16}
+              className="text-main-800"
+              aria-hidden
+            />
             오늘 기록을 모두 마쳤어요 · {doneCount}개 완료
           </span>
           <Link href="/explore" className="text-brand text-[13px] font-bold">

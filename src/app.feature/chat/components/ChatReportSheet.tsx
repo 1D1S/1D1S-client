@@ -63,85 +63,85 @@ function ReportForm({
           메시지 신고하기
         </Text>
       </BottomSheetTitle>
-        <Text size="caption1" className="pt-1 text-gray-500">
-          신고 사유를 선택해 주세요. 접수된 신고는 관리자가 확인합니다.
-        </Text>
+      <Text size="caption1" className="pt-1 text-gray-500">
+        신고 사유를 선택해 주세요. 접수된 신고는 관리자가 확인합니다.
+      </Text>
 
-        <div className="flex flex-col gap-1.5 pt-4">
-          {CHAT_REPORT_REASONS.map((option) => {
-            const selected = reason === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setReason(option.value)}
-                aria-pressed={selected}
+      <div className="flex flex-col gap-1.5 pt-4">
+        {CHAT_REPORT_REASONS.map((option) => {
+          const selected = reason === option.value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setReason(option.value)}
+              aria-pressed={selected}
+              className={cn(
+                'flex items-center gap-2.5 rounded-xl border px-3.5 py-3',
+                'text-left transition-colors',
+                selected
+                  ? 'border-main-600 bg-main-100'
+                  : 'border-gray-200 bg-white hover:bg-gray-50'
+              )}
+            >
+              <span
                 className={cn(
-                  'flex items-center gap-2.5 rounded-xl border px-3.5 py-3',
-                  'text-left transition-colors',
-                  selected
-                    ? 'border-main-600 bg-main-100'
-                    : 'border-gray-200 bg-white hover:bg-gray-50'
+                  'flex h-4 w-4 shrink-0 items-center justify-center',
+                  'rounded-full border-2',
+                  selected ? 'border-main-600' : 'border-gray-300'
                 )}
               >
-                <span
-                  className={cn(
-                    'flex h-4 w-4 shrink-0 items-center justify-center',
-                    'rounded-full border-2',
-                    selected ? 'border-main-600' : 'border-gray-300'
-                  )}
-                >
-                  {selected ? (
-                    <span className="bg-main-600 h-2 w-2 rounded-full" />
-                  ) : null}
-                </span>
-                <Text
-                  size="body2"
-                  weight={selected ? 'bold' : 'regular'}
-                  className={selected ? 'text-main-800' : 'text-gray-800'}
-                >
-                  {option.label}
-                </Text>
-              </button>
-            );
-          })}
-        </div>
+                {selected ? (
+                  <span className="bg-main-600 h-2 w-2 rounded-full" />
+                ) : null}
+              </span>
+              <Text
+                size="body2"
+                weight={selected ? 'bold' : 'regular'}
+                className={selected ? 'text-main-800' : 'text-gray-800'}
+              >
+                {option.label}
+              </Text>
+            </button>
+          );
+        })}
+      </div>
 
-        <div className="pt-3">
-          <TextArea
-            value={detail}
-            onChange={(event) => setDetail(event.target.value)}
-            rows={3}
-            count
-            max={DETAIL_MAX}
-            label="상세 내용"
-            labelHint={needsDetail ? '필수' : '선택'}
-            placeholder="신고 사유를 상세히 적어주세요."
-          />
-        </div>
+      <div className="pt-3">
+        <TextArea
+          value={detail}
+          onChange={(event) => setDetail(event.target.value)}
+          rows={3}
+          count
+          max={DETAIL_MAX}
+          label="상세 내용"
+          labelHint={needsDetail ? '필수' : '선택'}
+          placeholder="신고 사유를 상세히 적어주세요."
+        />
+      </div>
 
-        <div className="flex gap-2 pt-4">
-          <Button variant="secondary" size="lg" fullWidth onClick={onCancel}>
-            취소
-          </Button>
-          <Button
-            variant="danger"
-            size="lg"
-            fullWidth
-            disabled={!canSubmit}
-            onClick={() => {
-              if (reason === null) {
-                return;
-              }
-              onSubmit(messageId, {
-                reason,
-                detail: trimmedDetail || undefined,
-              });
-            }}
-          >
-            {isPending ? '접수 중…' : '신고하기'}
-          </Button>
-        </div>
+      <div className="flex gap-2 pt-4">
+        <Button variant="secondary" size="lg" fullWidth onClick={onCancel}>
+          취소
+        </Button>
+        <Button
+          variant="danger"
+          size="lg"
+          fullWidth
+          disabled={!canSubmit}
+          onClick={() => {
+            if (reason === null) {
+              return;
+            }
+            onSubmit(messageId, {
+              reason,
+              detail: trimmedDetail || undefined,
+            });
+          }}
+        >
+          {isPending ? '접수 중…' : '신고하기'}
+        </Button>
+      </div>
     </>
   );
 }

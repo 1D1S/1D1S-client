@@ -281,9 +281,7 @@ function DiaryCard({
             </li>
           ))}
         </ul>
-        <span
-          className={cn('shrink-0 text-xs font-extrabold', tone.fg)}
-        >
+        <span className={cn('shrink-0 text-xs font-extrabold', tone.fg)}>
           달성 {percent}%
         </span>
       </div>
@@ -330,9 +328,7 @@ function DiaryCard({
               'cursor-pointer items-center gap-1 rounded-full px-2 py-1',
               'text-[11px] font-bold transition-colors',
               'hover:bg-red-50 motion-safe:active:scale-95',
-              isLiked
-                ? 'text-red-500'
-                : 'text-gray-500 hover:text-red-400'
+              isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-400'
             )}
           >
             <span className="relative inline-flex">
