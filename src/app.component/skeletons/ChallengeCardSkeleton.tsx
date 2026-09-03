@@ -12,58 +12,40 @@ export function ChallengeCardSkeleton({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-2xl border border-gray-100 bg-white',
+        'overflow-hidden rounded-[12px] border border-[#E3E3E3] bg-white',
         className
       )}
     >
-      <div className="px-3 pt-3">
-        <div
-          className={cn(
-            'relative aspect-[3/2] overflow-hidden rounded-lg bg-gray-100'
-          )}
-        >
-          <Skeleton shape="rect" className="absolute inset-0 rounded-none" />
-          <div className="absolute top-2 right-2 z-10 flex items-center gap-1">
-            <Skeleton shape="pill" className="h-5 w-14" />
-            <Skeleton shape="pill" className="h-5 w-12" />
-          </div>
-        </div>
+      {/* 썸네일 — 실제 카드와 같은 풀블리드 4:3. 비율이 어긋나면 로딩에서
+          실화면으로 넘어갈 때 카드 높이가 튄다. */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
+        <Skeleton shape="rect" className="absolute inset-0 rounded-none" />
+        <Skeleton shape="pill" className="absolute top-2 left-2 h-[22px] w-14" />
+        <Skeleton shape="circle" className="absolute top-2 right-2 h-9 w-9" />
       </div>
-      <div className="flex flex-col gap-2 p-4">
-        <div className="flex min-h-[2.6em] flex-col gap-1.5">
+
+      <div className="flex flex-col px-[10px] pt-[9px] pb-2">
+        <div className="flex items-center gap-1.5">
+          <Skeleton shape="pill" className="h-[22px] w-16" />
+          <Skeleton shape="pill" className="h-[22px] w-14" />
+        </div>
+
+        <div className="mt-1.5 flex min-h-[2.6em] flex-col gap-1">
           <Skeleton shape="text" className="h-4 w-[82%]" />
           <Skeleton shape="text" className="h-4 w-[56%]" />
         </div>
-        <ul
-          className={cn(
-            'mt-1 flex flex-col gap-1 text-[11px] text-gray-500',
-            'sm:text-xs'
-          )}
-        >
-          <li className="flex items-center gap-1.5">
-            <Skeleton shape="rounded" className="h-3 w-3" />
-            <Skeleton shape="text" className="h-3 w-[72%]" />
-          </li>
-          <li className="flex items-center gap-1.5">
-            <Skeleton shape="rounded" className="h-3 w-3" />
-            <Skeleton shape="text" className="h-3 w-[58%]" />
-          </li>
-        </ul>
-        <div
-          className={cn(
-            'mt-2 flex items-center justify-between border-t',
-            'border-gray-100 pt-2'
-          )}
-        >
-          <div className="inline-flex items-center gap-2">
-            <div className="flex -space-x-2">
-              <Skeleton shape="circle" className="h-5 w-5" />
-              <Skeleton shape="circle" className="h-5 w-5" />
-              <Skeleton shape="circle" className="h-5 w-5" />
+
+        <div className="mt-1.5 flex flex-col gap-1">
+          {['w-[68px]', 'w-[56px]', 'w-[62px]'].map((width) => (
+            <div key={width} className="flex items-center gap-1.5">
+              <Skeleton shape="rounded" className="h-3.5 w-3.5" />
+              <Skeleton shape="text" className={cn('h-[17px]', width)} />
             </div>
-            <Skeleton shape="text" className="h-3 w-6" />
-          </div>
-          <Skeleton shape="text" className="h-3 w-16" />
+          ))}
+        </div>
+
+        <div className="mt-1.5 flex min-h-[24px] items-center gap-1.5">
+          <Skeleton shape="pill" className="h-[22px] w-20" />
         </div>
       </div>
     </div>
