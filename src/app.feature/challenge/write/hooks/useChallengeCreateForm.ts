@@ -169,12 +169,15 @@ export function useChallengeCreateForm(): ReturnType<
     mode: 'onChange',
     resolver: zodResolver(challengeCreateFormSchema),
     defaultValues: {
-      periodType: 'ENDLESS',
+      // 앱 생성 폼과 기본값을 맞춘다(미러링). 기간을 정하는 쪽이 기본이다.
+      periodType: 'LIMITED',
       title: '',
       category: undefined,
       description: '',
       periodNumber: '7',
       participationType: 'INDIVIDUAL',
+      // 단체 챌린지로 바꿨을 때 첫 칩("제한 없음")이 이미 선택돼 있게 한다.
+      memberCount: 'unlimited',
       memberCountNumber: '2',
       goalType: 'FIXED',
       // 챌린지 시작 후에도 다른 사용자들이 자유롭게 합류할 수 있도록 기본값을

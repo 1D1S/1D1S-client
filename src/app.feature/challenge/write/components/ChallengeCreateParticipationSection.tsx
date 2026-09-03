@@ -23,11 +23,13 @@ const MEMBER_COUNT_OPTIONS: Array<{
   value: '2' | '5' | '10' | 'etc' | 'unlimited';
   label: string;
 }> = [
+  // 앱과 순서를 맞춘다 — "제한 없음"이 맨 앞이고 기본 선택이다
+  // (기본값은 useChallengeCreateForm 의 defaultValues.memberCount).
+  { value: 'unlimited', label: '제한 없음' },
   { value: '2', label: '2명' },
   { value: '5', label: '5명' },
   { value: '10', label: '10명' },
   { value: 'etc', label: '직접 입력' },
-  { value: 'unlimited', label: '제한 없음' },
 ];
 
 export function ChallengeCreateParticipationSection(): React.ReactElement {
