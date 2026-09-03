@@ -36,12 +36,6 @@ import React from 'react';
 
 export type ChallengeCardStatus = 'UPCOMING' | 'ONGOING' | 'ENDED';
 
-export interface ChallengeCardParticipant {
-  memberId: number;
-  nickname: string;
-  profileImg?: string | null;
-}
-
 export interface ChallengeCardHost {
   nickname: string;
   profileImg?: string | null;
