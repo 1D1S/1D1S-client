@@ -16,7 +16,6 @@
  * 실행법과 주의사항은 같은 폴더의 README.md 를 반드시 먼저 읽을 것.
  */
 
-import { readFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 
 const { values } = parseArgs({
@@ -56,7 +55,13 @@ if (MAX_EDGE !== 1600 || QUALITY !== 82) {
   );
 }
 
-const { S3Client, ListObjectsV2Command, GetObjectCommand, PutObjectCommand, CopyObjectCommand } =
+const {
+  S3Client,
+  ListObjectsV2Command,
+  GetObjectCommand,
+  PutObjectCommand,
+  CopyObjectCommand,
+} =
   await import('@aws-sdk/client-s3').catch(() => {
     console.error(
       '@aws-sdk/client-s3 가 없습니다. README 의 설치 절차를 먼저 따르세요.'
@@ -111,7 +116,7 @@ async function toBuffer(stream) {
   return Buffer.concat(chunks);
 }
 
-async function processOne(key, size) {
+async function processOne(key) {
   const got = await s3.send(
     new GetObjectCommand({ Bucket: values.bucket, Key: key })
   );
@@ -144,7 +149,12 @@ async function processOne(key, size) {
   }
 
   if (!APPLY) {
-    return { key, before: original.length, after: resized.length, dryRun: true };
+    return {
+      key,
+      before: original.length,
+      after: resized.length,
+      dryRun: true,
+    };
   }
 
   if (BACKUP) {
@@ -202,7 +212,7 @@ async function main() {
     const batch = targets.slice(i, i + CONCURRENCY);
     const results = await Promise.all(
       batch.map((object) =>
-        processOne(object.Key, object.Size).catch((error) => ({
+        processOne(object.Key).catch((error) => ({
           key: object.Key,
           error: error?.message ?? String(error),
         }))

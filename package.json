@@ -13,7 +13,7 @@
     "build": "next build",
     "start": "next start",
     "start:localias": "NODE_ENV=production node dev-server.js",
-    "lint": "eslint src",
+    "lint": "eslint .",
     "knip": "knip",
     "knip:report": "knip --reporter=json",
     "test": "vitest run",
