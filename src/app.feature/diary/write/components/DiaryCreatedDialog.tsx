@@ -202,8 +202,14 @@ export function DiaryCreatedDialog({
     <Dialog open={open} onOpenChange={(next) => !next && onBack()}>
       <DialogContent
         className={cn(
-          'relative flex w-[calc(100%-2rem)] flex-col items-center gap-6',
-          'overflow-hidden px-6 pt-10 pb-6 sm:min-w-120',
+          // position 유틸을 덧붙이지 않는다. DialogContent 는 자기
+          // 기본값으로 `fixed top-1/2 left-1/2` 로 화면 중앙에 선다.
+          // 여기에 `relative` 같은 걸 얹으면 tailwind-merge 가 같은
+          // position 그룹으로 보고 `fixed` 를 지워 — 모달이 문서 흐름에
+          // 놓여 페이지 맨 아래에 뜬다. 색종이의 `absolute` 는 `fixed`
+          // 조상만으로 이미 자리를 잡는다.
+          'flex flex-col items-center gap-6',
+          'px-6 pt-10 pb-6 sm:min-w-120',
           '[&>button:last-of-type]:hidden'
         )}
         aria-describedby={undefined}
