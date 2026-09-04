@@ -137,7 +137,14 @@ export default function AppBottomNav({
       items={navItems}
       className={cn(
         'sticky bottom-0 z-30',
-        'pb-[calc(0.875rem+env(safe-area-inset-bottom))]',
+        // 떠 있는 섬 — 앱과 같은 모양(app_bottom_nav.dart). 카드 바깥
+        // 여백으로 뒤 콘텐츠가 지나간다. safe-area 는 카드 **바깥**에서
+        // 받는다: 홈 인디케이터 위에 카드가 얹히면 손가락 자리와 겹친다.
+        'mx-3 mb-[calc(0.5rem+env(safe-area-inset-bottom))]',
+        'rounded-[22px] border border-gray-100',
+        // 그림자는 **위로** 드리운다 — 아래는 화면 끝이다.
+        'shadow-[0_-2px_12px_rgba(0,0,0,0.08)]',
+        'pt-2.5 pb-2.5',
         // 라우트 전환 중에는 약하게 페이드해 클릭이 즉시 인식됨을 표시.
         isPending && 'opacity-90',
         className

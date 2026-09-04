@@ -55,8 +55,8 @@ export function ChallengeBoardSkeleton({
       {/* 모바일 sticky 헤더 */}
       <div
         className={cn(
-          'sticky top-0 z-20 border-b border-gray-100',
-          'bg-white px-5 pt-[calc(0.875rem+env(safe-area-inset-top))] pb-3',
+          'sticky top-0 z-20 floating-header border-gray-100',
+          'bg-white px-4 pb-3',
           'lg:hidden'
         )}
       >

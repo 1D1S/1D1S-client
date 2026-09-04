@@ -43,7 +43,10 @@ function SectionShell({
       <div className={RAIL_GUTTER}>
         <SectionHeader
           title={label}
-          size="sm"
+          // 앱 kSectionTitleStyle(size2xl extrabold / letterSpacing -0.5)에
+          // 맞춘다. 홈·탐색 섹션이 쓰는 것과 같은 클래스다 — 같은 자리에
+          // 같은 뜻으로 서는 것이 화면마다 다르면 고칠 때도 여러 번 고친다.
+          className="[&_h2]:!text-2xl [&_h2]:!tracking-tight"
           // onActionClick 이 아니라 진짜 <a href> 를 넘긴다 — 크롤러가
           // 카테고리 페이지로 따라 들어가야 그쪽이 색인된다.
           action={
@@ -51,8 +54,10 @@ function SectionShell({
               <Link
                 href={moreHref}
                 className={cn(
-                  'shrink-0 text-[13px] font-bold text-gray-500',
-                  'transition hover:text-gray-700'
+                  // 앱은 브랜드색 bold 다(AppColors.brand). 회색으로 두면
+                  // 누를 수 있는 자리로 안 읽힌다.
+                  'text-brand shrink-0 text-[14px] font-bold',
+                  'transition hover:brightness-110'
                 )}
               >
                 전체보기 →
@@ -92,8 +97,10 @@ export function ChallengeCategorySectionsSkeleton(): React.ReactElement {
     <div data-skeleton-group>
       {[0, 1, 2].map((row) => (
         <section key={row} className="pb-6">
-          <div className={cn(RAIL_GUTTER, 'h-7')}>
-            <div className="h-5 w-32 rounded bg-gray-100" />
+          {/* 제목 자리도 실제와 같은 높이다 — 다르면 교차하는 순간
+              몇 px 어긋나 아래가 밀린다. */}
+          <div className={cn(RAIL_GUTTER, 'flex h-8 items-center')}>
+            <div className="h-[19px] w-28 rounded bg-gray-100" />
           </div>
           <SectionRail>
             {[0, 1, 2, 3, 4].map((index) => (

@@ -221,3 +221,27 @@ select.text-sm {
   -webkit-user-select: text;
   user-select: text;
 }
+
+/*
+ * 떠 있는 헤더 카드 — 앱과 같은 모양(app_top_nav.dart kFloatingHeader*).
+ *
+ * 앱이 상단/하단 크롬을 "떠 있는 섬"으로 바꾸면서 웹만 각진 채 남았다.
+ * 헤더 마크업은 화면마다 달라서(검색창·필터가 같은 래퍼 안에 있다) 구조를
+ * 건드리지 않고 **겉모습만** 이 클래스로 맞춘다.
+ *
+ * 실측값: margin 12/6/12/10 · radius 18 · border gray100 · shadow
+ * rgba(0,0,0,0.08) 0 2px 10px. safe-area 는 카드 바깥에서 받는다 —
+ * 상태바 밑에 카드가 얹히면 노치와 겹친다.
+ */
+.floating-header {
+  margin-inline: 0.75rem;
+  margin-top: calc(0.375rem + env(safe-area-inset-top));
+  margin-bottom: 0.625rem;
+  border-radius: 18px;
+  border: 1px solid var(--color-gray-100, #f5f5f5);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.08);
+  /* 카드가 됐으므로 아래 구분선은 없앤다 — 카드 테두리가 그 일을 한다. */
+  border-bottom-width: 1px;
+  /* safe-area 를 마진으로 받았으니 안쪽 상단 패딩은 되돌린다. */
+  padding-top: 0.75rem;
+}
