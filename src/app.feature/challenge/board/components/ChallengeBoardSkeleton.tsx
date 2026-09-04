@@ -25,6 +25,13 @@ interface ChallengeBoardSkeletonProps {
    * 보는 초기 HTML 이라, 비어 있으면 목록 페이지가 알맹이 없이 색인된다.
    */
   challenges?: ChallengeListItem[];
+  /**
+   * 화면 제목·설명. 이 fallback 이 곧 크롤러가 보는 초기 HTML 이라
+   * (useSearchParams CSR bailout), 여기 없는 말은 색인되지 않는다.
+   * 카테고리 목록이 '독서 챌린지'로 잡히려면 그 말이 여기 있어야 한다.
+   */
+  title?: string;
+  description?: string;
 }
 
 // 기간 표기는 카드/상세와 같은 함수를 쓴다. 직접 만들었더니 무기한
@@ -40,6 +47,8 @@ function formatPeriod({ startDate, endDate }: ChallengeListItem): string {
 
 export function ChallengeBoardSkeleton({
   challenges,
+  title = '챌린지 보드',
+  description = '새로운 습관을 만들고 함께 성장할 챌린지를 찾아보세요.',
 }: ChallengeBoardSkeletonProps = {}): React.ReactElement {
   return (
     <div data-skeleton-group className="w-full">
@@ -57,7 +66,7 @@ export function ChallengeBoardSkeleton({
               'text-3xl font-extrabold tracking-[-0.5px] text-gray-900'
             )}
           >
-            챌린지
+            {title}
           </h1>
           <Skeleton shape="pill" className="h-7 w-20" />
         </div>
@@ -97,10 +106,10 @@ export function ChallengeBoardSkeleton({
                 'text-3xl font-extrabold tracking-tight text-gray-900'
               )}
             >
-              챌린지 보드
+              {title}
             </h1>
             <p className="text-lg font-normal text-gray-500">
-              새로운 습관을 만들고 함께 성장할 챌린지를 찾아보세요.
+              {description}
             </p>
           </div>
           <Skeleton shape="rounded" className="h-10 w-32 self-start" />

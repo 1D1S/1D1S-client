@@ -13,6 +13,13 @@ interface BoardScreenLayoutProps {
   mobileHeader?: React.ReactNode;
   /** 최상위 래퍼 className (기본값: min-h-screen w-full) */
   outerClassName?: string;
+  /**
+   * 중앙 컨테이너의 좌우 여백 override.
+   *
+   * 가로 레일 화면은 목록이 화면 끝까지 흘러야 해서 컨테이너에 여백을 두지
+   * 않고 **줄마다** 준다. 기본값을 그대로 쓰는 화면은 넘기지 않는다.
+   */
+  contentClassName?: string;
   children: React.ReactNode;
 }
 
@@ -27,6 +34,7 @@ export function BoardScreenLayout({
   action,
   mobileHeader,
   outerClassName = 'min-h-screen w-full',
+  contentClassName,
   children,
 }: BoardScreenLayoutProps): React.ReactElement {
   return (
@@ -38,7 +46,8 @@ export function BoardScreenLayout({
         data-native-flush-top
         className={cn(
           'mx-auto w-full max-w-[1200px]',
-          'px-5 py-5 lg:px-8 lg:py-10'
+          'px-5 py-5 lg:px-8 lg:py-10',
+          contentClassName
         )}
       >
         <header

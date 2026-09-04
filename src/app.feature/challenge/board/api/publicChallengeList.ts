@@ -1,5 +1,11 @@
 import { API_BASE_URL } from '@module/api/config';
 
+import {
+  CHALLENGE_SECTIONS,
+  pickSectionItems,
+  SECTION_LIMIT,
+  toSectionParams,
+} from '../consts/challengeSections';
 import type {
   ChallengeListResponse,
   ChallengeStatus,
@@ -32,6 +38,10 @@ interface PublicChallengePageParams {
   status?: ChallengeStatus[];
   /** 'OFFICIAL' 이면 공식 챌린지만. 탐색 화면의 공식 섹션이 쓴다. */
   challengeType?: ChallengeTypeFilter;
+  /** 카테고리 하나. 챌린지 탭의 카테고리 섹션이 쓴다. */
+  category?: string;
+  /** 보상이 걸린 챌린지만. */
+  rewardOnly?: boolean;
 }
 
 export async function fetchPublicChallengePage({
@@ -39,6 +49,8 @@ export async function fetchPublicChallengePage({
   cursor,
   status,
   challengeType,
+  category,
+  rewardOnly,
 }: PublicChallengePageParams): Promise<ChallengeListResponse> {
   if (!API_BASE_URL) {
     return EMPTY_PAGE;
@@ -50,6 +62,12 @@ export async function fetchPublicChallengePage({
   }
   if (challengeType) {
     query.set('challengeType', challengeType);
+  }
+  if (category) {
+    query.set('category', category);
+  }
+  if (rewardOnly) {
+    query.set('rewardOnly', 'true');
   }
   // 배열은 같은 키 반복으로 직렬화한다(challengeBoardApi 와 동일 규칙).
   status?.forEach((value) => query.append('status', value));
@@ -87,25 +105,6 @@ export async function fetchPublicChallengePage({
   }
 }
 
-/**
- * 보드 화면의 기본 필터와 **같은 조건**으로 첫 페이지를 읽는다.
- *
- * 화면이 처음 요청하는 것과 조건이 다르면, 하이드레이션 직후 다른 목록으로
- * 바뀌어 버린다. 그래서 상태 필터를 여기서 맞춘다.
- */
-export const BOARD_DEFAULT_STATUSES: ChallengeStatus[] = [
-  'UPCOMING',
-  'ONGOING',
-];
-
-export async function fetchPublicChallengeBoardPage(
-  limit: number
-): Promise<ChallengeListResponse> {
-  return fetchPublicChallengePage({
-    limit,
-    status: BOARD_DEFAULT_STATUSES,
-  });
-}
 
 /**
  * 탐색 화면 공식 챌린지 섹션의 노출 개수.
@@ -114,6 +113,17 @@ export async function fetchPublicChallengeBoardPage(
  * 훅 파일에 두면 page 가 그 파일을 import 하면서 클라이언트 전용 코드까지
  * RSC 로 끌고 와 빌드가 깨진다.
  */
+/**
+ * 목록 화면의 기본 상태 필터.
+ *
+ * 화면이 처음 요청하는 것과 조건이 다르면 하이드레이션 직후 다른 목록으로
+ * 바뀐다. 종료된 챌린지를 기본으로 숨기는 규칙이 여기 한 곳에 있다.
+ */
+export const BOARD_DEFAULT_STATUSES: ChallengeStatus[] = [
+  'UPCOMING',
+  'ONGOING',
+];
+
 export const OFFICIAL_CHALLENGES_LIMIT = 10;
 
 /**
@@ -162,4 +172,39 @@ export async function fetchAllPublicChallenges(
     `[sitemap] 공개 챌린지가 ${maxPages}페이지(${all.length}건)를 넘어 나머지를 싣지 못했습니다.`
   );
   return all;
+}
+
+/**
+ * 챌린지 탭 홈의 줄 전부를 서버에서 읽는다.
+ *
+ * 줄이 열한 개지만 각 응답이 `revalidate` 로 캐시되므로 백엔드로 나가는
+ * 요청은 한 시간에 열한 번뿐이다. 앞줄만 싣고 나머지를 클라이언트에
+ * 맡기면 두 가지를 잃는다 — 초기 HTML 의 챌린지 수(색인)와, 뒷줄이
+ * 뒤늦게 붙으며 생기는 화면 밀림.
+ *
+ * 병렬로 부르고, 한 줄이 실패해도 나머지는 그대로 낸다(빈 페이지 폴백).
+ */
+export async function fetchPublicChallengeSections(): Promise<
+  Array<{ sectionId: string; items: ChallengeListResponse['items'] }>
+> {
+  const sections = CHALLENGE_SECTIONS;
+  const pages = await Promise.all(
+    sections.map((section) => {
+      const params = toSectionParams(section);
+      return fetchPublicChallengePage({
+        limit: params.limit ?? SECTION_LIMIT,
+        status: params.status,
+        category: params.category,
+        rewardOnly: params.rewardOnly,
+      });
+    })
+  );
+
+  // 빈 줄도 **그대로 돌려준다**. 여기서 걸러 내면 화면은 그 줄을 "아직
+  // 안 온 것"으로 보고 거기서 멈춘다 — 보상 섹션이 비는 순간 초기 HTML 이
+  // 통째로 스켈레톤이 됐다. 빈 줄은 화면이 안 그린다(줄째 생략).
+  return sections.map((section, index) => ({
+    sectionId: section.id,
+    items: pickSectionItems(section, pages[index]?.items ?? []),
+  }));
 }

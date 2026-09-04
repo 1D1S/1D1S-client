@@ -62,14 +62,14 @@ export default function HomeRandomChallengesSection({
       {showSkeleton ? (
         <div
           className={cn(
-            '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 pt-2 pb-6',
+            '-mx-5 mt-4 flex gap-[10px] overflow-x-auto px-4 pt-2 pb-6',
             'scrollbar-hide',
             'sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0',
             'sm:py-0 lg:grid-cols-4'
           )}
         >
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="w-[200px] shrink-0 sm:w-auto sm:shrink">
+            <div key={index} className="w-[240px] shrink-0 sm:w-auto sm:shrink">
               <ChallengeCardSkeleton />
             </div>
           ))}
@@ -85,7 +85,7 @@ export default function HomeRandomChallengesSection({
       {!showSkeleton && !isError && challenges.length > 0 ? (
         <div
           className={cn(
-            '-mx-5 mt-4 flex gap-3 overflow-x-auto px-5 pt-2 pb-6',
+            '-mx-5 mt-4 flex gap-[10px] overflow-x-auto px-4 pt-2 pb-6',
             'scrollbar-hide data-fade-in',
             'sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0',
             'sm:py-0 lg:grid-cols-4'
@@ -94,7 +94,7 @@ export default function HomeRandomChallengesSection({
           {challenges.map((challenge) => (
               <div
                 key={challenge.challengeId}
-                className="w-[200px] shrink-0 sm:w-auto sm:shrink"
+                className="w-[240px] shrink-0 sm:w-auto sm:shrink"
               >
                 <ChallengeCard
                   {...toChallengeCardProps(

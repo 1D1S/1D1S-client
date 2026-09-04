@@ -75,6 +75,7 @@ export const challengeBoardApi = {
       category: params.category,
       challengeType: params.challengeType,
       status: params.status,
+      rewardOnly: params.rewardOnly,
     });
 
     return requestData<ChallengeListResponse>(apiClient, {

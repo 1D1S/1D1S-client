@@ -351,6 +351,8 @@ export interface ChallengeListParams {
   challengeType?: ChallengeTypeFilter;
   /** 진행 상태 다중 선택 — 빈 배열 대신 undefined 로 전달해야 전체 조회 */
   status?: ChallengeStatus[];
+  /** 보상이 걸린 챌린지만. 서버 필터라 페이지 경계에서도 안 샌다. */
+  rewardOnly?: boolean;
 }
 
 export interface RandomChallengesParams {

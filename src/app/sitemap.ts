@@ -1,3 +1,4 @@
+import { CATEGORY_OPTIONS } from '@constants/categories';
 import { fetchAllPublicChallenges } from '@feature/challenge/board/api/publicChallengeList';
 import { GUIDE_ARTICLE_SLUGS } from '@feature/guide/consts/guideArticles';
 import { SITE_URL } from '@module/metadata/seo';
@@ -17,6 +18,10 @@ const PUBLIC_PATHS = [
   '/privacy',
   '/account-deletion',
   ...GUIDE_ARTICLE_SLUGS.map((slug) => `/guide/${slug}`),
+  // 카테고리 목록 — 챌린지 탭이 카테고리 레일로 바뀌면서 '전체보기'가
+  // 가리키는 실제 페이지가 됐다. 검색(/challenge/search)은 결과가 매번
+  // 달라 색인 대상이 아니다(그쪽 metadata 에서 noindex).
+  ...CATEGORY_OPTIONS.map((option) => `/challenge/category/${option.value}`),
 ];
 
 // lastModified 는 넣지 않는다. GET /challenges 응답에 수정 시각

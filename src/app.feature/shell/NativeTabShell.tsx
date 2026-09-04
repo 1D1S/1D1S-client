@@ -2,7 +2,7 @@
 
 import { DiaryBoardSkeleton } from '@component/skeletons/DiaryBoardSkeleton';
 import { MyPageSkeleton } from '@component/skeletons/MyPageSkeleton';
-import { ChallengeBoardSkeleton } from '@feature/challenge/board/components/ChallengeBoardSkeleton';
+import { ChallengeCategorySectionsSkeleton } from '@feature/challenge/board/components/ChallengeCategorySections';
 import HomeMobileHeader from '@feature/home/components/HomeMobileHeader';
 import HomeScreen from '@feature/home/screen/HomeScreen';
 import dynamic from 'next/dynamic';
@@ -18,7 +18,7 @@ const ExploreScreen = dynamic(
 );
 const ChallengeBoardScreen = dynamic(
   () => import('@feature/challenge/board/screen/ChallengeBoardScreen'),
-  { ssr: false, loading: () => <ChallengeBoardSkeleton /> }
+  { ssr: false, loading: () => <ChallengeCategorySectionsSkeleton /> }
 );
 const DiaryListScreen = dynamic(
   () => import('@feature/diary/board/screen/DiaryListScreen'),
@@ -89,7 +89,7 @@ function TabPane({ tab }: { tab: ShellTabId }): React.ReactElement {
       return <ExploreScreen />;
     case 'challenge':
       return (
-        <Suspense fallback={<ChallengeBoardSkeleton />}>
+        <Suspense fallback={<ChallengeCategorySectionsSkeleton />}>
           <ChallengeBoardScreen />
         </Suspense>
       );

@@ -55,6 +55,8 @@ interface ChallengeBoardFiltersProps {
   statuses: ChallengeStatus[];
   onStatusesChange(statuses: ChallengeStatus[]): void;
   className?: string;
+  /** 카테고리 줄을 숨긴다(카테고리 전용 목록). */
+  hideCategory?: boolean;
 }
 
 // 챌린지 보드 필터 — 카테고리(단일) / 종류(단일) / 진행 상태(다중).
@@ -67,10 +69,11 @@ export function ChallengeBoardFilters({
   statuses,
   onStatusesChange,
   className,
+  hideCategory = false,
 }: ChallengeBoardFiltersProps): React.ReactElement {
   return (
     <div className={cn('flex flex-col gap-2.5', className)}>
-      <div className={ROW_CLASS}>
+      <div className={cn(ROW_CLASS, hideCategory && 'hidden')}>
         <span className={GROUP_LABEL_CLASS}>카테고리</span>
         <ToggleGroup
           type="single"

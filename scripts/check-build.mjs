@@ -45,7 +45,8 @@ const BASE = values.base.replace(/\/$/, '');
  * `minText`: 봇이 읽는 텍스트 최소 길이. 콘텐츠가 통째로 사라지면 잡힌다.
  *   목록 페이지는 항목 수가 데이터에 따라 변하므로 느슨하게 잡고, 대신
  *   `mustMatch` 로 "목록이 실제로 렌더됐는지"를 구조로 확인한다.
- * `mustMatch`: [정규식, 최소 개수]. 데이터 값이 아니라 **구조**를 본다.
+ * `mustMatch`: [정규식, 최소 개수] 하나, 또는 그 쌍의 배열. 데이터 값이
+ *   아니라 **구조**를 본다.
  * `jsBudgetKb`: 초기 스크립트 합계 상한(원본 기준, KB).
  */
 const ROUTES = [
@@ -59,14 +60,24 @@ const ROUTES = [
   },
   {
     path: '/challenge',
-    must: ['챌린지 보드', '새로운 습관을 만들고'],
-    // 목록 항목 수는 그날의 모집중·진행중 챌린지 수에 따라 변한다
-    // (실제로 10개 → 3개로 줄어 minText 400 에 걸린 적이 있다).
-    // 길이 대신 "상세로 가는 링크가 하나라도 SSR 됐는가"를 본다.
-    mustMatch: [/href="\/challenge\/\d+"/g, 1],
+    must: ['챌린지', '카테고리별'],
+    // 카테고리 레일 구조 — 상세 링크와 '전체보기'(카테고리 페이지로 가는
+    // 내부 링크)가 초기 HTML 에 있어야 한다. 개수는 그날의 챌린지 수에
+    // 따라 변하므로 "하나라도 있는가"만 본다.
+    mustMatch: [
+      [/href="\/challenge\/\d+"/g, 1],
+      [/href="\/challenge\/category\/[A-Z_]+"/g, 9],
+    ],
     minText: 250,
     jsBudgetKb: 1000,
     canonical: '/challenge',
+  },
+  {
+    path: '/challenge/category/BOOK',
+    must: ['독서 챌린지'],
+    minText: 150,
+    jsBudgetKb: 1000,
+    canonical: '/challenge/category/BOOK',
   },
   {
     path: '/explore',
@@ -174,13 +185,18 @@ async function run() {
     }
 
     if (route.mustMatch) {
-      const [pattern, min] = route.mustMatch;
-      const found = (html.match(pattern) ?? []).length;
-      check(
-        route.path,
-        `${pattern} 매치 ${found}개 (최소 ${min}개)`,
-        found >= min
-      );
+      // [정규식, 최소개수] 하나 또는 그 배열.
+      const rules = Array.isArray(route.mustMatch[0])
+        ? route.mustMatch
+        : [route.mustMatch];
+      for (const [pattern, min] of rules) {
+        const found = (html.match(pattern) ?? []).length;
+        check(
+          route.path,
+          `${pattern} 매치 ${found}개 (최소 ${min}개)`,
+          found >= min
+        );
+      }
     }
 
     if (route.canonical) {
