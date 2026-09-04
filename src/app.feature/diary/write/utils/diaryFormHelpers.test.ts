@@ -175,8 +175,7 @@ describe('mapDiaryChallengeToChallengeListItem', () => {
       goalType: 'FLEXIBLE',
       participationType: 'INDIVIDUAL',
       participantCnt: 4,
-      liked: true,
-      likeCnt: 3,
+      likeInfo,
       thumbnailImage: undefined,
     });
   });
@@ -201,8 +200,7 @@ describe('mapSidebarChallengeToChallengeListItem', () => {
       category: 'EXERCISE',
       goalType: 'FIXED',
       participationType: 'GROUP',
-      liked: false,
-      likeCnt: 0,
+      likeInfo: { likedByMe: false, likeCnt: 0 },
       thumbnailImage: 'thumb.png',
     });
   });

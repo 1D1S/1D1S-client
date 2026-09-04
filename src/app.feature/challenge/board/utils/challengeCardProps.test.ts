@@ -220,3 +220,15 @@ describe('상태 조각', () => {
     ).toEqual(['종료됨']);
   });
 });
+
+describe('좋아요', () => {
+  it('likeInfo 를 카드로 옮긴다 (서버는 목록에도 객체로 준다)', () => {
+    expect(
+      props({ likeInfo: { likedByMe: true, likeCnt: 12 } })
+    ).toMatchObject({ liked: true, likeCount: 12 });
+  });
+
+  it('likeInfo 가 없으면 0 — 숫자를 안 그린다', () => {
+    expect(props()).toMatchObject({ liked: false, likeCount: 0 });
+  });
+});

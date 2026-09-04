@@ -139,8 +139,10 @@ export interface ChallengeListItem extends ChallengeCardExtras {
   hasReward?: boolean;
   // 종료 후 2일 유예 동안 일지 작성 허용 여부.
   postEndWriteAllowed?: boolean;
-  liked: boolean;
-  likeCnt: number;
+  // 서버는 목록에도 likeInfo 객체로 준다(dev 실측). 예전엔 여기에
+  // liked/likeCnt 를 평평하게 적어 뒀는데 응답에 없는 키였다 — 읽는 곳이
+  // 없어서 드러나지 않았을 뿐이다.
+  likeInfo?: LikeInfo;
   // 공개 범위 — OFFICIAL 일 때 카드를 공식 챌린지로 강조한다.
   challengeType?: ChallengeType;
   // 서버가 목록에서 이미 걸러주지만, 사이트맵·초기 HTML 로 그대로 나가는

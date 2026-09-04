@@ -20,8 +20,7 @@ function item(id: number, startDate: string): ChallengeListItem {
     goalType: 'FIXED',
     participationType: 'INDIVIDUAL',
     participantCnt: 1,
-    liked: false,
-    likeCnt: 0,
+    likeInfo: { likedByMe: false, likeCnt: 0 },
   };
 }
 

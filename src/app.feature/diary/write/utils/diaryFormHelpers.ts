@@ -156,8 +156,7 @@ export function mapDiaryChallengeToChallengeListItem(
     goalType: normalizeGoalType(challenge.goalType),
     participationType: normalizeParticipationType(challenge.participationType),
     participantCnt: challenge.participantCnt,
-    liked: challenge.likeInfo.likedByMe,
-    likeCnt: challenge.likeInfo.likeCnt,
+    likeInfo: challenge.likeInfo,
     thumbnailImage: challenge.thumbnailImage ?? undefined,
   };
 }

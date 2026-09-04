@@ -34,6 +34,7 @@ export interface ChallengeCardSource extends ChallengeCardExtras {
   weeklyGoalCount?: number;
   hasReward?: boolean;
   allowMidJoin?: boolean;
+  likeInfo?: { likedByMe: boolean; likeCnt: number };
 }
 
 /** resolveChallengeCardStatus 가 요구하는 최소 형태로 좁힌다. */
@@ -231,6 +232,8 @@ export function toChallengeCardProps(
     hasReward: challenge.hasReward,
     // 미리지원 배지 — 서버가 PRE_APPLY 로 판정했을 때만.
     canPreApply: challenge.ctaState === 'PRE_APPLY',
+    liked: challenge.likeInfo?.likedByMe ?? false,
+    likeCount: challenge.likeInfo?.likeCnt ?? 0,
     host: toCardHost(challenge),
     book: toCardBook(challenge),
   };

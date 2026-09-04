@@ -78,6 +78,8 @@ export interface ChallengeCardProps {
     moreCount?: number;
   } | null;
   liked?: boolean;
+  /** 좋아요 수. 0 이면 숫자를 안 적는다 — '0' 은 알릴 것이 없다는 뜻이다. */
+  likeCount?: number;
   onToggleLike?(): void;
 }
 
@@ -103,7 +105,8 @@ function FlagChip({
     <span
       className={cn(
         'inline-flex h-[22px] shrink-0 items-center gap-1 rounded-full',
-        'px-2 text-[12px] font-bold'
+        // 좌우 12 — 8 은 글자가 테두리에 붙어 답답했다.
+        'px-3 text-[12px] font-bold'
       )}
       style={tone ? { backgroundColor: `${tone}1F`, color: tone } : undefined}
     >
@@ -149,6 +152,7 @@ function ChallengeCard({
   host,
   book,
   liked = false,
+  likeCount = 0,
   onToggleLike,
 }: ChallengeCardProps): React.ReactElement {
   const tone = getCategoryStripeTone(category);
@@ -215,7 +219,7 @@ function ChallengeCard({
           <span
             className={cn(
               'absolute top-2 left-2 inline-flex items-center gap-1',
-              'rounded-full bg-black/55 px-2 py-[3px]',
+              'rounded-full bg-black/55 px-3 py-[3px]',
               'text-[12px] font-bold text-white'
             )}
           >
@@ -228,7 +232,12 @@ function ChallengeCard({
           </span>
         ) : null}
 
-        {/* 좋아요 — 우상단 흰 원. */}
+        {/* 좋아요 — 우상단. 수를 **하트 왼쪽**에 적는다: 몇 명이 눌렀는지가
+            안 보이면 하트가 그냥 아이콘으로만 읽힌다.
+
+            0 이면 숫자를 안 적는다 — '0' 은 알릴 것이 없다는 뜻이라 자리만
+            먹는다. 그때는 예전처럼 동그란 버튼이다. 사진 위라 흰 알약과
+            그림자가 있어야 하트가 보인다. */}
         <button
           type="button"
           aria-label={liked ? '좋아요 취소' : '좋아요'}
@@ -237,17 +246,20 @@ function ChallengeCard({
             onToggleLike?.();
           }}
           className={cn(
-            'absolute top-2 right-2 z-[2] flex h-9 w-9 items-center',
-            // 사진 **위**라 그림자가 없으면 밝은 사진에서 버튼이 사라진다
-            // (앱 kChallengeChipShadow = rgba(0,0,0,.05) 0 1px 2px).
-            // 알약들은 반대다 — 글자 테두리가 뭉개져 오히려 안 읽힌다.
-            'justify-center rounded-full bg-white/90 shadow-sm transition',
-            'hover:bg-white'
+            'absolute top-2 right-2 z-[2] inline-flex h-[30px]',
+            'min-w-[30px] items-center justify-center gap-1',
+            'rounded-full bg-white/95 shadow-sm transition hover:bg-white',
+            likeCount > 0 && 'px-2'
           )}
         >
+          {likeCount > 0 ? (
+            <span className="text-[12px] font-bold text-gray-700">
+              {likeCount}
+            </span>
+          ) : null}
           <Heart
             className={cn(
-              'h-[18px] w-[18px]',
+              'h-[15px] w-[15px]',
               liked ? 'fill-[#ff5900] text-[#ff5900]' : 'text-gray-500'
             )}
           />
@@ -294,7 +306,7 @@ function ChallengeCard({
             <span
               className={cn(
                 'inline-flex h-[22px] shrink-0 items-center gap-1',
-                'rounded-full bg-[#FFEBE3] px-2',
+                'rounded-full bg-[#FFEBE3] px-3',
                 'text-[12px] font-bold text-[#ff3c00]'
               )}
             >
@@ -317,7 +329,7 @@ function ChallengeCard({
             <span
               className={cn(
                 'inline-flex h-[22px] shrink-0 items-center gap-1',
-                'rounded-full bg-gray-100 px-2',
+                'rounded-full bg-gray-100 px-3',
                 'text-[12px] font-bold text-gray-600'
               )}
             >
@@ -329,7 +341,7 @@ function ChallengeCard({
 
         <h3
           className={cn(
-            'mt-1.5 line-clamp-2 min-h-[2.6em] text-[14px] font-extrabold',
+            'mt-1.5 line-clamp-2 min-h-[2.6em] text-[15px] font-extrabold',
             'leading-snug tracking-[-0.2px] break-keep text-gray-900'
           )}
         >
@@ -343,7 +355,7 @@ function ChallengeCard({
             <MetaRow icon={<Repeat2 />}>
               <span
                 className={cn(
-                  'rounded-full bg-[#FFEBE3] px-2 py-[2px]',
+                  'rounded-full bg-[#FFEBE3] px-3 py-[2px]',
                   'text-[#ff5900]',
                   META_TEXT,
                   'font-bold'
@@ -357,7 +369,7 @@ function ChallengeCard({
             <MetaRow icon={<Calendar />}>
               <span
                 className={cn(
-                  'rounded-full bg-gray-100 px-2 py-[2px] text-gray-600',
+                  'rounded-full bg-gray-100 px-3 py-[2px] text-gray-600',
                   META_TEXT,
                   'font-bold'
                 )}
@@ -403,7 +415,7 @@ function ChallengeCard({
               <span
                 className={cn(
                   'inline-flex shrink-0 items-center gap-1 rounded-full',
-                  'bg-[#ff5900] px-2 py-[3px]',
+                  'bg-[#ff5900] px-3 py-[3px]',
                   'text-[12px] font-bold text-white'
                 )}
               >
@@ -414,7 +426,7 @@ function ChallengeCard({
                 <span
                   className={cn(
                     'inline-flex shrink-0 items-center gap-1 rounded-full',
-                    'bg-[#FFEBE3] px-2 py-[3px]',
+                    'bg-[#FFEBE3] px-3 py-[3px]',
                     'text-[12px] font-bold text-[#ff3c00]'
                   )}
                 >
@@ -427,7 +439,7 @@ function ChallengeCard({
             <>
               {/* 레벨 젬 자리 — 레벨 기능(S3) 이전엔 비운다. */}
               <CircleAvatar
-                size="sm"
+                size={22}
                 imageUrl={host.profileImg ?? undefined}
                 alt={host.nickname}
               />
