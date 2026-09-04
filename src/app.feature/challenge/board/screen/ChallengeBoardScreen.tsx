@@ -107,8 +107,11 @@ export default function ChallengeBoardScreen({
       mobileHeader={
         <div
           className={cn(
-            'sticky top-0 z-20 floating-header border-gray-100',
-            'bg-white px-4 pb-3',
+            'sticky top-0 z-20 border-b border-gray-100',
+            'bg-white/95 px-5 backdrop-blur',
+            // 앱 AppBoardHeader 는 콘텐츠 높이 60 에 세로 가운데 정렬이다.
+            'flex min-h-[60px] flex-col justify-center',
+            'pt-[env(safe-area-inset-top)]',
             'lg:hidden'
           )}
         >

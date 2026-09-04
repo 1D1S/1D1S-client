@@ -95,8 +95,9 @@ export default function ExploreScreen({
           <div
             className={cn(
               'sticky top-0 z-20 flex items-center justify-between',
-              'floating-header gap-3 border-gray-100',
-              'bg-white px-4 pb-3',
+              'gap-3 border-b border-gray-100',
+              'bg-white/95 px-5 backdrop-blur',
+              'min-h-[60px] pt-[env(safe-area-inset-top)]',
               'lg:hidden'
             )}
           >

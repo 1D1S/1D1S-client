@@ -313,8 +313,9 @@ export default function ChallengeListScreen({
         // 래퍼는 글로벌 sticky 차단 룰이 통째로 숨긴다 (keep 마커 없음).
         <div
           className={cn(
-            'sticky top-0 z-20 floating-header border-gray-100',
-            'bg-white px-4 pb-3',
+            'sticky top-0 z-20 border-b border-gray-100',
+            'bg-white/95 px-5 pb-3 backdrop-blur',
+            'pt-[calc(0.875rem+env(safe-area-inset-top))]',
             'lg:hidden'
           )}
         >
