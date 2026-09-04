@@ -33,6 +33,7 @@ export interface ChallengeCardSource extends ChallengeCardExtras {
   challengeType?: ChallengeType | null;
   weeklyGoalCount?: number;
   hasReward?: boolean;
+  allowMidJoin?: boolean;
 }
 
 /** resolveChallengeCardStatus 가 요구하는 최소 형태로 좁힌다. */
@@ -105,18 +106,15 @@ export function challengeDurationLabel(
  */
 const RELATIVE_START_LIMIT_DAYS = 7;
 
-export function challengeStatusLabel(
+export function challengeStatusPieces(
   challenge: ChallengeCardSource,
   now = new Date()
-): string {
+): string[] {
   const { status } = resolveChallengeCardStatus(toStatusInput(challenge), now);
   if (status === 'ENDED') {
-    return '종료됨';
+    return ['종료됨'];
   }
   if (status === 'UPCOMING') {
-    // 모집 중이면 그렇게 말한다 — '3일 뒤 시작' 만 적으면 지금 들어갈 수
-    // 있다는 사실(모집창이 열려 있다)이 안 보인다.
-    const recruiting = challenge.occurrencePhase === 'RECRUITING';
     const start = new Date(challenge.startDate);
     const startOfToday = new Date(now);
     startOfToday.setHours(0, 0, 0, 0);
@@ -125,20 +123,31 @@ export function challengeStatusLabel(
       (start.getTime() - startOfToday.getTime()) / 86_400_000
     );
     if (days <= 0) {
-      return '모집 중';
+      return ['모집 중'];
     }
     const relative =
       days > RELATIVE_START_LIMIT_DAYS
         ? `${start.getMonth() + 1}.${start.getDate()} 시작`
         : `${days}일 뒤 (${WEEKDAY_GLYPHS[start.getDay()]}) 시작`;
-    return recruiting ? `모집 중 · ${relative}` : relative;
+    // 모집 중이면 그렇게 말한다 — '3일 뒤 시작' 만 적으면 지금 들어갈 수
+    // 있다는 사실(모집창이 열려 있다)이 안 보인다.
+    return challenge.occurrencePhase === 'RECRUITING'
+      ? ['모집 중', relative]
+      : [relative];
   }
-  // 앱은 D-N 으로 적는다("4일 남음" 아님) — 같은 챌린지가 두 곳에서 다르게
-  // 읽히지 않도록 형식을 맞춘다.
+  // 앱은 D-N 으로 적는다("4일 남음" 아님).
   const dday = isInfiniteChallengeEndDate(challenge.endDate)
     ? ''
-    : getDdayLabel(challenge.endDate);
-  return dday ? `진행 중 · ${dday}` : '진행 중';
+    : getDdayLabel(challenge.endDate, now);
+  return [
+    '진행 중',
+    ...(dday ? [dday] : []),
+    // 단체 챌린지만 중도 참여 가부를 말한다 — 개인 챌린지엔 없는 개념이다.
+    ...(challenge.participationType === 'GROUP' &&
+    challenge.allowMidJoin !== undefined
+      ? [challenge.allowMidJoin ? '참여 가능' : '참여 마감']
+      : []),
+  ];
 }
 
 /** 인원 뱃지 — 개인은 '개인', 단체는 'N명' 또는 'N/M명'. */
@@ -209,7 +218,7 @@ export function toChallengeCardProps(
     categoryLabel: getCategoryLabel(challenge.category),
     imageUrl: challenge.thumbnailImage ?? null,
     status,
-    statusLabel: challengeStatusLabel(challenge, now),
+    statusPieces: challengeStatusPieces(challenge, now),
     cadenceLabel: challengeCadenceLabel(challenge.weeklyGoalCount),
     durationLabel: challengeDurationLabel(
       challenge.startDate,

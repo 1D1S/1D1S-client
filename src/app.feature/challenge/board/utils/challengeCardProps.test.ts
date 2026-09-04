@@ -13,11 +13,11 @@ const BASE = {
   participantCnt: 1,
 };
 
-function props(extra: Record<string, unknown> = {}) {
+function props(extra: Record<string, unknown> = {}, now?: Date) {
   return toChallengeCardProps(
     { ...BASE, ...extra },
     '/challenge/1',
-    new Date('2026-09-10')
+    now ?? new Date('2026-09-10')
   );
 }
 
@@ -87,8 +87,8 @@ describe('회차 단계 (phase 우선)', () => {
       props({
         occurrencePhase: 'RECRUITING',
         startDate: '2026-09-13',
-      }).statusLabel
-    ).toBe('모집 중 · 3일 뒤 (일) 시작');
+      }).statusPieces
+    ).toEqual(['모집 중', '3일 뒤 (일) 시작']);
   });
 
   it('phase 가 status 를 이긴다 — status 는 모집 중을 표현 못 한다', () => {
@@ -98,7 +98,7 @@ describe('회차 단계 (phase 우선)', () => {
       startDate: '2026-09-13',
     });
     expect(p.status).toBe('UPCOMING');
-    expect(p.statusLabel).toContain('모집 중');
+    expect(p.statusPieces).toContain('모집 중');
   });
 
   it('ACTIVE 는 날짜와 무관하게 진행 중이다', () => {
@@ -168,5 +168,55 @@ describe('다음 모집 회차 고르기', () => {
 
   it('회차가 없으면 null', () => {
     expect(nextRecruitOccurrence(null)).toBeNull();
+  });
+});
+
+describe('상태 조각', () => {
+  const now = new Date('2026-09-10');
+
+  it('진행 중은 조각으로 나뉜다 — 뒤에서부터 버릴 수 있게', () => {
+    expect(
+      props({ startDate: '2026-09-01', endDate: '2026-09-20' }, now)
+        .statusPieces
+    ).toEqual(['진행 중', 'D-10']);
+  });
+
+  it('단체 챌린지만 중도 참여 가부를 말한다', () => {
+    expect(
+      props(
+        {
+          startDate: '2026-09-01',
+          endDate: '2026-09-20',
+          participationType: 'GROUP',
+          allowMidJoin: true,
+        },
+        now
+      ).statusPieces
+    ).toEqual(['진행 중', 'D-10', '참여 가능']);
+    expect(
+      props(
+        {
+          startDate: '2026-09-01',
+          endDate: '2026-09-20',
+          participationType: 'GROUP',
+          allowMidJoin: false,
+        },
+        now
+      ).statusPieces
+    ).toEqual(['진행 중', 'D-10', '참여 마감']);
+  });
+
+  it('개인 챌린지는 참여 가부 조각이 없다', () => {
+    expect(
+      props({ startDate: '2026-09-01', endDate: '2026-09-20' }, now)
+        .statusPieces
+    ).toHaveLength(2);
+  });
+
+  it('종료는 한 조각뿐이다', () => {
+    expect(
+      props({ startDate: '2026-01-01', endDate: '2026-02-01' }, now)
+        .statusPieces
+    ).toEqual(['종료됨']);
   });
 });

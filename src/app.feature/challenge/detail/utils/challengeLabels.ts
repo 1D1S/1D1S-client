@@ -25,12 +25,17 @@ export function formatDateRange(startDate: string, endDate: string): string {
   return `${format(startDate)} ~ ${format(endDate)}`;
 }
 
-export function getDdayLabel(endDate: string): string {
+export function getDdayLabel(
+  endDate: string,
+  // 기준일을 받는다 — 안 받으면 오늘로만 계산돼 호출부가 넘긴 기준일이
+  // 조용히 무시되고, 테스트가 실행한 날짜에 따라 갈린다.
+  referenceDate: Date = new Date()
+): string {
   if (isInfiniteChallengeEndDate(endDate)) {
     return ENDLESS_LABEL;
   }
 
-  const today = new Date();
+  const today = new Date(referenceDate);
   const end = new Date(endDate);
   today.setHours(0, 0, 0, 0);
   end.setHours(0, 0, 0, 0);

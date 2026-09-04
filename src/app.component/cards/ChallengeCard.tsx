@@ -51,8 +51,13 @@ export interface ChallengeCardProps {
   categoryLabel?: string;
   imageUrl?: string | null;
   status?: ChallengeCardStatus;
-  /** 본문 마지막 줄 문구 — "4일 뒤 (월) 시작" · "진행 중 · D-88" · "종료됨". */
-  statusLabel?: string;
+  /**
+   * 본문 마지막 줄 조각들 — ['진행 중', 'D-88', '참여 가능'].
+   *
+   * 한 문자열이 아니라 조각으로 받는다. 폭이 모자라면 **뒤 조각부터 통째로**
+   * 빠져야 하는데(말줄임 아님), 이어 붙인 문자열은 가운데가 잘린다.
+   */
+  statusPieces?: string[];
   /** 주기 알약 — "매일" · "주 5일". */
   cadenceLabel?: string;
   /** 기간 알약 — "23일 동안" · "제한 없음". */
@@ -97,8 +102,8 @@ function FlagChip({
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center gap-1 rounded-full',
-        'px-2 py-[3px] text-[12px] font-bold'
+        'inline-flex h-[22px] shrink-0 items-center gap-1 rounded-full',
+        'px-2 text-[12px] font-bold'
       )}
       style={tone ? { backgroundColor: `${tone}1F`, color: tone } : undefined}
     >
@@ -132,7 +137,7 @@ function ChallengeCard({
   categoryLabel,
   imageUrl,
   status = 'ONGOING',
-  statusLabel,
+  statusPieces,
   cadenceLabel,
   durationLabel,
   participantsLabel,
@@ -233,7 +238,10 @@ function ChallengeCard({
           }}
           className={cn(
             'absolute top-2 right-2 z-[2] flex h-9 w-9 items-center',
-            'justify-center rounded-full bg-white/90 transition',
+            // 사진 **위**라 그림자가 없으면 밝은 사진에서 버튼이 사라진다
+            // (앱 kChallengeChipShadow = rgba(0,0,0,.05) 0 1px 2px).
+            // 알약들은 반대다 — 글자 테두리가 뭉개져 오히려 안 읽힌다.
+            'justify-center rounded-full bg-white/90 shadow-sm transition',
             'hover:bg-white'
           )}
         >
@@ -275,8 +283,25 @@ function ChallengeCard({
       </div>
 
       <div className="flex flex-col px-[10px] pt-[9px] pb-2">
-        {/* 플래그 줄 — 카테고리 + 인증샷(이 순서). 카테고리는 항상 있다. */}
-        <div className="flex flex-wrap items-center gap-1.5">
+        {/* 플래그 줄 — **미리지원 → 카테고리 → 인증샷**(앱 확정 순서).
+            미리지원은 지금 눌러야 하는 기회라 속성보다 앞자리를 받는다.
+
+            폭이 모자라면 뒤 칩이 둘째 줄로 밀리는데, 줄 높이가 한 줄이라
+            그대로 잘려 나간다 — 칩이 반쪽만 보이는 일 없이 통째로 빠진다.
+            12px 가 상한이다: 더 키우면 미리지원 배지가 밀려난다. */}
+        <div className="flex h-[22px] flex-wrap items-center gap-1.5 overflow-hidden">
+          {canPreApply ? (
+            <span
+              className={cn(
+                'inline-flex h-[22px] shrink-0 items-center gap-1',
+                'rounded-full bg-[#FFEBE3] px-2',
+                'text-[12px] font-bold text-[#ff3c00]'
+              )}
+            >
+              <CalendarPlus className="h-3.5 w-3.5" />
+              미리지원 가능
+            </span>
+          ) : null}
           {categoryLabel ? (
             <FlagChip
               tone={tone}
@@ -288,25 +313,12 @@ function ChallengeCard({
               label={categoryLabel}
             />
           ) : null}
-          {/* 미리지원은 지금 눌러야 하는 기회다 — 인증샷 같은 속성보다
-              앞자리를 준다(앱과 같은 순서). */}
-          {canPreApply ? (
-            <span
-              className={cn(
-                'inline-flex shrink-0 items-center gap-1 rounded-full',
-                'bg-[#FFEBE3] px-2 py-[3px]',
-                'text-[12px] font-bold text-[#ff3c00]'
-              )}
-            >
-              <CalendarPlus className="h-3.5 w-3.5" />
-              미리지원 가능
-            </span>
-          ) : null}
           {isPhotoRequired ? (
             <span
               className={cn(
-                'inline-flex shrink-0 items-center gap-1 rounded-full',
-                'bg-gray-100 px-2 py-[3px] text-[12px] font-bold text-gray-600'
+                'inline-flex h-[22px] shrink-0 items-center gap-1',
+                'rounded-full bg-gray-100 px-2',
+                'text-[12px] font-bold text-gray-600'
               )}
             >
               <Camera className="h-3.5 w-3.5" />
@@ -317,7 +329,7 @@ function ChallengeCard({
 
         <h3
           className={cn(
-            'mt-1.5 line-clamp-2 min-h-[2.6em] text-[15px] font-extrabold',
+            'mt-1.5 line-clamp-2 min-h-[2.6em] text-[14px] font-extrabold',
             'leading-snug tracking-[-0.2px] break-keep text-gray-900'
           )}
         >
@@ -354,12 +366,31 @@ function ChallengeCard({
               </span>
             </MetaRow>
           ) : null}
-          {statusLabel ? (
+          {statusPieces && statusPieces.length > 0 ? (
             <MetaRow icon={<Clock />}>
+              {/* 조각이 넘치면 둘째 줄로 밀리는데, 줄 높이가 한 줄이라
+                  그대로 잘려 나간다 — 뒤에서부터 통째로 빠지고 앞 조각은
+                  절대 말줄임되지 않는다. 구분점은 조각에 붙어 있어
+                  조각이 빠질 때 같이 빠진다. */}
               <span
-                className={cn(META_TEXT, 'font-bold', STATUS_COLOR[status])}
+                className={cn(
+                  'flex h-[17px] flex-wrap overflow-hidden',
+                  META_TEXT,
+                  'font-bold',
+                  STATUS_COLOR[status]
+                )}
               >
-                {statusLabel}
+                {statusPieces.map((piece, index) => (
+                  <span
+                    key={piece}
+                    className={cn(
+                      'whitespace-nowrap',
+                      index > 0 && "before:mx-1 before:content-['·']"
+                    )}
+                  >
+                    {piece}
+                  </span>
+                ))}
               </span>
             </MetaRow>
           ) : null}
