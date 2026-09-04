@@ -72,6 +72,28 @@ export function useJoinChallenge(): UseMutationResult<
   });
 }
 
+/**
+ * 다음 회차 모집 시작 알림 토글.
+ *
+ * 상세만 무효화한다 — 알림 신청은 참여가 아니라서 목록·내 챌린지의
+ * 어떤 값도 바뀌지 않는다.
+ */
+export function useSetRecruitAlert(): UseMutationResult<
+  void,
+  Error,
+  { challengeId: number; on: boolean }
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ challengeId, on }: { challengeId: number; on: boolean }) =>
+      challengeDetailApi.setRecruitAlert(challengeId, on),
+    onSuccess: (_, { challengeId }) => {
+      invalidateAll(queryClient, [CHALLENGE_QUERY_KEYS.detail(challengeId)]);
+    },
+  });
+}
+
 // 비공개 챌린지 비밀번호 검증 + 즉시 참여
 export function useVerifyChallengePassword(): UseMutationResult<
   VerifyChallengePasswordResponse,

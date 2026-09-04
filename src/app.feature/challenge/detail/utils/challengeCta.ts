@@ -1,3 +1,5 @@
+import type { ChallengeCtaState } from '../../board/type/challenge';
+
 export type ChallengeCtaVariant = 'primary' | 'secondary';
 
 // CTA 결정 결과: 호스트 / 참여 중 / 대기 / 신청 가능 / 신청 불가
@@ -35,6 +37,20 @@ export interface BuildChallengeCtaParams {
   onDiaryCreate(): void;
   /** 참여 신청 플로우 진입 */
   onJoin(): void;
+  /**
+   * 참여 버튼 상태(서버 판정). 있으면 **이 값 하나가 참여 갈래를 정한다**.
+   *
+   * 모집창 조건(모집 없음 + 종료 임박 | 중도참여 불가)은 날짜와 설정이
+   * 얽혀 있어 웹이 흉내 내면 서버와 갈린다. 없으면(구서버) 아래 기존
+   * 분기가 그대로 산다.
+   */
+  ctaState?: ChallengeCtaState | null;
+  /** 모집 시작 알림을 이미 신청해 뒀는가(서버 recruitAlertRequested). */
+  isRecruitAlertOn?: boolean;
+  /** `다음 모집 D-5 · 10.05 시작` — 버튼 위 힌트에 그대로 실린다. */
+  recruitCountdown?: string;
+  /** 모집 시작 알림 신청/해제 토글 */
+  onToggleRecruitAlert?(): void;
 }
 
 // 클릭 불가 안내 버튼(대기/종료/중도참여불가)의 공통 형태.
@@ -70,6 +86,10 @@ export function buildChallengeCta(
     onEditChallenge,
     onDiaryCreate,
     onJoin,
+    ctaState,
+    isRecruitAlertOn = false,
+    recruitCountdown = '',
+    onToggleRecruitAlert,
   } = params;
 
   if (isHost) {
@@ -116,6 +136,52 @@ export function buildChallengeCta(
       '중도 참여 불가',
       '이미 시작된 챌린지는 중도 참여가 불가능합니다'
     );
+  }
+  // ── 서버가 버튼 상태를 말해 주면 그것만 본다 ──────────────────────
+  // 여기부터는 참여 갈래다(호스트·참여 중·승인 대기는 위에서 끝났다).
+  if (canJoin && ctaState) {
+    switch (ctaState) {
+      case 'JOIN':
+        return {
+          label: '챌린지 참여하기',
+          onClick: onJoin,
+          disabled: isJoinPending,
+          variant: 'primary',
+          show: true,
+        };
+      case 'PRE_APPLY':
+        return {
+          label: '미리 지원하기',
+          onClick: onJoin,
+          disabled: isJoinPending,
+          variant: 'primary',
+          show: true,
+          // 지금 시작하는 줄 알고 누르는 것을 막는다.
+          hint: '다음 회차가 열리면 바로 시작해요',
+        };
+      case 'RECRUIT_WAIT':
+        // 지금은 못 들어가지만 다음 모집이 예정돼 있으면 빈손으로 돌려보내지
+        // 않는다 — 모집이 열리는 날 알려 주겠다고 묻는다.
+        return {
+          label: isRecruitAlertOn ? '모집 알림 신청됨' : '모집 시작 알림 받기',
+          onClick: onToggleRecruitAlert ?? (() => undefined),
+          disabled: isJoinPending,
+          variant: isRecruitAlertOn ? 'secondary' : 'primary',
+          show: true,
+          // 왜 지금 못 들어가는지 + 언제 열리는지. 이유 없이 막힌 버튼만
+          // 보여 주면 고장으로 읽힌다.
+          hint: recruitCountdown || '지금은 모집 기간이 아니에요',
+        };
+      default:
+        // NONE — 눌러도 갈 곳이 없다. 버튼째 숨긴다.
+        return {
+          label: '참여 불가',
+          onClick: () => undefined,
+          disabled: true,
+          variant: 'secondary',
+          show: false,
+        };
+    }
   }
   if (canJoin) {
     return {

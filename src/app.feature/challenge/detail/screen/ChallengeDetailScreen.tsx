@@ -36,6 +36,10 @@ import {
   useChallengeDetail,
 } from '../../board/hooks/useChallengeQueries';
 import {
+  challengeRecruitCountdownLabel,
+  nextRecruitOccurrence,
+} from '../../board/utils/challengeCardProps';
+import {
   canWriteDiaryForChallenge,
   getChallengeDayProgress,
   isChallengeEndedOrArchived,
@@ -70,6 +74,7 @@ import {
   useLeaveChallenge,
   useLikeChallenge,
   useRejectParticipant,
+  useSetRecruitAlert,
   useUnlikeChallenge,
   useVerifyChallengePassword,
 } from '../hooks/useChallengeMutations';
@@ -182,6 +187,7 @@ export function ChallengeDetailScreen({
     : undefined;
 
   const joinChallenge = useJoinChallenge();
+  const setRecruitAlert = useSetRecruitAlert();
   const leaveChallenge = useLeaveChallenge();
   const likeChallenge = useLikeChallenge();
   const unlikeChallenge = useUnlikeChallenge();
@@ -570,6 +576,27 @@ export function ChallengeDetailScreen({
     endDate: summary.endDate,
   });
 
+  // 다음 모집이 열릴 회차 — 없으면 카운트다운도 없다. 어느 회차가 모집
+  // 중인지는 서버 phase 가 정하고, 여기서는 날짜를 세어 읽어 줄 뿐이다.
+  const nextRecruit = nextRecruitOccurrence(detail?.occurrences);
+  const isRecruitAlertOn = detail?.recruitAlertRequested ?? false;
+
+  const handleToggleRecruitAlert = (): void => {
+    setRecruitAlert.mutate(
+      { challengeId: Number(id), on: !isRecruitAlertOn },
+      {
+        onSuccess: () => {
+          toast.success(
+            isRecruitAlertOn
+              ? '모집 시작 알림을 껐어요.'
+              : '모집이 열리는 날 아침에 알려드릴게요.'
+          );
+        },
+        onError: (mutationError) => notifyApiError(mutationError),
+      }
+    );
+  };
+
   const ctaConfig = buildChallengeCta({
     isHost,
     isParticipating,
@@ -584,6 +611,12 @@ export function ChallengeDetailScreen({
     onEditChallenge: () => router.push(`/challenge/${id}/edit`),
     onDiaryCreate: handleDiaryCreateClick,
     onJoin: handleJoinChallenge,
+    ctaState: detail?.ctaState ?? summary?.ctaState,
+    isRecruitAlertOn,
+    recruitCountdown: challengeRecruitCountdownLabel(
+      nextRecruit?.recruitStartDate
+    ),
+    onToggleRecruitAlert: handleToggleRecruitAlert,
   });
 
   const rulesEditLabel =

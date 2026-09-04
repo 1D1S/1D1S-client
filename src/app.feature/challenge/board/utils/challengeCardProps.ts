@@ -4,7 +4,9 @@ import { getCategoryLabel } from '@constants/categories';
 import { getDdayLabel } from '../../detail/utils/challengeLabels';
 import type {
   ChallengeCardExtras,
+  ChallengeOccurrence,
   ChallengeType,
+  OccurrencePhase,
 } from '../type/challenge';
 import {
   isInfiniteChallengeEndDate,
@@ -39,12 +41,16 @@ function toStatusInput(challenge: ChallengeCardSource): {
   endDate: string;
   participantCnt: number;
   challengeType?: ChallengeType | null;
+  occurrencePhase?: OccurrencePhase | null;
+  occurrenceStatus?: string | null;
 } {
   return {
     startDate: challenge.startDate,
     endDate: challenge.endDate,
     participantCnt: challenge.participantCnt ?? 0,
     challengeType: challenge.challengeType,
+    occurrencePhase: challenge.occurrencePhase,
+    occurrenceStatus: challenge.occurrenceStatus,
   };
 }
 
@@ -108,6 +114,9 @@ export function challengeStatusLabel(
     return '종료됨';
   }
   if (status === 'UPCOMING') {
+    // 모집 중이면 그렇게 말한다 — '3일 뒤 시작' 만 적으면 지금 들어갈 수
+    // 있다는 사실(모집창이 열려 있다)이 안 보인다.
+    const recruiting = challenge.occurrencePhase === 'RECRUITING';
     const start = new Date(challenge.startDate);
     const startOfToday = new Date(now);
     startOfToday.setHours(0, 0, 0, 0);
@@ -118,10 +127,11 @@ export function challengeStatusLabel(
     if (days <= 0) {
       return '모집 중';
     }
-    if (days > RELATIVE_START_LIMIT_DAYS) {
-      return `${start.getMonth() + 1}.${start.getDate()} 시작`;
-    }
-    return `${days}일 뒤 (${WEEKDAY_GLYPHS[start.getDay()]}) 시작`;
+    const relative =
+      days > RELATIVE_START_LIMIT_DAYS
+        ? `${start.getMonth() + 1}.${start.getDate()} 시작`
+        : `${days}일 뒤 (${WEEKDAY_GLYPHS[start.getDay()]}) 시작`;
+    return recruiting ? `모집 중 · ${relative}` : relative;
   }
   // 앱은 D-N 으로 적는다("4일 남음" 아님) — 같은 챌린지가 두 곳에서 다르게
   // 읽히지 않도록 형식을 맞춘다.
@@ -210,7 +220,50 @@ export function toChallengeCardProps(
     isPhotoRequired: challenge.photoRequired,
     isOfficial: challenge.challengeType === 'OFFICIAL',
     hasReward: challenge.hasReward,
+    // 미리지원 배지 — 서버가 PRE_APPLY 로 판정했을 때만.
+    canPreApply: challenge.ctaState === 'PRE_APPLY',
     host: toCardHost(challenge),
     book: toCardBook(challenge),
   };
+}
+
+/**
+ * 다음 모집까지 — `다음 모집 D-5 · 10.05 시작`.
+ *
+ * 날짜를 **읽어 주는 것**이지 판정이 아니다. 참여 가능 여부는 서버가
+ * 정하고(phase·ctaState), 이 문구는 그 서버 날짜를 세어 보여 줄 뿐이다.
+ */
+export function challengeRecruitCountdownLabel(
+  recruitStartDate?: string | null,
+  now = new Date()
+): string {
+  if (!recruitStartDate) {
+    return '';
+  }
+  const start = new Date(recruitStartDate);
+  if (Number.isNaN(start.getTime())) {
+    return '';
+  }
+  start.setHours(0, 0, 0, 0);
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((start.getTime() - today.getTime()) / 86_400_000);
+  const when = `${start.getMonth() + 1}.${start.getDate()}`;
+  return days <= 0
+    ? `오늘 모집 시작 · ${when}`
+    : `다음 모집 D-${days} · ${when} 시작`;
+}
+
+/**
+ * 다음으로 **모집이 열릴** 회차. 고르기만 한다 — 어느 회차가 모집 중인지는
+ * 서버 phase 가 정한다. 모집창 날짜를 비교해 다시 판정하지 않는다.
+ */
+export function nextRecruitOccurrence(
+  occurrences?: ChallengeOccurrence[] | null
+): ChallengeOccurrence | null {
+  return (
+    occurrences?.find(
+      (item) => item.phase === 'SCHEDULED' && Boolean(item.recruitStartDate)
+    ) ?? null
+  );
 }

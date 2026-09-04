@@ -62,6 +62,20 @@ export const challengeDetailApi = {
       data,
     }),
 
+  /**
+   * 다음 회차 **모집 시작 알림** 신청/해제.
+   *
+   * 참여가 아니다 — 모집이 열리는 날 알림만 받는다. 서버가 멱등이라 두 번
+   * 눌러도 한 건이고 신청이 없어도 해제는 성공한다. 그래서 지금 상태를
+   * 확인하지 않고 원하는 상태를 그대로 보낸다.
+   */
+  setRecruitAlert: async (challengeId: number, on: boolean): Promise<void> => {
+    await requestData<void>(apiClient, {
+      url: `/challenges/${challengeId}/recruit-alert`,
+      method: on ? 'POST' : 'DELETE',
+    });
+  },
+
   // 비공개 챌린지 비밀번호 검증 후 즉시 참여
   verifyChallengePassword: async (
     challengeId: number,

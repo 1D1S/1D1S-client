@@ -6,7 +6,11 @@ import {
 } from '@module/utils/date';
 import { add } from 'date-fns';
 
-import type { ChallengeStatus, ChallengeType } from '../type/challenge';
+import type {
+  ChallengeStatus,
+  ChallengeType,
+  OccurrencePhase,
+} from '../type/challenge';
 
 const ENDLESS_MIN_YEAR = 2090;
 
@@ -219,28 +223,77 @@ export interface ChallengeCardStatusInfo {
  * 세 화면이 같은 계산을 각자 하고 있어 모집중/진행중 구분이 빠지면 전부
  * 빠졌다 — 한 곳으로 모아 UPCOMING 을 명시적으로 구분한다.
  */
+/**
+ * 회차를 굴리는 챌린지는 **서버 상태가 정본**이다.
+ *
+ * phase 가 status 보다 먼저다 — status 는 '모집 중'(RECRUITING)을 표현하지
+ * 못해 모집 중인 회차도 SCHEDULED 로 온다. 둘 다 없으면 null 을 돌려주고
+ * 호출부가 날짜 계산으로 떨어진다(회차를 안 굴리는 옛 응답).
+ */
+function statusFromServer(
+  phase?: OccurrencePhase | null,
+  occurrenceStatus?: string | null
+): ChallengeStatus | null {
+  switch (phase) {
+    case 'SCHEDULED':
+    case 'RECRUITING':
+      return 'UPCOMING';
+    case 'ACTIVE':
+      return 'ONGOING';
+    case 'CLOSED':
+      return 'ENDED';
+    default:
+      break;
+  }
+  switch (occurrenceStatus) {
+    case 'SCHEDULED':
+      return 'UPCOMING';
+    case 'OPEN':
+      return 'ONGOING';
+    case 'CLOSED':
+      return 'ENDED';
+    default:
+      return null;
+  }
+}
+
 export function resolveChallengeCardStatus(
   challenge: {
     startDate: string;
     endDate: string;
     participantCnt: number;
     challengeType?: ChallengeType | null;
+    occurrencePhase?: OccurrencePhase | null;
+    occurrenceStatus?: string | null;
   },
   referenceDate: Date = new Date()
 ): ChallengeCardStatusInfo {
-  const { startDate, endDate, participantCnt, challengeType } = challenge;
-  const isInfinite = isInfiniteChallengeEndDate(endDate);
-  const isEnded = isChallengeEndedOrArchived(
+  const {
+    startDate,
     endDate,
     participantCnt,
     challengeType,
-    referenceDate
-  );
-  const status: ChallengeStatus = isEnded
-    ? 'ENDED'
-    : isChallengeOngoing(startDate, endDate, referenceDate)
-      ? 'ONGOING'
-      : 'UPCOMING';
+    occurrencePhase,
+    occurrenceStatus,
+  } = challenge;
+  const isInfinite = isInfiniteChallengeEndDate(endDate);
+  const fromServer = statusFromServer(occurrencePhase, occurrenceStatus);
+  const isEnded =
+    fromServer === 'ENDED' ||
+    (fromServer === null &&
+      isChallengeEndedOrArchived(
+        endDate,
+        participantCnt,
+        challengeType,
+        referenceDate
+      ));
+  const status: ChallengeStatus =
+    fromServer ??
+    (isEnded
+      ? 'ENDED'
+      : isChallengeOngoing(startDate, endDate, referenceDate)
+        ? 'ONGOING'
+        : 'UPCOMING');
 
   return {
     status,

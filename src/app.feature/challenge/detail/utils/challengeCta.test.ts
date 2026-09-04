@@ -99,3 +99,89 @@ describe('buildChallengeCta', () => {
     expect(cta.show).toBe(false);
   });
 });
+
+describe('ctaState 분기 (서버 판정)', () => {
+  const joinable = {
+    isHost: false,
+    isParticipating: false,
+    isJoinRequestPending: false,
+    canWriteDiary: false,
+    isCheckWriteDatesLoading: false,
+    canJoinByStatus: false,
+    isChallengeAlreadyEnded: false,
+    isMidJoinBlocked: false,
+    canJoin: true,
+    isJoinPending: false,
+    onEditChallenge: () => undefined,
+    onDiaryCreate: () => undefined,
+    onJoin: () => undefined,
+  };
+
+  it('JOIN 은 참여 버튼', () => {
+    const cta = buildChallengeCta({ ...joinable, ctaState: 'JOIN' });
+    expect(cta).toMatchObject({ label: '챌린지 참여하기', show: true });
+  });
+
+  it('PRE_APPLY 는 미리 지원 + 다음 회차 안내', () => {
+    const cta = buildChallengeCta({ ...joinable, ctaState: 'PRE_APPLY' });
+    expect(cta.label).toBe('미리 지원하기');
+    expect(cta.disabled).toBe(false);
+    expect(cta.hint).toBe('다음 회차가 열리면 바로 시작해요');
+  });
+
+  it('RECRUIT_WAIT 는 참여 대신 알림 토글을 부른다', () => {
+    let toggled = false;
+    const cta = buildChallengeCta({
+      ...joinable,
+      ctaState: 'RECRUIT_WAIT',
+      recruitCountdown: '다음 모집 D-5 · 10.05 시작',
+      onToggleRecruitAlert: () => {
+        toggled = true;
+      },
+      onJoin: () => {
+        throw new Error('모집 대기 중에는 참여로 가면 안 된다');
+      },
+    });
+    expect(cta.label).toBe('모집 시작 알림 받기');
+    expect(cta.hint).toBe('다음 모집 D-5 · 10.05 시작');
+    cta.onClick();
+    expect(toggled).toBe(true);
+  });
+
+  it('RECRUIT_WAIT 신청 후에는 신청됨으로 바뀐다', () => {
+    expect(
+      buildChallengeCta({
+        ...joinable,
+        ctaState: 'RECRUIT_WAIT',
+        isRecruitAlertOn: true,
+      }).label
+    ).toBe('모집 알림 신청됨');
+  });
+
+  it('모집일을 모르면 이유만 알려 준다', () => {
+    expect(
+      buildChallengeCta({ ...joinable, ctaState: 'RECRUIT_WAIT' }).hint
+    ).toBe('지금은 모집 기간이 아니에요');
+  });
+
+  it('NONE 은 버튼째 숨긴다', () => {
+    expect(
+      buildChallengeCta({ ...joinable, ctaState: 'NONE' }).show
+    ).toBe(false);
+  });
+
+  it('ctaState 가 없으면 기존 분기가 그대로 산다 (구서버)', () => {
+    expect(buildChallengeCta(joinable).label).toBe('챌린지 참여하기');
+  });
+
+  it('호스트·참여중은 ctaState 보다 먼저다', () => {
+    expect(
+      buildChallengeCta({
+        ...joinable,
+        isParticipating: true,
+        canWriteDiary: true,
+        ctaState: 'RECRUIT_WAIT',
+      }).label
+    ).toBe('일지 작성하기');
+  });
+});

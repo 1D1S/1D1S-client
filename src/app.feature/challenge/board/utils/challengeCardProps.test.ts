@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { toChallengeCardProps } from './challengeCardProps';
+import {
+  challengeRecruitCountdownLabel,
+  nextRecruitOccurrence,
+  toChallengeCardProps,
+} from './challengeCardProps';
 
 const BASE = {
   title: '테스트',
@@ -74,5 +78,95 @@ describe('대표책', () => {
         representativeBookThumbnailUrl: cover,
       }).book?.coverUrl
     ).toBe(cover);
+  });
+});
+
+describe('회차 단계 (phase 우선)', () => {
+  it('RECRUITING 은 모집 중이라고 말한다', () => {
+    expect(
+      props({
+        occurrencePhase: 'RECRUITING',
+        startDate: '2026-09-13',
+      }).statusLabel
+    ).toBe('모집 중 · 3일 뒤 (일) 시작');
+  });
+
+  it('phase 가 status 를 이긴다 — status 는 모집 중을 표현 못 한다', () => {
+    const p = props({
+      occurrencePhase: 'RECRUITING',
+      occurrenceStatus: 'SCHEDULED',
+      startDate: '2026-09-13',
+    });
+    expect(p.status).toBe('UPCOMING');
+    expect(p.statusLabel).toContain('모집 중');
+  });
+
+  it('ACTIVE 는 날짜와 무관하게 진행 중이다', () => {
+    expect(
+      props({
+        occurrencePhase: 'ACTIVE',
+        startDate: '2027-01-01',
+        endDate: '2027-02-01',
+      }).status
+    ).toBe('ONGOING');
+  });
+
+  it('CLOSED 는 종료로 본다', () => {
+    expect(props({ occurrencePhase: 'CLOSED' }).status).toBe('ENDED');
+  });
+
+  it('phase 가 없으면 occurrenceStatus 로 떨어진다', () => {
+    expect(props({ occurrenceStatus: 'OPEN' }).status).toBe('ONGOING');
+  });
+
+  it('둘 다 없으면 기존 날짜 계산 (구서버)', () => {
+    expect(props().status).toBe('ONGOING');
+  });
+});
+
+describe('미리지원 배지', () => {
+  it('PRE_APPLY 일 때만 붙는다', () => {
+    expect(props({ ctaState: 'PRE_APPLY' }).canPreApply).toBe(true);
+    expect(props({ ctaState: 'JOIN' }).canPreApply).toBe(false);
+    expect(props().canPreApply).toBe(false);
+  });
+});
+
+describe('모집 카운트다운', () => {
+  const now = new Date('2026-09-10');
+
+  it('남은 날짜를 D-N 으로 읽어 준다', () => {
+    expect(challengeRecruitCountdownLabel('2026-09-15', now)).toBe(
+      '다음 모집 D-5 · 9.15 시작'
+    );
+  });
+
+  it('오늘 열리면 그렇게 말한다', () => {
+    expect(challengeRecruitCountdownLabel('2026-09-10', now)).toBe(
+      '오늘 모집 시작 · 9.10'
+    );
+  });
+
+  it('모집일이 없으면 빈 문자열 — 안 그린다', () => {
+    expect(challengeRecruitCountdownLabel(null, now)).toBe('');
+  });
+});
+
+describe('다음 모집 회차 고르기', () => {
+  it('모집창이 있는 SCHEDULED 회차만 고른다', () => {
+    const picked = nextRecruitOccurrence([
+      { occurrenceId: 1, challengeId: 9, occurrenceNo: 1, phase: 'CLOSED',
+        startDate: '2026-08-01', endDate: '2026-08-31' },
+      { occurrenceId: 2, challengeId: 9, occurrenceNo: 2, phase: 'SCHEDULED',
+        startDate: '2026-10-01', endDate: '2026-10-31' },
+      { occurrenceId: 3, challengeId: 9, occurrenceNo: 3, phase: 'SCHEDULED',
+        recruitStartDate: '2026-09-20', recruitEndDate: '2026-09-30',
+        startDate: '2026-11-01', endDate: '2026-11-30' },
+    ]);
+    expect(picked?.occurrenceId).toBe(3);
+  });
+
+  it('회차가 없으면 null', () => {
+    expect(nextRecruitOccurrence(null)).toBeNull();
   });
 });

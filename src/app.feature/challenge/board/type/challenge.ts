@@ -22,6 +22,29 @@ export type ChallengeType = 'PUBLIC' | 'PRIVATE' | 'OFFICIAL';
 export type ChallengeTypeFilter = Exclude<ChallengeType, 'PRIVATE'>;
 // 진행 상태 — UPCOMING: 모집중, ONGOING: 진행중, ENDED: 종료
 export type ChallengeStatus = 'UPCOMING' | 'ONGOING' | 'ENDED';
+/**
+ * 회차 단계 — 서버가 굴린다. `occurrenceStatus` 보다 이쪽이 자세하다:
+ * status 는 '모집 중' 을 표현하지 못해 모집 중인 회차도 SCHEDULED 로 온다.
+ * 그래서 화면 표기는 phase 를 먼저 보고, 없을 때만 status 로 떨어진다.
+ */
+export type OccurrencePhase =
+  | 'SCHEDULED'
+  | 'RECRUITING'
+  | 'ACTIVE'
+  | 'CLOSED';
+
+/**
+ * 참여 버튼 상태 — **서버 판정**. 이 값 하나가 버튼을 정한다.
+ *
+ * 모집창 경계는 서버가 굴리는 것이라, 웹이 날짜를 비교해 다시 판정하면
+ * 회차가 넘어가는 순간 서버와 갈린다. 게스트는 언제나 NONE 이다.
+ */
+export type ChallengeCtaState =
+  | 'JOIN'
+  | 'PRE_APPLY'
+  | 'RECRUIT_WAIT'
+  | 'NONE';
+
 export type ParticipantStatus =
   | 'NONE'
   | 'PENDING'
@@ -44,6 +67,11 @@ export interface RandomParticipant {
  * 개별 조회로 되돌리지 말 것.
  */
 export interface ChallengeCardExtras {
+  // 회차 — 서버가 정본이다. 날짜로 다시 계산하지 않는다.
+  occurrencePhase?: OccurrencePhase | null;
+  occurrenceStatus?: string | null;
+  occurrenceNo?: number | null;
+  ctaState?: ChallengeCtaState | null;
   // 만든 사람. 레벨까지 응답이 함께 주므로 memberId 로 다시 묻지 않는다.
   hostMemberNickname?: string | null;
   hostProfileImage?: string | null;
@@ -147,6 +175,37 @@ export interface ChallengeDetail {
   // 내 완료 여부 — 서버 판정(종료된 기한제 + 목표 70% 달성).
   // 비로그인·비참여·진행중·무기한은 서버가 false 로 내려준다.
   myCompleted?: boolean;
+  /**
+   * 회차 목록. 회차를 안 굴리는 챌린지도 한 건은 온다.
+   *
+   * 여기서 "지금 모집 중인가" 를 날짜로 판정하지 말 것 — 그건 서버
+   * `phase` 가 정한다. 웹은 고르기와 D-N 세기만 한다.
+   */
+  occurrences?: ChallengeOccurrence[] | null;
+  /** 참여 버튼 상태(서버 판정). 요약에도 같은 값이 온다. */
+  ctaState?: ChallengeCtaState | null;
+  /** 지금 들어갈 수 있는 회차. null 이면 들어갈 자리가 없다. */
+  joinableOccurrenceId?: number | null;
+  /**
+   * 다음 회차 모집 시작 알림을 신청해 뒀는가.
+   * 참여가 아니다 — 모집이 열리는 날 알림만 받는다.
+   */
+  recruitAlertRequested?: boolean;
+  /** 모집창을 며칠 여는가. 상세에만 온다(요약에는 없다). */
+  recruitDays?: number | null;
+}
+
+/** 회차 한 건. 모집창(recruit*)은 모집창을 두는 회차에만 채워진다. */
+export interface ChallengeOccurrence {
+  occurrenceId: number;
+  challengeId: number;
+  occurrenceNo: number;
+  recruitStartDate?: string | null;
+  recruitEndDate?: string | null;
+  startDate: string;
+  endDate: string;
+  status?: string | null;
+  phase?: OccurrencePhase | null;
 }
 
 export interface ChallengeGoal {

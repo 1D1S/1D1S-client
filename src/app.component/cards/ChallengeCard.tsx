@@ -6,6 +6,7 @@ import { CategoryIcon, getCategoryStripeTone } from '@constants/categories';
 import { cn } from '@module/utils/cn';
 import {
   Calendar,
+  CalendarPlus,
   Camera,
   Clock,
   Gift,
@@ -62,6 +63,8 @@ export interface ChallengeCardProps {
   isPhotoRequired?: boolean;
   isOfficial?: boolean;
   hasReward?: boolean;
+  /** 다음 회차 미리지원 가능(서버 ctaState === 'PRE_APPLY'). */
+  canPreApply?: boolean;
   host?: ChallengeCardHost | null;
   /** 독서 챌린지 책 — 썸네일 안쪽 하단 바. moreCount 는 "외 N권" 의 N. */
   book?: {
@@ -137,6 +140,7 @@ function ChallengeCard({
   isPhotoRequired = false,
   isOfficial = false,
   hasReward = false,
+  canPreApply = false,
   host,
   book,
   liked = false,
@@ -283,6 +287,20 @@ function ChallengeCard({
               }
               label={categoryLabel}
             />
+          ) : null}
+          {/* 미리지원은 지금 눌러야 하는 기회다 — 인증샷 같은 속성보다
+              앞자리를 준다(앱과 같은 순서). */}
+          {canPreApply ? (
+            <span
+              className={cn(
+                'inline-flex shrink-0 items-center gap-1 rounded-full',
+                'bg-[#FFEBE3] px-2 py-[3px]',
+                'text-[12px] font-bold text-[#ff3c00]'
+              )}
+            >
+              <CalendarPlus className="h-3.5 w-3.5" />
+              미리지원 가능
+            </span>
           ) : null}
           {isPhotoRequired ? (
             <span
